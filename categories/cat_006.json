@@ -12,7 +12,8 @@
       "description": "Real-time on-chain crypto whale tracking workbench, DEX swap monitor, smart wallet PnL profiler, and token safety scanner for Solana & EVM chains.",
       "icon": "🐋",
       "shard": "index/wh/al/whale_radar.json",
-      "source_path": "plugins/wh/whale-radar"
+      "source_path": "plugins/wh/whale-radar",
+      "hash": "5ec6a574c0b2e2f9"
     }
   ]
 }

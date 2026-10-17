@@ -17,5 +17,6 @@
   "shard": "index/vo/ca/vocalizer.json",
   "source_path": "plugins/vo/vocalizer",
   "updated_at": "2026-10-16T02:20:59.326Z",
-  "category_id": "CAT-016"
+  "category_id": "CAT-016",
+  "hash": "348346bced66bec4"
 }

@@ -12,7 +12,8 @@
       "description": "Sovereign Real-Time Vocal Processing Suite reverse-engineered from VST3. Features dynamic pitch tracking & autotune, 4-voice polyphonic harmonizer, 6-band parametric EQ, noise gate, de-esser, compressor, saturation, chorus/modulation, ducking delay, and studio reverb with interactive SVG 706x532 UI.",
       "icon": "🎙️",
       "shard": "index/vo/ca/vocalizer.json",
-      "source_path": "plugins/vo/vocalizer"
+      "source_path": "plugins/vo/vocalizer",
+      "hash": "348346bced66bec4"
     },
     {
       "id": "kamidi-mastering",
@@ -23,7 +24,8 @@
       "description": "Professional 32-bit float audio mastering console with Parametric EQ, Multiband Compressor, Brickwall Limiter, Transient Shaper, Sub Bass 808 saturation, and Dual-Pass EBU R128 LUFS metering.",
       "icon": "🎛️",
       "shard": "index/ka/mi/kamidi_mastering.json",
-      "source_path": "plugins/ka/kamidi-mastering"
+      "source_path": "plugins/ka/kamidi-mastering",
+      "hash": "becd76fc5c36539d"
     },
     {
       "id": "studio",
@@ -34,7 +36,8 @@
       "description": "Professional LUFS Meter, Audio Mastering, True Peak & Loudness Compliance Studio for Spotify, Apple, YouTube, and Broadcast.",
       "icon": "🎛️",
       "shard": "index/st/ud/studio.json",
-      "source_path": "plugins/st/studio"
+      "source_path": "plugins/st/studio",
+      "hash": "a84b9a8b34e617cd"
     }
   ]
 }

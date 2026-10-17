@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-17T14:39:04.136Z",
+  "updated_at": "2026-10-17T14:55:43.136Z",
   "repo": "flowork-os/FLOWAGENT-PLUGINS",
   "plugins": [
     {
@@ -11,7 +11,7 @@
       "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
       "category": "Sports Science & Athletics Performance",
       "icon": "♟️",
-      "hash": "15d97fde6ffad37d",
+      "hash": "0f5f5e9b2c647247",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -32,7 +32,7 @@
       "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
       "category": "Media, Creative Writing & Journalism",
       "icon": "📹",
-      "hash": "9dd08b12db5ad295",
+      "hash": "a7c3245638caf3be",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -65,7 +65,7 @@
       "source_path": "plugins/wh/whale-radar",
       "updated_at": "2026-10-11T22:01:06.616Z",
       "category_id": "CAT-006",
-      "hash": "d563821fb0a2e81f"
+      "hash": "5ec6a574c0b2e2f9"
     },
     {
       "id": "vocalizer",
@@ -86,7 +86,8 @@
       "shard": "index/vo/ca/vocalizer.json",
       "source_path": "plugins/vo/vocalizer",
       "updated_at": "2026-10-16T02:20:59.326Z",
-      "category_id": "CAT-016"
+      "category_id": "CAT-016",
+      "hash": "348346bced66bec4"
     },
     {
       "id": "kamidi-mastering",
@@ -107,7 +108,8 @@
       "shard": "index/ka/mi/kamidi_mastering.json",
       "source_path": "plugins/ka/kamidi-mastering",
       "updated_at": "2026-10-17T05:16:05.592Z",
-      "category_id": "CAT-016"
+      "category_id": "CAT-016",
+      "hash": "becd76fc5c36539d"
     },
     {
       "id": "studio",
@@ -128,7 +130,8 @@
       "shard": "index/st/ud/studio.json",
       "source_path": "plugins/st/studio",
       "updated_at": "2026-10-17T12:33:25.097Z",
-      "category_id": "CAT-016"
+      "category_id": "CAT-016",
+      "hash": "a84b9a8b34e617cd"
     }
   ]
 }

@@ -12,7 +12,8 @@
       "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
       "icon": "♟️",
       "shard": "index/ch/es/chess.json",
-      "source_path": "plugins/ch/chess"
+      "source_path": "plugins/ch/chess",
+      "hash": "0f5f5e9b2c647247"
     }
   ]
 }

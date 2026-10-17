@@ -7,7 +7,7 @@
   "category_id": "CAT-020",
   "category": "Sports Science & Athletics Performance",
   "icon": "♟️",
-  "hash": "15d97fde6ffad37d",
+  "hash": "0f5f5e9b2c647247",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"

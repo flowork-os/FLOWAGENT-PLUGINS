@@ -7,7 +7,7 @@
   "category_id": "CAT-006",
   "category": "Finance & Algorithmic Trading",
   "icon": "🐋",
-  "hash": "d563821fb0a2e81f",
+  "hash": "5ec6a574c0b2e2f9",
   "entry": {
     "gui": "gui/index.html",
     "backend": "server.js"
