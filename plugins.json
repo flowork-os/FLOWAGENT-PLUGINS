@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-17T14:32:15.137Z",
+  "updated_at": "2026-10-17T14:39:04.136Z",
   "repo": "flowork-os/FLOWAGENT-PLUGINS",
   "plugins": [
     {
@@ -54,17 +54,18 @@
       "category": "Finance & Algorithmic Trading",
       "icon": "🐋",
       "entry": {
-        "backend": "server.js",
-        "gui": "gui/index.html"
+        "gui": "gui/index.html",
+        "backend": "server.js"
       },
       "ipc": {
-        "default_port": 17830,
-        "port_env": "FLOWORK_APP_PORT"
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17830
       },
       "shard": "index/wh/al/whale_radar.json",
       "source_path": "plugins/wh/whale-radar",
       "updated_at": "2026-10-11T22:01:06.616Z",
-      "category_id": "CAT-006"
+      "category_id": "CAT-006",
+      "hash": "d563821fb0a2e81f"
     },
     {
       "id": "vocalizer",
