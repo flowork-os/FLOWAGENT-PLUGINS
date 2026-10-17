@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-17T14:55:43.136Z",
+  "updated_at": "2026-10-17T15:01:50.962Z",
   "repo": "flowork-os/FLOWAGENT-PLUGINS",
   "plugins": [
     {
@@ -11,7 +11,7 @@
       "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
       "category": "Sports Science & Athletics Performance",
       "icon": "♟️",
-      "hash": "0f5f5e9b2c647247",
+      "hash": "916ce37433f9bafe",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -32,7 +32,7 @@
       "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
       "category": "Media, Creative Writing & Journalism",
       "icon": "📹",
-      "hash": "a7c3245638caf3be",
+      "hash": "bb2b41329f33caf0",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -65,7 +65,7 @@
       "source_path": "plugins/wh/whale-radar",
       "updated_at": "2026-10-11T22:01:06.616Z",
       "category_id": "CAT-006",
-      "hash": "5ec6a574c0b2e2f9"
+      "hash": "3f140820057a2642"
     },
     {
       "id": "vocalizer",
@@ -87,7 +87,7 @@
       "source_path": "plugins/vo/vocalizer",
       "updated_at": "2026-10-16T02:20:59.326Z",
       "category_id": "CAT-016",
-      "hash": "348346bced66bec4"
+      "hash": "6b242c4bdec4de6c"
     },
     {
       "id": "kamidi-mastering",
@@ -109,7 +109,7 @@
       "source_path": "plugins/ka/kamidi-mastering",
       "updated_at": "2026-10-17T05:16:05.592Z",
       "category_id": "CAT-016",
-      "hash": "becd76fc5c36539d"
+      "hash": "cbdb55b14b1242b0"
     },
     {
       "id": "studio",
@@ -131,7 +131,7 @@
       "source_path": "plugins/st/studio",
       "updated_at": "2026-10-17T12:33:25.097Z",
       "category_id": "CAT-016",
-      "hash": "a84b9a8b34e617cd"
+      "hash": "54f9716fa364735b"
     }
   ]
 }

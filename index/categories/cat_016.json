@@ -13,7 +13,7 @@
       "icon": "🎙️",
       "shard": "index/vo/ca/vocalizer.json",
       "source_path": "plugins/vo/vocalizer",
-      "hash": "348346bced66bec4"
+      "hash": "6b242c4bdec4de6c"
     },
     {
       "id": "kamidi-mastering",
@@ -25,7 +25,7 @@
       "icon": "🎛️",
       "shard": "index/ka/mi/kamidi_mastering.json",
       "source_path": "plugins/ka/kamidi-mastering",
-      "hash": "becd76fc5c36539d"
+      "hash": "cbdb55b14b1242b0"
     },
     {
       "id": "studio",
@@ -37,7 +37,7 @@
       "icon": "🎛️",
       "shard": "index/st/ud/studio.json",
       "source_path": "plugins/st/studio",
-      "hash": "a84b9a8b34e617cd"
+      "hash": "54f9716fa364735b"
     }
   ]
 }
