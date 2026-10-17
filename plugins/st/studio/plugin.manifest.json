@@ -1,0 +1,36 @@
+{
+  "id": "studio",
+  "name": "LUFS Meter Pro Studio",
+  "version": "1.0.0",
+  "author": "Azam",
+  "description": "Professional LUFS Meter, Audio Mastering, True Peak & Loudness Compliance Studio for Spotify, Apple, YouTube, and Broadcast.",
+  "category": "Arts, Music & Literature",
+  "icon": "🎛️",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 18980
+  },
+  "permissions": [
+    "fs:read",
+    "fs:write",
+    "audio:playback",
+    "process:exec"
+  ],
+  "keywords": [
+    "lufs",
+    "metering",
+    "mastering",
+    "ebu-r128",
+    "true-peak",
+    "loudness",
+    "audio-analysis",
+    "broadcast-standard",
+    "spotify-mastering",
+    "sound-engineering"
+  ],
+  "category_id": "CAT-016"
+}

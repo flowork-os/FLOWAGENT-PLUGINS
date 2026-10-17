@@ -1,0 +1,40 @@
+{
+  "id": "vocalizer",
+  "name": "Vocalizer Pro",
+  "version": "1.0.0",
+  "author": "Awenk Audico & Flowork OS",
+  "description": "Sovereign Real-Time Vocal Processing Suite reverse-engineered from VST3. Features dynamic pitch tracking & autotune, 4-voice polyphonic harmonizer, 6-band parametric EQ, noise gate, de-esser, compressor, saturation, chorus/modulation, ducking delay, and studio reverb with interactive SVG 706x532 UI.",
+  "category": "Arts, Music & Literature",
+  "icon": "🎙️",
+  "keywords": [
+    "vocalizer",
+    "autotune",
+    "pitch correction",
+    "vocal harmonizer",
+    "audio dsp",
+    "vst3 plugin",
+    "parametric eq",
+    "vocal processor"
+  ],
+  "exclude_keywords": [
+    "midi sequencer",
+    "crypto wallet",
+    "chess engine"
+  ],
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "skill": "SKILL.md",
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 17840
+  },
+  "permissions": {
+    "network": true,
+    "filesystem_read": [
+      "."
+    ]
+  },
+  "category_id": "CAT-016"
+}

@@ -1,0 +1,18 @@
+{
+  "category_id": "CAT-010",
+  "category": "Media, Creative Writing & Journalism",
+  "total_items": 1,
+  "items": [
+    {
+      "id": "yt-downloader",
+      "name": "YouTube Downloader & Suno Studio",
+      "category_id": "CAT-010",
+      "category": "Media, Creative Writing & Journalism",
+      "version": "1.2.0",
+      "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
+      "icon": "📹",
+      "shard": "index/yt/do/yt_downloader.json",
+      "source_path": "plugins/yt/yt-downloader"
+    }
+  ]
+}

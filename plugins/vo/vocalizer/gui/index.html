@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<!-- [FLOWORK-OS:SOVEREIGN] Engineered by Flowork OS <agent@floworkos.com> -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocalizer Pro — Official VST3 / Native Canvas Edition</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="vocalizer-root" class="vocalizer-window">
+    
+    <!-- ==================== HEADER BAR ==================== -->
+    <header class="flo_app_header">
+      <div class="brand-zone">
+        <div class="logo-mark">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#24b7e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="#24b7e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="#24b7e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="title-group">
+          <div class="main-title"><span class="title-bold">VOCALIZER</span> <span class="title-light">PRO</span></div>
+          <div class="subtitle">REAL-TIME PITCH CORRECTION & VOCAL SUITE</div>
+        </div>
+      </div>
+
+      <!-- MASTER GAIN & BYPASS CONTROLS -->
+      <div class="master-zone">
+        <div class="master-knob-unit">
+          <span class="master-label">INPUT</span>
+          <div class="rotary-dial mini" data-param="input_gain" data-min="-24" data-max="24" data-default="0" data-unit="dB">
+            <svg class="dial-svg" viewBox="0 0 44 44">
+              <circle class="dial-track" cx="22" cy="22" r="18" />
+              <circle class="dial-fill" cx="22" cy="22" r="18" />
+            </svg>
+            <div class="dial-handle"></div>
+            <span class="dial-val">0.0 dB</span>
+          </div>
+        </div>
+
+        <div class="master-knob-unit">
+          <span class="master-label">OUTPUT</span>
+          <div class="rotary-dial mini" data-param="output_gain" data-min="-24" data-max="24" data-default="0" data-unit="dB">
+            <svg class="dial-svg" viewBox="0 0 44 44">
+              <circle class="dial-track" cx="22" cy="22" r="18" />
+              <circle class="dial-fill" cx="22" cy="22" r="18" />
+            </svg>
+            <div class="dial-handle"></div>
+            <span class="dial-val">0.0 dB</span>
+          </div>
+        </div>
+
+        <button id="btn-bypass" class="bypass-button" data-param="bypass">
+          <span class="bypass-led"></span>
+          <span class="bypass-text">BYPASS</span>
+        </button>
+
+        <button id="btn-audio-power" class="audio-power-btn active" title="Toggle DSP Engine">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            <line x1="12" y1="2" x2="12" y2="12"></line>
+          </svg>
+          <span id="power-status">LIVE DSP</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==================== AUDIO SOURCE & TRANSPORT DOCK ==================== -->
+    <section class="transport-dock" id="transport-dock">
+      <!-- Left: Source Switch & File Loader -->
+      <div class="dock-section dock-source">
+        <div class="source-mode-toggle">
+          <button type="button" class="mode-btn active" id="tab-file-mode" title="Mode File Audio (WAV, MP3, FLAC, OGG)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>
+            </svg>
+            <span>Audio File</span>
+          </button>
+          <button type="button" class="mode-btn" id="tab-mic-mode" title="Mode Live Microphone">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            <span>Live Mic</span>
+          </button>
+        </div>
+
+        <div class="file-picker-group" id="file-picker-group">
+          <label for="audio-file-input" class="btn-picker btn-browse" id="btn-browse-file" title="Pilih file audio dari disk atau workspace">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Pilih Audio...</span>
+          </label>
+          <button type="button" class="btn-picker btn-demo" id="btn-load-demo" title="Muat file audio demo vokal bawaan untuk pengujian instan">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Demo Vokal</span>
+          </button>
+          <input type="file" id="audio-file-input" accept="audio/*,.wav,.mp3,.flac,.ogg,.m4a,.aac" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; opacity: 0;">
+          <label for="audio-file-input" class="file-badge active-track-badge" id="file-track-info" style="cursor: pointer;" title="Klik tombol atau Drag & Drop file audio ke area ini">
+            <span class="file-badge-icon">🎵</span>
+            <span class="file-badge-text" id="track-name-display">Belum ada file dipilih (Klik tombol di samping atau Drag & Drop ke sini)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Center: Playback Controls & Waveform Scrubber -->
+      <div class="dock-section dock-transport" id="dock-transport-controls">
+        <button type="button" class="ctrl-btn" id="btn-transport-prev" title="Kembali ke awal">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="19 20 9 12 19 4 19 20"></polygon>
+            <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"></line>
+          </svg>
+        </button>
+
+        <button type="button" class="ctrl-btn btn-play" id="btn-transport-play" title="Play / Pause">
+          <svg id="icon-play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <svg id="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+        </button>
+
+        <button type="button" class="ctrl-btn" id="btn-transport-loop" title="Toggle Loop Playback">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            <polyline points="7 23 3 19 7 15"></polyline>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+          </svg>
+        </button>
+
+        <!-- Waveform & Progress Scrubber -->
+        <div class="scrubber-container">
+          <canvas id="waveform-canvas" width="240" height="24"></canvas>
+          <input type="range" id="audio-scrubber" min="0" max="100" value="0" step="0.1" title="Geser posisi playback">
+        </div>
+
+        <div class="time-box" id="time-display">00:00 / 00:00</div>
+      </div>
+
+      <!-- Right: Export Rendered WAV -->
+      <div class="dock-section dock-actions">
+        <button type="button" class="btn-export" id="btn-export-audio" title="Render dan simpan hasil proses audio ke format WAV">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Export WAV</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== MAIN 3-CARD BODY ==================== -->
+    <main class="cards-grid">
+      
+      <!-- CARD 1: CORRECTION -->
+      <section class="card card-correction" id="card-correction">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-num">01</span>
+            <h2 class="card-title">Correction</h2>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="tune_enabled" checked data-param="tune_enabled">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="card-body correction-body">
+          <!-- TUNEDISPLAY CIRCULAR WHEEL -->
+          <div class="tune-display-container">
+            <div class="tune-wheel" id="tune-wheel">
+              <svg class="wheel-svg" viewBox="0 0 200 200">
+                <!-- Outer pitch wheel notes -->
+                <circle class="wheel-outer-ring" cx="100" cy="100" r="90" />
+                <circle class="wheel-cents-track" cx="100" cy="100" r="72" />
+                <circle class="wheel-cents-arc" id="wheel-cents-arc" cx="100" cy="100" r="72" />
+                <line class="cents-zero-mark" x1="100" y1="20" x2="100" y2="34" />
+              </svg>
+              <!-- 12 Chromatic Notes Ring -->
+              <div class="notes-ring" id="notes-ring">
+                <span class="note-item" data-note="C" style="--angle: 0deg">C</span>
+                <span class="note-item" data-note="C#" style="--angle: 30deg">C#</span>
+                <span class="note-item" data-note="D" style="--angle: 60deg">D</span>
+                <span class="note-item" data-note="D#" style="--angle: 90deg">D#</span>
+                <span class="note-item" data-note="E" style="--angle: 120deg">E</span>
+                <span class="note-item" data-note="F" style="--angle: 150deg">F</span>
+                <span class="note-item" data-note="F#" style="--angle: 180deg">F#</span>
+                <span class="note-item" data-note="G" style="--angle: 210deg">G</span>
+                <span class="note-item" data-note="G#" style="--angle: 240deg">G#</span>
+                <span class="note-item" data-note="A" style="--angle: 270deg">A</span>
+                <span class="note-item" data-note="A#" style="--angle: 300deg">A#</span>
+                <span class="note-item" data-note="B" style="--angle: 330deg">B</span>
+              </div>
+              <!-- Center Display Readout -->
+              <div class="center-readout">
+                <div class="detected-note" id="detected-note">A4</div>
+                <div class="detected-freq" id="detected-freq">440.0 Hz</div>
+                <div class="detected-cents" id="detected-cents">+0 cents</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KEY & SCALE SELECTORS -->
+          <div class="choice-row">
+            <div class="choice-group">
+              <label class="choice-label">KEY</label>
+              <select class="choice-select" id="tune_key" data-param="tune_key">
+                <option value="0">C</option>
+                <option value="1">C# / Db</option>
+                <option value="2">D</option>
+                <option value="3">D# / Eb</option>
+                <option value="4">E</option>
+                <option value="5">F</option>
+                <option value="6">F# / Gb</option>
+                <option value="7">G</option>
+                <option value="8">G# / Ab</option>
+                <option value="9">A</option>
+                <option value="10">A# / Bb</option>
+                <option value="11">B</option>
+              </select>
+            </div>
+            <div class="choice-group">
+              <label class="choice-label">SCALE</label>
+              <select class="choice-select" id="tune_scale" data-param="tune_scale">
+                <option value="0">Chromatic</option>
+                <option value="1">Major (Natural)</option>
+                <option value="2">Minor (Natural)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- KNOBS ROW -->
+          <div class="knob-row">
+            <div class="knob-unit">
+              <div class="rotary-dial" data-param="tune_speed" data-min="0" data-max="100" data-default="20" data-unit="ms">
+                <svg class="dial-svg" viewBox="0 0 54 54">
+                  <circle class="dial-track" cx="27" cy="27" r="23" />
+                  <circle class="dial-fill" cx="27" cy="27" r="23" />
+                </svg>
+                <div class="dial-handle"></div>
+                <span class="dial-val">20 ms</span>
+              </div>
+              <span class="knob-title">SPEED</span>
+            </div>
+
+            <div class="knob-unit">
+              <div class="rotary-dial" data-param="tune_human" data-min="0" data-max="100" data-default="25" data-unit="%">
+                <svg class="dial-svg" viewBox="0 0 54 54">
+                  <circle class="dial-track" cx="27" cy="27" r="23" />
+                  <circle class="dial-fill" cx="27" cy="27" r="23" />
+                </svg>
+                <div class="dial-handle"></div>
+                <span class="dial-val">25 %</span>
+              </div>
+              <span class="knob-title">HUMANIZE</span>
+            </div>
+
+            <div class="knob-unit">
+              <div class="rotary-dial" data-param="tune_amt" data-min="0" data-max="100" data-default="100" data-unit="%">
+                <svg class="dial-svg" viewBox="0 0 54 54">
+                  <circle class="dial-track" cx="27" cy="27" r="23" />
+                  <circle class="dial-fill" cx="27" cy="27" r="23" />
+                </svg>
+                <div class="dial-handle"></div>
+                <span class="dial-val">100 %</span>
+              </div>
+              <span class="knob-title">AMOUNT</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 2: EQ -->
+      <section class="card card-eq" id="card-eq">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-num">02</span>
+            <h2 class="card-title">EQ</h2>
+          </div>
+          <div class="eq-header-controls" style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="btn-eq-flat" id="btn-eq-flat" title="Reset EQ to 0 dB Flat">FLAT</button>
+            <label class="toggle-switch">
+              <input type="checkbox" id="eq_enabled" checked data-param="eq_enabled">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card-body eq-body">
+          <!-- EQ GRAPHICAL RESPONSE CURVE -->
+          <div class="eq-display-container">
+            <svg class="eq-svg" id="eq-svg" viewBox="0 0 460 140" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="eqGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#24b7e8" stop-opacity="0.28" />
+                  <stop offset="100%" stop-color="#24b7e8" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+              <!-- Grid lines -->
+              <line class="eq-grid-line" x1="0" y1="20" x2="460" y2="20" />
+              <line class="eq-grid-line" x1="0" y1="70" x2="460" y2="70" />
+              <line class="eq-grid-line" x1="0" y1="120" x2="460" y2="120" />
+              <line class="eq-grid-line" x1="115" y1="0" x2="115" y2="140" />
+              <line class="eq-grid-line" x1="230" y1="0" x2="230" y2="140" />
+              <line class="eq-grid-line" x1="345" y1="0" x2="345" y2="140" />
+              <text class="eq-db-label" x="8" y="24">+12 dB</text>
+              <text class="eq-db-label" x="8" y="74">0 dB</text>
+              <text class="eq-db-label" x="8" y="124">-12 dB</text>
+              <!-- Real-time Curve -->
+              <path class="eq-area" id="eq-area" d="M0,70 L460,70 Z" fill="url(#eqGradient)" />
+              <path class="eq-curve" id="eq-curve" d="M0,70 L460,70" />
+              <!-- 4 Interactive Band Handles -->
+              <circle class="eq-handle band-1" id="handle-b1" cx="60" cy="70" r="5" />
+              <circle class="eq-handle band-2" id="handle-b2" cx="160" cy="70" r="5" />
+              <circle class="eq-handle band-3" id="handle-b3" cx="280" cy="70" r="5" />
+              <circle class="eq-handle band-4" id="handle-b4" cx="390" cy="70" r="5" />
+            </svg>
+          </div>
+
+          <!-- 4 BANDS CONTROLS -->
+          <div class="eq-bands-grid">
+            <!-- BAND 1 (LOW) -->
+            <div class="band-column">
+              <button type="button" class="band-tag" id="tag-b1" data-band="1" title="Toggle Band 1 Bypass">BAND 1</button>
+              <div class="rotary-dial small" data-param="eq_b1_f" data-min="20" data-max="500" data-default="100" data-unit="Hz" data-scale="log">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">100 Hz</span>
+              </div>
+              <span class="sub-knob-title">FREQ</span>
+
+              <div class="rotary-dial small" data-param="eq_b1_g" data-min="-18" data-max="18" data-default="0" data-unit="dB">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">0.0 dB</span>
+              </div>
+              <span class="sub-knob-title">GAIN</span>
+
+              <div class="rotary-dial small" data-param="eq_b1_q" data-min="0.1" data-max="10.0" data-default="1.0" data-unit="">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">1.00</span>
+              </div>
+              <span class="sub-knob-title">Q</span>
+            </div>
+
+            <!-- BAND 2 (LOW-MID) -->
+            <div class="band-column">
+              <button type="button" class="band-tag" id="tag-b2" data-band="2" title="Toggle Band 2 Bypass">BAND 2</button>
+              <div class="rotary-dial small" data-param="eq_b2_f" data-min="100" data-max="2000" data-default="500" data-unit="Hz" data-scale="log">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">500 Hz</span>
+              </div>
+              <span class="sub-knob-title">FREQ</span>
+
+              <div class="rotary-dial small" data-param="eq_b2_g" data-min="-18" data-max="18" data-default="0" data-unit="dB">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">0.0 dB</span>
+              </div>
+              <span class="sub-knob-title">GAIN</span>
+
+              <div class="rotary-dial small" data-param="eq_b2_q" data-min="0.1" data-max="10.0" data-default="1.0" data-unit="">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">1.00</span>
+              </div>
+              <span class="sub-knob-title">Q</span>
+            </div>
+
+            <!-- BAND 3 (HIGH-MID) -->
+            <div class="band-column">
+              <button type="button" class="band-tag" id="tag-b3" data-band="3" title="Toggle Band 3 Bypass">BAND 3</button>
+              <div class="rotary-dial small" data-param="eq_b3_f" data-min="500" data-max="8000" data-default="2500" data-unit="Hz" data-scale="log">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">2.5 kHz</span>
+              </div>
+              <span class="sub-knob-title">FREQ</span>
+
+              <div class="rotary-dial small" data-param="eq_b3_g" data-min="-18" data-max="18" data-default="0" data-unit="dB">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">0.0 dB</span>
+              </div>
+              <span class="sub-knob-title">GAIN</span>
+
+              <div class="rotary-dial small" data-param="eq_b3_q" data-min="0.1" data-max="10.0" data-default="1.0" data-unit="">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">1.00</span>
+              </div>
+              <span class="sub-knob-title">Q</span>
+            </div>
+
+            <!-- BAND 4 (HIGH) -->
+            <div class="band-column">
+              <button type="button" class="band-tag" id="tag-b4" data-band="4" title="Toggle Band 4 Bypass">BAND 4</button>
+              <div class="rotary-dial small" data-param="eq_b4_f" data-min="2000" data-max="20000" data-default="10000" data-unit="Hz" data-scale="log">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">10.0 kHz</span>
+              </div>
+              <span class="sub-knob-title">FREQ</span>
+
+              <div class="rotary-dial small" data-param="eq_b4_g" data-min="-18" data-max="18" data-default="0" data-unit="dB">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">0.0 dB</span>
+              </div>
+              <span class="sub-knob-title">GAIN</span>
+
+              <div class="rotary-dial small" data-param="eq_b4_q" data-min="0.1" data-max="10.0" data-default="1.0" data-unit="">
+                <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                <div class="dial-handle"></div><span class="dial-val">1.00</span>
+              </div>
+              <span class="sub-knob-title">Q</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 3: EFFECTS -->
+      <section class="card card-effects" id="card-effects">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-num">03</span>
+            <h2 class="card-title">Effects</h2>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="fx_enabled" checked data-param="fx_enabled">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="card-body effects-body">
+          
+          <!-- SUB-GROUP: DOUBLER -->
+          <div class="fx-section">
+            <div class="fx-section-header">
+              <span class="fx-dot"></span>
+              <span class="fx-section-title">DOUBLER</span>
+            </div>
+            <div class="fx-knobs-grid">
+              <div class="knob-unit">
+                <div class="rotary-dial small" data-param="dbl_amt" data-min="0" data-max="100" data-default="30" data-unit="%">
+                  <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                  <div class="dial-handle"></div><span class="dial-val">30 %</span>
+                </div>
+                <span class="sub-knob-title">AMOUNT</span>
+              </div>
+
+              <div class="knob-unit">
+                <div class="rotary-dial small" data-param="dbl_det" data-min="0" data-max="50" data-default="15" data-unit="ct">
+                  <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                  <div class="dial-handle"></div><span class="dial-val">15 ct</span>
+                </div>
+                <span class="sub-knob-title">DETUNE</span>
+              </div>
+
+              <div class="knob-unit">
+                <div class="rotary-dial small" data-param="dbl_dly" data-min="0" data-max="100" data-default="20" data-unit="ms">
+                  <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                  <div class="dial-handle"></div><span class="dial-val">20 ms</span>
+                </div>
+                <span class="sub-knob-title">DELAY</span>
+              </div>
+
+              <div class="knob-unit">
+                <div class="rotary-dial small" data-param="dbl_pan" data-min="0" data-max="100" data-default="50" data-unit="%">
+                  <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                  <div class="dial-handle"></div><span class="dial-val">50 %</span>
+                </div>
+                <span class="sub-knob-title">SPREAD</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-GROUP: DELAY -->
+          <div class="fx-section">
+            <div class="fx-section-header">
+              <span class="fx-dot"></span>
+              <span class="fx-section-title">DELAY</span>
+            </div>
+            <div class="fx-knobs-grid">
+              <div class="knob-unit">
+                <div class="rotary-dial small" data-param="dly_time" data-min="10" data-max="1000" data-default="250" data-unit="ms" data-scale="log">
+                  <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                  <div class="dial-handle"></div><span class="dial-val">250 ms</span>
+                </div>
+                <span class="sub-knob-title">TIME</span>
+              </div>
+
+              <div class="knob-unit">
+                <div class="rotary-dial small" data-param="dly_fb" data-min="0" data-max="95" data-default="35" data-unit="%">
+                  <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                  <div class="dial-handle"></div><span class="dial-val">35 %</span>
+                </div>
+                <span class="sub-knob-title">FEEDBACK</span>
+              </div>
+
+              <div class="knob-unit">
+                <div class="rotary-dial small" data-param="dly_mix" data-min="0" data-max="100" data-default="25" data-unit="%">
+                  <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                  <div class="dial-handle"></div><span class="dial-val">25 %</span>
+                </div>
+                <span class="sub-knob-title">MIX</span>
+              </div>
+
+              <div class="knob-unit">
+                <div class="rotary-dial small" data-param="dly_duck" data-min="0" data-max="100" data-default="40" data-unit="%">
+                  <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                  <div class="dial-handle"></div><span class="dial-val">40 %</span>
+                </div>
+                <span class="sub-knob-title">DUCKING</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-GROUP: REVERB -->
+          <div class="fx-section">
+            <div class="fx-section-header">
+              <span class="fx-dot"></span>
+              <span class="fx-section-title">REVERB</span>
+            </div>
+            <div class="reverb-content">
+              <div class="choice-group mini">
+                <label class="choice-label">MODE</label>
+                <select class="choice-select" id="rev_mode" data-param="rev_mode">
+                  <option value="0">Room</option>
+                  <option value="1">Hall</option>
+                  <option value="2">Plate</option>
+                </select>
+              </div>
+
+              <div class="fx-knobs-grid reverb-knobs">
+                <div class="knob-unit">
+                  <div class="rotary-dial small" data-param="rev_mix" data-min="0" data-max="100" data-default="30" data-unit="%">
+                    <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                    <div class="dial-handle"></div><span class="dial-val">30 %</span>
+                  </div>
+                  <span class="sub-knob-title">MIX</span>
+                </div>
+
+                <div class="knob-unit">
+                  <div class="rotary-dial small" data-param="rev_duck" data-min="0" data-max="100" data-default="50" data-unit="%">
+                    <svg class="dial-svg" viewBox="0 0 44 44"><circle class="dial-track" cx="22" cy="22" r="18" /><circle class="dial-fill" cx="22" cy="22" r="18" /></svg>
+                    <div class="dial-handle"></div><span class="dial-val">50 %</span>
+                  </div>
+                  <span class="sub-knob-title">DUCKING</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ==================== FOOTER STATUS BAR ==================== -->
+    <footer class="flo_app_footer">
+      <div class="engine-status">
+        <span class="status-indicator live"></span>
+        <span class="status-text">JUCE AudioProcessor Connected &bull; 48000 Hz / 64 spls</span>
+      </div>
+      <div class="footer-actions">
+        <button id="btn-mic-toggle" class="footer-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+          <span id="mic-text">Mic Input: Active</span>
+        </button>
+        <span class="engine-ver">v1.3.1 (PE x64 Replica)</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

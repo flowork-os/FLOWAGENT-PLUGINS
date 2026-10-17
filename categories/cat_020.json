@@ -1,0 +1,18 @@
+{
+  "category_id": "CAT-020",
+  "category": "Sports Science & Athletics Performance",
+  "total_items": 1,
+  "items": [
+    {
+      "id": "chess",
+      "name": "Sovereign Chess Arena",
+      "category_id": "CAT-020",
+      "category": "Sports Science & Athletics Performance",
+      "version": "1.0.0",
+      "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
+      "icon": "♟️",
+      "shard": "index/ch/es/chess.json",
+      "source_path": "plugins/ch/chess"
+    }
+  ]
+}

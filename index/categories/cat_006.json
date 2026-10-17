@@ -1,0 +1,18 @@
+{
+  "category_id": "CAT-006",
+  "category": "Finance & Algorithmic Trading",
+  "total_items": 1,
+  "items": [
+    {
+      "id": "whale-radar",
+      "name": "Whale Radar & Smart Money Tracker",
+      "category_id": "CAT-006",
+      "category": "Finance & Algorithmic Trading",
+      "version": "1.0.0",
+      "description": "Real-time on-chain crypto whale tracking workbench, DEX swap monitor, smart wallet PnL profiler, and token safety scanner for Solana & EVM chains.",
+      "icon": "🐋",
+      "shard": "index/wh/al/whale_radar.json",
+      "source_path": "plugins/wh/whale-radar"
+    }
+  ]
+}

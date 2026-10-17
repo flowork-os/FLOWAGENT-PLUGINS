@@ -1,0 +1,40 @@
+{
+  "category_id": "CAT-016",
+  "category": "Arts, Music & Literature",
+  "total_items": 3,
+  "items": [
+    {
+      "id": "vocalizer",
+      "name": "Vocalizer Pro",
+      "category_id": "CAT-016",
+      "category": "Arts, Music & Literature",
+      "version": "1.0.0",
+      "description": "Sovereign Real-Time Vocal Processing Suite reverse-engineered from VST3. Features dynamic pitch tracking & autotune, 4-voice polyphonic harmonizer, 6-band parametric EQ, noise gate, de-esser, compressor, saturation, chorus/modulation, ducking delay, and studio reverb with interactive SVG 706x532 UI.",
+      "icon": "🎙️",
+      "shard": "index/vo/ca/vocalizer.json",
+      "source_path": "plugins/vo/vocalizer"
+    },
+    {
+      "id": "kamidi-mastering",
+      "name": "Kamidi Mastering Console Pro",
+      "category_id": "CAT-016",
+      "category": "Arts, Music & Literature",
+      "version": "1.0.0",
+      "description": "Professional 32-bit float audio mastering console with Parametric EQ, Multiband Compressor, Brickwall Limiter, Transient Shaper, Sub Bass 808 saturation, and Dual-Pass EBU R128 LUFS metering.",
+      "icon": "🎛️",
+      "shard": "index/ka/mi/kamidi_mastering.json",
+      "source_path": "plugins/ka/kamidi-mastering"
+    },
+    {
+      "id": "studio",
+      "name": "LUFS Meter Pro Studio",
+      "category_id": "CAT-016",
+      "category": "Arts, Music & Literature",
+      "version": "1.0.0",
+      "description": "Professional LUFS Meter, Audio Mastering, True Peak & Loudness Compliance Studio for Spotify, Apple, YouTube, and Broadcast.",
+      "icon": "🎛️",
+      "shard": "index/st/ud/studio.json",
+      "source_path": "plugins/st/studio"
+    }
+  ]
+}

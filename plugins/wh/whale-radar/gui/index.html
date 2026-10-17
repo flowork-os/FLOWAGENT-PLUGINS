@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whale Radar Pro - Financial Intelligence Terminal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="whale-radar-root">
+    
+    <!-- Professional Ticker Header -->
+    <div class="ticker-bar">
+      <div class="ticker-group" id="ticker-group">
+        <div class="ticker-item"><span class="ticker-sym">BTC/USD</span> <span class="ticker-val" id="tick-btc">--</span> <span class="ticker-delta-up" id="tick-btc-chg">--%</span></div>
+        <div class="ticker-item"><span class="ticker-sym">ETH/USD</span> <span class="ticker-val" id="tick-eth">--</span> <span class="ticker-delta-up" id="tick-eth-chg">--%</span></div>
+        <div class="ticker-item"><span class="ticker-sym">SOL/USD</span> <span class="ticker-val" id="tick-sol">--</span> <span class="ticker-delta-up" id="tick-sol-chg">--%</span></div>
+        <div class="ticker-item"><span class="ticker-sym">BNB/USD</span> <span class="ticker-val" id="tick-bnb">--</span> <span class="ticker-delta-up" id="tick-bnb-chg">--%</span></div>
+      </div>
+      <div class="ticker-system-status">
+        <span><span class="pulse-indicator"></span> FEED: <strong id="connection-status" style="color:#00ffaa;">BLOCKSCOUT + DEX LIVE</strong></span>
+        <span>ENGINE: <strong>v2.0 PRO</strong></span>
+      </div>
+    </div>
+
+    <!-- Command Header -->
+    <header class="command-header">
+      <div class="brand-title">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        <span class="brand-name">WHALE RADAR INTELLIGENCE</span>
+        <span class="brand-tagline">ZERO-MOCK ON-CHAIN TELEMETRY</span>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-fin" id="btn-refresh">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Sync Now
+        </button>
+        <button type="button" class="btn-fin btn-fin-primary" id="btn-force-scan">
+          ⚡ Force On-Chain Scan
+        </button>
+      </div>
+    </header>
+
+    <!-- Financial Key Metrics Grid -->
+    <section class="metrics-strip">
+      <div class="fin-metric-card">
+        <div class="fin-metric-label">Tracked Capital Volume</div>
+        <div class="fin-metric-value" id="metric-capital">--</div>
+        <div class="fin-metric-sub">Aggregated titan liquidity</div>
+      </div>
+      <div class="fin-metric-card">
+        <div class="fin-metric-label">Whale Surveillance Target</div>
+        <div class="fin-metric-value" id="metric-whales">--</div>
+        <div class="fin-metric-sub">Verified institutional & smart money</div>
+      </div>
+      <div class="fin-metric-card">
+        <div class="fin-metric-label">Smart Money Win Rate</div>
+        <div class="fin-metric-value" id="metric-winrate" style="color: #00ffaa;">--</div>
+        <div class="fin-metric-sub">Historical profitable trade ratio</div>
+      </div>
+      <div class="fin-metric-card">
+        <div class="fin-metric-label">Verified On-Chain Inflows</div>
+        <div class="fin-metric-value" id="metric-swaps">--</div>
+        <div class="fin-metric-sub" id="last-sync-label">Synced seconds ago</div>
+      </div>
+    </section>
+
+    <!-- Main Workbench Area -->
+    <main class="workbench-grid">
+      
+      <!-- Left Panel: Live Telemetry Matrix -->
+      <div class="fin-panel">
+        <div class="panel-top">
+          <div class="panel-title-area">
+            <span class="panel-heading">Live On-Chain Buys & DEX Inflows</span>
+            <span class="badge-live">LIVE TELEMETRY</span>
+          </div>
+          <span style="font-size: 10px; color: #94a3b8; font-family: ui-monospace, SFMono-Regular, monospace;">
+            FEED: DEXSCREENER + BLOCKSCOUT V2
+          </span>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="filter-group">
+            <button type="button" class="filter-pill active" data-filter="ALL">ALL CHAINS</button>
+            <button type="button" class="filter-pill" data-filter="ETH">ETHEREUM</button>
+            <button type="button" class="filter-pill" data-filter="SOL">SOLANA</button>
+            <button type="button" class="filter-pill" data-filter="BSC">BSC</button>
+          </div>
+          <div>
+            <input type="text" class="search-box" id="table-search" placeholder="Search token, whale, hash...">
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="fin-table">
+            <thead>
+              <tr>
+                <th>Execution Time</th>
+                <th>Target Whale Entity</th>
+                <th>Network & Venue</th>
+                <th>Token Bought</th>
+                <th>Entry Price ($USD)</th>
+                <th>Outlay / Position Size</th>
+                <th>Win Rate & Delta</th>
+                <th>Explorer Verification</th>
+              </tr>
+            </thead>
+            <tbody id="tx-tbody">
+              <tr>
+                <td colspan="8" style="text-align:center; padding: 30px; color:#64748b;">
+                  Connecting to on-chain nodes & resolving DEX quotes...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Panel: Whale Dossier & Add Target -->
+      <div class="fin-panel">
+        <div class="panel-top">
+          <span class="panel-heading">Surveillance Targets</span>
+          <span class="badge-live" id="badge-wallet-count">6 TITANS</span>
+        </div>
+
+        <div class="sidebar-content">
+          <!-- Add Whitelist Form -->
+          <div class="sidebar-card-box">
+            <div class="form-section-title">Add Target To Whitelist</div>
+
+            <!-- Quick Presets -->
+            <label style="font-size: 10px; color:#94a3b8; display:block; margin-bottom:4px;">Quick Titan Preset:</label>
+            <select id="select-preset-wallet" class="fin-select">
+              <option value="">-- Choose High-Net-Worth Target --</option>
+              <option value="vitalik">Vitalik Buterin (vitalik.eth - $650M)</option>
+              <option value="sun">Justin Sun Fund ($420M)</option>
+              <option value="wintermute">Wintermute Arbitrage Desk ($112M)</option>
+              <option value="arthur">Arthur Hayes Office ($48.5M)</option>
+              <option value="fickel">James Fickel Mega Staker ($87.5M)</option>
+              <option value="ansem">Ansem Pump High Roller ($18.4M)</option>
+              <option value="raydium">Raydium CLMM Top Liquidity Pool ($65.2M)</option>
+              <option value="binance">Binance Hot Reserve ($320M)</option>
+            </select>
+
+            <form id="add-wallet-form">
+              <input type="text" id="input-label" class="fin-input" placeholder="Entity Name (e.g. Alameda Liquidator)" required>
+              
+              <div style="display:flex; gap:6px;">
+                <select id="input-chain" class="fin-select" style="flex:1;">
+                  <option value="ETH">ETH (Ethereum)</option>
+                  <option value="SOL">SOL (Solana)</option>
+                  <option value="BSC">BSC (BNB Chain)</option>
+                  <option value="BASE">BASE</option>
+                </select>
+                <input type="number" id="input-winrate" class="fin-input" placeholder="Winrate %" value="85.0" step="0.1" style="flex:1;">
+              </div>
+
+              <input type="text" id="input-address" class="fin-input" placeholder="Wallet Address (0x... or Base58)" required>
+              <input type="number" id="input-balance" class="fin-input" placeholder="Estimated Balance USD" value="10000000">
+
+              <button type="submit" id="btn-add-wallet" class="btn-fin btn-fin-primary" style="width:100%; justify-content:center; margin-top:4px;">
+                + Enrol Under Radar
+              </button>
+            </form>
+          </div>
+
+          <!-- Active Whale Cards -->
+          <div class="form-section-title">Active Tracked Titans</div>
+          <div class="wallet-list" id="wallet-cards-container">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+  <script src="app.js?v=2.0.2"></script>
+</body>
+</html>

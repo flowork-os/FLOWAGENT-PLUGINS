@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Downloader & Suno Studio</title>
+  <style>
+    :root {
+      --bg: #0a0612;
+      --surface: #130c22;
+      --card: #1c1130;
+      --card-hover: #26163e;
+      --border: rgba(255, 92, 157, 0.18);
+      --border-focus: #ff3b88;
+      --text: #f5edf8;
+      --muted: #bda3c7;
+      --dim: #7f668c;
+      --bubble-pink: #ff3b88;
+      --bubble-hot-pink: #ff1e7a;
+      --bubble-cyan: #00e5ff;
+      --bubble-grape: #b042ff;
+      --bubble-mint: #00f5a0;
+      --bubble-danger: #ff4757;
+      --emerald: var(--bubble-mint);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at 50% -10%, #24143a 0%, #130c22 45%, #0a0612 85%);
+      color: var(--text);
+      font-family: var(--font);
+      padding: 24px 32px;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1.5px solid rgba(255, 92, 157, 0.18);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .header-icon {
+      width: 44px;
+      height: 44px;
+      background: radial-gradient(circle, #361c52 0%, #1c102e 100%);
+      border: 1px solid rgba(255, 92, 157, 0.25);
+      border-radius: 9999px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(255, 59, 136, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+    }
+    .header-text h1 { font-size: 17px; font-weight: 800; letter-spacing: -0.2px; color: var(--text); }
+    .header-text p { font-size: 11px; color: var(--muted); }
+    .header-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 14px;
+      background: rgba(0, 245, 160, 0.12);
+      color: #00f5a0;
+      border: 1px solid rgba(0, 245, 160, 0.3);
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 9999px; background: #00f5a0; box-shadow: 0 0 8px #00f5a0; }
+
+    .input-section {
+      background: radial-gradient(130% 120% at 50% 0%, #241538 0%, #120b1f 100%);
+      border: 1.5px solid rgba(255, 92, 157, 0.2);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    input[type="text"] {
+      flex: 1;
+      background: #160d26;
+      border: 1.5px solid rgba(255, 92, 157, 0.2);
+      border-radius: 9999px;
+      padding: 11px 20px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s ease;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+    input[type="text"]:focus {
+      border-color: var(--bubble-pink);
+      background: #1c1130;
+      box-shadow: 0 0 0 3px rgba(255, 59, 136, 0.25), 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .btn-action {
+      padding: 10px 22px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+    .btn-inspect {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid rgba(255, 92, 157, 0.22);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .btn-inspect:hover {
+      background: rgba(255, 59, 136, 0.18);
+      color: var(--bubble-pink);
+      border-color: var(--bubble-pink);
+      transform: scale(1.03);
+    }
+    .btn-download {
+      background: linear-gradient(90deg, #ff3b88 0%, #b042ff 100%);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(255, 59, 136, 0.38);
+    }
+    .btn-download:hover {
+      background: linear-gradient(90deg, #ff1e7a 0%, #9e2fe6 100%);
+      transform: scale(1.03);
+      box-shadow: 0 6px 22px rgba(255, 59, 136, 0.55);
+    }
+
+    /* Option Grid Matrix */
+    .options-matrix {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 92, 157, 0.12);
+    }
+    .option-group {
+      background: rgba(18, 11, 31, 0.6);
+      border: 1px solid rgba(255, 92, 157, 0.15);
+      border-radius: 14px;
+      padding: 12px 16px;
+      transition: all 0.25s ease;
+    }
+    .option-group.video-highlight {
+      border-color: rgba(0, 229, 255, 0.45);
+      background: rgba(0, 229, 255, 0.06);
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.12);
+    }
+    .option-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--bubble-pink);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .option-group.video-highlight .option-label {
+      color: var(--bubble-cyan);
+    }
+    .pill-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pill-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pill-btn:hover {
+      background: rgba(255, 59, 136, 0.15);
+      color: var(--text);
+      border-color: rgba(255, 59, 136, 0.35);
+    }
+    .pill-btn.active {
+      background: linear-gradient(90deg, #ff3b88 0%, #b042ff 100%);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 3px 12px rgba(255, 59, 136, 0.35);
+    }
+    .pill-btn.res-active {
+      background: linear-gradient(90deg, #00e5ff 0%, #b042ff 100%);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 3px 12px rgba(0, 229, 255, 0.35);
+    }
+    .res-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 9999px;
+      background: rgba(0, 245, 160, 0.18);
+      color: #00f5a0;
+      border: 1px solid rgba(0, 245, 160, 0.4);
+    }
+
+    /* Destination Folder Picker Card */
+    .folder-picker-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(18, 11, 31, 0.8);
+      border: 1.5px solid rgba(0, 229, 255, 0.25);
+      border-radius: 14px;
+      padding: 10px 16px;
+      margin-top: 14px;
+    }
+    .folder-icon { font-size: 18px; }
+    .folder-path-display {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--bubble-cyan);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn-browse {
+      background: rgba(0, 229, 255, 0.12);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      color: var(--bubble-cyan);
+      padding: 5px 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-browse:hover {
+      background: rgba(0, 229, 255, 0.25);
+      transform: translateY(-1px);
+    }
+
+    /* Preview Card */
+    .preview-card {
+      background: radial-gradient(130% 120% at 50% 0%, #241538 0%, #120b1f 100%);
+      border: 1.5px solid rgba(255, 92, 157, 0.2);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 20px;
+      display: none;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    }
+    .preview-card.visible { display: flex; gap: 16px; animation: fadeIn 0.25s ease forwards; }
+    .preview-thumb {
+      width: 140px;
+      height: 80px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #000;
+    }
+    .preview-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .preview-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .preview-meta { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+
+    /* Progress Box */
+    .progress-box {
+      background: #170e28;
+      border: 1.5px solid rgba(255, 92, 157, 0.22);
+      border-radius: 18px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    .progress-box.visible { display: block; animation: fadeIn 0.25s ease forwards; }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--muted);
+    }
+    .progress-bar-bg {
+      height: 8px;
+      background: #24143a;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff3b88 0%, #00e5ff 100%);
+      border-radius: 9999px;
+      transition: width 0.2s ease;
+      box-shadow: 0 0 12px rgba(255, 59, 136, 0.5);
+    }
+
+    /* Log Stream Terminal */
+    .log-stream {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: #10091c;
+      border: 1px solid rgba(255, 92, 157, 0.2);
+      border-radius: 16px;
+      padding: 14px 18px;
+      height: 140px;
+      overflow-y: auto;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+    .log-stream div { margin-bottom: 4px; }
+    .log-ts { color: var(--dim); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">📹</div>
+      <div class="header-text">
+        <h1>YouTube Extractor & Suno AI Studio</h1>
+        <p>Sovereign Speed Ramp (59s Anti-Copyright Bypass) • 4K/Full HD Video & Lossless Audio Core</p>
+      </div>
+    </div>
+    <div class="header-badge">
+      <span class="dot"></span>
+      <span id="engine-badge-text">DSP Engine Ready</span>
+    </div>
+  </div>
+
+  <div class="input-section">
+    <!-- URL Input & Action Buttons -->
+    <div class="input-row">
+      <input type="text" id="video-url" placeholder="Paste YouTube Video URL (e.g. https://www.youtube.com/watch?v=...)" value="">
+      <button class="btn-action btn-inspect" id="btn-inspect">Analyze Media</button>
+      <button class="btn-action btn-download" id="btn-download">Extract & Download</button>
+    </div>
+
+    <!-- Options Matrix -->
+    <div class="options-matrix">
+      <!-- 1. Mode Speed Selection -->
+      <div class="option-group">
+        <div class="option-label">
+          <span>⚡ Speed & Bypass Mode:</span>
+        </div>
+        <div class="pill-group" id="speed-mode-group">
+          <button class="pill-btn active" data-speed="suno59" title="Compress duration into exactly 59s with pitch-preserved DSP to bypass Suno AI copyright block!">
+            🚀 Suno 59s Speed-Up (Bypass Copyright)
+          </button>
+          <button class="pill-btn" data-speed="normal" title="Keep original 1.0x playback speed and duration.">
+            ⏱️ Normal (1.0x Original)
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Media Type & Format -->
+      <div class="option-group">
+        <div class="option-label">
+          <span>🎼 Output Type & Format:</span>
+        </div>
+        <div class="pill-group" id="format-group">
+          <button class="pill-btn active" data-type="audio" data-fmt="mp3">🎵 Audio MP3 (320kbps)</button>
+          <button class="pill-btn" data-type="audio" data-fmt="wav">🎼 Audio WAV (Lossless)</button>
+          <button class="pill-btn" data-type="audio" data-fmt="flac">🎚️ Audio FLAC</button>
+          <button class="pill-btn" data-type="video" data-fmt="mp4">🎬 Video MP4</button>
+        </div>
+      </div>
+
+      <!-- 3. Video Resolution Quality -->
+      <div class="option-group" id="res-option-group">
+        <div class="option-label">
+          <span>📺 Video Resolution Quality:</span>
+          <span id="detected-max-res" style="font-size:10px; color:var(--bubble-cyan); text-transform:none; margin-left:auto;">(Select Video MP4 to enable)</span>
+        </div>
+        <div class="pill-group" id="resolution-group">
+          <button class="pill-btn res-active" data-res="best" title="Download the absolute highest quality stream available from YouTube (up to 4K / 8K)">
+            🔥 Best Available (Max Quality)
+          </button>
+          <button class="pill-btn" data-res="2160" title="4K Ultra HD (3840x2160)">
+            ✨ 4K UHD (2160p)
+          </button>
+          <button class="pill-btn" data-res="1440" title="2K Quad HD (2560x1440)">
+            💎 2K QHD (1440p)
+          </button>
+          <button class="pill-btn" data-res="1080" title="Full HD (1920x1080 60fps)">
+            🎯 1080p Full HD
+          </button>
+          <button class="pill-btn" data-res="720" title="High Definition (1280x720)">
+            ⚡ 720p HD
+          </button>
+          <button class="pill-btn" data-res="480" title="Standard Definition (854x480)">
+            📱 480p SD
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Destination Directory Picker -->
+    <div class="folder-picker-bar">
+      <span class="folder-icon">📁</span>
+      <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Save To:</span>
+      <div class="folder-path-display" id="folder-path-display">Detecting download directory...</div>
+      <button class="btn-browse" id="btn-browse-folder">Choose Folder</button>
+    </div>
+  </div>
+
+  <!-- Preview Card -->
+  <div class="preview-card" id="preview-card">
+    <img src="" id="preview-thumb" class="preview-thumb" alt="Thumbnail">
+    <div class="preview-info">
+      <div class="preview-title" id="preview-title">Media Title</div>
+      <div class="preview-meta" id="preview-meta">Duration: 0s • Uploader: Unknown</div>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:4px;">
+        <span class="res-badge" id="badge-max-res" style="display:none; font-size:10px; padding:2px 8px; border-radius:9999px;"></span>
+        <div style="font-size:12px; color:var(--emerald); font-weight:600;" id="stream-status">Media analyzed and ready for processing.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Box -->
+  <div class="progress-box" id="prog-box">
+    <div class="progress-header">
+      <span id="prog-label">Processing Media Pipeline...</span>
+      <span id="prog-pct" style="color:var(--text); font-family:var(--mono);">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="prog-fill"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted); font-family:var(--mono);">
+      <span id="prog-status-text">Starting extraction...</span>
+      <span id="prog-eta">Live Process</span>
+    </div>
+  </div>
+
+  <!-- Log Terminal Stream -->
+  <div class="log-stream" id="log-stream">
+    <div><span class="log-ts">[INIT]</span> YouTube Downloader & Suno Studio Engine Initialized.</div>
+  </div>
+
+  <script>
+    let API_BASE = '';
+    let selectedSpeedMode = 'suno59';
+    let selectedMediaType = 'audio';
+    let selectedFormat = 'mp3';
+    let selectedResolution = 'best';
+    let selectedFolder = '';
+
+    // Dynamic Host Engine Resolver
+    async function resolveApiBase() {
+      try {
+        const statusRes = await fetch('/api/plugins/yt-downloader/status');
+        if (statusRes.ok) {
+          const info = await statusRes.json();
+          if (info.port) {
+            API_BASE = `http://127.0.0.1:${info.port}`;
+            return API_BASE;
+          }
+        }
+      } catch (_) {}
+
+      if (window.location.port && window.location.port !== '19890') {
+        API_BASE = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+        return API_BASE;
+      }
+      API_BASE = 'http://127.0.0.1:17895';
+      return API_BASE;
+    }
+
+    const logBox = document.getElementById('log-stream');
+    function appendLog(text) {
+      const ts = new Date().toTimeString().split(' ')[0];
+      logBox.innerHTML += `<div><span class="log-ts">[${ts}]</span> ${text}</div>`;
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    // Initialize Default Directory
+    async function initFolder() {
+      await resolveApiBase();
+      try {
+        const res = await fetch(`${API_BASE}/api/health`);
+        const data = await res.json();
+        appendLog(`Connected to engine (Port: ${data.port || 17895})`);
+      } catch (_) {}
+
+      selectedFolder = '/home/mrflow/Downloads';
+      document.getElementById('folder-path-display').textContent = selectedFolder;
+      document.getElementById('folder-path-display').title = selectedFolder;
+    }
+
+    // Folder Picker
+    document.getElementById('btn-browse-folder').addEventListener('click', async () => {
+      await resolveApiBase();
+      appendLog('Opening native directory selector...');
+      try {
+        const res = await fetch(`${API_BASE}/api/pick-folder`);
+        const data = await res.json();
+        if (data.success && data.folder) {
+          selectedFolder = data.folder;
+          document.getElementById('folder-path-display').textContent = selectedFolder;
+          document.getElementById('folder-path-display').title = selectedFolder;
+          appendLog(`Target download directory set to: ${selectedFolder}`);
+        }
+      } catch (err) {
+        appendLog(`Error picking folder: ${err.message}`);
+      }
+    });
+
+    // Speed Mode Pills
+    const speedPills = document.querySelectorAll('#speed-mode-group .pill-btn');
+    speedPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        speedPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        selectedSpeedMode = pill.dataset.speed;
+        appendLog(`Speed Mode switched to: ${pill.textContent.trim()}`);
+      });
+    });
+
+    // Format & Media Type Pills
+    const formatPills = document.querySelectorAll('#format-group .pill-btn');
+    const resGroup = document.getElementById('res-option-group');
+
+    formatPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        formatPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        selectedMediaType = pill.dataset.type;
+        selectedFormat = pill.dataset.fmt;
+
+        if (selectedMediaType === 'video') {
+          resGroup.classList.add('video-highlight');
+          document.getElementById('detected-max-res').textContent = `(Active: ${selectedResolution === 'best' ? 'Max Quality' : selectedResolution + 'p'})`;
+          appendLog(`Target format set to: Video MP4 (Resolution: ${selectedResolution === 'best' ? 'Max Quality' : selectedResolution + 'p'})`);
+        } else {
+          resGroup.classList.remove('video-highlight');
+          document.getElementById('detected-max-res').textContent = `(Select Video MP4 to enable)`;
+          appendLog(`Target format set to: ${pill.textContent.trim()}`);
+        }
+      });
+    });
+
+    // Resolution Quality Pills
+    const resPills = document.querySelectorAll('#resolution-group .pill-btn');
+    resPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        resPills.forEach(p => p.classList.remove('res-active'));
+        pill.classList.add('res-active');
+        selectedResolution = pill.dataset.res;
+
+        // Auto-switch to Video MP4 if resolution was clicked
+        if (selectedMediaType !== 'video') {
+          formatPills.forEach(p => {
+            if (p.dataset.type === 'video') {
+              formatPills.forEach(f => f.classList.remove('active'));
+              p.classList.add('active');
+              selectedMediaType = 'video';
+              selectedFormat = 'mp4';
+              resGroup.classList.add('video-highlight');
+            }
+          });
+        }
+
+        document.getElementById('detected-max-res').textContent = `(Active: ${selectedResolution === 'best' ? 'Max Quality' : selectedResolution + 'p'})`;
+        appendLog(`Video Resolution set to: ${pill.textContent.trim()}`);
+      });
+    });
+
+    // Inspect Media
+    const btnInspect = document.getElementById('btn-inspect');
+    btnInspect.addEventListener('click', async () => {
+      const url = document.getElementById('video-url').value.trim();
+      if (!url) {
+        alert('Please enter a valid YouTube URL!');
+        return;
+      }
+
+      await resolveApiBase();
+      appendLog(`Analyzing media stream & available resolutions for: ${url}`);
+      btnInspect.textContent = 'Analyzing...';
+      btnInspect.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/inspect?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        btnInspect.textContent = 'Analyze Media';
+        btnInspect.disabled = false;
+
+        if (data.success) {
+          const card = document.getElementById('preview-card');
+          const thumb = document.getElementById('preview-thumb');
+          const title = document.getElementById('preview-title');
+          const meta = document.getElementById('preview-meta');
+          const badgeMax = document.getElementById('badge-max-res');
+
+          title.textContent = data.title;
+          meta.textContent = `Duration: ${data.duration_string || data.duration + 's'} • Author: ${data.author || 'YouTube'}`;
+          
+          if (data.max_resolution && data.max_resolution !== 'Unknown') {
+            badgeMax.textContent = `📺 Detected Max: ${data.max_resolution}`;
+            badgeMax.style.display = 'inline-block';
+            document.getElementById('detected-max-res').textContent = `(YouTube Max: ${data.max_resolution})`;
+          } else {
+            badgeMax.style.display = 'none';
+          }
+
+          if (data.thumbnail) {
+            thumb.src = data.thumbnail;
+            thumb.style.display = 'block';
+          } else {
+            thumb.style.display = 'none';
+          }
+          card.classList.add('visible');
+
+          // Highlight available resolution pills
+          if (Array.isArray(data.resolutions) && data.resolutions.length > 0) {
+            resPills.forEach(pill => {
+              const r = pill.dataset.res;
+              if (r !== 'best') {
+                const heightVal = parseInt(r, 10);
+                const isAvail = data.resolutions.includes(heightVal);
+                let badge = pill.querySelector('.res-badge');
+                if (!badge) {
+                  badge = document.createElement('span');
+                  badge.className = 'res-badge';
+                  pill.appendChild(badge);
+                }
+                if (isAvail) {
+                  badge.textContent = 'AVAILABLE';
+                  badge.style.display = 'inline';
+                  pill.style.opacity = '1';
+                } else {
+                  badge.textContent = 'N/A';
+                  badge.style.display = 'inline';
+                  badge.style.color = '#7f668c';
+                  badge.style.borderColor = 'rgba(127, 102, 140, 0.4)';
+                  badge.style.background = 'rgba(127, 102, 140, 0.1)';
+                  pill.style.opacity = '0.6';
+                }
+              }
+            });
+            appendLog(`Available Resolutions on YouTube: ${data.resolutions.map(r => r + 'p').join(', ')}`);
+          }
+
+          appendLog(`Metadata extracted: "${data.title}" (${data.duration_string || data.duration + 's'})`);
+        } else {
+          appendLog(`Inspection error: ${data.error || 'Failed to analyze'}`);
+          alert('Could not inspect video: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        btnInspect.textContent = 'Analyze Media';
+        btnInspect.disabled = false;
+        appendLog(`Inspection failed: ${err.message}`);
+      }
+    });
+
+    // Download & Speed-up Pipeline
+    const btnDownload = document.getElementById('btn-download');
+    btnDownload.addEventListener('click', async () => {
+      const url = document.getElementById('video-url').value.trim();
+      if (!url) {
+        alert('Please enter a valid YouTube URL first!');
+        return;
+      }
+
+      await resolveApiBase();
+      const progBox = document.getElementById('prog-box');
+      const progFill = document.getElementById('prog-fill');
+      const progPct = document.getElementById('prog-pct');
+      const progStatus = document.getElementById('prog-status-text');
+
+      progBox.classList.add('visible');
+      progFill.style.width = '5%';
+      progPct.textContent = '5%';
+      progStatus.textContent = 'Connecting to extraction engine...';
+
+      btnDownload.disabled = true;
+      btnDownload.textContent = 'Processing...';
+
+      const resLabel = selectedMediaType === 'video' ? `Resolution: ${selectedResolution === 'best' ? 'Max Quality' : selectedResolution + 'p'}` : 'Audio Mode';
+      appendLog(`Initiating download pipeline: [Mode: ${selectedSpeedMode}] [Format: ${selectedFormat.toUpperCase()}] [${resLabel}]`);
+
+      const payload = {
+        url: url,
+        mediaType: selectedMediaType,
+        format: selectedFormat,
+        resolution: selectedResolution,
+        speedMode: selectedSpeedMode,
+        customDuration: 59,
+        targetFolder: selectedFolder || '/home/mrflow/Downloads'
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/api/download-stream`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.body) {
+          throw new Error('ReadableStream not supported by host environment');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop(); // keep remainder
+
+          for (const chunk of lines) {
+            if (!chunk.trim()) continue;
+            let event = 'message';
+            let dataStr = '';
+
+            const sublines = chunk.split('\n');
+            for (const line of sublines) {
+              if (line.startsWith('event:')) {
+                event = line.replace('event:', '').trim();
+              } else if (line.startsWith('data:')) {
+                dataStr = line.replace('data:', '').trim();
+              }
+            }
+
+            if (dataStr) {
+              try {
+                const dataObj = JSON.parse(dataStr);
+                if (event === 'log') {
+                  appendLog(dataObj.text);
+                } else if (event === 'progress') {
+                  progFill.style.width = `${dataObj.pct}%`;
+                  progPct.textContent = `${dataObj.pct}%`;
+                  progStatus.textContent = dataObj.status;
+                } else if (event === 'complete') {
+                  progFill.style.width = '100%';
+                  progPct.textContent = '100%';
+                  progStatus.textContent = 'Extraction & processing complete!';
+                  appendLog(`🎉 SUCCESS: File saved to ${dataObj.savedPath}`);
+                  alert(`✅ Download Complete!\n\nResolution: ${dataObj.resolution || 'High'}\nSaved to:\n${dataObj.savedPath}`);
+                } else if (event === 'error') {
+                  appendLog(`❌ ERROR: ${dataObj.message}`);
+                  alert(`Extraction Error: ${dataObj.message}`);
+                }
+              } catch (_) {}
+            }
+          }
+        }
+
+      } catch (err) {
+        appendLog(`Pipeline error: ${err.message}`);
+        alert('Process error: ' + err.message);
+      } finally {
+        btnDownload.disabled = false;
+        btnDownload.textContent = 'Extract & Download';
+      }
+    });
+
+    initFolder();
+  </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+{
+  "version": "2.0.0",
+  "updated_at": "2026-10-17T14:25:30.750Z",
+  "repo": "flowork-os/FLOWAGENT-PLUGINS",
+  "plugins": [
+    {
+      "id": "chess",
+      "name": "Sovereign Chess Arena",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
+      "category": "Sports Science & Athletics Performance",
+      "icon": "♟️",
+      "hash": "8b16a3add0db016d",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17820
+      },
+      "category_id": "CAT-020"
+    },
+    {
+      "id": "video-editor",
+      "name": "Diffusion Video Studio",
+      "version": "1.0.0",
+      "author": "Flowork OS & Diffusion Studio",
+      "description": "Sovereign WebCodecs & FFmpeg Video Editor for Flowork OS with Multi-Track Timeline and AI Editing Agent",
+      "category": "Media, Creative Writing & Journalism",
+      "icon": "🎬",
+      "hash": "9daee45995961354",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "server.js"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 5174
+      },
+      "category_id": "CAT-010"
+    },
+    {
+      "id": "x-cutter",
+      "name": "X-Cutter Video Studio",
+      "version": "1.0.0",
+      "description": "High-performance Non-Linear Video Editor & Lossless Studio — Visual Multi-Segment Timeline, Smart Keyframe Trimming, Speed Ramp, Frame-Accurate Scrubbing, and Lossless/Re-encode FFmpeg Export native to X-Flow.",
+      "author": "Mifi Lossless-Cut & Flowork OS Sovereign Integrator",
+      "category": "Media, Creative Writing & Journalism",
+      "icon": "🎬",
+      "hash": "a6c325b1605e0f6a",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "default_port": 17898,
+        "port_env": "FLOWORK_APP_PORT"
+      },
+      "category_id": "CAT-010"
+    },
+    {
+      "id": "x-studio",
+      "name": "X-Studio DAW",
+      "version": "1.0.1",
+      "author": "Awenk Audico / Flowork OS",
+      "description": "Professional Digital Audio Workstation (DAW) for editing, mixing, mastering audio, multi-track recording, and custom destination exporting.",
+      "category": "Arts, Music & Literature",
+      "icon": "🎛️",
+      "hash": "f3282cf989e86bf0d85789a9b2d53d73f848898198f7e1a0a2ae8d3ab44449a7",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "default_port": 17897,
+        "port_env": "FLOWORK_APP_PORT"
+      },
+      "category_id": "CAT-016"
+    },
+    {
+      "id": "yt-downloader",
+      "name": "YouTube Downloader & Suno Studio",
+      "version": "1.2.0",
+      "author": "Awenk Audico",
+      "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
+      "category": "Media, Creative Writing & Journalism",
+      "icon": "📹",
+      "hash": "9dd08b12db5ad295",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17895
+      },
+      "category_id": "CAT-010"
+    }
+  ]
+}

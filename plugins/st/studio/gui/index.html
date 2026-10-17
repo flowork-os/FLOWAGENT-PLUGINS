@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUFS Meter — Loudness Analyzer & Normalizer</title>
+  <link rel="stylesheet" href="tabler-icons.min.css">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body id="studio-root">
+
+  <!-- ===== TITLE BAR ===== -->
+  <div class="titlebar" data-tauri-drag-region>
+    <div class="titlebar-left" data-tauri-drag-region>
+      <div class="app-icon">L</div>
+      <span class="titlebar-title" data-tauri-drag-region>LUFS Meter — Professional Loudness Analyzer & Normalizer</span>
+    </div>
+    <div class="titlebar-controls">
+      <button class="win-btn" id="btn-minimize" aria-label="Minimize">
+        <i class="ti ti-minus"></i>
+      </button>
+      <button class="win-btn win-btn-close" id="btn-close" aria-label="Close">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== RIBBON TOOLBAR ===== -->
+  <div class="ribbon">
+    <div class="ribbon-left">
+      <button class="ribbon-btn ribbon-btn-primary" id="btn-open">
+        <i class="ti ti-folder-open"></i>
+        <span>Open file</span>
+      </button>
+      <button class="ribbon-btn" id="btn-analyze">
+        <i class="ti ti-download"></i>
+        <span>Export Normalized</span>
+      </button>
+    </div>
+    <div class="ribbon-right">
+      <button class="ribbon-btn" id="btn-export">
+        <i class="ti ti-file-export"></i>
+        <span>Data Report</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="main-layout">
+
+    <!-- ── LEFT PANEL ── -->
+    <aside class="panel-left">
+      <div class="panel-section" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+        <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <i class="ti ti-files"></i>
+            <span>Files</span>
+            <span id="file-count" style="margin-left: 6px; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 10px; font-size: 11px; font-weight: 600;">0</span>
+          </div>
+          <button id="btn-clear-files" style="background: none; border: none; color: var(--w-muted); cursor: pointer; padding: 2px; border-radius: 4px; display: flex; align-items: center; transition: all 0.2s;">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>
+        <div class="file-list" id="file-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+          <!-- file rows inserted here -->
+        </div>
+        <div class="drop-zone" id="drop-zone" style="margin-top: 8px;">
+          <i class="ti ti-upload"></i>
+          <span>Drop audio/video here</span>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-header">
+          <i class="ti ti-target"></i>
+          <span>Target LUFS</span>
+        </div>
+        <div class="slider-group">
+          <input type="range" id="tSlider" class="target-slider" min="-23" max="-5" step="0.5" value="-14" />
+          <div class="slider-labels">
+            <span>-23</span>
+            <span class="slider-val" id="tNum">-14.0</span>
+            <span>-5</span>
+          </div>
+        </div>
+        <div class="preset-chips">
+          <button class="chip chip-active" data-target="-14">Spotify -14</button>
+          <button class="chip" data-target="-16">Apple -16</button>
+          <button class="chip" data-target="-23">EBU -23</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-header">
+          <i class="ti ti-gauge"></i>
+          <span>Metering Mode</span>
+        </div>
+        <div class="mode-btns">
+          <button class="mode-btn mode-active" data-mode="integrated">Integrated</button>
+          <button class="mode-btn" data-mode="shortterm">Short-term</button>
+          <button class="mode-btn" data-mode="momentary">Momentary</button>
+        </div>
+      </div>
+
+      <button class="btn-analyze-right" id="btn-analyze-right" style="margin-top: auto; margin-bottom: 10px;">
+        <i class="ti ti-player-play-filled"></i>
+        Analyze
+      </button>
+    </aside>
+
+    <!-- ── CENTER PANEL ── -->
+    <main class="panel-center">
+
+      <!-- Big readout -->
+      <div class="readout-block">
+        <div class="readout-number" id="mainVal">--.-</div>
+        <div class="readout-unit">LUFS</div>
+        <div class="readout-badge" id="badge">
+          <span id="badgeText">NO FILE</span>
+        </div>
+      </div>
+
+      <!-- Stat tiles 2×2 -->
+      <div class="stat-grid">
+        <div class="stat-tile">
+          <div class="stat-label">Loudness Range</div>
+          <div class="stat-value stat-val-blue" id="stat-lra">--.- LU</div>
+          <div class="stat-desc">Dinamika antara bagian pelan dan keras.</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-label">True Peak</div>
+          <div class="stat-value stat-val-red" id="stat-tp">--.- dBTP</div>
+          <div class="stat-desc">Puncak maksimal sinyal untuk mencegah distorsi.</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-label">Short-term</div>
+          <div class="stat-value stat-val-yellow" id="stat-short">--.- LUFS</div>
+          <div class="stat-desc">Rata-rata loudness dalam jeda 3 detik.</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-label">Momentary</div>
+          <div class="stat-value stat-val-orange" id="stat-mom">--.- LUFS</div>
+          <div class="stat-desc">Respons loudness instan (400ms).</div>
+        </div>
+      </div>
+
+      <!-- Meter bars -->
+      <div class="meters-row">
+        <div class="meter-col">
+          <div class="meter-track" id="bL">
+            <div class="v-seg seg-green"></div>
+            <div class="v-seg seg-yellow"></div>
+            <div class="v-seg seg-orange"></div>
+            <div class="v-seg seg-red"></div>
+          </div>
+          <div class="meter-label">L</div>
+        </div>
+        <div class="meter-col">
+          <div class="meter-track" id="bR">
+            <div class="v-seg seg-green"></div>
+            <div class="v-seg seg-yellow"></div>
+            <div class="v-seg seg-orange"></div>
+            <div class="v-seg seg-red"></div>
+          </div>
+          <div class="meter-label">R</div>
+        </div>
+        <div class="meter-col">
+          <div class="meter-track" id="bInt">
+            <div class="v-seg seg-green"></div>
+            <div class="v-seg seg-yellow"></div>
+            <div class="v-seg seg-orange"></div>
+            <div class="v-seg seg-red"></div>
+          </div>
+          <div class="meter-label">Int</div>
+        </div>
+        <div class="meter-col">
+          <div class="meter-track" id="bST">
+            <div class="v-seg seg-green"></div>
+            <div class="v-seg seg-yellow"></div>
+            <div class="v-seg seg-orange"></div>
+            <div class="v-seg seg-red"></div>
+          </div>
+          <div class="meter-label">Short</div>
+        </div>
+        <div class="meter-col">
+          <div class="meter-track" id="bMom">
+            <div class="v-seg seg-green"></div>
+            <div class="v-seg seg-yellow"></div>
+            <div class="v-seg seg-orange"></div>
+            <div class="v-seg seg-red"></div>
+          </div>
+          <div class="meter-label">Mom</div>
+        </div>
+      </div>
+
+      <!-- Loudness history graph -->
+      <div class="graph-block">
+        <div class="graph-header">
+          <i class="ti ti-chart-line"></i>
+          <span>Loudness History</span>
+        </div>
+        <div class="graph-container">
+          <svg id="lufs-svg" viewBox="0 0 600 140" preserveAspectRatio="none">
+            <text x="4" y="14" class="svg-label">0</text>
+            <text x="4" y="54" class="svg-label">-14</text>
+            <text x="4" y="94" class="svg-label">-28</text>
+            <text x="4" y="134" class="svg-label">-42</text>
+            <line x1="24" y1="50" x2="600" y2="50" class="svg-target" id="svg-target-line" />
+            <text x="570" y="46" class="svg-target-label" id="svg-target-text">-14</text>
+          </svg>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ── RIGHT PANEL ── -->
+    <aside class="panel-right">
+
+      <div class="panel-section">
+        <div class="panel-header">
+          <i class="ti ti-wave-sine"></i>
+          <span>True Peak</span>
+        </div>
+        <div class="tp-meter">
+          <div class="tp-track">
+            <div class="tp-fill" id="tp-fill-bar"></div>
+          </div>
+          <div class="tp-val" id="tp-value">--.- dBTP</div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-header">
+          <i class="ti ti-device-speaker"></i>
+          <span>Platform Check</span>
+        </div>
+        <div class="platform-list" id="platform-list">
+          <div class="plat-item">
+            <div class="plat-dot neutral"></div>
+            <span class="plat-text">Spotify (-14)</span>
+          </div>
+          <div class="plat-item">
+            <div class="plat-dot neutral"></div>
+            <span class="plat-text">Apple Music (-16)</span>
+          </div>
+          <div class="plat-item">
+            <div class="plat-dot neutral"></div>
+            <span class="plat-text">YouTube (-14)</span>
+          </div>
+          <div class="plat-item">
+            <div class="plat-dot neutral"></div>
+            <span class="plat-text">Tidal (-14)</span>
+          </div>
+          <div class="plat-item">
+            <div class="plat-dot neutral"></div>
+            <span class="plat-text">EBU R128 (-23)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+        <div class="panel-header">
+          <i class="ti ti-list-check"></i>
+          <span>Analysis History</span>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty">No results yet</div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ===== STATUS BAR ===== -->
+  <div class="statusbar">
+    <div class="statusbar-left">
+      <div class="status-led" id="status-led"></div>
+      <span class="status-text" id="status-text">Ready</span>
+    </div>
+    <div class="statusbar-right">
+      <span class="status-info" id="status-info">No file loaded</span>
+    </div>
+  </div>
+
+  <!-- ===== CUSTOM ALERT MODAL ===== -->
+  <div class="modal-overlay" id="modal-alert">
+    <div class="modal-content" style="max-width: 350px;">
+      <div class="modal-header" style="border-bottom: none; justify-content: center; padding-top: 30px;">
+        <i class="ti ti-alert-triangle" style="font-size: 50px; color: var(--w-yellow); margin-right: 0;"></i>
+      </div>
+      <div class="modal-body" style="text-align: center; padding: 10px 30px 30px;">
+        <div id="modal-alert-message" style="font-size: 15px; color: var(--w-text); margin-bottom: 25px; line-height: 1.5;"></div>
+        <button class="ribbon-btn ribbon-btn-primary" id="btn-alert-ok" style="width: 100%; justify-content: center; border-radius: var(--radius-sm);">OK, Mengerti</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden native/HTML5 file picker for seamless file selection -->
+  <input type="file" id="html5-file-picker" multiple accept=".wav,.mp3,.aac,.flac,.ogg,.mp4,.mkv,.mov,.webm,.m4a,.opus,audio/*,video/*" style="display:none;" />
+
+
+  <script src="tauri-bridge.js"></script>
+  <script type="module" src="main.js?v=2"></script>
+</body>
+</html>

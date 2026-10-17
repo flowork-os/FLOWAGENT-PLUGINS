@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sovereign Chess Arena</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-icon">♟️</span>
+        <div class="brand-text">
+          <h1>Sovereign Chess Arena</h1>
+          <span class="brand-sub">Dual-Actor Arena &middot; Flowork OS</span>
+        </div>
+      </div>
+      <div class="header-badges">
+        <div class="badge status-badge" id="engine-status">
+          <span class="status-dot"></span>
+          <span id="engine-status-text">Connecting...</span>
+        </div>
+        <div class="badge eval-badge" id="eval-badge">
+          <span>Eval:</span> <strong id="eval-val">+0.0</strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+      <!-- Left: Board Arena -->
+      <main class="board-column">
+        <!-- Opponent Header (Top: Black / Agent) -->
+        <div class="player-bar opponent-bar">
+          <div class="player-info">
+            <span class="player-avatar ai-avatar">🤖</span>
+            <div class="player-meta">
+              <span class="player-name">Agent (Black)</span>
+              <span class="player-status" id="ai-status">Waiting for White...</span>
+            </div>
+          </div>
+          <div class="captured-tray" id="captured-white"></div>
+        </div>
+
+        <!-- Chessboard Container -->
+        <div class="board-wrapper">
+          <div id="chessboard" class="chessboard"></div>
+        </div>
+
+        <!-- Player Header (Bottom: White / User) -->
+        <div class="player-bar user-bar">
+          <div class="player-info">
+            <span class="player-avatar user-avatar" id="user-avatar-display">👤</span>
+            <div class="player-meta">
+              <span class="player-name" id="user-name-display">(White)</span>
+              <span class="player-status" id="user-status">Your Turn</span>
+            </div>
+          </div>
+          <div class="captured-tray" id="captured-black"></div>
+        </div>
+
+        <!-- Alert Notification Banner -->
+        <div class="alert-banner" id="alert-banner" style="display: none;"></div>
+      </main>
+
+      <!-- Right: Control & History Panel -->
+      <aside class="sidebar-column">
+        <!-- Match Stats Card -->
+        <div class="card match-card">
+          <div class="card-header">
+            <h3>Match State</h3>
+            <span class="turn-indicator" id="turn-indicator">WHITE TO MOVE</span>
+          </div>
+          <div class="match-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Move</span>
+              <span class="meta-value" id="move-count">#1</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Status</span>
+              <span class="meta-value" id="game-status">In Progress</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dual Sovereignty Chat Dispatch Settings -->
+        <div class="card dispatch-card">
+          <div class="card-header">
+            <h3>AI Chat Integration</h3>
+            <span class="badge live-tag">SOVEREIGN</span>
+          </div>
+          <label class="toggle-control">
+            <input type="checkbox" id="toggle-dispatch" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">Auto-Dispatch to Open Chat</span>
+          </label>
+          <p class="dispatch-hint">
+            Setiap kali Anda melangkah, notifikasi taktis FEN otomatis dikirim ke agent chat yang sedang terbuka.
+          </p>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="card actions-card">
+          <div class="button-grid">
+            <button class="btn btn-primary" id="btn-new-game" title="Reset and start new match">
+              <span>🔄</span> New Game
+            </button>
+            <button class="btn btn-secondary" id="btn-undo" title="Undo last move">
+              <span>↩️</span> Undo
+            </button>
+            <button class="btn btn-secondary" id="btn-flip" title="Flip board view">
+              <span>🔃</span> Flip Board
+            </button>
+            <button class="btn btn-accent" id="btn-ask-ai" title="Request Agent to make a move">
+              <span>⚡</span> Ask Agent
+            </button>
+          </div>
+        </div>
+
+        <!-- Move History -->
+        <div class="card history-card">
+          <div class="card-header">
+            <h3>Move History</h3>
+            <span class="history-count" id="history-count">0 moves</span>
+          </div>
+          <div class="history-table-container">
+            <table class="history-table" id="history-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>White</th>
+                  <th>Black</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <!-- Moves dynamically inserted -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- FEN Footer Box -->
+        <div class="card fen-card">
+          <div class="fen-header">
+            <span>FEN</span>
+            <button class="btn-copy-fen" id="btn-copy-fen" title="Copy FEN to clipboard">Copy</button>
+          </div>
+          <div class="fen-text" id="fen-text">rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

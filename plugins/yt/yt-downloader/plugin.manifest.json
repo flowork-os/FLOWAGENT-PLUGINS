@@ -1,0 +1,18 @@
+{
+  "id": "yt-downloader",
+  "name": "YouTube Downloader & Suno Studio",
+  "version": "1.2.0",
+  "author": "Awenk Audico",
+  "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
+  "category": "Media, Creative Writing & Journalism",
+  "icon": "📹",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 17895
+  },
+  "category_id": "CAT-010"
+}

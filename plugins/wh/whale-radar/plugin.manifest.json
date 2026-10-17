@@ -1,0 +1,33 @@
+{
+  "id": "whale-radar",
+  "name": "Whale Radar & Smart Money Tracker",
+  "version": "1.0.0",
+  "author": "Awenk Audico & Flowork OS",
+  "description": "Real-time on-chain crypto whale tracking workbench, DEX swap monitor, smart wallet PnL profiler, and token safety scanner for Solana & EVM chains.",
+  "category": "Finance & Algorithmic Trading",
+  "icon": "🐋",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "server.js"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 17830
+  },
+  "keywords": [
+    "whale tracker",
+    "smart money",
+    "crypto wallet",
+    "dex swap",
+    "on-chain analytics",
+    "token monitor",
+    "solana whale",
+    "evm tracker"
+  ],
+  "exclude_keywords": [
+    "hardware wallet",
+    "fiat banking",
+    "metamask recovery"
+  ],
+  "category_id": "CAT-006"
+}
