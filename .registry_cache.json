@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-17T14:25:30.750Z",
+  "updated_at": "2026-10-17T14:32:15.137Z",
   "repo": "flowork-os/FLOWAGENT-PLUGINS",
   "plugins": [
     {
@@ -11,7 +11,7 @@
       "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
       "category": "Sports Science & Athletics Performance",
       "icon": "♟️",
-      "hash": "8b16a3add0db016d",
+      "hash": "15d97fde6ffad37d",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -20,64 +20,9 @@
         "port_env": "FLOWORK_APP_PORT",
         "default_port": 17820
       },
+      "shard": "index/ch/es/chess.json",
+      "source_path": "plugins/ch/chess",
       "category_id": "CAT-020"
-    },
-    {
-      "id": "video-editor",
-      "name": "Diffusion Video Studio",
-      "version": "1.0.0",
-      "author": "Flowork OS & Diffusion Studio",
-      "description": "Sovereign WebCodecs & FFmpeg Video Editor for Flowork OS with Multi-Track Timeline and AI Editing Agent",
-      "category": "Media, Creative Writing & Journalism",
-      "icon": "🎬",
-      "hash": "9daee45995961354",
-      "entry": {
-        "gui": "gui/index.html",
-        "backend": "server.js"
-      },
-      "ipc": {
-        "port_env": "FLOWORK_APP_PORT",
-        "default_port": 5174
-      },
-      "category_id": "CAT-010"
-    },
-    {
-      "id": "x-cutter",
-      "name": "X-Cutter Video Studio",
-      "version": "1.0.0",
-      "description": "High-performance Non-Linear Video Editor & Lossless Studio — Visual Multi-Segment Timeline, Smart Keyframe Trimming, Speed Ramp, Frame-Accurate Scrubbing, and Lossless/Re-encode FFmpeg Export native to X-Flow.",
-      "author": "Mifi Lossless-Cut & Flowork OS Sovereign Integrator",
-      "category": "Media, Creative Writing & Journalism",
-      "icon": "🎬",
-      "hash": "a6c325b1605e0f6a",
-      "entry": {
-        "gui": "gui/index.html",
-        "backend": "engine/server.mjs"
-      },
-      "ipc": {
-        "default_port": 17898,
-        "port_env": "FLOWORK_APP_PORT"
-      },
-      "category_id": "CAT-010"
-    },
-    {
-      "id": "x-studio",
-      "name": "X-Studio DAW",
-      "version": "1.0.1",
-      "author": "Awenk Audico / Flowork OS",
-      "description": "Professional Digital Audio Workstation (DAW) for editing, mixing, mastering audio, multi-track recording, and custom destination exporting.",
-      "category": "Arts, Music & Literature",
-      "icon": "🎛️",
-      "hash": "f3282cf989e86bf0d85789a9b2d53d73f848898198f7e1a0a2ae8d3ab44449a7",
-      "entry": {
-        "gui": "gui/index.html",
-        "backend": "engine/server.mjs"
-      },
-      "ipc": {
-        "default_port": 17897,
-        "port_env": "FLOWORK_APP_PORT"
-      },
-      "category_id": "CAT-016"
     },
     {
       "id": "yt-downloader",
@@ -96,7 +41,93 @@
         "port_env": "FLOWORK_APP_PORT",
         "default_port": 17895
       },
+      "shard": "index/yt/do/yt_downloader.json",
+      "source_path": "plugins/yt/yt-downloader",
       "category_id": "CAT-010"
+    },
+    {
+      "id": "whale-radar",
+      "name": "Whale Radar & Smart Money Tracker",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Real-time on-chain crypto whale tracking workbench, DEX swap monitor, smart wallet PnL profiler, and token safety scanner for Solana & EVM chains.",
+      "category": "Finance & Algorithmic Trading",
+      "icon": "🐋",
+      "entry": {
+        "backend": "server.js",
+        "gui": "gui/index.html"
+      },
+      "ipc": {
+        "default_port": 17830,
+        "port_env": "FLOWORK_APP_PORT"
+      },
+      "shard": "index/wh/al/whale_radar.json",
+      "source_path": "plugins/wh/whale-radar",
+      "updated_at": "2026-10-11T22:01:06.616Z",
+      "category_id": "CAT-006"
+    },
+    {
+      "id": "vocalizer",
+      "name": "Vocalizer Pro",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Sovereign Real-Time Vocal Processing Suite reverse-engineered from VST3. Features dynamic pitch tracking & autotune, 4-voice polyphonic harmonizer, 6-band parametric EQ, noise gate, de-esser, compressor, saturation, chorus/modulation, ducking delay, and studio reverb with interactive SVG 706x532 UI.",
+      "category": "Arts, Music & Literature",
+      "icon": "🎙️",
+      "entry": {
+        "backend": "engine/server.mjs",
+        "gui": "gui/index.html"
+      },
+      "ipc": {
+        "default_port": 17840,
+        "port_env": "FLOWORK_APP_PORT"
+      },
+      "shard": "index/vo/ca/vocalizer.json",
+      "source_path": "plugins/vo/vocalizer",
+      "updated_at": "2026-10-16T02:20:59.326Z",
+      "category_id": "CAT-016"
+    },
+    {
+      "id": "kamidi-mastering",
+      "name": "Kamidi Mastering Console Pro",
+      "version": "1.0.0",
+      "author": "Azam",
+      "description": "Professional 32-bit float audio mastering console with Parametric EQ, Multiband Compressor, Brickwall Limiter, Transient Shaper, Sub Bass 808 saturation, and Dual-Pass EBU R128 LUFS metering.",
+      "category": "Arts, Music & Literature",
+      "icon": "🎛️",
+      "entry": {
+        "backend": "engine/server.mjs",
+        "gui": "gui/index.html"
+      },
+      "ipc": {
+        "default_port": 17860,
+        "port_env": "FLOWORK_APP_PORT"
+      },
+      "shard": "index/ka/mi/kamidi_mastering.json",
+      "source_path": "plugins/ka/kamidi-mastering",
+      "updated_at": "2026-10-17T05:16:05.592Z",
+      "category_id": "CAT-016"
+    },
+    {
+      "id": "studio",
+      "name": "LUFS Meter Pro Studio",
+      "version": "1.0.0",
+      "author": "Azam",
+      "description": "Professional LUFS Meter, Audio Mastering, True Peak & Loudness Compliance Studio for Spotify, Apple, YouTube, and Broadcast.",
+      "category": "Arts, Music & Literature",
+      "icon": "🎛️",
+      "entry": {
+        "backend": "engine/server.mjs",
+        "gui": "gui/index.html"
+      },
+      "ipc": {
+        "default_port": 18980,
+        "port_env": "FLOWORK_APP_PORT"
+      },
+      "shard": "index/st/ud/studio.json",
+      "source_path": "plugins/st/studio",
+      "updated_at": "2026-10-17T12:33:25.097Z",
+      "category_id": "CAT-016"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-17T14:25:30.750Z",
+  "updated_at": "2026-10-17T14:32:15.137Z",
   "repo": "flowork-os/FLOWAGENT-PLUGINS",
   "plugins": [
     {
@@ -11,7 +11,7 @@
       "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
       "category": "Sports Science & Athletics Performance",
       "icon": "♟️",
-      "hash": "8b16a3add0db016d",
+      "hash": "15d97fde6ffad37d",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"

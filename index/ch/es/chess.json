@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "author": "Awenk Audico & Flowork OS",
   "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
+  "category_id": "CAT-020",
   "category": "Sports Science & Athletics Performance",
   "icon": "♟️",
-  "hash": "8b16a3add0db016d",
+  "hash": "15d97fde6ffad37d",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"
@@ -16,6 +17,5 @@
     "default_port": 17820
   },
   "shard": "index/ch/es/chess.json",
-  "source_path": "plugins/ch/chess",
-  "category_id": "CAT-020"
+  "source_path": "plugins/ch/chess"
 }
