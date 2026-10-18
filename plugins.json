@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "updated_at": "2026-10-17T15:01:50.962Z",
-  "repo": "flowork-os/FLOWAGENT-PLUGINS",
+  "repo": "flowork-os/apps",
   "plugins": [
     {
       "id": "chess",
@@ -10,7 +10,7 @@
       "author": "Awenk Audico & Flowork OS",
       "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
       "category": "Sports Science & Athletics Performance",
-      "icon": "♟️",
+      "icon": "\u265f\ufe0f",
       "hash": "916ce37433f9bafe",
       "entry": {
         "gui": "gui/index.html",
@@ -29,9 +29,9 @@
       "name": "YouTube Downloader & Suno Studio",
       "version": "1.2.0",
       "author": "Awenk Audico",
-      "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
+      "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor \u2014 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
       "category": "Media, Creative Writing & Journalism",
-      "icon": "📹",
+      "icon": "\ud83d\udcf9",
       "hash": "bb2b41329f33caf0",
       "entry": {
         "gui": "gui/index.html",
@@ -52,7 +52,7 @@
       "author": "Awenk Audico & Flowork OS",
       "description": "Real-time on-chain crypto whale tracking workbench, DEX swap monitor, smart wallet PnL profiler, and token safety scanner for Solana & EVM chains.",
       "category": "Finance & Algorithmic Trading",
-      "icon": "🐋",
+      "icon": "\ud83d\udc0b",
       "entry": {
         "gui": "gui/index.html",
         "backend": "server.js"
@@ -74,7 +74,7 @@
       "author": "Awenk Audico & Flowork OS",
       "description": "Sovereign Real-Time Vocal Processing Suite reverse-engineered from VST3. Features dynamic pitch tracking & autotune, 4-voice polyphonic harmonizer, 6-band parametric EQ, noise gate, de-esser, compressor, saturation, chorus/modulation, ducking delay, and studio reverb with interactive SVG 706x532 UI.",
       "category": "Arts, Music & Literature",
-      "icon": "🎙️",
+      "icon": "\ud83c\udf99\ufe0f",
       "entry": {
         "backend": "engine/server.mjs",
         "gui": "gui/index.html"
@@ -96,7 +96,7 @@
       "author": "Azam",
       "description": "Professional 32-bit float audio mastering console with Parametric EQ, Multiband Compressor, Brickwall Limiter, Transient Shaper, Sub Bass 808 saturation, and Dual-Pass EBU R128 LUFS metering.",
       "category": "Arts, Music & Literature",
-      "icon": "🎛️",
+      "icon": "\ud83c\udf9b\ufe0f",
       "entry": {
         "backend": "engine/server.mjs",
         "gui": "gui/index.html"
@@ -118,7 +118,7 @@
       "author": "Azam",
       "description": "Professional LUFS Meter, Audio Mastering, True Peak & Loudness Compliance Studio for Spotify, Apple, YouTube, and Broadcast.",
       "category": "Arts, Music & Literature",
-      "icon": "🎛️",
+      "icon": "\ud83c\udf9b\ufe0f",
       "entry": {
         "backend": "engine/server.mjs",
         "gui": "gui/index.html"
