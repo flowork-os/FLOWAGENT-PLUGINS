@@ -1,0 +1,361 @@
+#wifi_analyzer-root {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background-color: #0b0f19;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  min-height: 100vh;
+}
+
+#wifi_analyzer-root * {
+  box-sizing: border-box;
+}
+
+.fl-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.fl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.fl-title-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fl-icon {
+  font-size: 2.2rem;
+}
+
+.fl-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.fl-subtitle {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 4px 0 0 0;
+}
+
+.fl-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.fl-btn.primary {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+.fl-btn.primary:hover {
+  background-color: #0369a1;
+}
+
+/* Hardware Alert Banner */
+.fl-hw-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1c1917;
+  border: 1px solid #78350f;
+  border-radius: 8px;
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  color: #fef3c7;
+  gap: 12px;
+}
+
+.fl-hw-icon {
+  font-size: 1.5rem;
+}
+
+.fl-hw-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fl-hw-sub {
+  font-size: 0.8rem;
+  color: #d97706;
+}
+
+.fl-btn.secondary-sm {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  background-color: #292524;
+  color: #fef3c7;
+  border: 1px solid #78350f;
+  border-radius: 4px;
+}
+
+.fl-btn.secondary-sm:hover {
+  background-color: #44403c;
+}
+
+/* Toolbar Card (Airgorah Filters) */
+.fl-toolbar-card {
+  background-color: #131c2e;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fl-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.fl-control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fl-grow {
+  flex-grow: 1;
+}
+
+.fl-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.fl-btn-group {
+  display: inline-flex;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.fl-tab-btn {
+  background-color: #1e293b;
+  color: #94a3b8;
+  border: none;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fl-tab-btn:hover {
+  background-color: #334155;
+  color: #f8fafc;
+}
+
+.fl-tab-btn.active {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+.fl-input, .fl-select {
+  background-color: #0b0f19;
+  border: 1px solid #1e293b;
+  color: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.825rem;
+  outline: none;
+}
+
+.fl-input:focus, .fl-select:focus {
+  border-color: #0284c7;
+}
+
+.fl-range {
+  accent-color: #0284c7;
+  cursor: pointer;
+  width: 100px;
+}
+
+/* Quick Metrics Strip */
+.fl-metrics-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #1e293b;
+}
+
+.fl-metric-pill {
+  background-color: #1e293b;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.775rem;
+  color: #94a3b8;
+}
+
+.fl-metric-pill strong {
+  color: #38bdf8;
+}
+
+.fl-metric-pill.best-ch strong {
+  color: #4ade80;
+}
+
+.fl-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fl-card {
+  background-color: #131c2e;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.fl-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.fl-card-header h2 {
+  font-size: 1.1rem;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.fl-legend-hint {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.fl-tag {
+  background-color: #1e293b;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.fl-spectrum-view {
+  width: 100%;
+  height: 280px;
+  background-color: #080c14;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+#fl-spectrum-chart {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.fl-table-wrapper {
+  overflow-x: auto;
+}
+
+.fl-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.fl-table th {
+  background-color: #1a2438;
+  color: #94a3b8;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid #1e293b;
+  cursor: pointer;
+  user-select: none;
+}
+
+.fl-table th:hover {
+  color: #f8fafc;
+  background-color: #222f49;
+}
+
+.fl-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #1e293b;
+  color: #e2e8f0;
+}
+
+.fl-table tr:hover td {
+  background-color: #182235;
+}
+
+.fl-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.fl-badge.wpa3 {
+  background-color: #065f46;
+  color: #6ee7b7;
+}
+
+.fl-badge.wpa2 {
+  background-color: #1e3a8a;
+  color: #93c5fd;
+}
+
+.fl-badge.warning {
+  background-color: #831843;
+  color: #fbcfe8;
+}
+
+.fl-signal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fl-progress-track {
+  flex-grow: 1;
+  height: 6px;
+  background-color: #1e293b;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fl-progress-fill {
+  height: 100%;
+  background-color: #0284c7;
+  border-radius: 3px;
+}
+
+.fl-text-center {
+  text-align: center;
+  color: #64748b;
+}

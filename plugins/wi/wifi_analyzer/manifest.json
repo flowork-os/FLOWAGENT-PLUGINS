@@ -1,0 +1,41 @@
+{
+  "$schema": "https://floworkos.com/schemas/plugin.manifest.json",
+  "id": "wifi_analyzer",
+  "name": "Sovereign WiFi & Network Spectrum Analyzer",
+  "version": "1.0.0",
+  "author": "Flowork OS",
+  "description": "Interactive Canvas WiFi spectrum analyzer, security posture auditor, and network latency telemetry monitor.",
+  "category_id": "CAT-001",
+  "category": "Computer Science & IT Infrastructure",
+  "icon": "\ud83d\udce1",
+  "keywords": [
+    "wifi",
+    "wifi_analyzer",
+    "spectrum",
+    "network_scan",
+    "rssi",
+    "access_point",
+    "wireless_security",
+    "ssid"
+  ],
+  "exclude_keywords": [
+    "bluetooth",
+    "zigbee",
+    "cellular"
+  ],
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "skill": "SKILL.md",
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 17850
+  },
+  "permissions": {
+    "network": true,
+    "filesystem_read": [
+      "."
+    ]
+  }
+}

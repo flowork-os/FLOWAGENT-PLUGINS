@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sovereign WiFi & Spectrum Analyzer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="wifi_analyzer-root">
+  <div class="fl-container">
+    <header class="fl-header">
+      <div class="fl-title-box">
+        <span class="fl-icon">📡</span>
+        <div>
+          <h1>WiFi & Spectrum Analyzer</h1>
+          <p class="fl-subtitle">Passive Multi-Band Channel Mapping, Hardware Telemetry & Security Posture</p>
+        </div>
+      </div>
+      <div class="fl-actions">
+        <button id="fl-btn-scan" class="fl-btn primary">Scan Channels</button>
+      </div>
+    </header>
+
+    <!-- Hardware Alert Banner (When no physical WiFi card present) -->
+    <div id="fl-hw-alert" class="fl-hw-alert" style="display: none;">
+      <span class="fl-hw-icon">⚠️</span>
+      <div class="fl-hw-content">
+        <strong>Hardware Notice:</strong> <span id="fl-hw-msg">No active Wi-Fi adapter detected on this host.</span>
+        <span class="fl-hw-sub">Please connect a USB Wi-Fi dongle or PCIe wireless card (wlan0 / wlp) to capture live 802.11 RF packets.</span>
+      </div>
+    </div>
+
+    <!-- Spectrum & Channel Control Toolbar (Airgorah Spec) -->
+    <section class="fl-toolbar-card">
+      <div class="fl-toolbar-row">
+        <!-- Frequency Band Switcher -->
+        <div class="fl-control-group">
+          <label class="fl-label">Band:</label>
+          <div class="fl-btn-group">
+            <button id="fl-band-24" class="fl-tab-btn active" data-band="2.4">2.4 GHz</button>
+            <button id="fl-band-5" class="fl-tab-btn" data-band="5">5 GHz</button>
+            <button id="fl-band-all" class="fl-tab-btn" data-band="all">All Bands</button>
+          </div>
+        </div>
+
+        <!-- Filter by SSID Search -->
+        <div class="fl-control-group fl-grow">
+          <label class="fl-label" for="fl-filter-ssid">Search SSID / MAC:</label>
+          <input type="text" id="fl-filter-ssid" class="fl-input" placeholder="Filter by network name or BSSID...">
+        </div>
+
+        <!-- Filter by Security Protocol -->
+        <div class="fl-control-group">
+          <label class="fl-label" for="fl-filter-sec">Security:</label>
+          <select id="fl-filter-sec" class="fl-select">
+            <option value="all">All Protocols</option>
+            <option value="wpa3">WPA3</option>
+            <option value="wpa2">WPA2</option>
+            <option value="open">Open / WEP</option>
+          </select>
+        </div>
+
+        <!-- Minimum RSSI Signal Filter -->
+        <div class="fl-control-group">
+          <label class="fl-label" for="fl-filter-signal">Min Signal: <span id="fl-signal-val">0%</span></label>
+          <input type="range" id="fl-filter-signal" class="fl-range" min="0" max="90" step="5" value="0">
+        </div>
+      </div>
+
+      <!-- Quick Metrics Counter (Airgorah Spec) -->
+      <div class="fl-metrics-strip">
+        <div class="fl-metric-pill">Total APs: <strong id="fl-stat-total">0</strong></div>
+        <div class="fl-metric-pill">2.4 GHz: <strong id="fl-stat-24">0</strong></div>
+        <div class="fl-metric-pill">5 GHz: <strong id="fl-stat-5">0</strong></div>
+        <div class="fl-metric-pill best-ch">Recommended Ch: <strong id="fl-stat-best">Ch 1 / 6 / 11</strong></div>
+      </div>
+    </section>
+
+    <main class="fl-grid">
+      <!-- Spectrum Viewport -->
+      <section class="fl-card fl-spectrum-card">
+        <div class="fl-card-header">
+          <h2 id="fl-spectrum-title">Spectrum Distribution (2.4 GHz)</h2>
+          <span class="fl-legend-hint">Bell Curve Spread: Standard 20/40MHz Channel Spacing</span>
+        </div>
+        <div id="spectrum-canvas-container" class="fl-spectrum-view">
+          <canvas id="fl-spectrum-chart"></canvas>
+        </div>
+      </section>
+
+      <!-- Network Target Table -->
+      <section class="fl-card fl-networks-card">
+        <div class="fl-card-header">
+          <h2>Detected Access Points & Telemetry</h2>
+          <span id="fl-filter-count" class="fl-tag">Showing 0 APs</span>
+        </div>
+        <div class="fl-table-wrapper">
+          <table class="fl-table">
+            <thead>
+              <tr>
+                <th data-sort="ssid">SSID ↕</th>
+                <th data-sort="bssid">BSSID / MAC ↕</th>
+                <th data-sort="channel">Channel ↕</th>
+                <th data-sort="freq">Band / Freq ↕</th>
+                <th data-sort="signal">Signal (RSSI) ↕</th>
+                <th data-sort="security">Security ↕</th>
+              </tr>
+            </thead>
+            <tbody id="fl-networks-body">
+              <tr>
+                <td colspan="6" class="fl-text-center">Loading network telemetry...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
