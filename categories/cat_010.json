@@ -1,7 +1,7 @@
 {
   "category_id": "CAT-010",
   "category": "Media, Creative Writing & Journalism",
-  "total_items": 1,
+  "total_items": 2,
   "items": [
     {
       "id": "yt-downloader",
@@ -14,6 +14,18 @@
       "shard": "index/yt/do/yt_downloader.json",
       "source_path": "plugins/yt/yt-downloader",
       "hash": "bb2b41329f33caf0"
+    },
+    {
+      "id": "flow-studio",
+      "name": "Flow Studio",
+      "category_id": "CAT-010",
+      "category": "Media, Creative Writing & Journalism",
+      "version": "1.3.0",
+      "description": "Sovereign NLE video editor & timeline studio for Flowork OS Canvas. Multi-track timeline, canvas inspector, color grading, keyframe support, and FFmpeg export engine.",
+      "icon": "🎬",
+      "shard": "index/fl/ow/flow_studio.json",
+      "source_path": "plugins/fl/flow-studio",
+      "hash": "98f4d4d8af842382"
     }
   ]
 }

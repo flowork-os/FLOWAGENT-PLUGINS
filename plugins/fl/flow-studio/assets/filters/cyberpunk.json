@@ -1,0 +1,7 @@
+{
+  "id": "cyberpunk",
+  "name": "Cyberpunk Neon",
+  "description": "Deep violet & high saturation",
+  "type": "filter",
+  "filter": "hue-rotate(280deg) saturate(1.8)"
+}

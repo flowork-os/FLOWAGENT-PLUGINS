@@ -1,0 +1,29 @@
+{
+  "id": "midi-extractor",
+  "name": "Audio-to-MIDI Neural Studio",
+  "version": "1.0.0",
+  "author": "Awenk Audico & Flowork OS",
+  "description": "Sovereign high-fidelity neural polyphonic audio-to-MIDI transcription studio powered by Spotify Basic Pitch ONNX engine. Extract pitch bends, notes, and velocity from any audio format with interactive Canvas Piano Roll visualizer.",
+  "category": "Arts, Music & Literature",
+  "category_id": "CAT-016",
+  "icon": "🎹",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 17870
+  },
+  "keywords": [
+    "audio_to_midi",
+    "midi_extractor",
+    "basic_pitch",
+    "pitch_detection",
+    "neural_transcription",
+    "piano_roll",
+    "music_transcription",
+    "polyphonic_transcription"
+  ],
+  "exclude_keywords": []
+}

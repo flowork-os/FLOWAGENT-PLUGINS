@@ -1,0 +1,7 @@
+{
+  "id": "vignette",
+  "name": "Cinematic Vignette",
+  "description": "Dark edges for dramatic film focus",
+  "type": "effect",
+  "filter": "contrast(1.2)"
+}

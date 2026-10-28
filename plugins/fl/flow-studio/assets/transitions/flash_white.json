@@ -1,0 +1,8 @@
+{
+  "id": "flash_white",
+  "name": "White Flash",
+  "description": "High-energy white flash wipe",
+  "type": "transition",
+  "duration": 0.4,
+  "transitionType": "flash_white"
+}

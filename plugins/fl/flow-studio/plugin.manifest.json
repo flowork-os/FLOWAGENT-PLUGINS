@@ -1,0 +1,36 @@
+{
+  "id": "flow-studio",
+  "name": "Flow Studio",
+  "version": "1.3.0",
+  "author": "Awenk Audico & Flowork OS",
+  "description": "Sovereign NLE video editor & timeline studio for Flowork OS Canvas. Multi-track timeline, canvas inspector, color grading, keyframe support, and FFmpeg export engine.",
+  "category": "Media, Creative Writing & Journalism",
+  "category_id": "CAT-010",
+  "icon": "🎬",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "server.js"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 18012
+  },
+  "keywords": [
+    "flow_studio",
+    "video_editor",
+    "nle",
+    "timeline",
+    "ffmpeg",
+    "multitrack",
+    "canvas_studio"
+  ],
+  "exclude_keywords": [],
+  "homepage": "https://floworkos.com",
+  "capabilities": [
+    "canvas_fullscreen",
+    "media_playback",
+    "video_export",
+    "audio_vu_metering",
+    "timeline_sequencing"
+  ]
+}

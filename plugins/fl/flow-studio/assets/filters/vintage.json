@@ -1,0 +1,7 @@
+{
+  "id": "vintage",
+  "name": "Vintage 70s",
+  "description": "Warm nostalgic film sepia",
+  "type": "filter",
+  "filter": "sepia(40%) contrast(1.1) brightness(1.05)"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "glow",
+  "name": "Cyber Glow",
+  "description": "Neon cyan bloom and ambient glow",
+  "type": "effect",
+  "filter": "drop-shadow(0 0 12px #06b6d4) brightness(1.15)"
+}

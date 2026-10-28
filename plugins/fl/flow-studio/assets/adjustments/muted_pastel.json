@@ -1,0 +1,9 @@
+{
+  "id": "muted_pastel",
+  "name": "Muted Pastel",
+  "description": "Soft modern matte tones",
+  "type": "adjustment",
+  "brightness": 1.1,
+  "contrast": 0.9,
+  "saturation": 0.75
+}

@@ -1,0 +1,10 @@
+{
+  "id": "lower_third",
+  "name": "Sovereign Lower Third",
+  "description": "News / documentary lower name banner",
+  "type": "text",
+  "text": "Sovereign Orchestrator\nLead System Architect",
+  "fontSize": 24,
+  "fontWeight": "600",
+  "color": "#ffffff"
+}

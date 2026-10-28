@@ -1,0 +1,8 @@
+{
+  "id": "slide_left",
+  "name": "Slide Left",
+  "description": "Push next clip to the left",
+  "type": "transition",
+  "duration": 0.8,
+  "transitionType": "slide_left"
+}

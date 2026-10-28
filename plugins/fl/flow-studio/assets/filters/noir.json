@@ -1,0 +1,7 @@
+{
+  "id": "noir",
+  "name": "Classic Noir B&W",
+  "description": "High contrast monochromatic black & white",
+  "type": "filter",
+  "filter": "grayscale(100%) contrast(1.4)"
+}

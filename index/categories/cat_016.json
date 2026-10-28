@@ -1,7 +1,7 @@
 {
   "category_id": "CAT-016",
   "category": "Arts, Music & Literature",
-  "total_items": 3,
+  "total_items": 5,
   "items": [
     {
       "id": "vocalizer",
@@ -38,6 +38,30 @@
       "shard": "index/st/ud/studio.json",
       "source_path": "plugins/st/studio",
       "hash": "54f9716fa364735b"
+    },
+    {
+      "id": "stem-separator",
+      "name": "Vocal & Stem Demixer Studio",
+      "category_id": "CAT-016",
+      "category": "Arts, Music & Literature",
+      "version": "1.0.0",
+      "description": "Sovereign AI audio stem separation and vocal remover studio powered by Meta AI Demucs v4 (Hybrid Transformer HTDemucs). Extract isolated vocals (acapella), instrumental (karaoke), drums, bass, and multitrack stems with hardware GPU CUDA acceleration.",
+      "icon": "🎛️",
+      "shard": "index/st/em/stem_separator.json",
+      "source_path": "plugins/st/stem-separator",
+      "hash": "8239abad92bb9119"
+    },
+    {
+      "id": "midi-extractor",
+      "name": "Audio-to-MIDI Neural Studio",
+      "category_id": "CAT-016",
+      "category": "Arts, Music & Literature",
+      "version": "1.0.0",
+      "description": "Sovereign high-fidelity neural polyphonic audio-to-MIDI transcription studio powered by Spotify Basic Pitch ONNX engine. Extract pitch bends, notes, and velocity from any audio format with interactive Canvas Piano Roll visualizer.",
+      "icon": "🎹",
+      "shard": "index/mi/di/midi_extractor.json",
+      "source_path": "plugins/mi/midi-extractor",
+      "hash": "95cc1a42b7e0b35d"
     }
   ]
 }

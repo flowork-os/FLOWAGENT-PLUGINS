@@ -1,0 +1,8 @@
+{
+  "id": "zoom_in",
+  "name": "Zoom Punch",
+  "description": "Dynamic impact zoom",
+  "type": "transition",
+  "duration": 0.5,
+  "transitionType": "zoom_in"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "title_modern",
+  "name": "Bold Modern Title",
+  "description": "Inter Heavy uppercase heading",
+  "type": "text",
+  "text": "FLOWORK OS",
+  "fontSize": 48,
+  "fontWeight": "900",
+  "color": "#38bdf8"
+}

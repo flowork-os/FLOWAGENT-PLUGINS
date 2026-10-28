@@ -1,0 +1,10 @@
+{
+  "id": "callout_badge",
+  "name": "Highlight Callout",
+  "description": "Yellow high-contrast pop banner",
+  "type": "text",
+  "text": "FEATURE SPOTLIGHT",
+  "fontSize": 32,
+  "fontWeight": "800",
+  "color": "#facc15"
+}

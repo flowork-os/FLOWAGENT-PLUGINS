@@ -1,0 +1,7 @@
+{
+  "id": "bloom",
+  "name": "Dreamy Bloom",
+  "description": "Soft diffused romantic lighting",
+  "type": "effect",
+  "filter": "blur(1px) brightness(1.2) contrast(0.95)"
+}

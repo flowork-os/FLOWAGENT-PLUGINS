@@ -1,0 +1,7 @@
+{
+  "id": "rgb_split",
+  "name": "Glitch RGB Split",
+  "description": "Chromic dispersion glitch",
+  "type": "effect",
+  "filter": "hue-rotate(90deg) saturate(1.4)"
+}

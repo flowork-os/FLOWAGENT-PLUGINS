@@ -1,0 +1,10 @@
+{
+  "id": "subtitle_clean",
+  "name": "Clean Subtitles",
+  "description": "Minimalist centered caption font",
+  "type": "text",
+  "text": "Voice of Sovereign Autonomy",
+  "fontSize": 22,
+  "fontWeight": "500",
+  "color": "#ffffff"
+}

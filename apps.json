@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-20T22:26:54Z",
+  "updated_at": "2026-10-28T17:37:26Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -10,7 +10,7 @@
       "author": "Awenk Audico & Flowork OS",
       "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
       "category": "Sports Science & Athletics Performance",
-      "icon": "\u265f\ufe0f",
+      "icon": "♟️",
       "hash": "916ce37433f9bafe",
       "entry": {
         "gui": "gui/index.html",
@@ -29,9 +29,9 @@
       "name": "YouTube Downloader & Suno Studio",
       "version": "1.2.0",
       "author": "Awenk Audico",
-      "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor \u2014 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
+      "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
       "category": "Media, Creative Writing & Journalism",
-      "icon": "\ud83d\udcf9",
+      "icon": "📹",
       "hash": "bb2b41329f33caf0",
       "entry": {
         "gui": "gui/index.html",
@@ -52,7 +52,7 @@
       "author": "Awenk Audico & Flowork OS",
       "description": "Real-time on-chain crypto whale tracking workbench, DEX swap monitor, smart wallet PnL profiler, and token safety scanner for Solana & EVM chains.",
       "category": "Finance & Algorithmic Trading",
-      "icon": "\ud83d\udc0b",
+      "icon": "🐋",
       "entry": {
         "gui": "gui/index.html",
         "backend": "server.js"
@@ -74,7 +74,7 @@
       "author": "Awenk Audico & Flowork OS",
       "description": "Sovereign Real-Time Vocal Processing Suite reverse-engineered from VST3. Features dynamic pitch tracking & autotune, 4-voice polyphonic harmonizer, 6-band parametric EQ, noise gate, de-esser, compressor, saturation, chorus/modulation, ducking delay, and studio reverb with interactive SVG 706x532 UI.",
       "category": "Arts, Music & Literature",
-      "icon": "\ud83c\udf99\ufe0f",
+      "icon": "🎙️",
       "entry": {
         "backend": "engine/server.mjs",
         "gui": "gui/index.html"
@@ -96,7 +96,7 @@
       "author": "Azam",
       "description": "Professional 32-bit float audio mastering console with Parametric EQ, Multiband Compressor, Brickwall Limiter, Transient Shaper, Sub Bass 808 saturation, and Dual-Pass EBU R128 LUFS metering.",
       "category": "Arts, Music & Literature",
-      "icon": "\ud83c\udf9b\ufe0f",
+      "icon": "🎛️",
       "entry": {
         "backend": "engine/server.mjs",
         "gui": "gui/index.html"
@@ -118,7 +118,7 @@
       "author": "Azam",
       "description": "Professional LUFS Meter, Audio Mastering, True Peak & Loudness Compliance Studio for Spotify, Apple, YouTube, and Broadcast.",
       "category": "Arts, Music & Literature",
-      "icon": "\ud83c\udf9b\ufe0f",
+      "icon": "🎛️",
       "entry": {
         "backend": "engine/server.mjs",
         "gui": "gui/index.html"
@@ -140,7 +140,7 @@
       "author": "Flowork OS",
       "description": "Interactive Canvas WiFi spectrum analyzer, security posture auditor, and network latency telemetry monitor.",
       "category": "Computer Science & IT Infrastructure",
-      "icon": "\ud83d\udce1",
+      "icon": "📡",
       "hash": "08b431cd935e8303",
       "entry": {
         "gui": "gui/index.html",
@@ -153,6 +153,69 @@
       "shard": "index/wi/fi/wifi_analyzer.json",
       "source_path": "plugins/wi/wifi_analyzer",
       "category_id": "CAT-001"
+    },
+    {
+      "id": "stem-separator",
+      "name": "Vocal & Stem Demixer Studio",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Sovereign AI audio stem separation and vocal remover studio powered by Meta AI Demucs v4 (Hybrid Transformer HTDemucs). Extract isolated vocals (acapella), instrumental (karaoke), drums, bass, and multitrack stems with hardware GPU CUDA acceleration.",
+      "category": "Arts, Music & Literature",
+      "icon": "🎛️",
+      "hash": "8239abad92bb9119",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17880
+      },
+      "shard": "index/st/em/stem_separator.json",
+      "source_path": "plugins/st/stem-separator",
+      "category_id": "CAT-016"
+    },
+    {
+      "id": "midi-extractor",
+      "name": "Audio-to-MIDI Neural Studio",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Sovereign high-fidelity neural polyphonic audio-to-MIDI transcription studio powered by Spotify Basic Pitch ONNX engine. Extract pitch bends, notes, and velocity from any audio format with interactive Canvas Piano Roll visualizer.",
+      "category": "Arts, Music & Literature",
+      "icon": "🎹",
+      "hash": "95cc1a42b7e0b35d",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17870
+      },
+      "shard": "index/mi/di/midi_extractor.json",
+      "source_path": "plugins/mi/midi-extractor",
+      "category_id": "CAT-016"
+    },
+    {
+      "id": "flow-studio",
+      "name": "Flow Studio",
+      "version": "1.3.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Sovereign NLE video editor & timeline studio for Flowork OS Canvas. Multi-track timeline, canvas inspector, color grading, keyframe support, and FFmpeg export engine.",
+      "category": "Media, Creative Writing & Journalism",
+      "icon": "🎬",
+      "hash": "98f4d4d8af842382",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "server.js"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 18012
+      },
+      "shard": "index/fl/ow/flow_studio.json",
+      "source_path": "plugins/fl/flow-studio",
+      "category_id": "CAT-010"
     }
   ]
 }

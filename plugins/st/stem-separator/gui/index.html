@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sovereign Vocal & Stem Demixer Studio</title>
+  <style>
+    :root {
+      --bg-base: #08090d;
+      --bg-surface: #0f1118;
+      --bg-elevated: #161822;
+      --bg-card: #1c1f2e;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(139, 92, 246, 0.5);
+      --accent-primary: #8b5cf6;
+      --accent-primary-hover: #7c3aed;
+      --accent-secondary: #06b6d4;
+      --accent-success: #10b981;
+      --accent-warning: #f59e0b;
+      --accent-danger: #ef4444;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Consolas, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      overflow-x: hidden;
+      overflow-y: auto;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #stem-separator-root {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      min-height: 100vh;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    /* Studio Header */
+    .studio-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      font-size: 26px;
+      filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-success);
+      box-shadow: 0 0 8px var(--accent-success);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Workspace Layout */
+    .studio-workspace {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Left Control Sidebar */
+    .control-sidebar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .panel-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    /* Dropzone */
+    .drop-zone {
+      border: 2px dashed rgba(139, 92, 246, 0.3);
+      border-radius: 10px;
+      padding: 22px 14px;
+      text-align: center;
+      background: rgba(139, 92, 246, 0.03);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent-primary);
+      background: rgba(139, 92, 246, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .drop-icon {
+      font-size: 32px;
+      color: var(--accent-primary);
+    }
+
+    .drop-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .drop-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn-group-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-elevated);
+      color: var(--text-main);
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--bg-card);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, #6366f1 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #9061f9 0%, #4f46e5 100%);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent-secondary);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(6, 182, 212, 0.2);
+    }
+
+    /* Active File Box */
+    .active-file-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .file-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-secondary);
+      word-break: break-all;
+    }
+
+    .file-meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    audio {
+      width: 100%;
+      height: 32px;
+      outline: none;
+      filter: invert(0.9) hue-rotate(180deg);
+      border-radius: 6px;
+    }
+
+    /* Separation Mode Cards */
+    .mode-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mode-card {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .mode-card:hover, .mode-card.active {
+      border-color: var(--accent-primary);
+      background: rgba(139, 92, 246, 0.12);
+    }
+
+    .mode-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mode-card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Format Options */
+    .format-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .format-chip {
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .format-chip.active, .format-chip:hover {
+      border-color: var(--accent-primary);
+      background: rgba(139, 92, 246, 0.15);
+      color: #fff;
+    }
+
+    /* Right Main Mixer Stage */
+    .stage-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Stage Toolbar */
+    .stage-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stat-pill {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: var(--bg-card);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .stat-pill strong {
+      color: var(--text-main);
+    }
+
+    /* Mixer Container */
+    .mixer-viewport {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Stem Track Channel Strip */
+    .stem-strip {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .stem-strip:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .stem-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    .stem-icon {
+      font-size: 22px;
+    }
+
+    .stem-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      text-transform: capitalize;
+    }
+
+    .stem-meta {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .stem-player-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stem-player-box audio {
+      flex: 1;
+      height: 34px;
+    }
+
+    .stem-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chip-btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .chip-btn.solo.active {
+      background: #f59e0b;
+      color: #000;
+      border-color: #f59e0b;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+    }
+
+    .chip-btn.mute.active {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    }
+
+    .chip-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* Empty State */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-dim);
+    }
+
+    .empty-state-icon {
+      font-size: 52px;
+      opacity: 0.25;
+    }
+
+    .empty-state-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .empty-state-desc {
+      font-size: 12px;
+      max-width: 360px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* Processing Overlay */
+    .processing-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(8, 9, 13, 0.88);
+      backdrop-filter: blur(6px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(139, 92, 246, 0.2);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .processing-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .processing-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      max-width: 420px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="stem-separator-root">
+    <!-- Header -->
+    <header class="studio-header">
+      <div class="brand-section">
+        <span class="brand-logo">🎛️</span>
+        <div>
+          <h1 class="brand-title">Vocal & Stem Demixer Studio</h1>
+          <p class="brand-subtitle">Powered by Meta AI Demucs v4 (Hybrid Transformer HTDemucs)</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="status-badge">
+          <div class="status-dot"></div>
+          <span id="engine-status-text">Demucs Engine Online</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Studio Workspace -->
+    <div class="studio-workspace">
+      <!-- Left Sidebar -->
+      <aside class="control-sidebar">
+        <!-- Audio Input -->
+        <div>
+          <div class="panel-section-title">1. Source Audio Track</div>
+          <div class="drop-zone" id="audio-dropzone">
+            <span class="drop-icon">🎼</span>
+            <div class="drop-text">Drag & Drop Music Track</div>
+            <div class="drop-hint">MP3, WAV, FLAC, OGG, M4A, AAC</div>
+            <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.flac,.ogg,.m4a,.aac" style="display: none;">
+          </div>
+        </div>
+
+        <div class="btn-group-row">
+          <button class="btn" id="browse-btn" style="flex: 1;">📂 Browse</button>
+          <button class="btn" id="native-pick-btn" style="flex: 1;">🖥️ OS Picker</button>
+        </div>
+
+        <!-- Loaded File Info -->
+        <div class="active-file-box" id="active-file-box">
+          <div class="file-name-row">
+            <span>🎵</span>
+            <span id="active-filename">track.mp3</span>
+          </div>
+          <div class="file-meta-row">
+            <span id="active-filesize">0 MB</span>
+            <span id="active-status">Ready</span>
+          </div>
+          <audio id="source-player" controls preload="metadata"></audio>
+        </div>
+
+        <!-- Separation Modes -->
+        <div>
+          <div class="panel-section-title">2. Separation Architecture</div>
+          <div class="mode-cards">
+            <div class="mode-card active" data-mode="two-stems-vocals">
+              <div class="mode-card-title">🎤 Vocal Remover (Karaoke)</div>
+              <div class="mode-card-desc">Separates into 2 stems: Clean Acapella Vocals & Instrumental Backing Track.</div>
+            </div>
+
+            <div class="mode-card" data-mode="four-stems">
+              <div class="mode-card-title">🥁 4 Stems (Standard Band)</div>
+              <div class="mode-card-desc">Separates into Vocals, Drums, Bassline, and Melodic Synths/Guitars.</div>
+            </div>
+
+            <div class="mode-card" data-mode="six-stems">
+              <div class="mode-card-title">🎹 6 Stems (Studio Multitrack)</div>
+              <div class="mode-card-desc">Detailed isolation: Vocals, Drums, Bass, Guitar, Piano, and Others.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Format -->
+        <div>
+          <div class="panel-section-title">3. Export Audio Format</div>
+          <div class="format-selector">
+            <div class="format-chip active" data-format="wav">WAV Lossless</div>
+            <div class="format-chip" data-format="mp3">MP3 320k</div>
+            <div class="format-chip" data-format="flac">FLAC HD</div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <button class="btn btn-primary" id="separate-btn" style="padding: 13px; margin-top: auto;" disabled>
+          ⚡ Separate Audio Stems
+        </button>
+      </aside>
+
+      <!-- Right Main Mixer Stage -->
+      <main class="stage-section">
+        <!-- Stage Toolbar -->
+        <div class="stage-toolbar">
+          <div class="toolbar-left">
+            <div class="btn-group-row" style="width: auto;">
+              <button class="btn btn-secondary" id="master-play-btn" disabled>▶ Play All</button>
+              <button class="btn" id="master-stop-btn" disabled>⏹ Stop</button>
+            </div>
+            <div class="stat-pill">Device: <strong id="stat-device">CUDA GPU</strong></div>
+            <div class="stat-pill">Time: <strong id="stat-time">0.0s</strong></div>
+          </div>
+
+          <div class="toolbar-right">
+            <a class="btn btn-primary" id="download-zip-btn" href="#" download="all_stems.zip" style="display: none;">
+              ⬇ Download All Stems (ZIP)
+            </a>
+          </div>
+        </div>
+
+        <!-- Mixer Viewport -->
+        <div class="mixer-viewport" id="mixer-container">
+          <!-- Empty State -->
+          <div class="empty-state" id="empty-state">
+            <div class="empty-state-icon">🎛️</div>
+            <div class="empty-state-title">No Stems Separated Yet</div>
+            <div class="empty-state-desc">Drop an audio track on the left, pick your target mode (Karaoke, 4 Stems, or 6 Stems), and click "Separate Audio Stems" to isolate studio tracks.</div>
+          </div>
+
+          <!-- Stems Strip Container -->
+          <div id="stems-list" style="display: flex; flex-direction: column; gap: 12px; width: 100%;"></div>
+        </div>
+
+        <!-- Processing Overlay -->
+        <div class="processing-overlay" id="processing-overlay">
+          <div class="spinner"></div>
+          <div class="processing-title">Running Demucs v4 Neural Demixing...</div>
+          <div class="processing-subtitle" id="processing-detail">Separating frequency spectrograms via Hybrid Transformer (CUDA GPU)...</div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      activeFilePath: null,
+      activeFileName: '',
+      selectedMode: 'two-stems-vocals',
+      selectedFormat: 'wav',
+      stems: {},
+      isMasterPlaying: false,
+      audioElements: []
+    };
+
+    // Dynamic Host Engine Resolver
+    let API_BASE = '';
+
+    function updateEngineBadge(port, device = '') {
+      const badge = document.getElementById('engine-status-text');
+      if (badge) {
+        badge.textContent = `Demucs Online (Port ${port}${device ? ' | ' + device : ''})`;
+      }
+    }
+
+    async function resolveApiBase(forceRefresh = false) {
+      if (API_BASE && !forceRefresh) return API_BASE;
+
+      // 1. If loaded directly from engine port (not supervisor 19890)
+      if (window.location.port && window.location.port !== '19890') {
+        try {
+          const testRes = await fetch(`${window.location.origin}/health`, { signal: AbortSignal.timeout(1000) });
+          if (testRes.ok) {
+            API_BASE = window.location.origin;
+            updateEngineBadge(window.location.port);
+            return API_BASE;
+          }
+        } catch (_) {}
+      }
+
+      // 2. Query Flowork OS supervisor for plugin dynamic port
+      const host = window.location.hostname || '127.0.0.1';
+      const endpoints = [
+        '/api/plugins/stem-separator/status',
+        `http://${host}:19890/api/plugins/stem-separator/status`,
+        'http://127.0.0.1:19890/api/plugins/stem-separator/status'
+      ];
+
+      for (const ep of endpoints) {
+        try {
+          const statusRes = await fetch(ep, { signal: AbortSignal.timeout(1500) });
+          if (statusRes.ok) {
+            const info = await statusRes.json();
+            if (info && info.port) {
+              API_BASE = `http://127.0.0.1:${info.port}`;
+              updateEngineBadge(info.port);
+              return API_BASE;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 3. Fallback to manifest default port
+      API_BASE = 'http://127.0.0.1:17880';
+      updateEngineBadge(17880);
+      return API_BASE;
+    }
+
+    async function apiFetch(endpoint, options = {}) {
+      let base = await resolveApiBase();
+      let url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+
+      let res;
+      try {
+        res = await fetch(url, options);
+      } catch (err) {
+        base = await resolveApiBase(true);
+        url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+        res = await fetch(url, options);
+      }
+
+      const text = await res.text();
+      if (!text) {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: Empty error response`);
+        return {};
+      }
+
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (err) {
+        throw new Error(`Invalid JSON response (HTTP ${res.status}): ${text.substring(0, 140)}`);
+      }
+
+      if (!res.ok) {
+        throw new Error(json.error || `HTTP ${res.status} Error`);
+      }
+
+      return json;
+    }
+
+    // Connect to engine on load
+    resolveApiBase().then(base => {
+      apiFetch('/health').then(h => {
+        if (h.port) updateEngineBadge(h.port);
+      }).catch(() => {});
+    });
+
+    // Elements
+    const dropzone = document.getElementById('audio-dropzone');
+    const fileInput = document.getElementById('file-input');
+    const browseBtn = document.getElementById('browse-btn');
+    const nativePickBtn = document.getElementById('native-pick-btn');
+    const activeFileBox = document.getElementById('active-file-box');
+    const activeFileNameEl = document.getElementById('active-filename');
+    const activeFileSizeEl = document.getElementById('active-filesize');
+    const sourcePlayer = document.getElementById('source-player');
+    const separateBtn = document.getElementById('separate-btn');
+    const processingOverlay = document.getElementById('processing-overlay');
+    const processingDetail = document.getElementById('processing-detail');
+    const emptyState = document.getElementById('empty-state');
+    const stemsList = document.getElementById('stems-list');
+    const downloadZipBtn = document.getElementById('download-zip-btn');
+    const masterPlayBtn = document.getElementById('master-play-btn');
+    const masterStopBtn = document.getElementById('master-stop-btn');
+    const statDevice = document.getElementById('stat-device');
+    const statTime = document.getElementById('stat-time');
+
+    // Mode Selection
+    document.querySelectorAll('.mode-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        state.selectedMode = card.dataset.mode;
+      });
+    });
+
+    // Format Selection
+    document.querySelectorAll('.format-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.format-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        state.selectedFormat = chip.dataset.format;
+      });
+    });
+
+    // File Selection Handlers
+    browseBtn.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    nativePickBtn.addEventListener('click', async () => {
+      try {
+        const data = await apiFetch('/api/pick-file', { method: 'POST' });
+        if (data.success && data.filePath) {
+          state.activeFilePath = data.filePath;
+          state.activeFileName = data.fileName;
+          activeFileNameEl.textContent = data.fileName;
+          activeFileSizeEl.textContent = `${(data.size / (1024 * 1024)).toFixed(2)} MB`;
+          activeFileBox.style.display = 'flex';
+          separateBtn.disabled = false;
+        }
+      } catch (err) {
+        console.error('OS file picker error:', err);
+      }
+    });
+
+    async function handleFileSelection(file) {
+      if (!file) return;
+      activeFileNameEl.textContent = file.name;
+      activeFileSizeEl.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+      activeFileBox.style.display = 'flex';
+      sourcePlayer.src = URL.createObjectURL(file);
+
+      processingOverlay.style.display = 'flex';
+      processingDetail.textContent = 'Uploading audio file to studio engine...';
+
+      try {
+        const data = await apiFetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'x-filename': encodeURIComponent(file.name)
+          },
+          body: file
+        });
+        processingOverlay.style.display = 'none';
+
+        if (data.success) {
+          state.activeFilePath = data.filePath;
+          state.activeFileName = file.name;
+          separateBtn.disabled = false;
+        } else {
+          alert('Upload failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        processingOverlay.style.display = 'none';
+        alert('Upload network error: ' + err.message);
+      }
+    }
+
+    // Separation Action
+    separateBtn.addEventListener('click', runSeparation);
+
+    async function runSeparation() {
+      if (!state.activeFilePath) return;
+
+      processingOverlay.style.display = 'flex';
+      processingDetail.textContent = 'Demixing audio into stems via Meta AI Demucs v4 (CUDA GPU)...';
+      separateBtn.disabled = true;
+
+      try {
+        const payload = {
+          filePath: state.activeFilePath,
+          mode: state.selectedMode,
+          format: state.selectedFormat
+        };
+
+        const json = await apiFetch('/api/separate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        processingOverlay.style.display = 'none';
+        separateBtn.disabled = false;
+
+        if (json.success && json.data) {
+          renderStemsMixer(json.data);
+        } else {
+          alert('Separation failed: ' + (json.error || 'Engine error'));
+        }
+      } catch (err) {
+        processingOverlay.style.display = 'none';
+        separateBtn.disabled = false;
+        alert('Engine execution error: ' + err.message);
+      }
+    }
+
+    // Stem icons mapping
+    const STEM_ICONS = {
+      vocals: '🎤',
+      no_vocals: '🎵',
+      drums: '🥁',
+      bass: '🎸',
+      guitar: '🎸',
+      piano: '🎹',
+      other: '🎼'
+    };
+
+    const STEM_DISPLAY_NAMES = {
+      vocals: 'Vocals (Acapella)',
+      no_vocals: 'Instrumental (Backing Track)',
+      drums: 'Drums & Percussion',
+      bass: 'Bassline & Sub',
+      guitar: 'Acoustic / Electric Guitar',
+      piano: 'Grand Piano / Keys',
+      other: 'Melodic Synths & FX'
+    };
+
+    async function renderStemsMixer(data) {
+      emptyState.style.display = 'none';
+      stemsList.innerHTML = '';
+      state.audioElements = [];
+
+      statDevice.textContent = data.device || 'CUDA GPU';
+      statTime.textContent = `${data.processing_time_seconds}s`;
+
+      const base = await resolveApiBase();
+      downloadZipBtn.href = `${base}${data.zipDownloadUrl}`;
+      downloadZipBtn.style.display = 'inline-flex';
+      masterPlayBtn.disabled = false;
+      masterStopBtn.disabled = false;
+
+      const stems = data.stems || {};
+      for (const [key, stemInfo] of Object.entries(stems)) {
+        const strip = document.createElement('div');
+        strip.className = 'stem-strip';
+        strip.dataset.stemKey = key;
+
+        const icon = STEM_ICONS[key] || '🎵';
+        const displayName = STEM_DISPLAY_NAMES[key] || key;
+        const audioUrl = `${base}${stemInfo.downloadUrl}`;
+
+        strip.innerHTML = `
+          <div class="stem-badge">
+            <span class="stem-icon">${icon}</span>
+            <div>
+              <div class="stem-name">${displayName}</div>
+              <div class="stem-meta">${stemInfo.size_formatted} • ${stemInfo.filename}</div>
+            </div>
+          </div>
+          <div class="stem-player-box">
+            <audio src="${audioUrl}" controls preload="metadata"></audio>
+          </div>
+          <div class="stem-actions">
+            <button class="chip-btn solo" data-action="solo">SOLO</button>
+            <button class="chip-btn mute" data-action="mute">MUTE</button>
+            <a class="btn" href="${audioUrl}" download="${stemInfo.filename}">⬇ Export</a>
+          </div>
+        `;
+
+        const audioEl = strip.querySelector('audio');
+        state.audioElements.push({ key, element: audioEl, strip });
+
+        // Solo button handler
+        const soloBtn = strip.querySelector('[data-action="solo"]');
+        soloBtn.addEventListener('click', () => {
+          const isActive = soloBtn.classList.toggle('active');
+          if (isActive) {
+            // Mute all other stems
+            state.audioElements.forEach(item => {
+              if (item.key !== key) {
+                item.element.muted = true;
+                item.strip.querySelector('[data-action="mute"]').classList.add('active');
+              } else {
+                item.element.muted = false;
+                item.strip.querySelector('[data-action="mute"]').classList.remove('active');
+              }
+            });
+          } else {
+            // Unmute all
+            state.audioElements.forEach(item => {
+              item.element.muted = false;
+              item.strip.querySelector('[data-action="mute"]').classList.remove('active');
+              item.strip.querySelector('[data-action="solo"]').classList.remove('active');
+            });
+          }
+        });
+
+        // Mute button handler
+        const muteBtn = strip.querySelector('[data-action="mute"]');
+        muteBtn.addEventListener('click', () => {
+          const isMuted = muteBtn.classList.toggle('active');
+          audioEl.muted = isMuted;
+          if (isMuted) soloBtn.classList.remove('active');
+        });
+
+        stemsList.appendChild(strip);
+      }
+    }
+
+    // Synchronized Master Play/Stop
+    masterPlayBtn.addEventListener('click', () => {
+      if (state.audioElements.length === 0) return;
+
+      if (!state.isMasterPlaying) {
+        state.isMasterPlaying = true;
+        masterPlayBtn.textContent = '⏸ Pause All';
+        const currentTime = state.audioElements[0].element.currentTime;
+        state.audioElements.forEach(item => {
+          item.element.currentTime = currentTime;
+          item.element.play();
+        });
+      } else {
+        state.isMasterPlaying = false;
+        masterPlayBtn.textContent = '▶ Play All';
+        state.audioElements.forEach(item => item.element.pause());
+      }
+    });
+
+    masterStopBtn.addEventListener('click', () => {
+      state.isMasterPlaying = false;
+      masterPlayBtn.textContent = '▶ Play All';
+      state.audioElements.forEach(item => {
+        item.element.pause();
+        item.element.currentTime = 0;
+      });
+    });
+  </script>
+</body>
+</html>

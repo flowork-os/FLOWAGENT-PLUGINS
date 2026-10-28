@@ -1,0 +1,7 @@
+{
+  "id": "teal_orange",
+  "name": "Teal & Orange",
+  "description": "Blockbuster cinema LUT grade",
+  "type": "filter",
+  "filter": "contrast(1.2) saturate(1.3) hue-rotate(-15deg)"
+}

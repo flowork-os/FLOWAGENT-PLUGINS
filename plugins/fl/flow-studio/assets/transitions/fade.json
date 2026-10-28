@@ -1,0 +1,8 @@
+{
+  "id": "fade",
+  "name": "Cross Dissolve",
+  "description": "Smooth opacity crossfade",
+  "type": "transition",
+  "duration": 1.0,
+  "transitionType": "fade"
+}

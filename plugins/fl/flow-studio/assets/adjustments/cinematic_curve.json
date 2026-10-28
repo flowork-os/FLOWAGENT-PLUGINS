@@ -1,0 +1,9 @@
+{
+  "id": "cinematic_curve",
+  "name": "Cinematic S-Curve",
+  "description": "Contrast boost and highlight roll-off",
+  "type": "adjustment",
+  "brightness": 1.05,
+  "contrast": 1.25,
+  "saturation": 1.15
+}

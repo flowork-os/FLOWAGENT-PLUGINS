@@ -1,0 +1,9 @@
+{
+  "id": "hdr_boost",
+  "name": "Dynamic HDR Boost",
+  "description": "Punchy exposure and vivid color recovery",
+  "type": "adjustment",
+  "brightness": 1.15,
+  "contrast": 1.35,
+  "saturation": 1.3
+}

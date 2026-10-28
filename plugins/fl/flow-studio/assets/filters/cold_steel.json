@@ -1,0 +1,7 @@
+{
+  "id": "cold_steel",
+  "name": "Cold Steel",
+  "description": "Desaturated arctic blue aesthetic",
+  "type": "filter",
+  "filter": "hue-rotate(180deg) saturate(0.6) contrast(1.2)"
+}

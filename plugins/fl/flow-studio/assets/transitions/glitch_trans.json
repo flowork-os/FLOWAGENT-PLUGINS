@@ -1,0 +1,8 @@
+{
+  "id": "glitch_trans",
+  "name": "Glitch Warp",
+  "description": "Digital distortion cut",
+  "type": "transition",
+  "duration": 0.6,
+  "transitionType": "glitch"
+}

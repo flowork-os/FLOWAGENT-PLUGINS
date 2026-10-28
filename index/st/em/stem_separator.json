@@ -1,0 +1,21 @@
+{
+  "id": "stem-separator",
+  "name": "Vocal & Stem Demixer Studio",
+  "version": "1.0.0",
+  "author": "Awenk Audico & Flowork OS",
+  "description": "Sovereign AI audio stem separation and vocal remover studio powered by Meta AI Demucs v4 (Hybrid Transformer HTDemucs). Extract isolated vocals (acapella), instrumental (karaoke), drums, bass, and multitrack stems with hardware GPU CUDA acceleration.",
+  "category": "Arts, Music & Literature",
+  "icon": "🎛️",
+  "hash": "8239abad92bb9119",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 17880
+  },
+  "shard": "index/st/em/stem_separator.json",
+  "source_path": "plugins/st/stem-separator",
+  "category_id": "CAT-016"
+}

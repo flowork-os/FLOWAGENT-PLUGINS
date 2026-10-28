@@ -1,0 +1,9 @@
+{
+  "id": "night_enhance",
+  "name": "Night Low-Light Lift",
+  "description": "Shadow elevation for dark scenes",
+  "type": "adjustment",
+  "brightness": 1.3,
+  "contrast": 1.1,
+  "saturation": 1.05
+}
