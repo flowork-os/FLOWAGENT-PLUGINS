@@ -1,0 +1,21 @@
+{
+  "id": "trading-agents",
+  "name": "TradingAgents Sovereign Council",
+  "version": "1.0.0",
+  "author": "Flowork Sovereign Core",
+  "description": "Multi-agent autonomous trading desk featuring dialectic bull-bear debates, 4 specialized analysts, 3 risk managers, portfolio gating, and zero-key sentiment streams.",
+  "category": "Trading, Web3 & DeFi",
+  "icon": "📈",
+  "hash": "e7467f77ad3c9bf4",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 17898
+  },
+  "shard": "index/tr/ad/trading_agents.json",
+  "source_path": "plugins/tr/trading-agents",
+  "category_id": "CAT-006"
+}

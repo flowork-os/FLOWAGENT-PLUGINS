@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradingAgents Sovereign Council</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="trading-agents-root">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">📈</div>
+        <div>
+          <h1>TRADINGAGENTS SOVEREIGN COUNCIL</h1>
+          <p class="subtitle">Multi-Agent Dialectic Debate & Institutional Trading Desk</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-online" id="status-badge">● COUNCIL ENGINE READY</span>
+        <span class="badge badge-port" id="port-badge">PORT: 17898</span>
+        <label class="toggle-container" title="Auto-dispatch council verdict directly to open chat">
+          <input type="checkbox" id="auto-dispatch-toggle">
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Auto-Dispatch to Open Chat</span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Controls & Parameters Toolbar -->
+    <section class="controls-toolbar">
+      <div class="control-group">
+        <label for="ticker-input">Ticker Symbol</label>
+        <div class="input-with-presets">
+          <input type="text" id="ticker-input" value="NVDA" placeholder="e.g. NVDA, AAPL, BTC-USD">
+          <div class="preset-pills">
+            <button class="pill active" data-ticker="NVDA">NVDA</button>
+            <button class="pill" data-ticker="TSLA">TSLA</button>
+            <button class="pill" data-ticker="AAPL">AAPL</button>
+            <button class="pill" data-ticker="MSFT">MSFT</button>
+            <button class="pill" data-ticker="BTC-USD">BTC-USD</button>
+            <button class="pill" data-ticker="ETH-USD">ETH-USD</button>
+            <button class="pill" data-ticker="SPY">SPY</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group sm">
+        <label for="asset-type">Asset Type</label>
+        <select id="asset-type">
+          <option value="stock">Equity / Stock</option>
+          <option value="crypto">Cryptocurrency</option>
+          <option value="index">Index ETF</option>
+        </select>
+      </div>
+
+      <div class="control-group sm">
+        <label for="cash-input">Portfolio Cash ($)</label>
+        <input type="number" id="cash-input" value="25000" step="1000">
+      </div>
+
+      <div class="control-actions">
+        <button id="run-council-btn" class="btn btn-primary">
+          <span class="btn-icon">⚡</span> Run Council Debate
+        </button>
+        <button id="settle-btn" class="btn btn-secondary" title="Settle historical trade outcomes & score alpha">
+          <span class="btn-icon">🔄</span> Settle Alpha
+        </button>
+      </div>
+    </section>
+
+    <!-- Main Workspace Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Arena & Feeds -->
+      <section class="arena-column">
+        <!-- Navigation Tabs -->
+        <div class="arena-tabs">
+          <button class="tab-btn active" data-tab="tab-debate">🥊 Dialectic Debate</button>
+          <button class="tab-btn" data-tab="tab-risk">🛡️ Risk Committee</button>
+          <button class="tab-btn" data-tab="tab-feeds">🌐 Zero-Key Feeds</button>
+        </div>
+
+        <!-- Tab 1: Dialectic Debate Arena -->
+        <div id="tab-debate" class="tab-pane active">
+          <div class="arena-panel">
+            <div class="panel-header">
+              <h3>BULL vs BEAR ADVERSARIAL ARENA</h3>
+              <span class="panel-tag">Dialectic Synthesis</span>
+            </div>
+            <div class="debate-stream" id="debate-timeline">
+              <div class="debate-placeholder">
+                <p>Click <strong>"⚡ Run Council Debate"</strong> to initiate parallel analyst ingestion and the dialectic bull/bear debate.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Risk Committee -->
+        <div id="tab-risk" class="tab-pane">
+          <div class="arena-panel">
+            <div class="panel-header">
+              <h3>TRIPARTITE RISK ASSESSMENT</h3>
+              <span class="panel-tag">Capital Preservation Gate</span>
+            </div>
+            <div class="risk-stream" id="risk-timeline">
+              <div class="debate-placeholder">
+                <p>Risk committee arguments will appear here following the tactical trader proposal.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Zero-Key Intelligence Feeds -->
+        <div id="tab-feeds" class="tab-pane">
+          <div class="feeds-grid">
+            <!-- Polymarket Card -->
+            <div class="feed-card">
+              <div class="feed-header">
+                <span class="feed-title">🎯 Polymarket Event Probabilities</span>
+                <span class="feed-badge">Gamma API</span>
+              </div>
+              <div class="feed-content" id="polymarket-list">
+                <p class="feed-loading">Loading market crowd probabilities...</p>
+              </div>
+            </div>
+
+            <!-- StockTwits Card -->
+            <div class="feed-card">
+              <div class="feed-header">
+                <span class="feed-title">💬 StockTwits Sentiment Stream</span>
+                <span class="feed-badge">Public Stream</span>
+              </div>
+              <div class="feed-content" id="stocktwits-content">
+                <div class="sentiment-meter-box">
+                  <div class="sentiment-score-num" id="st-score">5.0 / 10</div>
+                  <div class="sentiment-bar-bg">
+                    <div class="sentiment-bar-fill" id="st-fill" style="width: 50%;"></div>
+                  </div>
+                  <div class="sentiment-label" id="st-label">Neutral</div>
+                </div>
+                <div class="sample-posts" id="st-posts"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Verdict & Executive Order -->
+      <section class="verdict-column">
+        <div class="verdict-card" id="verdict-card">
+          <div class="verdict-header">
+            <div>
+              <span class="verdict-pretitle">SUPREME PORTFOLIO VERDICT</span>
+              <h2 id="verdict-ticker">NVDA</h2>
+            </div>
+            <div class="rating-badge rating-hold" id="verdict-rating">HOLD</div>
+          </div>
+
+          <!-- Price & Metrics Row -->
+          <div class="metrics-row">
+            <div class="metric-box">
+              <span class="metric-label">CURRENT PRICE</span>
+              <span class="metric-val" id="metric-price">$0.00</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">24H CHANGE</span>
+              <span class="metric-val" id="metric-change">0.00%</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">RSI (14)</span>
+              <span class="metric-val" id="metric-rsi">50.0</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">RISK REWARD</span>
+              <span class="metric-val text-cyan" id="metric-rr">2.50R</span>
+            </div>
+          </div>
+
+          <!-- Tactical Order Levels -->
+          <div class="order-levels-box">
+            <div class="level-item">
+              <span class="level-tag tag-entry">ENTRY</span>
+              <span class="level-num" id="level-entry">$0.00</span>
+            </div>
+            <div class="level-item">
+              <span class="level-tag tag-stop">STOP LOSS</span>
+              <span class="level-num text-rose" id="level-stop">$0.00</span>
+            </div>
+            <div class="level-item">
+              <span class="level-tag tag-target">TARGET</span>
+              <span class="level-num text-emerald" id="level-target">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Position Sizing -->
+          <div class="sizing-banner">
+            <span class="sizing-label">ALLOCATION SIZING:</span>
+            <span class="sizing-val" id="sizing-val">Calculating calibrated exposure...</span>
+          </div>
+
+          <!-- Executive Summary -->
+          <div class="section-box">
+            <h4>EXECUTIVE SUMMARY</h4>
+            <p id="executive-summary-text">Awaiting council deliberation.</p>
+          </div>
+
+          <!-- Investment Thesis -->
+          <div class="section-box">
+            <h4>INVESTMENT THESIS & EVIDENCE</h4>
+            <p id="investment-thesis-text">Select a ticker and run the council debate to inspect multi-agent synthesis.</p>
+          </div>
+
+          <!-- Dispatch Action Button -->
+          <div class="verdict-actions">
+            <button id="dispatch-agent-btn" class="btn btn-dispatch">
+              <span class="btn-icon">⚡</span> Dispatch Verdict to Agent Chat
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Section: Sovereign Memory Ledger -->
+    <section class="memory-section">
+      <div class="memory-header">
+        <div class="memory-title-wrap">
+          <span class="memory-icon">🧠</span>
+          <h3>SOVEREIGN DECISION LEDGER & REFLECTION MEMORY</h3>
+        </div>
+        <div class="memory-actions">
+          <span class="badge badge-port" id="memory-count">0 Settled Decisions</span>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Ticker</th>
+              <th>Rating</th>
+              <th>Entry Price</th>
+              <th>Target</th>
+              <th>Status</th>
+              <th>Realized Return</th>
+              <th>Alpha vs SPY</th>
+              <th>Autonomous Reflection Lesson</th>
+            </tr>
+          </thead>
+          <tbody id="memory-tbody">
+            <tr>
+              <td colspan="9" class="empty-cell">No trade records found. Execute council analysis to begin logging.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">Action dispatched successfully!</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

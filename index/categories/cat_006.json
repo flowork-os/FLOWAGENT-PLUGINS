@@ -1,7 +1,7 @@
 {
   "category_id": "CAT-006",
   "category": "Finance & Algorithmic Trading",
-  "total_items": 2,
+  "total_items": 3,
   "items": [
     {
       "id": "whale-radar",
@@ -26,6 +26,18 @@
       "shard": "index/ma/rk/market_signal.json",
       "source_path": "plugins/ma/market-signal",
       "hash": "cb04173128965416"
+    },
+    {
+      "id": "trading-agents",
+      "name": "TradingAgents Sovereign Council",
+      "category_id": "CAT-006",
+      "category": "Trading, Web3 & DeFi",
+      "version": "1.0.0",
+      "description": "Multi-agent autonomous trading desk featuring dialectic bull-bear debates, 4 specialized analysts, 3 risk managers, portfolio gating, and zero-key sentiment streams.",
+      "icon": "📈",
+      "shard": "index/tr/ad/trading_agents.json",
+      "source_path": "plugins/tr/trading-agents",
+      "hash": "e7467f77ad3c9bf4"
     }
   ]
 }
