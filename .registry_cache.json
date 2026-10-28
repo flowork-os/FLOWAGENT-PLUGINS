@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-28T18:27:53Z",
+  "updated_at": "2026-10-28T18:41:47Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -267,7 +267,7 @@
       "description": "Sovereign real-time market technical scanner and swing signal automation studio for stocks and crypto. Multi-indicator confluence (RSI, EMA 20/50/200, MACD, Bollinger Bands, Volume Surge), automated 1:2+ R:R trade plans, and HMAC-SHA256 signed webhook alerts.",
       "category": "Finance & Algorithmic Trading",
       "icon": "📈",
-      "hash": "96fde99ad89fb30a",
+      "hash": "662c0b79da50653e",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"

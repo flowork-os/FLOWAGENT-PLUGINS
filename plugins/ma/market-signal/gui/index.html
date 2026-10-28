@@ -86,7 +86,7 @@
     .header-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
@@ -94,103 +94,112 @@
       background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(0, 210, 106, 0.15));
       border: 1px solid rgba(0, 229, 255, 0.4);
       color: var(--cyan);
-      padding: 8px 18px;
+      padding: 8px 16px;
       border-radius: 8px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       transition: all 0.2s ease;
-      font-family: var(--font-sans);
     }
 
     .btn-action:hover {
-      background: linear-gradient(135deg, rgba(0, 229, 255, 0.3), rgba(0, 210, 106, 0.3));
-      box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(0, 210, 106, 0.25));
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
       transform: translateY(-1px);
     }
 
-    .btn-action:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border-color);
       color: var(--text-muted);
       padding: 8px 14px;
       border-radius: 8px;
       font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
-    /* Policy Banner */
+    .paper-badge {
+      background: rgba(0, 210, 106, 0.12);
+      border: 1px solid rgba(0, 210, 106, 0.4);
+      color: var(--green);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Doctrine Banner */
     .doctrine-banner {
       background: rgba(0, 229, 255, 0.05);
       border: 1px solid rgba(0, 229, 255, 0.2);
       border-radius: 10px;
       padding: 12px 18px;
-      font-size: 12px;
-      color: var(--cyan);
+      font-size: 13px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
     }
 
     .doctrine-badge {
-      background: rgba(0, 229, 255, 0.15);
+      background: rgba(0, 229, 255, 0.2);
+      color: var(--cyan);
       padding: 3px 8px;
       border-radius: 4px;
-      font-family: var(--font-mono);
+      font-size: 11px;
       font-weight: 700;
+      font-family: var(--font-mono);
+      margin-right: 6px;
     }
 
-    /* Metrics HUD */
+    /* HUD Metrics */
     .hud-metrics {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
     }
 
     .metric-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 14px 18px;
+      border-radius: 12px;
+      padding: 18px 20px;
       display: flex;
       flex-direction: column;
       gap: 6px;
+      position: relative;
+      overflow: hidden;
     }
 
     .metric-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
+      font-size: 12px;
       color: var(--text-muted);
-      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .metric-value {
-      font-size: 22px;
+      font-size: 26px;
       font-weight: 700;
       font-family: var(--font-mono);
       color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
     .metric-sub {
@@ -198,20 +207,18 @@
       color: var(--text-muted);
     }
 
-    /* Signal Board */
+    /* Signals Grid */
     .section-title-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 8px;
+      margin-top: 10px;
     }
 
     .section-title {
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -219,7 +226,7 @@
 
     .signals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 16px;
     }
 
@@ -251,84 +258,87 @@
 
     .ticker-name-box {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 8px;
     }
 
     .rank-tag {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
       font-size: 11px;
-      font-weight: 800;
-      color: var(--cyan);
-      background: rgba(0, 229, 255, 0.1);
+      font-weight: 700;
       padding: 2px 6px;
       border-radius: 4px;
       font-family: var(--font-mono);
     }
 
     .ticker-symbol {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
-      color: #fff;
       font-family: var(--font-mono);
+      color: #fff;
+    }
+
+    .company-name {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .ticker-price {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       font-family: var(--font-mono);
+      color: #fff;
+      margin-top: 4px;
     }
 
     .price-change {
       font-size: 12px;
       font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 4px;
+      font-family: var(--font-mono);
     }
 
-    .price-up {
-      color: var(--green);
-      background: rgba(0, 210, 106, 0.1);
-    }
-
-    .price-down {
-      color: var(--red);
-      background: rgba(255, 56, 96, 0.1);
-    }
+    .price-up { color: var(--green); }
+    .price-down { color: var(--red); }
 
     .badge-status {
-      font-size: 11px;
-      font-weight: 700;
       padding: 4px 10px;
       border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .status-confirmed-buy {
-      background: rgba(0, 210, 106, 0.2);
+      background: rgba(0, 210, 106, 0.15);
       color: var(--green);
-      border: 1px solid rgba(0, 210, 106, 0.5);
-      box-shadow: 0 0 10px rgba(0, 210, 106, 0.2);
+      border: 1px solid rgba(0, 210, 106, 0.4);
     }
 
     .status-wait-for-reclaim {
-      background: rgba(255, 184, 0, 0.2);
+      background: rgba(255, 184, 0, 0.15);
       color: var(--amber);
       border: 1px solid rgba(255, 184, 0, 0.4);
     }
 
     .status-failed-confirmation {
+      background: rgba(255, 56, 96, 0.12);
+      color: var(--red);
+      border: 1px solid rgba(255, 56, 96, 0.3);
+    }
+
+    .status-ungraded {
       background: rgba(255, 255, 255, 0.05);
       color: var(--text-muted);
       border: 1px solid var(--border-color);
     }
 
-    .status-ungraded {
-      background: rgba(255, 56, 96, 0.15);
-      color: var(--red);
-      border: 1px solid rgba(255, 56, 96, 0.3);
-    }
-
-    /* Score meter */
     .score-bar-box {
       display: flex;
       flex-direction: column;
@@ -351,36 +361,34 @@
 
     .score-fill {
       height: 100%;
-      border-radius: 3px;
       background: linear-gradient(90deg, var(--cyan), var(--green));
+      border-radius: 3px;
     }
 
-    /* Indicators Row */
     .indicator-pills {
       display: flex;
-      flex-wrap: wrap;
       gap: 6px;
+      flex-wrap: wrap;
     }
 
     .indicator-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      padding: 3px 8px;
+      border-radius: 6px;
       font-size: 11px;
       font-family: var(--font-mono);
-      background: rgba(255, 255, 255, 0.04);
-      padding: 3px 8px;
-      border-radius: 4px;
-      border: 1px solid var(--border-color);
       color: var(--text-muted);
     }
 
-    /* Trade Plan Box */
     .trade-plan-box {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px dashed rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 10px 12px;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
       font-size: 11px;
       font-family: var(--font-mono);
     }
@@ -391,118 +399,61 @@
       gap: 2px;
     }
 
-    .plan-label {
-      color: var(--text-muted);
-      font-size: 10px;
-      text-transform: uppercase;
-    }
-
-    .plan-val {
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .target-val { color: var(--green); }
+    .plan-label { color: var(--text-muted); font-size: 10px; }
+    .plan-val { font-weight: 700; color: #fff; }
     .stop-val { color: var(--red); }
+    .target-val { color: var(--green); }
 
-    /* Quick Exit Notice */
-    .quick-exit-badge {
-      font-size: 10px;
-      font-family: var(--font-mono);
-      color: var(--cyan);
-      background: rgba(0, 229, 255, 0.08);
-      padding: 4px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(0, 229, 255, 0.2);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Risk Sizing Box */
     .sizing-box {
-      background: rgba(0, 210, 106, 0.05);
-      border: 1px solid rgba(0, 210, 106, 0.2);
-      border-radius: 6px;
-      padding: 8px 10px;
+      background: rgba(0, 229, 255, 0.04);
+      border: 1px solid rgba(0, 229, 255, 0.15);
+      border-radius: 8px;
+      padding: 8px 12px;
       font-size: 11px;
-      font-family: var(--font-mono);
       display: flex;
       justify-content: space-between;
-      color: var(--text-muted);
+      align-items: center;
     }
 
     .sizing-val {
-      color: var(--green);
       font-weight: 700;
+      color: var(--cyan);
+      font-family: var(--font-mono);
     }
 
-    /* Modal / Inspector */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal-content {
-      background: var(--bg-card);
-      border: 1px solid var(--border-focus);
-      border-radius: 14px;
-      max-width: 650px;
-      width: 100%;
-      padding: 24px;
+    .card-actions-row {
       display: flex;
-      flex-direction: column;
-      gap: 16px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 12px;
-    }
-
-    .modal-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .modal-close:hover { color: #fff; }
-
-    .factors-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
       gap: 8px;
+      margin-top: 4px;
     }
 
-    .factor-item {
-      font-size: 12px;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border-left: 3px solid var(--cyan);
-      border-radius: 0 6px 6px 0;
+    .btn-stage-order {
+      background: rgba(0, 210, 106, 0.15);
+      border: 1px solid rgba(0, 210, 106, 0.4);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-stage-order:hover {
+      background: rgba(0, 210, 106, 0.25);
+      border-color: var(--green);
+      box-shadow: 0 0 10px rgba(0, 210, 106, 0.2);
+    }
+
+    .quick-exit-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-style: italic;
     }
 
     /* Panels */
@@ -537,6 +488,17 @@
 
     .text-input:focus { border-color: var(--cyan); }
 
+    .select-input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 14px;
+      color: #fff;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      outline: none;
+    }
+
     .ticker-tags {
       display: flex;
       flex-wrap: wrap;
@@ -560,6 +522,96 @@
       color: var(--text-muted);
     }
     .ticker-remove:hover { color: var(--red); }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 650px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+
+    .factors-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .factor-item {
+      font-size: 12px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* Order Table */
+    .order-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .order-table th {
+      text-align: left;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .order-table td {
+      padding: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
 
     /* Footer status */
     .footer-status {
@@ -601,9 +653,12 @@
         </div>
       </div>
       <div class="header-controls">
+        <span class="paper-badge" id="badge-trading-mode">🛡️ PAPER TRADING ACTIVE</span>
         <button id="btn-scan-now" class="btn-action">
           <span>⚡</span> <span id="scan-btn-text">SCAN OPENING BOARD</span>
         </button>
+        <button id="btn-toggle-orders" class="btn-secondary">📋 Staged Orders (<span id="staged-count-badge">0</span>)</button>
+        <button id="btn-toggle-webhook" class="btn-secondary">📡 Webhook Studio</button>
         <button id="btn-toggle-sizing" class="btn-secondary">💰 Risk Sizing</button>
         <button id="btn-ai-prompt" class="btn-secondary">🤖 AI Trade Brief</button>
         <button id="btn-toggle-watchlist" class="btn-secondary">⚙️ Watchlist</button>
@@ -644,6 +699,70 @@
           <span class="pulse-dot"></span> <span>10:05 AM REFERENCE</span>
         </div>
         <div class="metric-sub" id="hud-last-scan">Last update: Initializing...</div>
+      </div>
+    </section>
+
+    <!-- Staged Orders Panel -->
+    <section id="orders-panel" class="panel-box" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 700; font-size: 14px; color: #fff;">Broker Execution Staging Queue & Safety Gate</div>
+        <button id="btn-toggle-mode" class="btn-secondary" style="font-size: 11px;">Toggle Live / Paper</button>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted);">
+        Mandatory Broker Safety Invariant: Signals cannot execute automatically without human approval. Only <code>confirmed_buy</code> signals can be staged.
+      </p>
+      <div id="staged-orders-container">
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Status</th>
+              <th>Mode</th>
+              <th>Entry</th>
+              <th>Stop</th>
+              <th>Target</th>
+              <th>Shares</th>
+              <th>Risk ($)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="staged-orders-tbody">
+            <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No staged orders currently in queue.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Webhook Studio & Inbound Feed Panel -->
+    <section id="webhook-panel" class="panel-box" style="display: none;">
+      <div style="font-weight: 700; font-size: 14px; color: #fff;">Webhook Automation & Lifecycle Testing (Dual Signing Engine)</div>
+      <p style="font-size: 12px; color: var(--text-muted);">
+        Simulate standard KamdenAI lifecycle events signed with timing-safe HMAC-SHA256 and 5-minute replay protection headers.
+      </p>
+      <div class="input-row">
+        <div>
+          <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Lifecycle Event</label>
+          <select id="select-webhook-event" class="select-input">
+            <option value="confirmed_buys.created">confirmed_buys.created (Official Board)</option>
+            <option value="morning_scan.created">morning_scan.created (Prep Scan)</option>
+            <option value="quick_exit_results.created">quick_exit_results.created (10:05 Outcomes)</option>
+            <option value="research_watchlist.created">research_watchlist.created (Pre-Market)</option>
+            <option value="webhook.test">webhook.test (Connectivity Test)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Destination Endpoint</label>
+          <input type="text" id="input-webhook-url" class="text-input" value="http://127.0.0.1:17892/api/webhook/receive" style="width: 320px;">
+        </div>
+        <div style="display: flex; align-items: flex-end;">
+          <button id="btn-dispatch-webhook" class="btn-action">Dispatch Signed Webhook</button>
+        </div>
+      </div>
+      <div style="margin-top: 10px;">
+        <div style="font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 6px;">Live Webhook Inbound Feed & Verification Audit:</div>
+        <div id="inbound-webhook-feed" style="max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-family: var(--font-mono); font-size: 11px;">
+          <div style="color: var(--text-muted);">Waiting for inbound webhooks...</div>
+        </div>
       </div>
     </section>
 
@@ -720,7 +839,7 @@
 
     <!-- Footer -->
     <footer class="footer-status">
-      <div>Flowork OS Sovereign Canvas • KamdenAI Audited Engine v1.1.0</div>
+      <div>Flowork OS Sovereign Canvas • KamdenAI Audited Engine v1.2.0</div>
       <div id="status-footer-port">Port: Connecting...</div>
     </footer>
   </div>
@@ -731,6 +850,8 @@
     let currentWatchlist = [];
     let currentCash = 5000;
     let currentRiskPct = 1.0;
+    let isPaperTrading = true;
+    let stagedOrders = [];
 
     async function resolveApiBase() {
       try {
@@ -772,9 +893,36 @@
           const data = JSON.parse(e.data);
           renderSignals(data);
         });
+        sse.addEventListener('inbound_webhook', (e) => {
+          const entry = JSON.parse(e.data);
+          appendInboundLog(entry);
+        });
+        sse.addEventListener('broker_order_staged', () => {
+          loadOrders();
+        });
+        sse.addEventListener('broker_order_executed', () => {
+          loadOrders();
+        });
       } catch (err) {
         console.warn('SSE stream notice:', err);
       }
+    }
+
+    function appendInboundLog(entry) {
+      const feed = document.getElementById('inbound-webhook-feed');
+      if (feed.children.length === 1 && feed.children[0].textContent.includes('Waiting')) {
+        feed.innerHTML = '';
+      }
+      const item = document.createElement('div');
+      item.style.padding = '6px 0';
+      item.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+      item.innerHTML = `
+        <span style="color: var(--green);">[VERIFIED HMAC]</span>
+        <span style="color: var(--cyan);">${entry.event}</span>
+        <span style="color: var(--text-muted); font-size: 10px;">ID: ${entry.deliveryId}</span>
+        <span style="color: #fff; float: right;">${new Date(entry.receivedAt).toLocaleTimeString()}</span>
+      `;
+      feed.prepend(item);
     }
 
     function updateScanBtnState(isScanning) {
@@ -789,20 +937,92 @@
       }
     }
 
+    async function loadOrders() {
+      const res = await apiFetch('/api/broker/orders');
+      if (res && res.stagedOrders) {
+        stagedOrders = res.stagedOrders;
+        isPaperTrading = res.isPaperTrading;
+        document.getElementById('staged-count-badge').textContent = stagedOrders.length;
+        document.getElementById('badge-trading-mode').textContent = isPaperTrading ? '🛡️ PAPER TRADING ACTIVE' : '⚡ LIVE TRADING ACTIVE';
+        document.getElementById('badge-trading-mode').style.color = isPaperTrading ? 'var(--green)' : 'var(--amber)';
+        renderOrdersTable();
+      }
+    }
+
+    function renderOrdersTable() {
+      const tbody = document.getElementById('staged-orders-tbody');
+      tbody.innerHTML = '';
+      if (stagedOrders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No staged orders currently in queue.</td></tr>';
+        return;
+      }
+
+      stagedOrders.forEach(o => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${o.ticker}</strong></td>
+          <td><span class="badge-status status-wait-for-reclaim">${o.status}</span></td>
+          <td>${o.mode}</td>
+          <td>$${o.entry}</td>
+          <td style="color: var(--red);">$${o.stop}</td>
+          <td style="color: var(--green);">$${o.target}</td>
+          <td>${o.shares}</td>
+          <td>$${o.riskDollars}</td>
+          <td><button class="btn-action" style="padding: 4px 8px; font-size: 11px;" onclick="approveOrder('${o.orderId}')">Approve & Fill</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.approveOrder = async function(orderId) {
+      const res = await apiFetch('/api/broker/approve-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId })
+      });
+      if (res && res.status === 'ok') {
+        alert(`Order ${res.order.ticker} successfully filled (${res.order.mode})!`);
+        loadOrders();
+      }
+    };
+
+    window.stageCandidateOrder = async function(idx) {
+      const candidate = currentSignals[idx];
+      if (!candidate || candidate.status !== 'confirmed_buy') {
+        alert('Invariant Protection: Only confirmed_buy candidates may be staged!');
+        return;
+      }
+
+      const res = await apiFetch('/api/broker/stage-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(candidate)
+      });
+
+      if (res && res.status === 'ok') {
+        alert(`Order ticket for ${candidate.ticker} successfully staged to safety queue!`);
+        document.getElementById('orders-panel').style.display = 'flex';
+        loadOrders();
+      } else {
+        alert(`Failed to stage order: ${res ? res.message : 'Unknown error'}`);
+      }
+    };
+
     function renderSignals(data) {
       if (!data) return;
-      const candidates = data.confirmationResults || data.rankings || [];
+      const payloadData = data.data || data;
+      const candidates = payloadData.confirmationResults || payloadData.rankings || data.rankings || [];
       currentSignals = candidates;
 
-      const confirmedCount = data.confirmedBuyCount ?? (data.confirmed_count || 0);
-      const watchCount = data.watchCount ?? (data.watch_count || 0);
+      const confirmedCount = payloadData.confirmedBuyCount ?? (data.confirmed_count || 0);
+      const watchCount = data._metadata?.watchCount ?? (data.watch_count || 0);
 
       document.getElementById('hud-confirmed').textContent = confirmedCount;
       document.getElementById('hud-watch').textContent = watchCount;
       document.getElementById('hud-candidates').textContent = `${candidates.length} / 8`;
-      document.getElementById('hud-last-scan').textContent = `Last scan: ${new Date(data.last_scan_time || Date.now()).toLocaleTimeString()}`;
+      document.getElementById('hud-last-scan').textContent = `Last scan: ${new Date(data.last_scan_time || data.sentAt || Date.now()).toLocaleTimeString()}`;
 
-      if (data.noConfirmedBuys || confirmedCount === 0) {
+      if (payloadData.noConfirmedBuys || confirmedCount === 0) {
         document.getElementById('hud-no-picks').textContent = 'No picks session (capital protected)';
       } else {
         document.getElementById('hud-no-picks').textContent = `${confirmedCount} actionable plans published`;
@@ -837,6 +1057,7 @@
                 <span class="ticker-symbol">${item.ticker}</span>
                 <span class="price-change ${changeClass}">${changePrefix}${item.price_change_pct}%</span>
               </div>
+              <div class="company-name">${item.name || item.ticker}</div>
               <div class="ticker-price">$${Number(item.current_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
             <span class="badge-status ${statusClass}">${item.statusLabel || item.status}</span>
@@ -855,7 +1076,7 @@
           <div class="indicator-pills">
             <span class="indicator-pill">RSI: ${item.rsi}</span>
             <span class="indicator-pill">EMA20: $${item.ema20}</span>
-            <span class="indicator-pill">MACD: ${item.macd ? item.macd.hist : 0}</span>
+            <span class="indicator-pill">MACD: ${item.macd ? item.macd.histogram : 0}</span>
             <span class="indicator-pill">Vol: ${item.volume_ratio}x</span>
           </div>
 
@@ -874,14 +1095,17 @@
             </div>
             <div class="plan-item">
               <span class="plan-label">R-Multiple</span>
-              <span class="plan-val" style="color: var(--cyan);">${item.rMultipleTarget || tp.risk_reward || '1.5R'}</span>
+              <span class="plan-val" style="color: var(--cyan);">${item.rMultipleTarget || tp.risk_reward || 1.5}R</span>
             </div>
           </div>
 
           ${st === 'confirmed_buy' ? `
             <div class="sizing-box">
               <span>Position Sizing (1% Risk):</span>
-              <span class="sizing-val">${sz.shares || 0} shares ($${sz.position_cost || 0})</span>
+              <span class="sizing-val">${sz.shares || item.shares || 0} shares ($${sz.position_cost || (item.shares * item.entry) || 0})</span>
+            </div>
+            <div class="card-actions-row">
+              <button class="btn-stage-order" onclick="event.stopPropagation(); stageCandidateOrder(${idx});">🛡️ Stage Order Ticket</button>
             </div>
             <div class="quick-exit-badge">
               <span>⏱️</span> <span>10:05 AM Quick Exit window active</span>
@@ -904,7 +1128,7 @@
       const body = document.getElementById('modal-body');
 
       const rank = item.openingConfirmation?.officialRank || 1;
-      title.textContent = `Rank #${rank} ${item.ticker} — ${item.statusLabel || item.status}`;
+      title.textContent = `Rank #${rank} ${item.ticker} (${item.name || ''}) — ${item.statusLabel || item.status}`;
 
       let factorsHtml = '<p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Evidence & Trigger Factors:</p><ul class="factors-list">';
       if (item.factors && item.factors.length > 0) {
@@ -918,10 +1142,12 @@
 
       const bb = item.bollinger || {};
       const qe = item.quick_exit || {};
+      const res = item.result?.quickExit || {};
       factorsHtml += `
         <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color); font-size: 12px; font-family: var(--font-mono); color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
           <div><strong>10:05 AM Policy:</strong> ${qe.time_exit_policy || 'Target, Stop, or 10:05 AM reference exit.'}</div>
-          <div><strong>Bollinger Squeeze:</strong> ${bb.bandwidth_pct || 0}% bandwidth (Lower $${bb.lower || 0} | Upper $${bb.upper || 0})</div>
+          <div><strong>Modeled Quick Exit:</strong> ${res.statusLabel || 'Pending'} (${res.resultBasis || 'target_first'}) | Exit Price $${res.price || item.target}</div>
+          <div><strong>Bollinger Bands:</strong> Bandwidth ${bb.bandwidth || 0} (Lower $${bb.lower || 0} | Upper $${bb.upper || 0})</div>
           <div><strong>Moving Averages:</strong> EMA50 $${item.ema50} | EMA200 $${item.ema200}</div>
         </div>
       `;
@@ -959,7 +1185,7 @@
         alert('No signals to export.');
         return;
       }
-      const headers = ['received_at', 'date', 'event', 'ticker', 'rank', 'status', 'entry', 'stop', 'target', 'shares', 'risk_dollars', 'position_cost'];
+      const headers = ['received_at', 'date', 'event', 'ticker', 'name', 'rank', 'status', 'entry', 'stop', 'target', 'shares', 'risk_dollars', 'position_cost'];
       const rows = currentSignals.map(s => {
         const sz = s.sizing || {};
         const rank = s.openingConfirmation?.officialRank || '';
@@ -968,13 +1194,14 @@
           new Date().toISOString().split('T')[0],
           'confirmed_buys.created',
           s.ticker,
+          `"${s.name || s.ticker}"`,
           rank,
           s.status,
           s.entry || '',
           s.stop || '',
           s.target || '',
-          sz.shares || '',
-          sz.planned_risk_dollars || '',
+          sz.shares || s.shares || '',
+          sz.planned_risk_dollars || s.riskDollars || '',
           sz.position_cost || ''
         ].join(',');
       });
@@ -1004,10 +1231,10 @@
         `Watch Only Candidates: ${watch.length}`,
         "",
         "Confirmed Actionable Trade Plans:",
-        ...confirmed.map(c => `- [RANK #${c.openingConfirmation?.officialRank}] ${c.ticker}: Entry $${c.entry} | Stop $${c.stop} | Target $${c.target} (${c.rMultipleTarget}) | Size: ${c.sizing?.shares} shares ($${c.sizing?.position_cost}) | Exit: 10:05 AM Quick Exit Window`),
+        ...confirmed.map(c => `- [RANK #${c.openingConfirmation?.officialRank}] ${c.ticker} (${c.name}): Entry $${c.entry} | Stop $${c.stop} | Target $${c.target} (${c.rMultipleTarget}R) | Size: ${c.sizing?.shares || c.shares} shares ($${c.sizing?.position_cost || (c.shares * c.entry)}) | Exit: 10:05 AM Quick Exit Window`),
         "",
         "Watch Only Observations:",
-        ...watch.map(w => `- [RANK #${w.openingConfirmation?.officialRank}] ${w.ticker}: $${w.current_price} | Awaiting 20 EMA reclaim confirmation`),
+        ...watch.map(w => `- [RANK #${w.openingConfirmation?.officialRank}] ${w.ticker} (${w.name}): $${w.current_price} | Awaiting 20 EMA reclaim confirmation`),
         "",
         "Provide execution notes and risk discipline reminders."
       ].join('\n');
@@ -1033,6 +1260,17 @@
       });
     });
 
+    document.getElementById('btn-toggle-orders').addEventListener('click', () => {
+      const p = document.getElementById('orders-panel');
+      p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+      if (p.style.display === 'flex') loadOrders();
+    });
+
+    document.getElementById('btn-toggle-webhook').addEventListener('click', () => {
+      const p = document.getElementById('webhook-panel');
+      p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+    });
+
     document.getElementById('btn-toggle-sizing').addEventListener('click', () => {
       const p = document.getElementById('sizing-panel');
       p.style.display = p.style.display === 'none' ? 'flex' : 'none';
@@ -1041,6 +1279,43 @@
     document.getElementById('btn-toggle-watchlist').addEventListener('click', () => {
       const p = document.getElementById('watchlist-panel');
       p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    document.getElementById('btn-toggle-mode').addEventListener('click', async () => {
+      const newMode = !isPaperTrading;
+      const res = await apiFetch('/api/broker/mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paperTrading: newMode })
+      });
+      if (res) {
+        isPaperTrading = res.isPaperTrading;
+        loadOrders();
+      }
+    });
+
+    document.getElementById('btn-dispatch-webhook').addEventListener('click', async () => {
+      const ev = document.getElementById('select-webhook-event').value;
+      const targetUrl = document.getElementById('input-webhook-url').value;
+      const res = await apiFetch('/api/webhook/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: ev, target_url: targetUrl })
+      });
+      if (res && res.status === 'ok') {
+        alert(`Signed webhook event "${ev}" simulated successfully!\nHeaders: ${Object.keys(res.headers).join(', ')}`);
+        // If targeting our own receiver, dispatch directly to test the handshake
+        if (targetUrl.includes('/api/webhook/receive')) {
+          await fetch(targetUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...res.headers
+            },
+            body: JSON.stringify(res.body)
+          });
+        }
+      }
     });
 
     document.getElementById('btn-recalculate-sizing').addEventListener('click', () => {
@@ -1078,11 +1353,12 @@
       document.getElementById('status-footer-port').textContent = `Target API: ${apiBase}`;
 
       const res = await apiFetch('/api/signals');
-      if (res && res.data) {
+      if (res && res.payload) {
         if (res.watchlist) currentWatchlist = res.watchlist;
         renderWatchlistTags();
-        renderSignals(res.data);
+        renderSignals(res.payload);
       }
+      loadOrders();
       initSSE();
     }
 
