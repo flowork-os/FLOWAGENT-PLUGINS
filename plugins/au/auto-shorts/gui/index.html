@@ -135,15 +135,57 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="input-project-name">Project Name</label>
-            <input type="text" id="input-project-name" class="input-text" placeholder="e.g. Podcast Ep 42 Highlights">
-          </div>
-          <div class="form-group">
-            <label for="input-video-path">Video File Absolute Path</label>
-            <div class="path-input-group">
-              <input type="text" id="input-video-path" class="input-text" placeholder="/path/to/recording.mp4">
+            <label>Video Source (Multi-OS Supported)</label>
+            
+            <!-- Drag & Drop / Click to Browse Box -->
+            <div class="video-drop-zone" id="modal-dropzone">
+              <span class="drop-zone-icon">🎬</span>
+              <div class="drop-zone-title">Click to Browse or Drag & Drop Video</div>
+              <div class="drop-zone-subtitle">MP4, MKV, MOV, WebM, TS, AVI</div>
+              <input type="file" id="modal-file-input" accept="video/*,.mp4,.mkv,.mov,.webm,.ts,.avi,.m4v" style="display: none;">
             </div>
-            <small class="helper-text">Accepts MP4, MKV, MOV, WebM, or TS video files.</small>
+
+            <!-- Multi-OS Actions Row -->
+            <div class="browse-actions-row">
+              <button type="button" class="btn btn-secondary" id="btn-browse-file" title="Universal browser file selector (Multi-OS)">
+                <span>📂 Browse File</span>
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-os-picker" title="Native System Dialog (Linux Zenity / Windows PowerShell / macOS)">
+                <span>🖥️ OS Dialog</span>
+              </button>
+            </div>
+
+            <!-- Selected File Badge / Status Box -->
+            <div class="selected-file-badge hidden" id="selected-file-badge">
+              <span class="badge-icon">✅</span>
+              <div class="badge-info">
+                <span class="badge-name" id="badge-file-name">video.mp4</span>
+                <span class="badge-size" id="badge-file-size">0 MB</span>
+              </div>
+              <button type="button" class="btn-clear-selection" id="btn-clear-file" title="Clear selection">&times;</button>
+            </div>
+
+            <!-- Upload Progress Bar (when streaming via browser) -->
+            <div class="upload-progress-container hidden" id="upload-progress-box">
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="upload-progress-fill"></div>
+              </div>
+              <div class="progress-label" id="upload-progress-text">Uploading video... 0%</div>
+            </div>
+
+            <!-- File Path Input (Auto-filled or manual) -->
+            <div class="manual-path-box">
+              <label for="input-video-path" class="small-label">File Path (Auto-filled or manual)</label>
+              <div class="path-input-group">
+                <input type="text" id="input-video-path" class="input-text" placeholder="e.g. /path/to/video.mp4 or C:\path\to\video.mp4">
+              </div>
+              <small class="helper-text">Accepts Linux (/path/video.mp4), Windows (C:\path\video.mp4), or Browser Uploads.</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="input-project-name">Project Name (Optional)</label>
+            <input type="text" id="input-project-name" class="input-text" placeholder="Auto-generated from video filename">
           </div>
         </div>
         <div class="modal-footer">

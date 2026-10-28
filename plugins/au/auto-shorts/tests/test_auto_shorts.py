@@ -89,5 +89,59 @@ class TestAutoShortsStudio(unittest.TestCase):
         self.assertEqual(data.get("width"), 1920)
         self.assertEqual(data.get("height"), 1080)
 
+    def test_07_server_upload_and_endpoints(self):
+        import urllib.request
+        import time
+
+        test_port = 17905
+        env = os.environ.copy()
+        env["FLOWORK_APP_PORT"] = str(test_port)
+        env["FLOWORK_TEST_MODE"] = "1"
+        server_path = os.path.join(APP_DIR, "engine", "server.mjs")
+        
+        proc = subprocess.Popen(["node", server_path], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(0.5)
+        try:
+            # 1. Test /api/status
+            req = urllib.request.Request(f"http://127.0.0.1:{test_port}/api/status")
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                self.assertEqual(resp.status, 200)
+                status_data = json.loads(resp.read().decode())
+                self.assertEqual(status_data.get("status"), "SUCCESS")
+
+            # 2. Test /api/upload
+            dummy_content = b"TEST_VIDEO_PAYLOAD_SOVEREIGN"
+            upload_req = urllib.request.Request(
+                f"http://127.0.0.1:{test_port}/api/upload",
+                data=dummy_content,
+                headers={"x-filename": "test_sample.mp4", "Content-Type": "application/octet-stream"},
+                method="POST"
+            )
+            with urllib.request.urlopen(upload_req, timeout=3) as resp:
+                self.assertEqual(resp.status, 200)
+                upload_data = json.loads(resp.read().decode())
+                self.assertTrue(upload_data.get("success"))
+                uploaded_file = upload_data.get("filePath")
+                self.assertTrue(os.path.isfile(uploaded_file))
+                if os.path.isfile(uploaded_file):
+                    os.remove(uploaded_file)
+
+            # 3. Test /api/pick-file route exists and returns valid JSON without crashing
+            pick_req = urllib.request.Request(f"http://127.0.0.1:{test_port}/api/pick-file", method="POST")
+            with urllib.request.urlopen(pick_req, timeout=3) as resp:
+                self.assertEqual(resp.status, 200)
+                pick_data = json.loads(resp.read().decode())
+                self.assertIn("success", pick_data)
+        finally:
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except Exception:
+                proc.kill()
+            if proc.stdout:
+                proc.stdout.close()
+            if proc.stderr:
+                proc.stderr.close()
+
 if __name__ == "__main__":
     unittest.main()

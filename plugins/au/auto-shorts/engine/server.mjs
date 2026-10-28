@@ -38,9 +38,13 @@ function saveProjects(projects) {
   fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2));
 }
 
+const PYTHON_CMD = process.platform === 'win32'
+  ? (process.env.PYTHON_BIN || 'python')
+  : (process.env.PYTHON_BIN || 'python3');
+
 function runPython(args) {
   return new Promise((resolve, reject) => {
-    execFile('python3', [CROPPER_PY, ...args], { maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+    execFile(PYTHON_CMD, [CROPPER_PY, ...args], { maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
       if (err) {
         return reject(new Error(stderr || stdout || err.message));
       }
@@ -51,6 +55,99 @@ function runPython(args) {
       }
     });
   });
+}
+
+function pickNativeFile() {
+  if (process.env.FLOWORK_TEST_MODE === '1') {
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    const platform = process.platform;
+
+    if (platform === 'linux') {
+      const zenity = spawn('zenity', [
+        '--file-selection',
+        '--timeout=120',
+        '--title=Select Video File for AutoShorts',
+        '--file-filter=Video Files (mp4, mkv, mov, webm, ts, avi, m4v)|*.mp4 *.mkv *.mov *.webm *.ts *.avi *.m4v *.flv *.wmv',
+        '--file-filter=All Files|*'
+      ]);
+
+      let out = '';
+      zenity.stdout.on('data', (d) => { out += d.toString(); });
+      zenity.on('close', (code) => {
+        if (code === 0 && out.trim()) {
+          return resolve(out.trim());
+        }
+        if (code === 1) {
+          // User explicitly canceled zenity dialog
+          return resolve(null);
+        }
+        fallbackTkinter(resolve);
+      });
+      zenity.on('error', () => {
+        fallbackTkinter(resolve);
+      });
+    } else if (platform === 'darwin') {
+      const script = 'POSIX path of (choose file of type {"mp4", "mkv", "mov", "webm", "ts", "avi", "m4v"} with prompt "Select Video File for AutoShorts")';
+      const proc = spawn('osascript', ['-e', script]);
+      let out = '';
+      proc.stdout.on('data', (d) => { out += d.toString(); });
+      proc.on('close', (code) => {
+        if (code === 0 && out.trim()) {
+          resolve(out.trim());
+        } else {
+          fallbackTkinter(resolve);
+        }
+      });
+      proc.on('error', () => fallbackTkinter(resolve));
+    } else if (platform === 'win32') {
+      const ps = `Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.OpenFileDialog; $f.Title = 'Select Video File for AutoShorts'; $f.Filter = 'Video Files (*.mp4;*.mkv;*.mov;*.webm;*.ts;*.avi;*.m4v)|*.mp4;*.mkv;*.mov;*.webm;*.ts;*.avi;*.m4v|All Files (*.*)|*.*'; if($f.ShowDialog() -eq 'OK'){Write-Output $f.FileName}`;
+      const proc = spawn('powershell', ['-NoProfile', '-Command', ps]);
+      let out = '';
+      proc.stdout.on('data', (d) => { out += d.toString(); });
+      proc.on('close', (code) => {
+        if (code === 0 && out.trim()) {
+          resolve(out.trim());
+        } else {
+          fallbackTkinter(resolve);
+        }
+      });
+      proc.on('error', () => fallbackTkinter(resolve));
+    } else {
+      fallbackTkinter(resolve);
+    }
+  });
+}
+
+function fallbackTkinter(resolve) {
+  const pyCode = `import sys
+try:
+    import tkinter as tk
+    from tkinter import filedialog
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    f = filedialog.askopenfilename(
+        title='Select Video File for AutoShorts',
+        filetypes=[('Video Files', '*.mp4 *.mkv *.mov *.webm *.ts *.avi *.m4v *.flv *.wmv'), ('All Files', '*.*')]
+    )
+    if f:
+        print(f.strip())
+except Exception:
+    pass
+`;
+  const proc = spawn(PYTHON_CMD, ['-c', pyCode]);
+  let out = '';
+  proc.stdout.on('data', (d) => { out += d.toString(); });
+  proc.on('close', (code) => {
+    if (code === 0 && out.trim()) {
+      resolve(out.trim());
+    } else {
+      resolve(null);
+    }
+  });
+  proc.on('error', () => resolve(null));
 }
 
 function checkBinary(name) {
@@ -116,6 +213,77 @@ const server = http.createServer(async (req, res) => {
     }
 
     // -------------------------------------------------------------
+    // API: Native OS File Picker Dialog (Linux / Windows / macOS)
+    // -------------------------------------------------------------
+    if (pathname === '/api/pick-file' && (req.method === 'POST' || req.method === 'GET')) {
+      try {
+        const filePath = await pickNativeFile();
+        if (filePath && fs.existsSync(filePath)) {
+          const stats = fs.statSync(filePath);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({
+            status: 'SUCCESS',
+            success: true,
+            filePath,
+            fileName: path.basename(filePath),
+            size: stats.size
+          }));
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          status: 'CANCELED',
+          success: false,
+          reason: 'canceled_or_unsupported'
+        }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+    }
+
+    // -------------------------------------------------------------
+    // API: Upload Video File (Browser Drag-and-Drop / Browse Stream)
+    // -------------------------------------------------------------
+    if (pathname === '/api/upload' && req.method === 'POST') {
+      const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+      if (!fs.existsSync(UPLOADS_DIR)) {
+        fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+      }
+
+      const rawHeaderName = req.headers['x-filename'] || url.searchParams.get('filename') || `upload_${Date.now()}.mp4`;
+      let originalName = rawHeaderName;
+      try {
+        originalName = decodeURIComponent(rawHeaderName);
+      } catch {
+        originalName = rawHeaderName;
+      }
+
+      const safeBase = path.basename(originalName).replace(/[^a-zA-Z0-9._-]/g, '_');
+      const targetPath = path.join(UPLOADS_DIR, `${Date.now()}_${safeBase}`);
+      const writeStream = fs.createWriteStream(targetPath);
+
+      req.pipe(writeStream);
+
+      writeStream.on('finish', () => {
+        const stats = fs.statSync(targetPath);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          status: 'SUCCESS',
+          success: true,
+          filePath: targetPath,
+          fileName: originalName,
+          size: stats.size
+        }));
+      });
+
+      writeStream.on('error', (err) => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Upload stream failed: ${err.message}` }));
+      });
+      return;
+    }
+
+    // -------------------------------------------------------------
     // API: List Projects
     // -------------------------------------------------------------
     if (pathname === '/api/projects' && req.method === 'GET') {
@@ -132,7 +300,13 @@ const server = http.createServer(async (req, res) => {
       for await (const chunk of req) body += chunk;
       const data = JSON.parse(body || '{}');
 
-      const sourcePath = data.source_path || data.path;
+      let sourcePath = (data.source_path || data.path || '').trim();
+      // Remove any surrounding quotes from user copy-paste (e.g., Windows "Copy as Path")
+      sourcePath = sourcePath.replace(/^["']|["']$/g, '');
+      if (sourcePath) {
+        sourcePath = path.normalize(sourcePath);
+      }
+
       if (!sourcePath || !fs.existsSync(sourcePath)) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: `File not found: ${sourcePath}` }));

@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-28T22:48:53Z",
+  "updated_at": "2026-10-28T23:13:43Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -308,7 +308,7 @@
       "description": "Sovereign AI-driven long-form video to vertical 9:16 viral short-form clip generator. Features automated transcription, AI hook detection, viral moment ranking, mathematical center-cropping, and dynamic subtitle burning.",
       "category": "Media, Creative Writing & Journalism",
       "icon": "✂️",
-      "hash": "162da3a522d9cba3",
+      "hash": "b11729e915bed5f5",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"

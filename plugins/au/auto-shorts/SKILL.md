@@ -45,6 +45,8 @@ keywords:
 ## 2. Architecture & API Contracts
 The backend runs on dynamic port `process.env.FLOWORK_APP_PORT || 17899`:
 - `GET /api/status`: Inspects runtime availability of FFmpeg, FFprobe, Whisper, Ollama, and API keys.
+- `POST /api/pick-file`: Multi-OS native file dialog (Linux Zenity / Windows PowerShell / macOS AppleScript / Tkinter).
+- `POST /api/upload`: Multi-OS browser streaming binary upload endpoint saving into data/uploads/.
 - `GET /api/projects`: Lists existing projects and processing states.
 - `POST /api/projects`: Initializes a new project from a video path or uploaded file.
 - `POST /api/projects/:id/transcribe`: Extracts 16kHz mono audio and produces word-level transcripts.

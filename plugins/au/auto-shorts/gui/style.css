@@ -540,3 +540,139 @@ body {
   margin-top: 4px;
   display: block;
 }
+
+/* Multi-OS Video Picker & Drop Zone */
+.video-drop-zone {
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.video-drop-zone:hover,
+.video-drop-zone.dragover {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.05);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+.drop-zone-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.drop-zone-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.drop-zone-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.browse-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.browse-actions-row .btn {
+  flex: 1;
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+.selected-file-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.selected-file-badge.hidden {
+  display: none !important;
+}
+
+.badge-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4ade80;
+  word-break: break-all;
+}
+
+.badge-size {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.btn-clear-selection {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.btn-clear-selection:hover {
+  color: #fff;
+}
+
+.upload-progress-container {
+  margin-bottom: 12px;
+}
+
+.upload-progress-container.hidden {
+  display: none !important;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-yellow));
+  transition: width 0.15s ease;
+}
+
+.progress-label {
+  font-size: 11px;
+  color: var(--neon-cyan);
+  margin-top: 4px;
+  text-align: right;
+}
+
+.manual-path-box {
+  margin-top: 10px;
+}
+
+.small-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  display: block;
+}

@@ -40,6 +40,17 @@
   const btnSubmitProject = document.getElementById('btn-submit-project');
   const inputProjectName = document.getElementById('input-project-name');
   const inputVideoPath = document.getElementById('input-video-path');
+  const modalDropzone = document.getElementById('modal-dropzone');
+  const modalFileInput = document.getElementById('modal-file-input');
+  const btnBrowseFile = document.getElementById('btn-browse-file');
+  const btnOsPicker = document.getElementById('btn-os-picker');
+  const selectedFileBadge = document.getElementById('selected-file-badge');
+  const badgeFileName = document.getElementById('badge-file-name');
+  const badgeFileSize = document.getElementById('badge-file-size');
+  const btnClearFile = document.getElementById('btn-clear-file');
+  const uploadProgressBox = document.getElementById('upload-progress-box');
+  const uploadProgressFill = document.getElementById('upload-progress-fill');
+  const uploadProgressText = document.getElementById('upload-progress-text');
 
   // Format seconds to mm:ss
   function formatTime(sec) {
@@ -265,11 +276,135 @@
     }
   };
 
-  // 7. Modal Handlers
+  // 7. Multi-OS File Selection & Modal Handlers
+  function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return '0 MB';
+    const mb = bytes / (1024 * 1024);
+    if (mb < 1) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+    return `${mb.toFixed(2)} MB`;
+  }
+
+  function setVideoFileSelection(filePath, fileName, sizeBytes) {
+    inputVideoPath.value = filePath;
+    badgeFileName.textContent = fileName || (filePath ? filePath.split(/[/\\]/).pop() : 'video.mp4');
+    badgeFileSize.textContent = formatBytes(sizeBytes);
+    selectedFileBadge.classList.remove('hidden');
+
+    if (!inputProjectName.value.trim() && fileName) {
+      const cleanName = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      inputProjectName.value = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    }
+  }
+
+  function clearVideoFileSelection() {
+    inputVideoPath.value = '';
+    modalFileInput.value = '';
+    selectedFileBadge.classList.add('hidden');
+    uploadProgressBox.classList.add('hidden');
+  }
+
+  async function handleFileUpload(file) {
+    if (!file) return;
+
+    uploadProgressBox.classList.remove('hidden');
+    selectedFileBadge.classList.add('hidden');
+    uploadProgressFill.style.width = '0%';
+    uploadProgressText.textContent = `Uploading ${file.name}... 0%`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/api/upload`);
+    xhr.setRequestHeader('x-filename', encodeURIComponent(file.name));
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        uploadProgressFill.style.width = `${pct}%`;
+        uploadProgressText.textContent = `Uploading ${file.name}... ${pct}%`;
+      }
+    };
+
+    xhr.onload = () => {
+      uploadProgressBox.classList.add('hidden');
+      if (xhr.status === 200) {
+        try {
+          const resp = JSON.parse(xhr.responseText);
+          if (resp.success && resp.filePath) {
+            setVideoFileSelection(resp.filePath, resp.fileName || file.name, resp.size || file.size);
+          } else {
+            alert('Upload error: ' + (resp.error || 'Server error'));
+          }
+        } catch (e) {
+          alert('Upload response parse failed: ' + e.message);
+        }
+      } else {
+        alert(`Upload failed with status ${xhr.status}: ${xhr.statusText}`);
+      }
+    };
+
+    xhr.onerror = () => {
+      uploadProgressBox.classList.add('hidden');
+      alert('Network error during file upload.');
+    };
+
+    xhr.send(file);
+  }
+
+  async function triggerOsFilePicker() {
+    btnOsPicker.disabled = true;
+    const originalText = btnOsPicker.innerHTML;
+    btnOsPicker.innerHTML = '<span>⏳ Opening Dialog...</span>';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/pick-file`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success && data.filePath) {
+        setVideoFileSelection(data.filePath, data.fileName, data.size);
+      } else if (data.reason === 'canceled_or_unsupported') {
+        console.log('Native file picker returned no file or was canceled.');
+      }
+    } catch (err) {
+      console.warn('OS picker request error, falling back to browser picker:', err);
+      modalFileInput.click();
+    } finally {
+      btnOsPicker.disabled = false;
+      btnOsPicker.innerHTML = originalText;
+    }
+  }
+
+  btnBrowseFile.onclick = () => modalFileInput.click();
+  modalDropzone.onclick = () => modalFileInput.click();
+  btnOsPicker.onclick = () => triggerOsFilePicker();
+  btnClearFile.onclick = () => clearVideoFileSelection();
+
+  modalFileInput.onchange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileUpload(e.target.files[0]);
+    }
+  };
+
+  modalDropzone.ondragover = (e) => {
+    e.preventDefault();
+    modalDropzone.classList.add('dragover');
+  };
+
+  modalDropzone.ondragleave = () => {
+    modalDropzone.classList.remove('dragover');
+  };
+
+  modalDropzone.ondrop = (e) => {
+    e.preventDefault();
+    modalDropzone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
   btnNewProject.onclick = () => {
     modalProject.classList.remove('hidden');
     inputProjectName.value = '';
-    inputVideoPath.value = '';
+    clearVideoFileSelection();
     inputProjectName.focus();
   };
 
@@ -277,12 +412,17 @@
   btnCancelProject.onclick = () => modalProject.classList.add('hidden');
 
   btnSubmitProject.onclick = async () => {
-    const name = inputProjectName.value.trim();
-    const sourcePath = inputVideoPath.value.trim();
+    let name = inputProjectName.value.trim();
+    let sourcePath = inputVideoPath.value.trim();
 
     if (!sourcePath) {
-      alert('Please provide an absolute path to a video file.');
+      alert('Please select or browse a video file.');
       return;
+    }
+
+    if (!name) {
+      const base = sourcePath.split(/[/\\]/).pop().replace(/\.[^/.]+$/, '');
+      name = base.charAt(0).toUpperCase() + base.slice(1);
     }
 
     btnSubmitProject.disabled = true;
