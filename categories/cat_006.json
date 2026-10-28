@@ -1,7 +1,7 @@
 {
   "category_id": "CAT-006",
   "category": "Finance & Algorithmic Trading",
-  "total_items": 1,
+  "total_items": 2,
   "items": [
     {
       "id": "whale-radar",
@@ -14,6 +14,18 @@
       "shard": "index/wh/al/whale_radar.json",
       "source_path": "plugins/wh/whale-radar",
       "hash": "3f140820057a2642"
+    },
+    {
+      "id": "market-signal",
+      "name": "Market Signal & Swing Automation Studio",
+      "category_id": "CAT-006",
+      "category": "Finance & Algorithmic Trading",
+      "version": "1.0.0",
+      "description": "Sovereign real-time market technical scanner and swing signal automation studio for stocks and crypto. Multi-indicator confluence (RSI, EMA 20/50/200, MACD, Bollinger Bands, Volume Surge), automated 1:2+ R:R trade plans, and HMAC-SHA256 signed webhook alerts.",
+      "icon": "📈",
+      "shard": "index/ma/rk/market_signal.json",
+      "source_path": "plugins/ma/market-signal",
+      "hash": "c99538295e4ad1a3"
     }
   ]
 }

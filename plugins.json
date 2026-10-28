@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-28T17:44:46Z",
+  "updated_at": "2026-10-28T18:00:46Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -258,6 +258,27 @@
       "shard": "index/fl/ow/flowork_sentinel.json",
       "source_path": "plugins/fl/flowork-sentinel",
       "category_id": "CAT-001"
+    },
+    {
+      "id": "market-signal",
+      "name": "Market Signal & Swing Automation Studio",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Sovereign real-time market technical scanner and swing signal automation studio for stocks and crypto. Multi-indicator confluence (RSI, EMA 20/50/200, MACD, Bollinger Bands, Volume Surge), automated 1:2+ R:R trade plans, and HMAC-SHA256 signed webhook alerts.",
+      "category": "Finance & Algorithmic Trading",
+      "icon": "📈",
+      "hash": "c99538295e4ad1a3",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17892
+      },
+      "shard": "index/ma/rk/market_signal.json",
+      "source_path": "plugins/ma/market-signal",
+      "category_id": "CAT-006"
     }
   ]
 }
