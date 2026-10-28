@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-28T20:54:49Z",
+  "updated_at": "2026-10-28T22:48:53Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -299,6 +299,27 @@
       "shard": "index/tr/ad/trading_agents.json",
       "source_path": "plugins/tr/trading-agents",
       "category_id": "CAT-006"
+    },
+    {
+      "id": "auto-shorts",
+      "name": "AutoShorts Studio",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Sovereign AI-driven long-form video to vertical 9:16 viral short-form clip generator. Features automated transcription, AI hook detection, viral moment ranking, mathematical center-cropping, and dynamic subtitle burning.",
+      "category": "Media, Creative Writing & Journalism",
+      "icon": "✂️",
+      "hash": "162da3a522d9cba3",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17899
+      },
+      "shard": "index/au/to/auto_shorts.json",
+      "source_path": "plugins/au/auto-shorts",
+      "category_id": "CAT-010"
     }
   ]
 }

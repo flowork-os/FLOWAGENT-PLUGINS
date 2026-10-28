@@ -1,7 +1,7 @@
 {
   "category_id": "CAT-010",
   "category": "Media, Creative Writing & Journalism",
-  "total_items": 2,
+  "total_items": 3,
   "items": [
     {
       "id": "yt-downloader",
@@ -26,6 +26,18 @@
       "shard": "index/fl/ow/flow_studio.json",
       "source_path": "plugins/fl/flow-studio",
       "hash": "4e070781b42378d4"
+    },
+    {
+      "id": "auto-shorts",
+      "name": "AutoShorts Studio",
+      "category_id": "CAT-010",
+      "category": "Media, Creative Writing & Journalism",
+      "version": "1.0.0",
+      "description": "Sovereign AI-driven long-form video to vertical 9:16 viral short-form clip generator. Features automated transcription, AI hook detection, viral moment ranking, mathematical center-cropping, and dynamic subtitle burning.",
+      "icon": "✂️",
+      "shard": "index/au/to/auto_shorts.json",
+      "source_path": "plugins/au/auto-shorts",
+      "hash": "162da3a522d9cba3"
     }
   ]
 }
