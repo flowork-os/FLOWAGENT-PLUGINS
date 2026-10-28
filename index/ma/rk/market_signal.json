@@ -6,7 +6,7 @@
   "description": "Sovereign real-time market technical scanner and swing signal automation studio for stocks and crypto. Multi-indicator confluence (RSI, EMA 20/50/200, MACD, Bollinger Bands, Volume Surge), automated 1:2+ R:R trade plans, and HMAC-SHA256 signed webhook alerts.",
   "category": "Finance & Algorithmic Trading",
   "icon": "📈",
-  "hash": "c99538295e4ad1a3",
+  "hash": "96fde99ad89fb30a",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"

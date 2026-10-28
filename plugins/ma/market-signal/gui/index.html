@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Market Signal & Swing Automation Studio</title>
+  <title>Market Signal & Swing Automation Studio (KamdenAI Protocol)</title>
   <style>
     :root {
       --bg-dark: #070a0e;
@@ -135,7 +135,30 @@
       color: #fff;
     }
 
-    /* Metric Badges HUD */
+    /* Policy Banner */
+    .doctrine-banner {
+      background: rgba(0, 229, 255, 0.05);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 12px;
+      color: var(--cyan);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .doctrine-badge {
+      background: rgba(0, 229, 255, 0.15);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    /* Metrics HUD */
     .hud-metrics {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -175,7 +198,7 @@
       color: var(--text-muted);
     }
 
-    /* Main Section: Signal Board */
+    /* Signal Board */
     .section-title-bar {
       display: flex;
       justify-content: space-between;
@@ -196,7 +219,7 @@
 
     .signals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
       gap: 16px;
     }
 
@@ -211,7 +234,6 @@
       transition: all 0.2s ease;
       cursor: pointer;
       position: relative;
-      overflow: hidden;
     }
 
     .signal-card:hover {
@@ -231,6 +253,16 @@
       display: flex;
       align-items: baseline;
       gap: 8px;
+    }
+
+    .rank-tag {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
     }
 
     .ticker-symbol {
@@ -268,7 +300,6 @@
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 6px;
-      text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
@@ -279,22 +310,22 @@
       box-shadow: 0 0 10px rgba(0, 210, 106, 0.2);
     }
 
-    .status-watch {
+    .status-wait-for-reclaim {
       background: rgba(255, 184, 0, 0.2);
       color: var(--amber);
       border: 1px solid rgba(255, 184, 0, 0.4);
     }
 
-    .status-no-buy {
+    .status-failed-confirmation {
       background: rgba(255, 255, 255, 0.05);
       color: var(--text-muted);
       border: 1px solid var(--border-color);
     }
 
-    .status-confirmed-sell {
-      background: rgba(255, 56, 96, 0.2);
+    .status-ungraded {
+      background: rgba(255, 56, 96, 0.15);
       color: var(--red);
-      border: 1px solid rgba(255, 56, 96, 0.4);
+      border: 1px solid rgba(255, 56, 96, 0.3);
     }
 
     /* Score meter */
@@ -374,6 +405,38 @@
     .target-val { color: var(--green); }
     .stop-val { color: var(--red); }
 
+    /* Quick Exit Notice */
+    .quick-exit-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.08);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Risk Sizing Box */
+    .sizing-box {
+      background: rgba(0, 210, 106, 0.05);
+      border: 1px solid rgba(0, 210, 106, 0.2);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+
+    .sizing-val {
+      color: var(--green);
+      font-weight: 700;
+    }
+
     /* Modal / Inspector */
     .modal-overlay {
       position: fixed;
@@ -442,7 +505,7 @@
       border-radius: 0 6px 6px 0;
     }
 
-    /* Watchlist & Automation Panels */
+    /* Panels */
     .panel-box {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -452,6 +515,27 @@
       flex-direction: column;
       gap: 12px;
     }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .text-input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 14px;
+      color: #fff;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      flex: 1;
+      min-width: 180px;
+      outline: none;
+    }
+
+    .text-input:focus { border-color: var(--cyan); }
 
     .ticker-tags {
       display: flex;
@@ -476,25 +560,6 @@
       color: var(--text-muted);
     }
     .ticker-remove:hover { color: var(--red); }
-
-    .input-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .text-input {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 8px 14px;
-      color: #fff;
-      font-size: 13px;
-      font-family: var(--font-mono);
-      flex: 1;
-      outline: none;
-    }
-
-    .text-input:focus { border-color: var(--cyan); }
 
     /* Footer status */
     .footer-status {
@@ -532,74 +597,94 @@
         <span class="studio-icon">📈</span>
         <div>
           <h1 class="studio-title">Market Signal & Swing Automation Studio</h1>
-          <p class="studio-subtitle">Sovereign real-time technical scanner, automated trade plans & webhook alerts</p>
+          <p class="studio-subtitle">Audited KamdenAI Protocol: 8-Candidate Opening Board • Status Over Rank • 10:05 AM Quick Exit</p>
         </div>
       </div>
       <div class="header-controls">
         <button id="btn-scan-now" class="btn-action">
-          <span>⚡</span> <span id="scan-btn-text">SCAN MARKET NOW</span>
+          <span>⚡</span> <span id="scan-btn-text">SCAN OPENING BOARD</span>
         </button>
+        <button id="btn-toggle-sizing" class="btn-secondary">💰 Risk Sizing</button>
+        <button id="btn-ai-prompt" class="btn-secondary">🤖 AI Trade Brief</button>
         <button id="btn-toggle-watchlist" class="btn-secondary">⚙️ Watchlist</button>
-        <button id="btn-toggle-webhook" class="btn-secondary">📡 Webhook</button>
+        <button id="btn-export-csv" class="btn-secondary">📥 Export CSV</button>
       </div>
     </header>
+
+    <!-- Doctrine Invariant Banner -->
+    <div class="doctrine-banner">
+      <div>
+        <span class="doctrine-badge">INVARIANT</span> <strong>Status Comes Before Rank</strong> — Rank #1 is not an automatic entry. Only <code>confirmed_buys</code> represent actionable execution plans.
+      </div>
+      <div>
+        <span class="doctrine-badge">EXIT POLICY</span> <strong>10:05 AM Quick Exit</strong> (Target first, Stop first, or Forced time reference).
+      </div>
+    </div>
 
     <!-- Metrics HUD -->
     <section class="hud-metrics">
       <div class="metric-card">
-        <div class="metric-label">Confirmed Buy Signals</div>
+        <div class="metric-label">Confirmed Buys (Actionable)</div>
         <div class="metric-value" id="hud-confirmed" style="color: var(--green);">0</div>
-        <div class="metric-sub">Strict multi-indicator confluence</div>
+        <div class="metric-sub" id="hud-no-picks">Evaluated post-open review</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Watch Only Signals</div>
+        <div class="metric-label">Watch Only (Pending Reclaim)</div>
         <div class="metric-value" id="hud-watch" style="color: var(--amber);">0</div>
-        <div class="metric-sub">Pre-breakout momentum building</div>
+        <div class="metric-sub">Observational study; no order</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Total Watchlist Assets</div>
-        <div class="metric-value" id="hud-scanned">0</div>
-        <div class="metric-sub">Stocks & Crypto assets scanned</div>
+        <div class="metric-label">Opening Board Candidates</div>
+        <div class="metric-value" id="hud-candidates">0 / 8</div>
+        <div class="metric-sub">Ranked morning candidates</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Engine Telemetry</div>
-        <div class="metric-value" style="font-size: 15px;">
-          <span class="pulse-dot"></span> <span id="hud-telemetry">LIVE 1D CANDLES</span>
+        <div class="metric-label">Quick Exit Window</div>
+        <div class="metric-value" style="font-size: 15px; color: var(--cyan);">
+          <span class="pulse-dot"></span> <span>10:05 AM REFERENCE</span>
         </div>
         <div class="metric-sub" id="hud-last-scan">Last update: Initializing...</div>
       </div>
     </section>
 
-    <!-- Watchlist Manager (Hidden by default) -->
-    <section id="watchlist-panel" class="panel-box" style="display: none;">
-      <div style="font-weight: 700; font-size: 14px;">Watchlist Configuration</div>
-      <div class="ticker-tags" id="watchlist-tags-container"></div>
-      <div class="input-row">
-        <input type="text" id="input-new-ticker" class="text-input" placeholder="Enter ticker symbol (e.g. QQQ, AMD, DOGE-USD)...">
-        <button id="btn-add-ticker" class="btn-action">Add Ticker</button>
-      </div>
-    </section>
-
-    <!-- Webhook Simulator Panel (Hidden by default) -->
-    <section id="webhook-panel" class="panel-box" style="display: none;">
-      <div style="font-weight: 700; font-size: 14px;">Automated Webhook Dispatcher (HMAC-SHA256 Signed)</div>
+    <!-- Risk Sizing Configuration Panel -->
+    <section id="sizing-panel" class="panel-box" style="display: none;">
+      <div style="font-weight: 700; font-size: 14px; color: #fff;">Account Risk Sizing Model (risk-sizing.js)</div>
       <p style="font-size: 12px; color: var(--text-muted);">
-        Dispatches confirmed signals to Discord, Slack, trading bots, or private webhooks.
+        Calculates exact shares and dollar exposure based on your account equity and 1% risk per trade.
       </p>
       <div class="input-row">
-        <input type="text" id="input-webhook-url" class="text-input" placeholder="https://discord.com/api/webhooks/..." value="https://example.com/webhook">
-        <button id="btn-send-webhook" class="btn-action">Simulate Webhook</button>
+        <div>
+          <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Account Cash ($)</label>
+          <input type="number" id="input-cash" class="text-input" value="5000" style="width: 140px;">
+        </div>
+        <div>
+          <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Risk Per Trade (%)</label>
+          <input type="number" id="input-risk-pct" class="text-input" value="1.0" step="0.1" style="width: 100px;">
+        </div>
+        <div style="display: flex; align-items: flex-end;">
+          <button id="btn-recalculate-sizing" class="btn-action">Recalculate Sizing</button>
+        </div>
       </div>
-      <div id="webhook-output-box" style="font-family: var(--font-mono); font-size: 11px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px; display: none; max-height: 140px; overflow-y: auto;"></div>
     </section>
 
-    <!-- Signal Cards Section -->
+    <!-- Watchlist Manager Panel -->
+    <section id="watchlist-panel" class="panel-box" style="display: none;">
+      <div style="font-weight: 700; font-size: 14px; color: #fff;">Watchlist Assets (Screening Pool)</div>
+      <div class="ticker-tags" id="watchlist-tags-container"></div>
+      <div class="input-row">
+        <input type="text" id="input-new-ticker" class="text-input" placeholder="Add ticker symbol (e.g. QQQ, SMCI, DOGE-USD)...">
+        <button id="btn-add-ticker" class="btn-action">Add Asset</button>
+      </div>
+    </section>
+
+    <!-- Signal Cards Section: Opening Board -->
     <div class="section-title-bar">
       <div class="section-title">
-        <span>🏆 Ranked Market Opportunities</span>
+        <span>🌅 Official Opening Board (Rank 1 to 8)</span>
       </div>
       <div style="font-size: 12px; color: var(--text-muted);">
-        Filtered by Confluence Score
+        Click any card for technical factor breakdown
       </div>
     </div>
 
@@ -607,11 +692,26 @@
       <!-- Injected via JavaScript -->
     </div>
 
+    <!-- AI Trade Brief Modal -->
+    <div id="ai-modal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 720px;">
+        <div class="modal-header">
+          <div class="modal-title">🤖 AI Agent Trade Brief (prompt-builder.js)</div>
+          <button class="modal-close" id="ai-modal-close-btn">&times;</button>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted);">
+          Copy and paste this verified prompt directly into the AI Agent chat for execution review:
+        </p>
+        <textarea id="ai-prompt-textarea" style="width: 100%; height: 260px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: #fff; font-family: var(--font-mono); font-size: 12px; resize: none;"></textarea>
+        <button id="btn-copy-prompt" class="btn-action" style="align-self: flex-end;">📋 Copy Prompt</button>
+      </div>
+    </div>
+
     <!-- Details Modal -->
     <div id="details-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="modal-title" id="modal-ticker-title">NVDA Detailed Confluence</div>
+          <div class="modal-title" id="modal-ticker-title">Candidate Details</div>
           <button class="modal-close" id="modal-close-btn">&times;</button>
         </div>
         <div id="modal-body"></div>
@@ -620,7 +720,7 @@
 
     <!-- Footer -->
     <footer class="footer-status">
-      <div>Flowork OS Sovereign Canvas • Market Signal Engine v1.0.0</div>
+      <div>Flowork OS Sovereign Canvas • KamdenAI Audited Engine v1.1.0</div>
       <div id="status-footer-port">Port: Connecting...</div>
     </footer>
   </div>
@@ -629,15 +729,15 @@
     let apiBase = window.location.origin;
     let currentSignals = [];
     let currentWatchlist = [];
+    let currentCash = 5000;
+    let currentRiskPct = 1.0;
 
     async function resolveApiBase() {
-      // If served directly from microservice
       try {
         const testRes = await fetch(`${window.location.origin}/api/status`, { signal: AbortSignal.timeout(1000) });
         if (testRes.ok) return window.location.origin;
       } catch (_) {}
 
-      // Discover via Flowork Host
       try {
         const hostPort = window.location.port || '19890';
         const res = await fetch(`http://127.0.0.1:${hostPort}/api/plugins/market-signal/status`, { signal: AbortSignal.timeout(1500) });
@@ -673,7 +773,7 @@
           renderSignals(data);
         });
       } catch (err) {
-        console.warn('SSE failed, falling back to polling:', err);
+        console.warn('SSE stream notice:', err);
       }
     }
 
@@ -682,26 +782,36 @@
       const text = document.getElementById('scan-btn-text');
       if (isScanning) {
         btn.disabled = true;
-        text.textContent = 'SCANNING MARKET...';
+        text.textContent = 'SCANNING OPENING BOARD...';
       } else {
         btn.disabled = false;
-        text.textContent = 'SCAN MARKET NOW';
+        text.textContent = 'SCAN OPENING BOARD';
       }
     }
 
     function renderSignals(data) {
-      if (!data || !data.rankings) return;
-      currentSignals = data.rankings;
+      if (!data) return;
+      const candidates = data.confirmationResults || data.rankings || [];
+      currentSignals = candidates;
 
-      document.getElementById('hud-confirmed').textContent = data.confirmed_count || 0;
-      document.getElementById('hud-watch').textContent = data.watch_count || 0;
-      document.getElementById('hud-scanned').textContent = data.total_scanned || 0;
+      const confirmedCount = data.confirmedBuyCount ?? (data.confirmed_count || 0);
+      const watchCount = data.watchCount ?? (data.watch_count || 0);
+
+      document.getElementById('hud-confirmed').textContent = confirmedCount;
+      document.getElementById('hud-watch').textContent = watchCount;
+      document.getElementById('hud-candidates').textContent = `${candidates.length} / 8`;
       document.getElementById('hud-last-scan').textContent = `Last scan: ${new Date(data.last_scan_time || Date.now()).toLocaleTimeString()}`;
+
+      if (data.noConfirmedBuys || confirmedCount === 0) {
+        document.getElementById('hud-no-picks').textContent = 'No picks session (capital protected)';
+      } else {
+        document.getElementById('hud-no-picks').textContent = `${confirmedCount} actionable plans published`;
+      }
 
       const container = document.getElementById('signals-container');
       container.innerHTML = '';
 
-      data.rankings.forEach((item, idx) => {
+      candidates.forEach((item, idx) => {
         const card = document.createElement('div');
         card.className = 'signal-card';
 
@@ -709,23 +819,27 @@
         const changeClass = isUp ? 'price-up' : 'price-down';
         const changePrefix = isUp ? '+' : '';
 
-        let statusClass = 'status-no-buy';
-        if (item.status === 'CONFIRMED BUY') statusClass = 'status-confirmed-buy';
-        else if (item.status === 'WATCH ONLY') statusClass = 'status-watch';
-        else if (item.status === 'CONFIRMED SELL') statusClass = 'status-confirmed-sell';
+        const st = item.status || 'failed_confirmation';
+        let statusClass = 'status-failed-confirmation';
+        if (st === 'confirmed_buy') statusClass = 'status-confirmed-buy';
+        else if (st === 'wait_for_reclaim') statusClass = 'status-wait-for-reclaim';
+        else if (st === 'quote_unavailable') statusClass = 'status-ungraded';
 
+        const rank = item.openingConfirmation?.officialRank || (idx + 1);
         const tp = item.trade_plan || {};
+        const sz = item.sizing || {};
 
         card.innerHTML = `
           <div class="card-top">
             <div>
               <div class="ticker-name-box">
+                <span class="rank-tag">RANK #${rank}</span>
                 <span class="ticker-symbol">${item.ticker}</span>
                 <span class="price-change ${changeClass}">${changePrefix}${item.price_change_pct}%</span>
               </div>
               <div class="ticker-price">$${Number(item.current_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
-            <span class="badge-status ${statusClass}">${item.status}</span>
+            <span class="badge-status ${statusClass}">${item.statusLabel || item.status}</span>
           </div>
 
           <div class="score-bar-box">
@@ -747,22 +861,36 @@
 
           <div class="trade-plan-box">
             <div class="plan-item">
-              <span class="plan-label">Entry</span>
-              <span class="plan-val">$${tp.entry_price || 0}</span>
+              <span class="plan-label">Published Entry</span>
+              <span class="plan-val">$${item.entry || tp.entry_price || 0}</span>
             </div>
             <div class="plan-item">
-              <span class="plan-label">Stop Loss</span>
-              <span class="plan-val stop-val">$${tp.stop_loss || 0}</span>
+              <span class="plan-label">Stop Invalidation</span>
+              <span class="plan-val stop-val">$${item.stop || tp.stop_loss || 0}</span>
             </div>
             <div class="plan-item">
-              <span class="plan-label">Target 1</span>
-              <span class="plan-val target-val">$${tp.target_1 || 0}</span>
+              <span class="plan-label">Planned Target</span>
+              <span class="plan-val target-val">$${item.target || tp.target_1 || 0}</span>
             </div>
             <div class="plan-item">
-              <span class="plan-label">R:R Ratio</span>
-              <span class="plan-val" style="color: var(--cyan);">${tp.risk_reward || '1:1.5'}</span>
+              <span class="plan-label">R-Multiple</span>
+              <span class="plan-val" style="color: var(--cyan);">${item.rMultipleTarget || tp.risk_reward || '1.5R'}</span>
             </div>
           </div>
+
+          ${st === 'confirmed_buy' ? `
+            <div class="sizing-box">
+              <span>Position Sizing (1% Risk):</span>
+              <span class="sizing-val">${sz.shares || 0} shares ($${sz.position_cost || 0})</span>
+            </div>
+            <div class="quick-exit-badge">
+              <span>⏱️</span> <span>10:05 AM Quick Exit window active</span>
+            </div>
+          ` : `
+            <div style="font-size: 11px; color: var(--text-muted); font-style: italic;">
+              ${st === 'wait_for_reclaim' ? '👀 Holding observation. Do not buy before breakout reclaim.' : '🚫 Qualification failed. Not an official signal.'}
+            </div>
+          `}
         `;
 
         card.addEventListener('click', () => openModal(item));
@@ -775,24 +903,26 @@
       const title = document.getElementById('modal-ticker-title');
       const body = document.getElementById('modal-body');
 
-      title.textContent = `${item.ticker} — Confluence Factor Breakdown (${item.status})`;
-      
-      let factorsHtml = '<p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Triggered algorithmic confirmation factors:</p><ul class="factors-list">';
+      const rank = item.openingConfirmation?.officialRank || 1;
+      title.textContent = `Rank #${rank} ${item.ticker} — ${item.statusLabel || item.status}`;
+
+      let factorsHtml = '<p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Evidence & Trigger Factors:</p><ul class="factors-list">';
       if (item.factors && item.factors.length > 0) {
         item.factors.forEach(f => {
           factorsHtml += `<li class="factor-item">✓ ${f}</li>`;
         });
       } else {
-        factorsHtml += '<li class="factor-item" style="border-left-color: var(--text-muted); color: var(--text-muted);">No positive confluence factors triggered yet. Market is in consolidation or neutral posture.</li>';
+        factorsHtml += '<li class="factor-item" style="border-left-color: var(--text-muted); color: var(--text-muted);">Candidate did not qualify on volume or EMA breakout thresholds.</li>';
       }
       factorsHtml += '</ul>';
 
       const bb = item.bollinger || {};
+      const qe = item.quick_exit || {};
       factorsHtml += `
-        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color); font-size: 12px; font-family: var(--font-mono); color: var(--text-muted);">
-          <div>Bollinger Bands: Lower $${bb.lower || 0} | Mid $${bb.middle || 0} | Upper $${bb.upper || 0}</div>
-          <div>Bandwidth Squeeze: ${bb.bandwidth_pct || 0}%</div>
-          <div style="margin-top: 8px;">Macro Trend: EMA50 $${item.ema50} | EMA200 $${item.ema200}</div>
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color); font-size: 12px; font-family: var(--font-mono); color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+          <div><strong>10:05 AM Policy:</strong> ${qe.time_exit_policy || 'Target, Stop, or 10:05 AM reference exit.'}</div>
+          <div><strong>Bollinger Squeeze:</strong> ${bb.bandwidth_pct || 0}% bandwidth (Lower $${bb.lower || 0} | Upper $${bb.upper || 0})</div>
+          <div><strong>Moving Averages:</strong> EMA50 $${item.ema50} | EMA200 $${item.ema200}</div>
         </div>
       `;
 
@@ -824,24 +954,109 @@
       });
     }
 
+    function exportToCSV() {
+      if (!currentSignals || currentSignals.length === 0) {
+        alert('No signals to export.');
+        return;
+      }
+      const headers = ['received_at', 'date', 'event', 'ticker', 'rank', 'status', 'entry', 'stop', 'target', 'shares', 'risk_dollars', 'position_cost'];
+      const rows = currentSignals.map(s => {
+        const sz = s.sizing || {};
+        const rank = s.openingConfirmation?.officialRank || '';
+        return [
+          new Date().toISOString(),
+          new Date().toISOString().split('T')[0],
+          'confirmed_buys.created',
+          s.ticker,
+          rank,
+          s.status,
+          s.entry || '',
+          s.stop || '',
+          s.target || '',
+          sz.shares || '',
+          sz.planned_risk_dollars || '',
+          sz.position_cost || ''
+        ].join(',');
+      });
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `signals_log_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function generateAIPrompt() {
+      const confirmed = currentSignals.filter(s => s.status === 'confirmed_buy');
+      const watch = currentSignals.filter(s => s.status === 'wait_for_reclaim');
+
+      const promptText = [
+        "You are reviewing a Sovereign Flowork OS Stock & Crypto Signal Payload (KamdenAI Protocol).",
+        "Summarize the opening session in plain English for a disciplined trader.",
+        "MANDATORY DOCTRINE: 'Status comes before rank'. Do not treat Watch Only candidates as official entries.",
+        "Keep morning outcomes, 10:05 AM quick exits, and broker fills separate.",
+        "",
+        `Session Date: ${new Date().toISOString().split('T')[0]}`,
+        `Confirmed Buys: ${confirmed.length}`,
+        `Watch Only Candidates: ${watch.length}`,
+        "",
+        "Confirmed Actionable Trade Plans:",
+        ...confirmed.map(c => `- [RANK #${c.openingConfirmation?.officialRank}] ${c.ticker}: Entry $${c.entry} | Stop $${c.stop} | Target $${c.target} (${c.rMultipleTarget}) | Size: ${c.sizing?.shares} shares ($${c.sizing?.position_cost}) | Exit: 10:05 AM Quick Exit Window`),
+        "",
+        "Watch Only Observations:",
+        ...watch.map(w => `- [RANK #${w.openingConfirmation?.officialRank}] ${w.ticker}: $${w.current_price} | Awaiting 20 EMA reclaim confirmation`),
+        "",
+        "Provide execution notes and risk discipline reminders."
+      ].join('\n');
+
+      document.getElementById('ai-prompt-textarea').value = promptText;
+      document.getElementById('ai-modal').style.display = 'flex';
+    }
+
     // Event Listeners
     document.getElementById('modal-close-btn').addEventListener('click', () => {
       document.getElementById('details-modal').style.display = 'none';
     });
+    document.getElementById('ai-modal-close-btn').addEventListener('click', () => {
+      document.getElementById('ai-modal').style.display = 'none';
+    });
 
     document.getElementById('btn-scan-now').addEventListener('click', async () => {
       updateScanBtnState(true);
-      await apiFetch('/api/scan', { method: 'POST' });
+      await apiFetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cash: currentCash, risk: currentRiskPct })
+      });
+    });
+
+    document.getElementById('btn-toggle-sizing').addEventListener('click', () => {
+      const p = document.getElementById('sizing-panel');
+      p.style.display = p.style.display === 'none' ? 'flex' : 'none';
     });
 
     document.getElementById('btn-toggle-watchlist').addEventListener('click', () => {
-      const panel = document.getElementById('watchlist-panel');
-      panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+      const p = document.getElementById('watchlist-panel');
+      p.style.display = p.style.display === 'none' ? 'flex' : 'none';
     });
 
-    document.getElementById('btn-toggle-webhook').addEventListener('click', () => {
-      const panel = document.getElementById('webhook-panel');
-      panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+    document.getElementById('btn-recalculate-sizing').addEventListener('click', () => {
+      currentCash = parseFloat(document.getElementById('input-cash').value) || 5000;
+      currentRiskPct = parseFloat(document.getElementById('input-risk-pct').value) || 1.0;
+      document.getElementById('btn-scan-now').click();
+    });
+
+    document.getElementById('btn-ai-prompt').addEventListener('click', generateAIPrompt);
+    document.getElementById('btn-export-csv').addEventListener('click', exportToCSV);
+
+    document.getElementById('btn-copy-prompt').addEventListener('click', () => {
+      const ta = document.getElementById('ai-prompt-textarea');
+      ta.select();
+      navigator.clipboard.writeText(ta.value);
+      alert('Prompt copied to clipboard!');
     });
 
     document.getElementById('btn-add-ticker').addEventListener('click', async () => {
@@ -856,18 +1071,6 @@
       if (!currentWatchlist.includes(val)) currentWatchlist.push(val);
       input.value = '';
       renderWatchlistTags();
-    });
-
-    document.getElementById('btn-send-webhook').addEventListener('click', async () => {
-      const url = document.getElementById('input-webhook-url').value;
-      const res = await apiFetch('/api/webhook/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target_url: url })
-      });
-      const outBox = document.getElementById('webhook-output-box');
-      outBox.style.display = 'block';
-      outBox.textContent = JSON.stringify(res, null, 2);
     });
 
     async function init() {

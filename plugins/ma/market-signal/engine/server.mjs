@@ -45,7 +45,7 @@ function broadcastEvent(eventName, data) {
   }
 }
 
-function runScanner(tickers = currentWatchlist, interval = '1d') {
+function runScanner(tickers = currentWatchlist, interval = '1d', cash = 5000, risk = 1.0) {
   return new Promise((resolve, reject) => {
     isScanning = true;
     broadcastEvent('scan_status', { is_scanning: true });
@@ -54,6 +54,8 @@ function runScanner(tickers = currentWatchlist, interval = '1d') {
       SCANNER_SCRIPT,
       '--tickers', tickers.join(','),
       '--interval', interval,
+      '--cash', String(cash),
+      '--risk', String(risk),
       '--json'
     ];
 
@@ -148,6 +150,8 @@ const server = http.createServer(async (req, res) => {
     req.on('end', async () => {
       let tickers = currentWatchlist;
       let interval = '1d';
+      let cash = 5000;
+      let risk = 1.0;
       if (body) {
         try {
           const payload = JSON.parse(body);
@@ -155,6 +159,8 @@ const server = http.createServer(async (req, res) => {
             tickers = payload.tickers;
           }
           if (payload.interval) interval = payload.interval;
+          if (payload.cash) cash = Number(payload.cash) || 5000;
+          if (payload.risk) risk = Number(payload.risk) || 1.0;
         } catch (_) {}
       }
 
@@ -165,7 +171,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       try {
-        const results = await runScanner(tickers, interval);
+        const results = await runScanner(tickers, interval, cash, risk);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok', data: results }));
       } catch (err) {
