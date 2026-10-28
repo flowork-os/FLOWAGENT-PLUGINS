@@ -144,6 +144,33 @@
       gap: 6px;
     }
 
+    /* Toggle Control (from Chess Arena standard) */
+    .toggle-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      user-select: none;
+      transition: all 0.2s;
+    }
+
+    .toggle-control:hover {
+      border-color: rgba(0, 229, 255, 0.4);
+      color: #fff;
+    }
+
+    .toggle-control input {
+      accent-color: var(--cyan);
+      cursor: pointer;
+    }
+
     /* Doctrine Banner */
     .doctrine-banner {
       background: rgba(0, 229, 255, 0.05);
@@ -433,7 +460,7 @@
       color: var(--green);
       font-size: 11px;
       font-weight: 700;
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 6px;
       cursor: pointer;
       flex: 1;
@@ -445,6 +472,26 @@
       background: rgba(0, 210, 106, 0.25);
       border-color: var(--green);
       box-shadow: 0 0 10px rgba(0, 210, 106, 0.2);
+    }
+
+    .btn-dispatch-card {
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-dispatch-card:hover {
+      background: rgba(0, 229, 255, 0.25);
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
     }
 
     .quick-exit-badge {
@@ -613,6 +660,36 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
 
+    /* Toast Notification (Active Injection Banner) */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 28px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .dispatch-toast {
+      background: #0d1622;
+      border: 1px solid var(--cyan);
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0, 229, 255, 0.35);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
     /* Footer status */
     .footer-status {
       display: flex;
@@ -642,6 +719,9 @@
   </style>
 </head>
 <body>
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
   <div id="market-signal-root">
     <!-- Header -->
     <header class="studio-header">
@@ -649,18 +729,22 @@
         <span class="studio-icon">📈</span>
         <div>
           <h1 class="studio-title">Market Signal & Swing Automation Studio</h1>
-          <p class="studio-subtitle">Audited KamdenAI Protocol: 8-Candidate Opening Board • Status Over Rank • 10:05 AM Quick Exit</p>
+          <p class="studio-subtitle">Audited KamdenAI Protocol: 8-Candidate Opening Board • Status Over Rank • Active Prompt Injection</p>
         </div>
       </div>
       <div class="header-controls">
         <span class="paper-badge" id="badge-trading-mode">🛡️ PAPER TRADING ACTIVE</span>
+        <label class="toggle-control" title="Automatically inject opening trade brief into open chat without manual copy-paste">
+          <input type="checkbox" id="toggle-dispatch" checked>
+          <span>Auto-Dispatch to Open Chat</span>
+        </label>
         <button id="btn-scan-now" class="btn-action">
           <span>⚡</span> <span id="scan-btn-text">SCAN OPENING BOARD</span>
         </button>
         <button id="btn-toggle-orders" class="btn-secondary">📋 Staged Orders (<span id="staged-count-badge">0</span>)</button>
         <button id="btn-toggle-webhook" class="btn-secondary">📡 Webhook Studio</button>
         <button id="btn-toggle-sizing" class="btn-secondary">💰 Risk Sizing</button>
-        <button id="btn-ai-prompt" class="btn-secondary">🤖 AI Trade Brief</button>
+        <button id="btn-ai-prompt" class="btn-action" style="background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.4);">⚡ Dispatch Brief to Agent</button>
         <button id="btn-toggle-watchlist" class="btn-secondary">⚙️ Watchlist</button>
         <button id="btn-export-csv" class="btn-secondary">📥 Export CSV</button>
       </div>
@@ -672,7 +756,7 @@
         <span class="doctrine-badge">INVARIANT</span> <strong>Status Comes Before Rank</strong> — Rank #1 is not an automatic entry. Only <code>confirmed_buys</code> represent actionable execution plans.
       </div>
       <div>
-        <span class="doctrine-badge">EXIT POLICY</span> <strong>10:05 AM Quick Exit</strong> (Target first, Stop first, or Forced time reference).
+        <span class="doctrine-badge">ACTIVE INJECTION</span> Prompts are injected directly into chat via <code>/api/prompt-dispatch</code> — zero manual copy-paste required.
       </div>
     </div>
 
@@ -815,14 +899,17 @@
     <div id="ai-modal" class="modal-overlay">
       <div class="modal-content" style="max-width: 720px;">
         <div class="modal-header">
-          <div class="modal-title">🤖 AI Agent Trade Brief (prompt-builder.js)</div>
+          <div class="modal-title">🤖 AI Agent Trade Brief (Active Prompt Injection)</div>
           <button class="modal-close" id="ai-modal-close-btn">&times;</button>
         </div>
         <p style="font-size: 12px; color: var(--text-muted);">
-          Copy and paste this verified prompt directly into the AI Agent chat for execution review:
+          The prompt below will be dispatched directly to your open AI Agent chat session. No manual copy-paste is required:
         </p>
         <textarea id="ai-prompt-textarea" style="width: 100%; height: 260px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: #fff; font-family: var(--font-mono); font-size: 12px; resize: none;"></textarea>
-        <button id="btn-copy-prompt" class="btn-action" style="align-self: flex-end;">📋 Copy Prompt</button>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button id="btn-copy-prompt" class="btn-secondary">📋 Copy Fallback</button>
+          <button id="btn-dispatch-prompt" class="btn-action" style="background: linear-gradient(135deg, rgba(0, 229, 255, 0.3), rgba(0, 210, 106, 0.3)); border-color: var(--cyan);">⚡ Dispatch Directly to Agent Chat</button>
+        </div>
       </div>
     </div>
 
@@ -839,13 +926,14 @@
 
     <!-- Footer -->
     <footer class="footer-status">
-      <div>Flowork OS Sovereign Canvas • KamdenAI Audited Engine v1.2.0</div>
+      <div>Flowork OS Sovereign Canvas • KamdenAI Audited Engine v1.3.0</div>
       <div id="status-footer-port">Port: Connecting...</div>
     </footer>
   </div>
 
   <script>
     let apiBase = window.location.origin;
+    let servicePort = 17892;
     let currentSignals = [];
     let currentWatchlist = [];
     let currentCash = 5000;
@@ -853,10 +941,69 @@
     let isPaperTrading = true;
     let stagedOrders = [];
 
+    // Toast Notification System
+    function showToast(message, isSuccess = true) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'dispatch-toast';
+      toast.style.borderColor = isSuccess ? 'var(--cyan)' : 'var(--red)';
+      toast.innerHTML = `
+        <span style="font-size: 16px;">${isSuccess ? '⚡' : '⚠️'}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+      }, 4000);
+    }
+
+    // Active Prompt Dispatcher (Direct Agent Injection without Copy-Paste)
+    async function dispatchPromptToAgent(promptText, actionLabel = 'Action') {
+      const payload = {
+        toAgent: 'mr.flow',
+        triggerId: 'market-signal',
+        prompt: promptText
+      };
+
+      // Attempt 1: Direct cockpit host port 19890
+      try {
+        const res = await fetch('http://127.0.0.1:19890/api/prompt-dispatch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast(`Direct prompt for ${actionLabel} dispatched to open chat!`);
+          return true;
+        }
+      } catch (_) {}
+
+      // Attempt 2: Via local microservice proxy route (/api/prompt-dispatch)
+      try {
+        const res = await fetch(`${apiBase}/api/prompt-dispatch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast(`Direct prompt for ${actionLabel} dispatched to open chat!`);
+          return true;
+        }
+      } catch (_) {}
+
+      showToast(`Warning: Could not reach agent chat dispatch daemon.`, false);
+      return false;
+    }
+
     async function resolveApiBase() {
       try {
         const testRes = await fetch(`${window.location.origin}/api/status`, { signal: AbortSignal.timeout(1000) });
-        if (testRes.ok) return window.location.origin;
+        if (testRes.ok) {
+          const info = await testRes.json();
+          if (info.port) servicePort = info.port;
+          return window.location.origin;
+        }
       } catch (_) {}
 
       try {
@@ -864,10 +1011,14 @@
         const res = await fetch(`http://127.0.0.1:${hostPort}/api/plugins/market-signal/status`, { signal: AbortSignal.timeout(1500) });
         if (res.ok) {
           const info = await res.json();
-          if (info.port) return `http://127.0.0.1:${info.port}`;
+          if (info.port) {
+            servicePort = info.port;
+            return `http://127.0.0.1:${info.port}`;
+          }
         }
       } catch (_) {}
 
+      servicePort = 17892;
       return 'http://127.0.0.1:17892';
     }
 
@@ -892,6 +1043,15 @@
         sse.addEventListener('scan_complete', (e) => {
           const data = JSON.parse(e.data);
           renderSignals(data);
+          // Check Auto-Dispatch setting (just like Chess Arena auto-dispatch)
+          const autoDispatch = document.getElementById('toggle-dispatch')?.checked;
+          if (autoDispatch) {
+            const confirmed = (data.data?.confirmedBuys || []).length;
+            if (confirmed > 0) {
+              const brief = buildBriefPromptText();
+              dispatchPromptToAgent(brief, 'Morning Opening Board');
+            }
+          }
         });
         sse.addEventListener('inbound_webhook', (e) => {
           const entry = JSON.parse(e.data);
@@ -981,7 +1141,7 @@
         body: JSON.stringify({ orderId })
       });
       if (res && res.status === 'ok') {
-        alert(`Order ${res.order.ticker} successfully filled (${res.order.mode})!`);
+        showToast(`Order for ${res.order.ticker} filled (${res.order.mode})!`);
         loadOrders();
       }
     };
@@ -989,7 +1149,7 @@
     window.stageCandidateOrder = async function(idx) {
       const candidate = currentSignals[idx];
       if (!candidate || candidate.status !== 'confirmed_buy') {
-        alert('Invariant Protection: Only confirmed_buy candidates may be staged!');
+        showToast('Invariant Protection: Only confirmed_buy candidates may be staged!', false);
         return;
       }
 
@@ -1000,12 +1160,43 @@
       });
 
       if (res && res.status === 'ok') {
-        alert(`Order ticket for ${candidate.ticker} successfully staged to safety queue!`);
+        showToast(`Order ticket for ${candidate.ticker} staged to execution queue!`);
         document.getElementById('orders-panel').style.display = 'flex';
         loadOrders();
       } else {
-        alert(`Failed to stage order: ${res ? res.message : 'Unknown error'}`);
+        showToast(`Failed to stage order: ${res ? res.message : 'Unknown error'}`, false);
       }
+    };
+
+    // Direct Action Prompt Injection for a Specific Confirmed Buy Candidate
+    window.askAgentToTrade = async function(idx) {
+      const c = currentSignals[idx];
+      if (!c) return;
+      const rank = c.openingConfirmation?.officialRank || (idx + 1);
+      const sz = c.sizing || {};
+      const shares = sz.shares || c.shares || 1;
+      const riskDollars = sz.planned_risk_dollars || c.riskDollars || 50.0;
+      const positionCost = sz.position_cost || (shares * c.entry);
+
+      const promptText = [
+        `[MARKET SIGNAL: CONFIRMED BUY ACTIONABLE]`,
+        `Operator requested immediate trade plan review for Rank #${rank}: ${c.ticker} (${c.name}):`,
+        `- Current Price / Entry: $${c.entry}`,
+        `- Invalidation Stop Loss: $${c.stop}`,
+        `- Planned Target: $${c.target} (Risk-Reward 1:1.5R)`,
+        `- Sized Quantity: ${shares} shares (Cost: $${positionCost} | Dollar Risk: $${riskDollars})`,
+        `- 10:05 AM Quick Exit Policy: Active (Target first, Stop first, or 10:05 AM market close)`,
+        `- Confluence Score: ${c.score}/100 | RSI: ${c.rsi} | Volume Ratio: ${c.volume_ratio}x`,
+        `- Active Microservice Dynamic Port: ${servicePort}`,
+        ``,
+        `DIRECT ACTION COMMAND:`,
+        `To stage this verified order into the broker staging queue, execute immediately:`,
+        `curl -s -X POST http://127.0.0.1:${servicePort}/api/broker/stage-order -H "Content-Type: application/json" -d '{"ticker":"${c.ticker}","name":"${c.name}","status":"confirmed_buy","entry":${c.entry},"stop":${c.stop},"target":${c.target},"shares":${shares},"riskDollars":${riskDollars},"rMultipleTarget":1.5}'`,
+        ``,
+        `Acknowledge receipt to the user and confirm whether you will stage the order.`
+      ].join('\n');
+
+      await dispatchPromptToAgent(promptText, `${c.ticker} Trade Plan`);
     };
 
     function renderSignals(data) {
@@ -1105,7 +1296,8 @@
               <span class="sizing-val">${sz.shares || item.shares || 0} shares ($${sz.position_cost || (item.shares * item.entry) || 0})</span>
             </div>
             <div class="card-actions-row">
-              <button class="btn-stage-order" onclick="event.stopPropagation(); stageCandidateOrder(${idx});">🛡️ Stage Order Ticket</button>
+              <button class="btn-stage-order" onclick="event.stopPropagation(); stageCandidateOrder(${idx});">🛡️ Stage Ticket</button>
+              <button class="btn-dispatch-card" onclick="event.stopPropagation(); askAgentToTrade(${idx});">⚡ Ask Agent</button>
             </div>
             <div class="quick-exit-badge">
               <span>⏱️</span> <span>10:05 AM Quick Exit window active</span>
@@ -1182,7 +1374,7 @@
 
     function exportToCSV() {
       if (!currentSignals || currentSignals.length === 0) {
-        alert('No signals to export.');
+        showToast('No signals to export.', false);
         return;
       }
       const headers = ['received_at', 'date', 'event', 'ticker', 'name', 'rank', 'status', 'entry', 'stop', 'target', 'shares', 'risk_dollars', 'position_cost'];
@@ -1216,29 +1408,36 @@
       document.body.removeChild(link);
     }
 
-    function generateAIPrompt() {
+    function buildBriefPromptText() {
       const confirmed = currentSignals.filter(s => s.status === 'confirmed_buy');
       const watch = currentSignals.filter(s => s.status === 'wait_for_reclaim');
 
-      const promptText = [
-        "You are reviewing a Sovereign Flowork OS Stock & Crypto Signal Payload (KamdenAI Protocol).",
-        "Summarize the opening session in plain English for a disciplined trader.",
-        "MANDATORY DOCTRINE: 'Status comes before rank'. Do not treat Watch Only candidates as official entries.",
-        "Keep morning outcomes, 10:05 AM quick exits, and broker fills separate.",
-        "",
+      return [
+        `[MARKET SIGNAL: MORNING OPENING BOARD BRIEF]`,
+        `Operator submitted opening session trade summary for AI review:`,
+        `MANDATORY DOCTRINE: 'Status comes before rank'. Watch Only candidates are not official entries.`,
+        ``,
         `Session Date: ${new Date().toISOString().split('T')[0]}`,
-        `Confirmed Buys: ${confirmed.length}`,
+        `Confirmed Actionable Buys: ${confirmed.length}`,
         `Watch Only Candidates: ${watch.length}`,
-        "",
-        "Confirmed Actionable Trade Plans:",
-        ...confirmed.map(c => `- [RANK #${c.openingConfirmation?.officialRank}] ${c.ticker} (${c.name}): Entry $${c.entry} | Stop $${c.stop} | Target $${c.target} (${c.rMultipleTarget}R) | Size: ${c.sizing?.shares || c.shares} shares ($${c.sizing?.position_cost || (c.shares * c.entry)}) | Exit: 10:05 AM Quick Exit Window`),
-        "",
-        "Watch Only Observations:",
-        ...watch.map(w => `- [RANK #${w.openingConfirmation?.officialRank}] ${w.ticker} (${w.name}): $${w.current_price} | Awaiting 20 EMA reclaim confirmation`),
-        "",
-        "Provide execution notes and risk discipline reminders."
+        `Active Dynamic Service Port: ${servicePort}`,
+        ``,
+        `Confirmed Actionable Trade Plans:`,
+        ...(confirmed.length > 0 ? confirmed.map(c => `- [RANK #${c.openingConfirmation?.officialRank}] ${c.ticker} (${c.name}): Entry $${c.entry} | Stop $${c.stop} | Target $${c.target} (${c.rMultipleTarget}R) | Size: ${c.sizing?.shares || c.shares} shares ($${c.sizing?.position_cost || (c.shares * c.entry)}) | Exit: 10:05 AM Quick Exit Window`) : ['- None (No picks session - capital protected)']),
+        ``,
+        `Watch Only Observations:`,
+        ...(watch.length > 0 ? watch.map(w => `- [RANK #${w.openingConfirmation?.officialRank}] ${w.ticker} (${w.name}): $${w.current_price} | Awaiting 20 EMA reclaim confirmation`) : ['- None']),
+        ``,
+        `DIRECT ACTION COMMAND:`,
+        `To inspect the live raw state or stage orders, execute via terminal:`,
+        `curl -s http://127.0.0.1:${servicePort}/api/signals`,
+        ``,
+        `Review the risk posture and confirm with the operator.`
       ].join('\n');
+    }
 
+    function openAIPromptModal() {
+      const promptText = buildBriefPromptText();
       document.getElementById('ai-prompt-textarea').value = promptText;
       document.getElementById('ai-modal').style.display = 'flex';
     }
@@ -1303,8 +1502,7 @@
         body: JSON.stringify({ event: ev, target_url: targetUrl })
       });
       if (res && res.status === 'ok') {
-        alert(`Signed webhook event "${ev}" simulated successfully!\nHeaders: ${Object.keys(res.headers).join(', ')}`);
-        // If targeting our own receiver, dispatch directly to test the handshake
+        showToast(`Signed webhook "${ev}" dispatched!`);
         if (targetUrl.includes('/api/webhook/receive')) {
           await fetch(targetUrl, {
             method: 'POST',
@@ -1324,14 +1522,20 @@
       document.getElementById('btn-scan-now').click();
     });
 
-    document.getElementById('btn-ai-prompt').addEventListener('click', generateAIPrompt);
+    document.getElementById('btn-ai-prompt').addEventListener('click', openAIPromptModal);
     document.getElementById('btn-export-csv').addEventListener('click', exportToCSV);
+
+    document.getElementById('btn-dispatch-prompt').addEventListener('click', async () => {
+      const ta = document.getElementById('ai-prompt-textarea');
+      await dispatchPromptToAgent(ta.value, 'Trade Briefing');
+      document.getElementById('ai-modal').style.display = 'none';
+    });
 
     document.getElementById('btn-copy-prompt').addEventListener('click', () => {
       const ta = document.getElementById('ai-prompt-textarea');
       ta.select();
       navigator.clipboard.writeText(ta.value);
-      alert('Prompt copied to clipboard!');
+      showToast('Prompt copied to clipboard as fallback!');
     });
 
     document.getElementById('btn-add-ticker').addEventListener('click', async () => {

@@ -606,6 +606,40 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Active Prompt Injection Proxy (Forward to Flowork Cockpit Host on 19890)
+  if (req.method === 'POST' && pathname === '/api/prompt-dispatch') {
+    let body = '';
+    req.on('data', (c) => { body += c; });
+    req.on('end', () => {
+      try {
+        const forwardReq = http.request('http://127.0.0.1:19890/api/prompt-dispatch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body)
+          }
+        }, (fRes) => {
+          let fBody = '';
+          fRes.on('data', (d) => { fBody += d; });
+          fRes.on('end', () => {
+            res.writeHead(fRes.statusCode || 200, { 'Content-Type': 'application/json' });
+            res.end(fBody || JSON.stringify({ status: 'ok', message: 'Dispatched to host' }));
+          });
+        });
+        forwardReq.on('error', (err) => {
+          res.writeHead(502, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ status: 'error', message: `Host forward error: ${err.message}` }));
+        });
+        forwardReq.write(body);
+        forwardReq.end();
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'error', message: err.message }));
+      }
+    });
+    return;
+  }
+
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ status: 'error', message: `Route not found: ${pathname}` }));
 });
