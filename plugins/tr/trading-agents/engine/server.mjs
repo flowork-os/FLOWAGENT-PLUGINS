@@ -107,7 +107,7 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, {
       status: 'ONLINE',
       app: 'trading-agents',
-      version: '1.0.0',
+      version: '1.1.0',
       port: activePort,
       engine: 'Hierarchical Multi-Agent Council',
       timestamp: new Date().toISOString()

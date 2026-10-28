@@ -1,7 +1,7 @@
 {
   "id": "trading-agents",
   "name": "TradingAgents Sovereign Council",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Flowork Sovereign Core",
   "description": "Multi-agent autonomous trading desk featuring dialectic bull-bear debates, 4 specialized analysts, 3 risk managers, portfolio gating, and zero-key sentiment streams.",
   "category": "Trading, Web3 & DeFi",

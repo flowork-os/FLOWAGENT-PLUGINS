@@ -374,7 +374,8 @@ Direct Action: The council committee has completed deliberation. You may confirm
       console.warn('[TradingAgents Client] Initial status check warning:', e.message);
     }
 
-    loadMemoryHistory();
+    // Load memory ledger on startup
+    await loadMemoryHistory();
 
     // Event listeners
     if (elements.runCouncilBtn) {
@@ -392,11 +393,6 @@ Direct Action: The council committee has completed deliberation. You may confirm
         }
       });
     }
-
-    // Auto-run initial analysis for NVDA
-    setTimeout(() => {
-      runCouncilDebate();
-    }, 400);
   }
 
   document.addEventListener('DOMContentLoaded', init);

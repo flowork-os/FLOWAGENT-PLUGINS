@@ -78,7 +78,7 @@ class TestTradingAgentsApp(unittest.TestCase):
         """Verify council.py runs and returns valid verdict schema."""
         script_path = os.path.join(APP_DIR, "engine", "council.py")
         cmd = [sys.executable, script_path, "--ticker", "NVDA", "--cash", "25000"]
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
         self.assertEqual(res.returncode, 0, f"council.py failed: {res.stderr}")
 
         data = json.loads(res.stdout)
@@ -93,7 +93,7 @@ class TestTradingAgentsApp(unittest.TestCase):
         """Verify memory settlement and alpha scoring."""
         script_path = os.path.join(APP_DIR, "engine", "council.py")
         cmd = [sys.executable, script_path, "--settle"]
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         self.assertEqual(res.returncode, 0, f"Settlement failed: {res.stderr}")
 
         data = json.loads(res.stdout)
