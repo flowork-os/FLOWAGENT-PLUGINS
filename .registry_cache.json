@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-28T19:41:26Z",
+  "updated_at": "2026-10-28T20:54:49Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -11,7 +11,7 @@
       "description": "Dual-Actor Chess Arena: Human vs Agent AI. Play solo or duel with open Agent chat in real-time.",
       "category": "Sports Science & Athletics Performance",
       "icon": "♟️",
-      "hash": "916ce37433f9bafe",
+      "hash": "5772e3eb6550c474",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -32,7 +32,7 @@
       "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
       "category": "Media, Creative Writing & Journalism",
       "icon": "📹",
-      "hash": "bb2b41329f33caf0",
+      "hash": "c4612d66084ac7d6",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -53,6 +53,7 @@
       "description": "Real-time on-chain crypto whale tracking workbench, DEX swap monitor, smart wallet PnL profiler, and token safety scanner for Solana & EVM chains.",
       "category": "Finance & Algorithmic Trading",
       "icon": "🐋",
+      "hash": "5c8552a6b2a34120",
       "entry": {
         "gui": "gui/index.html",
         "backend": "server.js"
@@ -63,9 +64,7 @@
       },
       "shard": "index/wh/al/whale_radar.json",
       "source_path": "plugins/wh/whale-radar",
-      "updated_at": "2026-10-11T22:01:06.616Z",
-      "category_id": "CAT-006",
-      "hash": "3f140820057a2642"
+      "category_id": "CAT-006"
     },
     {
       "id": "vocalizer",
@@ -204,7 +203,7 @@
       "description": "Sovereign NLE video editor & timeline studio for Flowork OS Canvas. Multi-track timeline, canvas inspector, color grading, keyframe support, and FFmpeg export engine.",
       "category": "Media, Creative Writing & Journalism",
       "icon": "🎬",
-      "hash": "98f4d4d8af842382",
+      "hash": "4e070781b42378d4",
       "entry": {
         "gui": "gui/index.html",
         "backend": "server.js"
@@ -288,7 +287,7 @@
       "description": "Multi-agent autonomous trading desk featuring dialectic bull-bear debates, 4 specialized analysts, 3 risk managers, portfolio gating, and zero-key sentiment streams.",
       "category": "Trading, Web3 & DeFi",
       "icon": "📈",
-      "hash": "0ef60f9118646a05",
+      "hash": "17a860f46f5db59c",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"

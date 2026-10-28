@@ -505,7 +505,7 @@
         appendLog(`Connected to engine (Port: ${data.port || 17895})`);
       } catch (_) {}
 
-      selectedFolder = '/home/mrflow/Downloads';
+      selectedFolder = '~/Downloads';
       document.getElementById('folder-path-display').textContent = selectedFolder;
       document.getElementById('folder-path-display').title = selectedFolder;
     }
@@ -709,7 +709,7 @@
         resolution: selectedResolution,
         speedMode: selectedSpeedMode,
         customDuration: 59,
-        targetFolder: selectedFolder || '/home/mrflow/Downloads'
+        targetFolder: selectedFolder || '~/Downloads'
       };
 
       try {

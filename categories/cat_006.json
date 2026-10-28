@@ -13,7 +13,7 @@
       "icon": "🐋",
       "shard": "index/wh/al/whale_radar.json",
       "source_path": "plugins/wh/whale-radar",
-      "hash": "3f140820057a2642"
+      "hash": "5c8552a6b2a34120"
     },
     {
       "id": "market-signal",
@@ -37,7 +37,7 @@
       "icon": "📈",
       "shard": "index/tr/ad/trading_agents.json",
       "source_path": "plugins/tr/trading-agents",
-      "hash": "0ef60f9118646a05"
+      "hash": "17a860f46f5db59c"
     }
   ]
 }

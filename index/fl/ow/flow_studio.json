@@ -6,7 +6,7 @@
   "description": "Sovereign NLE video editor & timeline studio for Flowork OS Canvas. Multi-track timeline, canvas inspector, color grading, keyframe support, and FFmpeg export engine.",
   "category": "Media, Creative Writing & Journalism",
   "icon": "🎬",
-  "hash": "98f4d4d8af842382",
+  "hash": "4e070781b42378d4",
   "entry": {
     "gui": "gui/index.html",
     "backend": "server.js"

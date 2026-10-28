@@ -13,7 +13,7 @@
       "icon": "📹",
       "shard": "index/yt/do/yt_downloader.json",
       "source_path": "plugins/yt/yt-downloader",
-      "hash": "bb2b41329f33caf0"
+      "hash": "c4612d66084ac7d6"
     },
     {
       "id": "flow-studio",
@@ -25,7 +25,7 @@
       "icon": "🎬",
       "shard": "index/fl/ow/flow_studio.json",
       "source_path": "plugins/fl/flow-studio",
-      "hash": "98f4d4d8af842382"
+      "hash": "4e070781b42378d4"
     }
   ]
 }

@@ -8,89 +8,28 @@
   "tracks": [
     {
       "trackId": "track-1",
-      "laneIndex": 0,
-      "laneType": "text",
       "trackLabel": "🎬 Track 1",
-      "isAudio": false,
-      "clips": [
-        {
-          "title": "🔤 Kinetic Intro Title",
-          "left": 60,
-          "width": 220,
-          "background": "var(--color-text)",
-          "className": "fl-clip",
-          "src": "",
-          "type": "text",
-          "duration": ""
-        }
-      ]
+      "type": "video",
+      "clips": []
     },
     {
       "trackId": "track-2",
-      "laneIndex": 1,
-      "laneType": "overlay",
       "trackLabel": "🎬 Track 2",
-      "isAudio": false,
-      "clips": [
-        {
-          "title": "⚡ Hologram Glitch FX",
-          "left": 310,
-          "width": 190,
-          "background": "var(--color-overlay)",
-          "className": "fl-clip",
-          "src": "",
-          "type": "effect",
-          "duration": ""
-        }
-      ]
+      "type": "video",
+      "clips": []
     },
     {
       "trackId": "track-3",
-      "laneIndex": 2,
-      "laneType": "video",
       "trackLabel": "🎬 Track 3",
-      "isAudio": false,
-      "clips": [
-        {
-          "title": "🎥 Cyberpunk Metropolis.mp4",
-          "left": 0,
-          "width": 250,
-          "background": "var(--color-video)",
-          "className": "fl-clip selected",
-          "src": "/samples/sample_video.mp4",
-          "type": "video",
-          "duration": "5.00"
-        },
-        {
-          "title": "🎥 Mountain Stream Flow.mp4",
-          "left": 350,
-          "width": 250,
-          "background": "rgb(42, 92, 176)",
-          "className": "fl-clip",
-          "src": "/samples/sample_video.mp4",
-          "type": "video",
-          "duration": "5.00"
-        }
-      ]
+      "type": "video",
+      "clips": []
     },
     {
       "trackId": "track-4",
-      "laneIndex": 3,
-      "laneType": "audio",
       "trackLabel": "🔊 Track 4",
+      "type": "audio",
       "isAudio": true,
-      "clips": [
-        {
-          "title": "🎵 Ambient Electronic Beat.mp3",
-          "left": 0,
-          "width": 250,
-          "background": "var(--color-audio)",
-          "className": "fl-clip",
-          "src": "/samples/sample_audio.mp3",
-          "type": "audio",
-          "duration": "5.00"
-        }
-      ]
+      "clips": []
     }
   ],
   "activeClipState": {
@@ -116,5 +55,5 @@
     "type": "video"
   },
   "timestamp": 1793143556835,
-  "lastSaved": 1793143557836
+  "lastSaved": 1793209703723
 }

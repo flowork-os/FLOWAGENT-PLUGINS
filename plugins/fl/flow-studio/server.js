@@ -888,7 +888,8 @@ const server = http.createServer(async (req, res) => {
     try {
       const body = await parseJsonBody(req);
       if (body && typeof body === 'object') {
-        persistProjectState(body);
+        const stateToPersist = (body.state && typeof body.state === 'object') ? body.state : body;
+        persistProjectState(stateToPersist);
         return sendJson(res, 200, { status: 'success', message: 'Project state saved', lastSaved: Date.now() });
       }
       return sendJson(res, 400, { status: 'error', message: 'Invalid state body' });

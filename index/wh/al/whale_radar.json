@@ -4,10 +4,9 @@
   "version": "1.0.0",
   "author": "Awenk Audico & Flowork OS",
   "description": "Real-time on-chain crypto whale tracking workbench, DEX swap monitor, smart wallet PnL profiler, and token safety scanner for Solana & EVM chains.",
-  "category_id": "CAT-006",
   "category": "Finance & Algorithmic Trading",
   "icon": "🐋",
-  "hash": "3f140820057a2642",
+  "hash": "5c8552a6b2a34120",
   "entry": {
     "gui": "gui/index.html",
     "backend": "server.js"
@@ -17,5 +16,6 @@
     "default_port": 17830
   },
   "shard": "index/wh/al/whale_radar.json",
-  "source_path": "plugins/wh/whale-radar"
+  "source_path": "plugins/wh/whale-radar",
+  "category_id": "CAT-006"
 }

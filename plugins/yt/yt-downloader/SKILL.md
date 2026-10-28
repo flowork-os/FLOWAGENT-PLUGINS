@@ -38,7 +38,7 @@
           "format": "mp4",
           "resolution": "1080",
           "speedMode": "normal",
-          "targetFolder": "/home/mrflow/Downloads"
+          "targetFolder": "~/Downloads"
         }
         ```
 

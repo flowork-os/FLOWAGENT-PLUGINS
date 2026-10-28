@@ -4265,7 +4265,7 @@
         }
 
         // 3. Reconstruct Tracks & Clips exactly as saved (including 0 tracks if all deleted)
-        if (Array.isArray(state.tracks) && state.tracks.length > 0) {
+        if (Array.isArray(state.tracks)) {
           const headersContainer = document.querySelector('.fl-track-headers');
           const lanesContainer = document.querySelector('.fl-tracks-container');
 
@@ -5107,7 +5107,7 @@
           const res = await fetch(getApiUrl('/api/project/state'));
           if (res.ok) {
             const data = await res.json();
-            if (data.status === 'success' && data.state && data.state.tracks) {
+            if (data.status === 'success' && data.state && Array.isArray(data.state.tracks)) {
               localStorage.setItem(STORAGE_KEY, JSON.stringify(data.state));
               restoreProjectState();
               return true;
