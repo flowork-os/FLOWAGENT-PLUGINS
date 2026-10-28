@@ -1,0 +1,18 @@
+{
+  "id": "flowork-sentinel",
+  "name": "Flowork Sentinel & Skill Synthesizer",
+  "version": "1.0.0",
+  "author": "Awenk Audico & Dr. Flow",
+  "description": "External Web Action & API Telemetry Recorder for Suno, Facebook, and Web Apps. Synthesizes browser actions into autonomous Flowork SKILL.md and executable Puppeteer agents.",
+  "category": "Autonomous Agents & Automation",
+  "icon": "🛰️",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 17870
+  },
+  "category_id": "CAT-001"
+}

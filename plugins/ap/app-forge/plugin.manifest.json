@@ -1,0 +1,18 @@
+{
+  "id": "app-forge",
+  "name": "Sovereign App Forge",
+  "version": "1.0.0",
+  "author": "Awenk Audico & Flowork OS",
+  "description": "Autonomous Micro-App Scaffolder & Visual Studio for Flowork OS. Generates 100% contract-compliant apps with Serde manifest, dark Canvas UI, Bun backend, dynamic port IPC, 20-keyword SKILL.md, and automated smoke tests.",
+  "category": "Developer Tools & Systems",
+  "category_id": "CAT-001",
+  "icon": "⚒️",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "server.js"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 18015
+  }
+}

@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-28T17:37:26Z",
+  "updated_at": "2026-10-28T17:44:46Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -216,6 +216,48 @@
       "shard": "index/fl/ow/flow_studio.json",
       "source_path": "plugins/fl/flow-studio",
       "category_id": "CAT-010"
+    },
+    {
+      "id": "app-forge",
+      "name": "Sovereign App Forge",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Autonomous Micro-App Scaffolder & Visual Studio for Flowork OS. Generates 100% contract-compliant apps with Serde manifest, dark Canvas UI, Bun backend, dynamic port IPC, 20-keyword SKILL.md, and automated smoke tests.",
+      "category": "Developer Tools & Systems",
+      "icon": "⚒️",
+      "hash": "77046789f3b024a7",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "server.js"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 18015
+      },
+      "shard": "index/ap/pf/app_forge.json",
+      "source_path": "plugins/ap/app-forge",
+      "category_id": "CAT-001"
+    },
+    {
+      "id": "flowork-sentinel",
+      "name": "Flowork Sentinel & Skill Synthesizer",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Dr. Flow",
+      "description": "External Web Action & API Telemetry Recorder for Suno, Facebook, and Web Apps. Synthesizes browser actions into autonomous Flowork SKILL.md and executable Puppeteer agents.",
+      "category": "Autonomous Agents & Automation",
+      "icon": "🛰️",
+      "hash": "6dd54c3048723b40",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17870
+      },
+      "shard": "index/fl/ow/flowork_sentinel.json",
+      "source_path": "plugins/fl/flowork-sentinel",
+      "category_id": "CAT-001"
     }
   ]
 }

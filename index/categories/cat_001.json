@@ -1,6 +1,31 @@
 {
   "category_id": "CAT-001",
   "category": "Healthcare & Clinical Medicine",
-  "total_items": 0,
-  "items": []
+  "total_items": 2,
+  "items": [
+    {
+      "id": "app-forge",
+      "name": "Sovereign App Forge",
+      "category_id": "CAT-001",
+      "category": "Developer Tools & Systems",
+      "version": "1.0.0",
+      "description": "Autonomous Micro-App Scaffolder & Visual Studio for Flowork OS. Generates 100% contract-compliant apps with Serde manifest, dark Canvas UI, Bun backend, dynamic port IPC, 20-keyword SKILL.md, and automated smoke tests.",
+      "icon": "⚒️",
+      "shard": "index/ap/pf/app_forge.json",
+      "source_path": "plugins/ap/app-forge",
+      "hash": "77046789f3b024a7"
+    },
+    {
+      "id": "flowork-sentinel",
+      "name": "Flowork Sentinel & Skill Synthesizer",
+      "category_id": "CAT-001",
+      "category": "Autonomous Agents & Automation",
+      "version": "1.0.0",
+      "description": "External Web Action & API Telemetry Recorder for Suno, Facebook, and Web Apps. Synthesizes browser actions into autonomous Flowork SKILL.md and executable Puppeteer agents.",
+      "icon": "🛰️",
+      "shard": "index/fl/ow/flowork_sentinel.json",
+      "source_path": "plugins/fl/flowork-sentinel",
+      "hash": "6dd54c3048723b40"
+    }
+  ]
 }

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flowork Sentinel & Skill Synthesizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="sentinel-app-layout">
+    <!-- Top Bar -->
+    <header class="sentinel-topbar">
+      <div class="topbar-brand">
+        <span class="brand-icon">🛰️</span>
+        <div>
+          <h1 class="brand-title">FLOWORK SENTINEL STUDIO</h1>
+          <p class="brand-subtitle">External Web Action & API Telemetry Recorder for Suno, Facebook & Cloud Apps</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="telemetry-badge online">
+          <span class="pulse-indicator"></span>
+          <span>ENGINE PORT 17870 (ACTIVE)</span>
+        </div>
+        <button class="btn-studio-record" id="btn-studio-record" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; border-radius: 6px; padding: 7px 16px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);">
+          <span>🔴</span> <span id="studio-record-text">START RECORDING</span>
+        </button>
+        <button class="btn-neon" id="btn-refresh-sessions">🔄 Refresh</button>
+      </div>
+    </header>
+
+    <!-- Main Workbench -->
+    <main class="sentinel-main">
+      <!-- Left Sidebar: Recorded Sessions -->
+      <aside class="sentinel-sidebar">
+        <div class="sidebar-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3>RECORDED SESSIONS</h3>
+            <span class="badge-count" id="session-count">0</span>
+          </div>
+          <button class="btn-clear-all" id="btn-clear-all-sessions" title="Hapus Semua Sesi Rekaman">🗑️ Clear All</button>
+        </div>
+
+        <div class="sessions-list" id="sessions-container">
+          <div class="empty-state">No sessions recorded yet. Start one via the browser extension!</div>
+        </div>
+
+        <!-- Extension Quick Guide Card -->
+        <div class="extension-guide-card">
+          <h4>🧩 Chrome / Brave Extension</h4>
+          <p>Load unpacked extension in your browser to record outside Flowork:</p>
+          <ol>
+            <li>Buka <code>chrome://extensions</code></li>
+            <li>Aktifkan <strong>Developer mode</strong></li>
+            <li>Klik <strong>Load unpacked</strong> & arahkan ke folder:<br><code>apps/flowork-sentinel/extension/</code></li>
+          </ol>
+        </div>
+      </aside>
+
+      <!-- Center & Right: Inspector & Synthesizer -->
+      <section class="sentinel-workbench">
+        <!-- Session Overview Header -->
+        <div class="workbench-header" id="workbench-header">
+          <div class="session-meta">
+            <h2 id="active-session-title">Select a Session to Inspect</h2>
+            <span class="session-domain-tag" id="active-session-domain">Domain: None</span>
+          </div>
+          <div class="workbench-actions">
+            <button class="btn-action-primary" id="btn-synthesize" disabled>
+              ⚡ Synthesize to SKILL.md
+            </button>
+            <button class="btn-action-deploy" id="btn-deploy" disabled>
+              🚀 Deploy to Flowork Skills
+            </button>
+            <button class="btn-action-danger" id="btn-delete-session" disabled title="Hapus Sesi Terpilih">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- Workbench Body: Event Timeline & Synthesizer Preview -->
+        <div class="workbench-content">
+          <!-- Event Timeline -->
+          <div class="panel-timeline">
+            <div class="panel-title">
+              <span>📋 Captured Chronological Events</span>
+              <span id="event-stats">0 actions</span>
+            </div>
+            <div class="timeline-scroll" id="timeline-container">
+              <div class="empty-timeline">Pilih sesi rekaman di samping untuk melihat riwayat aksi DOM dan API network.</div>
+            </div>
+          </div>
+
+          <!-- Synthesized Artifacts Viewer -->
+          <div class="panel-synthesizer">
+            <div class="synthesizer-tabs">
+              <button class="tab-btn active" data-tab="skill">📄 SKILL.md (Agent SOP)</button>
+              <button class="tab-btn" data-tab="script">🤖 automation.mjs (Puppeteer Script)</button>
+            </div>
+            <div class="tab-content" id="tab-skill-content">
+              <pre><code id="code-skill-preview">// Klik "Synthesize to SKILL.md" untuk merekonstruksi Intent dan Langkah Terurut secara otomatis...</code></pre>
+            </div>
+            <div class="tab-content" id="tab-script-content" style="display: none;">
+              <pre><code id="code-script-preview">// Skrip Puppeteer otomatis yang bisa dijalankan secara headless oleh Agen...</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

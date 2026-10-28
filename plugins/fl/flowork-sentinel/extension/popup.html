@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Flowork Sentinel</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="sentinel-popup">
+    <div class="sentinel-header">
+      <div class="sentinel-logo">
+        <span class="logo-icon">🛰️</span>
+        <span class="logo-title">FLOWORK SENTINEL</span>
+      </div>
+      <div class="sentinel-status" id="engine-status">
+        <span class="status-dot"></span>
+        <span class="status-label">Engine Online</span>
+      </div>
+    </div>
+
+    <div class="sentinel-body">
+      <div class="input-group">
+        <label for="session-name">Session Name</label>
+        <input type="text" id="session-name" placeholder="e.g. suno_make_synthwave" value="suno_session">
+      </div>
+
+      <div class="action-panel">
+        <button id="btn-record" class="btn-rec">
+          <span class="rec-icon">🔴</span>
+          <span id="btn-text">START RECORDING</span>
+        </button>
+      </div>
+
+      <div class="telemetry-box" id="telemetry-box" style="display: none;">
+        <div class="rec-pulse"></div>
+        <div class="telemetry-info">
+          <span class="telemetry-label">RECORDING ACTIVE</span>
+          <span class="telemetry-counter" id="action-count">0 Actions Captured</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sentinel-footer">
+      <a href="http://127.0.0.1:17870" target="_blank" class="dashboard-link">
+        Open Sentinel Studio ➔
+      </a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

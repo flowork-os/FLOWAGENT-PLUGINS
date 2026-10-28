@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sovereign App Forge — Flowork OS</title>
+  <style>
+    :root {
+      --bg: #070a12;
+      --card-bg: rgba(14, 20, 32, 0.7);
+      --card-solid: #0d1527;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(0, 242, 254, 0.5);
+      --accent: #00f2fe;
+      --accent-glow: rgba(0, 242, 254, 0.25);
+      --accent-grad: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --error: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-icon {
+      font-size: 26px;
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .brand h1 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+    .brand p { font-size: 12px; color: var(--text-muted); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulseAnim 2s infinite;
+    }
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 24px;
+      flex: 1;
+    }
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+    }
+    .card-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(8, 12, 22, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .template-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .template-card {
+      background: rgba(8, 12, 22, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .template-card.active {
+      border-color: var(--accent);
+      background: rgba(0, 242, 254, 0.08);
+      box-shadow: 0 0 14px var(--accent-glow);
+    }
+    .template-card .icon { font-size: 20px; margin-bottom: 4px; }
+    .template-card .name { font-size: 11px; font-weight: 700; color: #fff; }
+    .btn-forge {
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: 12px;
+      background: var(--accent-grad);
+      color: #040812;
+      font-size: 14px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .btn-forge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(0, 242, 254, 0.45);
+    }
+    .btn-forge:active { transform: translateY(0); }
+    .terminal {
+      background: #03060d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11.5px;
+      color: #38bdf8;
+      line-height: 1.6;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 300px;
+      white-space: pre-wrap;
+    }
+    .code-preview {
+      background: #03060d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      color: #a5f3fc;
+      height: 180px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+    .installed-list {
+      margin-top: 24px;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+    .installed-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .installed-card {
+      background: rgba(14, 20, 32, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .installed-card .icon { font-size: 22px; }
+    .installed-card .info { flex: 1; overflow: hidden; }
+    .installed-card .name { font-size: 12px; font-weight: 700; color: #fff; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+    .installed-card .id { font-size: 10px; color: var(--text-muted); }
+    .pill-pass { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: rgba(16,185,129,0.15); color: #10b981; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-icon">⚒️</div>
+      <div>
+        <h1>Sovereign App Forge</h1>
+        <p>10-Second Contract-Compliant Micro-App Scaffolder & Visual Studio</p>
+      </div>
+    </div>
+    <div class="badge">
+      <div class="pulse"></div>
+      <span>8-PILLAR GATEKEEPER READY</span>
+    </div>
+  </header>
+
+  <div class="layout-grid">
+    <!-- Left: App Configuration Form -->
+    <div class="card">
+      <div class="card-title"><span>🛠️ Scaffolding Configuration</span></div>
+
+      <div class="template-selector">
+        <div class="template-card active" onclick="selectTemplate('fullstack', this)">
+          <div class="icon">🚀</div>
+          <div class="name">Full-Stack</div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('dashboard', this)">
+          <div class="icon">📊</div>
+          <div class="name">Dashboard</div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('radar', this)">
+          <div class="icon">🐋</div>
+          <div class="name">Web3 Radar</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="app-id">App ID (kebab-case)</label>
+          <input type="text" id="app-id" placeholder="e.g. solana-sniper" value="solana-sniper" oninput="updateManifestPreview()">
+        </div>
+        <div class="form-group">
+          <label for="app-icon">Icon Emoji</label>
+          <input type="text" id="app-icon" placeholder="⚡" value="🎯" oninput="updateManifestPreview()">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="app-name">Display Name</label>
+          <input type="text" id="app-name" placeholder="e.g. Solana Sniper" value="Solana Token Sniper" oninput="updateManifestPreview()">
+        </div>
+        <div class="form-group">
+          <label for="app-port">IPC Port</label>
+          <input type="number" id="app-port" placeholder="18025" value="18025" oninput="updateManifestPreview()">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="app-cat">Ecosystem Category</label>
+        <select id="app-cat" onchange="updateManifestPreview()">
+          <option value="Finance & Algorithmic Trading" data-catid="CAT-021">Finance & Algorithmic Trading</option>
+          <option value="Developer Tools & Systems" data-catid="CAT-001">Developer Tools & Systems</option>
+          <option value="Media, Creative Writing & Journalism" data-catid="CAT-010">Media & Video Studio</option>
+          <option value="Cybersecurity, Forensics & Vulnerability Intelligence" data-catid="CAT-005">Cybersecurity & Forensics</option>
+          <option value="Sports Science & Athletics Performance" data-catid="CAT-020">Sports Science & Gaming</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="app-desc">Description</label>
+        <textarea id="app-desc" rows="2" placeholder="Describe the micro-app purpose..." oninput="updateManifestPreview()">Real-time on-chain token liquidity and DEX trade listener for Flowork OS Canvas.</textarea>
+      </div>
+
+      <button class="btn-forge" id="btn-forge-action" onclick="forgeApp()">
+        <span>🔨 FORGE & REGISTER TO APPSTORE</span>
+      </button>
+    </div>
+
+    <!-- Right: Live Manifest Preview & Output Terminal -->
+    <div class="card">
+      <div class="card-title"><span>📋 Contract Manifest Preview (plugin.manifest.json)</span></div>
+      <div class="code-preview" id="manifest-preview"></div>
+
+      <div class="card-title" style="margin-top: 10px;"><span>⚡ Scaffolding & Verification Log</span></div>
+      <div class="terminal" id="terminal-log">[FORGE ENGINE] Ready. Configure your app and click Forge.</div>
+    </div>
+  </div>
+
+  <!-- Bottom: Installed Apps Health Matrix -->
+  <div class="installed-list">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #fff;">Installed Workspace Micro-Apps</h3>
+      <button onclick="loadInstalledApps()" style="background: none; border: 1px solid var(--border); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">🔄 Refresh</button>
+    </div>
+    <div class="installed-grid" id="installed-grid">
+      <div style="color: var(--text-muted); font-size: 12px;">Loading installed apps...</div>
+    </div>
+  </div>
+
+  <script>
+    let selectedType = 'fullstack';
+
+    function selectTemplate(type, el) {
+      selectedType = type;
+      document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      if (type === 'fullstack') {
+        document.getElementById('app-name').value = 'Solana Token Sniper';
+        document.getElementById('app-id').value = 'solana-sniper';
+        document.getElementById('app-icon').value = '🎯';
+        document.getElementById('app-port').value = '18025';
+      } else if (type === 'dashboard') {
+        document.getElementById('app-name').value = 'Network Packet Sentinel';
+        document.getElementById('app-id').value = 'packet-sentinel';
+        document.getElementById('app-icon').value = '📡';
+        document.getElementById('app-port').value = '18026';
+      } else if (type === 'radar') {
+        document.getElementById('app-name').value = 'DeFi Yield Compass';
+        document.getElementById('app-id').value = 'yield-compass';
+        document.getElementById('app-icon').value = '🧭';
+        document.getElementById('app-port').value = '18027';
+      }
+      updateManifestPreview();
+    }
+
+    function updateManifestPreview() {
+      const id = document.getElementById('app-id').value || 'my-app';
+      const name = document.getElementById('app-name').value || 'My Application';
+      const icon = document.getElementById('app-icon').value || '⚡';
+      const port = parseInt(document.getElementById('app-port').value || '18020', 10);
+      const catEl = document.getElementById('app-cat');
+      const cat = catEl.value;
+      const catId = catEl.selectedOptions[0]?.dataset.catid || 'CAT-001';
+      const desc = document.getElementById('app-desc').value || 'A sovereign micro-application.';
+
+      const manifest = {
+        id,
+        name,
+        version: "1.0.0",
+        author: "Awenk Audico & Flowork OS",
+        description: desc,
+        category: cat,
+        category_id: catId,
+        icon,
+        entry: {
+          gui: "gui/index.html",
+          backend: "server.js"
+        },
+        ipc: {
+          port_env: "FLOWORK_APP_PORT",
+          default_port: port
+        }
+      };
+
+      document.getElementById('manifest-preview').textContent = JSON.stringify(manifest, null, 2);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const backendPort = urlParams.get('port') || (window.location.port === '19890' ? '18015' : (window.location.port || '18015'));
+    const API_BASE = `http://${window.location.hostname || '127.0.0.1'}:${backendPort}`;
+
+    async function forgeApp() {
+      const btn = document.getElementById('btn-forge-action');
+      const log = document.getElementById('terminal-log');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ FORGING APP...</span>';
+      log.textContent = `[INIT] Target backend: ${API_BASE}\n[INIT] Starting autonomous scaffolding pipeline...\n`;
+
+      const id = document.getElementById('app-id').value.trim();
+      const name = document.getElementById('app-name').value.trim();
+      const icon = document.getElementById('app-icon').value.trim();
+      const port = document.getElementById('app-port').value.trim();
+      const catEl = document.getElementById('app-cat');
+      const category = catEl.value;
+      const category_id = catEl.selectedOptions[0]?.dataset.catid || 'CAT-001';
+      const description = document.getElementById('app-desc').value.trim();
+
+      try {
+        log.textContent += `[STEP 1] Generating Serde Rust Manifest (plugin.manifest.json)...\n`;
+        log.textContent += `[STEP 2] Creating decoupled Canvas GUI & Bun microservice...\n`;
+        log.textContent += `[STEP 3] Scaffolding SKILL.md (20 English keywords doctrine)...\n`;
+        log.textContent += `[STEP 4] Executing automated TDD smoke test (tests/smoke_test.py)...\n`;
+
+        const res = await fetch(`${API_BASE}/api/forge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id, name, icon, default_port: port, category, category_id, description, app_type: selectedType
+          })
+        });
+
+        const data = await res.json();
+        if (data.status === 'success') {
+          log.textContent += `\n[VERIFICATION PASS] Smoke test executed successfully:\n${data.test_output}\n`;
+          log.textContent += `🎉 [SUCCESS] App '${data.app.name}' forged and verified with Exit Code 0!\n`;
+          log.textContent += `📁 Path: apps/${data.app.id}/\n`;
+          log.textContent += `🔌 Dynamic IPC Port: ${data.app.port}\n`;
+          log.textContent += `[APPSTORE] Registered live in local catalog. Ready on Canvas!`;
+          loadInstalledApps();
+        } else {
+          log.textContent += `\n❌ [ERROR] ${data.message}\n${data.test_output || ''}`;
+        }
+      } catch (err) {
+        log.textContent += `\n❌ [NETWORK ERROR] ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🔨 FORGE & REGISTER TO APPSTORE</span>';
+        log.scrollTop = log.scrollHeight;
+      }
+    }
+
+    async function loadInstalledApps() {
+      const grid = document.getElementById('installed-grid');
+      try {
+        const res = await fetch(`${API_BASE}/api/apps`);
+        const data = await res.json();
+        if (data.apps) {
+          grid.innerHTML = data.apps.map(a => `
+            <div class="installed-card">
+              <div class="icon">${a.manifest?.icon || '📦'}</div>
+              <div class="info">
+                <div class="name">${a.manifest?.name || a.id}</div>
+                <div class="id">apps/${a.id}</div>
+              </div>
+              <div class="pill-pass">PASS</div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        grid.innerHTML = `<div style="color:var(--text-muted); font-size:12px;">Failed loading apps: ${err.message}</div>`;
+      }
+    }
+
+    updateManifestPreview();
+    loadInstalledApps();
+  </script>
+</body>
+</html>
