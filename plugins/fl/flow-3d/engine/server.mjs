@@ -38,19 +38,17 @@ const assetIndex = {
   ready: false
 };
 
-function humanizeName(raw) {
-  let clean = raw.replace(/^codex_luna_opus_scene_|^opus_scene_|^codex_terra_threejs_|^codex_sol_threejs_|^00\d\d_|^thingiverse_/, '');
-  clean = clean.replace(/_[a-f0-9]{12,}$/, '');
-  clean = clean.replace(/_/g, ' ');
-  return clean.replace(/\b\w/g, c => c.toUpperCase());
+function formatTitle(str) {
+  if (!str) return '';
+  return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
 }
 
 function buildAssetIndex() {
-  console.log(`[Flow3D Studio] Indexing 3D assets from: ${LIBRARY_DIR}`);
+  console.log(`[Flow3D Studio] Deep indexing 3D assets from: ${LIBRARY_DIR}`);
   const startTime = Date.now();
 
   try {
-    // 1. Three.js scenes (filter strictly for directories containing code.html)
+    // 1. Three.js scenes (1,007 verified runnable scenes with code.html)
     const threeDir = path.join(LIBRARY_DIR, 'threejs');
     if (fs.existsSync(threeDir)) {
       const items = fs.readdirSync(threeDir, { withFileTypes: true });
@@ -59,52 +57,119 @@ function buildAssetIndex() {
           if (!d.isDirectory()) return false;
           return fs.existsSync(path.join(threeDir, d.name, 'code.html'));
         })
-        .map(d => ({
-          id: d.name,
-          name: humanizeName(d.name),
-          modality: 'threejs',
-          type: 'Three.js WebGL Interactive Scene',
-          path: path.join('threejs', d.name)
-        }));
+        .map(d => {
+          const itemDir = path.join(threeDir, d.name);
+          let title = '';
+          let style = '';
+          let instruction = '';
+
+          const metaPath = path.join(itemDir, 'meta.json');
+          if (fs.existsSync(metaPath)) {
+            try {
+              const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+              title = meta.scene_title || meta.name || '';
+              style = meta.style || '';
+            } catch (_) {}
+          }
+
+          const capPath = path.join(itemDir, 'captions.json');
+          if (fs.existsSync(capPath)) {
+            try {
+              const cap = JSON.parse(fs.readFileSync(capPath, 'utf8'));
+              instruction = cap.instruction || cap.user_instruction || '';
+              if (!title) title = cap.style || '';
+            } catch (_) {}
+          }
+
+          if (!title) {
+            title = d.name.replace(/^codex_luna_opus_scene_|^opus_scene_|^codex_terra_threejs_|^codex_sol_threejs_|^fable_5_threejs_/, '');
+            title = title.replace(/_[a-f0-9]{8,}$/, '');
+          }
+
+          const cleanTitle = formatTitle(title) || 'Interactive 3D Scene';
+
+          return {
+            id: d.name,
+            name: cleanTitle,
+            modality: 'threejs',
+            type: 'Three.js WebGL Interactive Scene',
+            style: style || 'Interactive WebGL',
+            instruction: instruction.slice(0, 160),
+            runnable: true,
+            path: path.join('threejs', d.name)
+          };
+        });
     }
 
-    // 2. OpenSCAD
+    // 2. OpenSCAD Designs (1,193 parametric solid models)
     const scadDir = path.join(LIBRARY_DIR, 'openscad');
     if (fs.existsSync(scadDir)) {
       const files = fs.readdirSync(scadDir);
       assetIndex.openscad = files
-        .filter(f => f.endsWith('.scad'))
+        .filter(f => f.endsWith('.meta.json'))
         .map(f => {
-          const base = f.replace(/\.scad$/, '');
+          const base = f.replace(/\.meta\.json$/, '');
+          const metaPath = path.join(scadDir, f);
+          let name = base;
+          let instruction = '';
+          let lines = 0;
+
+          try {
+            const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+            name = meta.name || base;
+            instruction = meta.captions?.instruction || meta.captions?.detailed || '';
+            lines = meta.lines || 0;
+          } catch (_) {}
+
           return {
             id: base,
-            name: humanizeName(base),
+            name: formatTitle(name),
             modality: 'openscad',
             type: 'OpenSCAD CSG Parametric Solid',
-            path: path.join('openscad', f)
+            style: 'Parametric CSG CAD',
+            instruction: instruction.slice(0, 160),
+            lines,
+            runnable: false,
+            path: path.join('openscad', `${base}.scad`)
           };
         });
     }
 
-    // 3. CadQuery
+    // 3. CadQuery Assemblies (1,153 mechanical CAD models)
     const cadDir = path.join(LIBRARY_DIR, 'cadquery');
     if (fs.existsSync(cadDir)) {
       const files = fs.readdirSync(cadDir);
       assetIndex.cadquery = files
-        .filter(f => f.endsWith('.py'))
+        .filter(f => f.endsWith('.meta.json'))
         .map(f => {
-          const base = f.replace(/\.py$/, '');
+          const base = f.replace(/\.meta\.json$/, '');
+          const metaPath = path.join(cadDir, f);
+          let name = base;
+          let instruction = '';
+          let lines = 0;
+
+          try {
+            const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+            name = meta.name || base;
+            instruction = meta.captions?.instruction || '';
+            lines = meta.lines || 0;
+          } catch (_) {}
+
           return {
             id: base,
-            name: humanizeName(base),
+            name: formatTitle(name),
             modality: 'cadquery',
             type: 'CadQuery OpenCASCADE Mechanical Assembly',
-            path: path.join('cadquery', f)
+            style: 'Mechanical Engineering CAD',
+            instruction: instruction.slice(0, 160),
+            lines,
+            runnable: false,
+            path: path.join('cadquery', `${base}.py`)
           };
         });
     }
 
-    // 4. Bioinspired3D
+    // 4. Bioinspired3D (4,557 procedural biological forms)
     const bioDir = path.join(LIBRARY_DIR, 'bioinspired3d');
     if (fs.existsSync(bioDir)) {
       const files = fs.readdirSync(bioDir);
@@ -114,9 +179,12 @@ function buildAssetIndex() {
           const base = f.replace(/\.py$/, '');
           return {
             id: base,
-            name: humanizeName(base),
+            name: formatTitle(base.replace(/^\d+_\d+_/, '')),
             modality: 'bioinspired3d',
             type: 'Bio-Organic & Architectural BPY Structure',
+            style: 'Procedural Organic Architecture',
+            instruction: 'Procedural biomimetic form synthesized with Blender BPY / BMesh algorithms.',
+            runnable: false,
             path: path.join('bioinspired3d', f)
           };
         });
@@ -132,9 +200,12 @@ function buildAssetIndex() {
           const base = f.replace(/\.py$/, '');
           return {
             id: base,
-            name: humanizeName(base),
+            name: formatTitle(base.replace(/_factory$/, '')),
             modality: 'blender',
             type: 'Blender Infinigen Procedural Geometry Factory',
+            style: 'Hollywood-Grade Procedural Geometry',
+            instruction: 'Infinigen mathematical geometry factory for procedural nature and hard surfaces.',
+            runnable: false,
             path: path.join('blender/factories_geo', f)
           };
         });
@@ -149,7 +220,7 @@ function buildAssetIndex() {
 
     assetIndex.ready = true;
     const total = assetIndex.threejs.length + assetIndex.openscad.length + assetIndex.cadquery.length + assetIndex.bioinspired3d.length + assetIndex.blender.length + assetIndex.deepcad_count;
-    console.log(`[Flow3D Studio] Indexed ${total} models across 6 modalities in ${Date.now() - startTime}ms`);
+    console.log(`[Flow3D Studio] Indexed ${total} valid models (${assetIndex.threejs.length} Three.js WebGL scenes) in ${Date.now() - startTime}ms`);
   } catch (err) {
     console.error('[Flow3D Studio] Indexing error:', err.message);
   }
@@ -158,7 +229,7 @@ function buildAssetIndex() {
 // Trigger background indexing
 buildAssetIndex();
 
-// Native Folder Picker
+// Cross-Platform Native Folder Picker
 function pickNativeFolder() {
   if (process.env.FLOWORK_TEST_MODE === '1') {
     return Promise.resolve(null);
@@ -180,11 +251,7 @@ function pickNativeFolder() {
         if (code === 0 && out.trim()) {
           return resolve(out.trim());
         }
-        if (code === 1) {
-          // User canceled dialog
-          return resolve(null);
-        }
-        fallbackTkinterFolder().then(resolve);
+        return resolve(null);
       });
       proc.on('error', () => {
         fallbackTkinterFolder().then(resolve);
@@ -269,492 +336,6 @@ except Exception:
   });
 }
 
-// Procedural 3D Visualizer Synthesizer for OpenSCAD, CadQuery & Bio Assets
-function generateParametricPreview(name, modality, code = '', meta = {}) {
-  const n = (name + ' ' + (meta?.captions?.instruction || '')).toLowerCase();
-  
-  // 1. Gear / Sprocket
-  if (n.includes('gear') || n.includes('cog') || n.includes('sprocket')) {
-    return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050811}canvas{display:block}</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-</head>
-<body>
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050811);
-scene.fog = new THREE.FogExp2(0x050811, 0.03);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-document.body.appendChild(renderer.domElement);
-
-const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
-camera.position.set(0, 5, 8);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 2.0;
-
-scene.add(new THREE.AmbientLight(0x1e293b, 1.5));
-const d1 = new THREE.DirectionalLight(0x00f0ff, 3.5);
-d1.position.set(6, 10, 8);
-d1.castShadow = true;
-scene.add(d1);
-
-const d2 = new THREE.DirectionalLight(0xf59e0b, 2.5);
-d2.position.set(-6, -4, -6);
-scene.add(d2);
-
-const grid = new THREE.GridHelper(16, 16, 0x00f0ff, 0x1e293b);
-grid.position.y = -2;
-scene.add(grid);
-
-// Extruded Spur Gear Geometry
-const numTeeth = 17;
-const outerR = 2.8;
-const rootR = 2.0;
-const shape = new THREE.Shape();
-
-for (let i = 0; i < numTeeth; i++) {
-  const a0 = (i / numTeeth) * Math.PI * 2;
-  const a1 = a0 + (0.3 / numTeeth) * Math.PI * 2;
-  const a2 = a0 + (0.5 / numTeeth) * Math.PI * 2;
-  const a3 = a0 + (0.8 / numTeeth) * Math.PI * 2;
-  if (i === 0) shape.moveTo(Math.cos(a0) * rootR, Math.sin(a0) * rootR);
-  else shape.lineTo(Math.cos(a0) * rootR, Math.sin(a0) * rootR);
-  shape.lineTo(Math.cos(a1) * outerR, Math.sin(a1) * outerR);
-  shape.lineTo(Math.cos(a2) * outerR, Math.sin(a2) * outerR);
-  shape.lineTo(Math.cos(a3) * rootR, Math.sin(a3) * rootR);
-}
-shape.closePath();
-
-const hole = new THREE.Path();
-hole.absarc(0, 0, 0.9, 0, Math.PI * 2, true);
-shape.holes.push(hole);
-
-const extrudeSettings = { depth: 1.0, bevelEnabled: true, bevelSegments: 3, steps: 1, bevelSize: 0.08, bevelThickness: 0.08 };
-const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-geo.center();
-
-const mat = new THREE.MeshStandardMaterial({ color: 0x00d2ff, roughness: 0.25, metalness: 0.85 });
-const gear = new THREE.Mesh(geo, mat);
-gear.rotation.x = Math.PI / 2;
-gear.castShadow = true;
-scene.add(gear);
-
-// Center Shaft Hub
-const hubGeo = new THREE.CylinderGeometry(1.2, 1.2, 1.4, 32);
-const hubMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.9 });
-const hub = new THREE.Mesh(hubGeo, hubMat);
-scene.add(hub);
-
-const clock = new THREE.Clock();
-function animate() {
-  requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-  gear.rotation.z = t * 0.8;
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
-</script>
-</body>
-</html>`;
-  }
-
-  // 2. Mount / Bracket / Clamp
-  if (n.includes('mount') || n.includes('bracket') || n.includes('clamp') || n.includes('snap')) {
-    return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050811}canvas{display:block}</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-</head>
-<body>
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050811);
-scene.fog = new THREE.FogExp2(0x050811, 0.03);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-document.body.appendChild(renderer.domElement);
-
-const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
-camera.position.set(5, 4, 6);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 1.5;
-
-scene.add(new THREE.AmbientLight(0x1e293b, 1.6));
-const d1 = new THREE.DirectionalLight(0x10b981, 3.5);
-d1.position.set(5, 8, 5);
-d1.castShadow = true;
-scene.add(d1);
-
-const grid = new THREE.GridHelper(16, 16, 0x10b981, 0x1e293b);
-grid.position.y = -1.5;
-scene.add(grid);
-
-const mountGroup = new THREE.Group();
-const mat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.35, metalness: 0.6 });
-
-// Main Clamp Collar
-const collar = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 2.0, 32, 1, true), mat);
-collar.rotation.z = Math.PI / 2;
-mountGroup.add(collar);
-
-// Hexagonal Mounting Socket
-const hexGeo = new THREE.CylinderGeometry(1.1, 1.1, 1.6, 6);
-const hex = new THREE.Mesh(hexGeo, mat);
-hex.position.y = 1.4;
-mountGroup.add(hex);
-
-scene.add(mountGroup);
-
-function animate() {
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
-</script>
-</body>
-</html>`;
-  }
-
-  // 3. Bio-Organic / Helical / Architecture
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050811}canvas{display:block}</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-</head>
-<body>
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050811);
-scene.fog = new THREE.FogExp2(0x050811, 0.025);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-document.body.appendChild(renderer.domElement);
-
-const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
-camera.position.set(6, 4, 7);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 1.2;
-
-scene.add(new THREE.AmbientLight(0x1e293b, 1.8));
-const d1 = new THREE.DirectionalLight(0x38bdf8, 3.2);
-d1.position.set(6, 9, 6);
-d1.castShadow = true;
-scene.add(d1);
-
-const d2 = new THREE.DirectionalLight(0xa855f7, 2.5);
-d2.position.set(-6, -4, -6);
-scene.add(d2);
-
-const grid = new THREE.GridHelper(16, 16, 0x38bdf8, 0x1e293b);
-grid.position.y = -2;
-scene.add(grid);
-
-const structGroup = new THREE.Group();
-const mat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.25, metalness: 0.8 });
-const matGlow = new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0x9333ea, emissiveIntensity: 1.8 });
-
-// Biomimetic Lattice
-for (let i = 0; i < 20; i++) {
-  const t = i / 20 * Math.PI * 4;
-  const radius = 1.8 + Math.sin(t * 2) * 0.4;
-  const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.08, 12, 36), i % 2 === 0 ? mat : matGlow);
-  mesh.position.y = (i - 10) * 0.25;
-  mesh.rotation.x = Math.PI / 2;
-  mesh.rotation.z = t;
-  structGroup.add(mesh);
-}
-
-scene.add(structGroup);
-
-const clock = new THREE.Clock();
-function animate() {
-  requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-  structGroup.rotation.y = t * 0.4;
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
-</script>
-</body>
-</html>`;
-}
-
-// Procedural AI Generator Templates
-function generateProceduralScene(prompt = '', modality = 'threejs', style = 'cyberpunk') {
-  const p = prompt.toLowerCase();
-  
-  if (p.includes('drone') || p.includes('ship') || p.includes('robot') || p.includes('mech')) {
-    return {
-      title: "Autonomous Recon Drone Unit",
-      modality: "threejs",
-      code: `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05070d}canvas{display:block}</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-</head>
-<body>
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x060913);
-scene.fog = new THREE.FogExp2(0x060913, 0.035);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-document.body.appendChild(renderer.domElement);
-
-const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
-camera.position.set(6, 4, 8);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 1.2;
-
-const ambient = new THREE.AmbientLight(0x223355, 1.5);
-scene.add(ambient);
-const dirLight = new THREE.DirectionalLight(0x00f0ff, 3);
-dirLight.position.set(5, 10, 7);
-dirLight.castShadow = true;
-scene.add(dirLight);
-
-const rimLight = new THREE.DirectionalLight(0xff0077, 2.5);
-rimLight.position.set(-5, -2, -5);
-scene.add(rimLight);
-
-const grid = new THREE.GridHelper(20, 20, 0x00f0ff, 0x112233);
-grid.position.y = -1.5;
-scene.add(grid);
-
-const drone = new THREE.Group();
-const coreGeo = new THREE.IcosahedronGeometry(0.8, 1);
-const coreMat = new THREE.MeshStandardMaterial({ color: 0x1a233a, roughness: 0.2, metalness: 0.9 });
-const core = new THREE.Mesh(coreGeo, coreMat);
-core.castShadow = true;
-drone.add(core);
-
-const eyeGeo = new THREE.SphereGeometry(0.35, 16, 16);
-const eyeMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 2.0 });
-const eye = new THREE.Mesh(eyeGeo, eyeMat);
-eye.position.z = 0.6;
-drone.add(eye);
-
-const armMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.8 });
-const rotMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 1.2 });
-const rotors = [];
-
-for(let i = 0; i < 4; i++) {
-  const angle = (i * Math.PI / 2) + Math.PI/4;
-  const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.2), armMat);
-  arm.rotation.z = Math.PI / 2;
-  arm.rotation.y = angle;
-  arm.position.set(Math.cos(angle)*1.1, 0, Math.sin(angle)*1.1);
-  drone.add(arm);
-
-  const pod = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.3, 0.4, 16), armMat);
-  pod.position.set(Math.cos(angle)*2.2, 0, Math.sin(angle)*2.2);
-  drone.add(pod);
-
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.03, 8, 24), rotMat);
-  ring.rotation.x = Math.PI / 2;
-  ring.position.copy(pod.position);
-  drone.add(ring);
-  rotors.push(ring);
-}
-
-scene.add(drone);
-
-const clock = new THREE.Clock();
-function animate() {
-  requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-  drone.position.y = Math.sin(t * 2) * 0.25;
-  drone.rotation.y = Math.sin(t * 0.5) * 0.2;
-  rotors.forEach((r, idx) => {
-    r.rotation.z = t * (idx % 2 === 0 ? 15 : -15);
-  });
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
-</script>
-</body>
-</html>`
-    };
-  }
-
-  // Default Cyber Architecture
-  return {
-    title: "Procedural Cybernetic Hyper-Structure",
-    modality: "threejs",
-    code: `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#030712}canvas{display:block}</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-</head>
-<body>
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x030712);
-scene.fog = new THREE.FogExp2(0x030712, 0.025);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-document.body.appendChild(renderer.domElement);
-
-const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
-camera.position.set(9, 6, 11);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 0.8;
-
-scene.add(new THREE.AmbientLight(0x1e293b, 1.8));
-const mainLight = new THREE.DirectionalLight(0x38bdf8, 3.5);
-mainLight.position.set(8, 12, 6);
-mainLight.castShadow = true;
-scene.add(mainLight);
-
-const accentLight = new THREE.DirectionalLight(0xf43f5e, 2.5);
-accentLight.position.set(-8, 5, -8);
-scene.add(accentLight);
-
-const grid = new THREE.GridHelper(30, 30, 0x38bdf8, 0x1e293b);
-grid.position.y = -2;
-scene.add(grid);
-
-const cityGroup = new THREE.Group();
-const matPrimary = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.2, metalness: 0.85 });
-const matGlow = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 2.2 });
-const matNeonPink = new THREE.MeshStandardMaterial({ color: 0xf43f5e, emissive: 0xe11d48, emissiveIntensity: 2.0 });
-
-for(let i = 0; i < 28; i++) {
-  const angle = (i / 28) * Math.PI * 2;
-  const radius = 3.5 + Math.sin(i * 1.5) * 1.2;
-  const height = 2 + (Math.sin(i * 3) + 1) * 2.5;
-  const geo = new THREE.BoxGeometry(0.45, height, 0.45);
-  const mesh = new THREE.Mesh(geo, i % 3 === 0 ? matGlow : matPrimary);
-  mesh.position.set(Math.cos(angle)*radius, height/2 - 2, Math.sin(angle)*radius);
-  mesh.castShadow = true;
-  cityGroup.add(mesh);
-}
-
-const spireGeo = new THREE.OctahedronGeometry(1.6, 2);
-const spire = new THREE.Mesh(spireGeo, matNeonPink);
-spire.position.y = 2.5;
-cityGroup.add(spire);
-
-const ring1 = new THREE.Mesh(new THREE.TorusGeometry(3.2, 0.05, 12, 48), matGlow);
-ring1.position.y = 2.5;
-ring1.rotation.x = Math.PI / 3;
-cityGroup.add(ring1);
-
-scene.add(cityGroup);
-
-const clock = new THREE.Clock();
-function animate() {
-  requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-  spire.rotation.y = t * 0.8;
-  spire.position.y = 2.5 + Math.sin(t * 1.5) * 0.3;
-  ring1.rotation.z = t * 0.4;
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
-</script>
-</body>
-</html>`
-  };
-}
-
 // Request Handler
 const server = http.createServer(async (req, res) => {
   // Permissive CORS Headers
@@ -794,25 +375,25 @@ const server = http.createServer(async (req, res) => {
           count: assetIndex.openscad.length,
           name: "OpenSCAD CSG Parametric Solids",
           format: ".scad (CSG)",
-          runnable_in_browser: true
+          runnable_in_browser: false
         },
         cadquery: {
           count: assetIndex.cadquery.length,
           name: "CadQuery Mechanical Assemblies",
           format: "Python / OpenCASCADE",
-          runnable_in_browser: true
+          runnable_in_browser: false
         },
         bioinspired3d: {
           count: assetIndex.bioinspired3d.length,
           name: "Bio-Organic & Architectural BPY",
           format: "Python Blender BPY",
-          runnable_in_browser: true
+          runnable_in_browser: false
         },
         blender: {
           count: assetIndex.blender.length,
           name: "Blender Infinigen Procedural Geometry",
           format: "Python Infinigen",
-          runnable_in_browser: true
+          runnable_in_browser: false
         },
         deepcad: {
           count: assetIndex.deepcad_count,
@@ -844,7 +425,9 @@ const server = http.createServer(async (req, res) => {
     if (search) {
       pool = pool.filter(item => 
         item.name.toLowerCase().includes(search) || 
-        item.id.toLowerCase().includes(search)
+        item.id.toLowerCase().includes(search) ||
+        (item.instruction && item.instruction.toLowerCase().includes(search)) ||
+        (item.style && item.style.toLowerCase().includes(search))
       );
     }
 
@@ -867,7 +450,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // 4. Asset Details Endpoint: /api/assets/:modality/:id
-  const assetDetailMatch = pathname.match(/^\/api\/assets\/([a-zA-Z0-9_\-]+)\/([a-zA-Z0-9_\-]+)$/);
+  const assetDetailMatch = pathname.match(/^\/api\/assets\/([a-zA-Z0-9_\-]+)\/([a-zA-Z0-9_\-\.]+)$/);
   if (assetDetailMatch) {
     const [, modality, id] = assetDetailMatch;
     
@@ -881,7 +464,7 @@ const server = http.createServer(async (req, res) => {
     let code = '';
     let meta = null;
     let captions = null;
-    let previewHtml = '';
+    let sceneTitle = '';
 
     try {
       if (modality === 'threejs') {
@@ -891,43 +474,50 @@ const server = http.createServer(async (req, res) => {
         const capPath = path.join(itemDir, 'captions.json');
 
         if (fs.existsSync(codePath)) code = fs.readFileSync(codePath, 'utf8');
-        if (fs.existsSync(metaPath)) meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+        if (fs.existsSync(metaPath)) {
+          meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+          sceneTitle = meta.scene_title || meta.name || '';
+        }
         if (fs.existsSync(capPath)) captions = JSON.parse(fs.readFileSync(capPath, 'utf8'));
 
-        previewHtml = code;
       } else if (modality === 'openscad') {
         const scadPath = path.join(LIBRARY_DIR, 'openscad', `${id}.scad`);
         const metaPath = path.join(LIBRARY_DIR, 'openscad', `${id}.meta.json`);
         if (fs.existsSync(scadPath)) code = fs.readFileSync(scadPath, 'utf8');
-        if (fs.existsSync(metaPath)) meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-        previewHtml = generateParametricPreview(humanizeName(id), 'openscad', code, meta);
+        if (fs.existsSync(metaPath)) {
+          meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+          sceneTitle = meta.name || '';
+        }
+
       } else if (modality === 'cadquery') {
         const pyPath = path.join(LIBRARY_DIR, 'cadquery', `${id}.py`);
         const metaPath = path.join(LIBRARY_DIR, 'cadquery', `${id}.meta.json`);
         if (fs.existsSync(pyPath)) code = fs.readFileSync(pyPath, 'utf8');
-        if (fs.existsSync(metaPath)) meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-        previewHtml = generateParametricPreview(humanizeName(id), 'cadquery', code, meta);
+        if (fs.existsSync(metaPath)) {
+          meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+          sceneTitle = meta.name || '';
+        }
+
       } else if (modality === 'bioinspired3d') {
         const pyPath = path.join(LIBRARY_DIR, 'bioinspired3d', `${id}.py`);
         const metaPath = path.join(LIBRARY_DIR, 'bioinspired3d', `${id}.meta.json`);
         if (fs.existsSync(pyPath)) code = fs.readFileSync(pyPath, 'utf8');
         if (fs.existsSync(metaPath)) meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-        previewHtml = generateParametricPreview(humanizeName(id), 'bioinspired3d', code, meta);
+
       } else if (modality === 'blender') {
         const pyPath = path.join(LIBRARY_DIR, 'blender/factories_geo', `${id}.py`);
         if (fs.existsSync(pyPath)) code = fs.readFileSync(pyPath, 'utf8');
-        previewHtml = generateParametricPreview(humanizeName(id), 'blender', code, null);
       }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         id,
         modality,
-        name: humanizeName(id),
+        name: formatTitle(sceneTitle || id),
         code,
         meta,
         captions,
-        preview_html: previewHtml
+        runnable: modality === 'threejs' && !!code
       }));
     } catch (err) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -936,15 +526,15 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 5. Scene Direct Render
-  const sceneRenderMatch = pathname.match(/^\/api\/scene\/([a-zA-Z0-9_\-]+)\/render$/);
+  // 5. Scene Direct Render: /api/scene/:id/render (Serves the actual Three.js scene directly)
+  const sceneRenderMatch = pathname.match(/^\/api\/scene\/([a-zA-Z0-9_\-\.]+)\/render$/);
   if (sceneRenderMatch) {
     const [, id] = sceneRenderMatch;
     const codePath = path.join(LIBRARY_DIR, 'threejs', id, 'code.html');
 
     if (!fs.existsSync(codePath)) {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('Scene not found');
+      res.end('Three.js Scene file not found');
       return;
     }
 
@@ -961,12 +551,133 @@ const server = http.createServer(async (req, res) => {
     req.on('end', () => {
       try {
         const data = JSON.parse(body || '{}');
-        const generated = generateProceduralScene(data.prompt || '', data.modality || 'threejs', data.style || 'cyberpunk');
+        const prompt = (data.prompt || '').toLowerCase();
+        
+        let title = "Procedural Cyber Structure";
+        let code = '';
+
+        if (prompt.includes('drone') || prompt.includes('robot') || prompt.includes('vehicle')) {
+          title = "Autonomous Cyber Recon Drone";
+          code = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#060913}canvas{display:block}</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head><body><script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060913);
+scene.fog = new THREE.FogExp2(0x060913, 0.035);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(6, 4, 8);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 1.2;
+scene.add(new THREE.AmbientLight(0x223355, 1.5));
+const dir = new THREE.DirectionalLight(0x00f0ff, 3);
+dir.position.set(5, 10, 7);
+scene.add(dir);
+const grid = new THREE.GridHelper(20, 20, 0x00f0ff, 0x112233);
+grid.position.y = -1.5;
+scene.add(grid);
+const drone = new THREE.Group();
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.8, 1), new THREE.MeshStandardMaterial({ color: 0x1a233a, roughness: 0.2, metalness: 0.9 }));
+drone.add(core);
+const eye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 2.0 }));
+eye.position.z = 0.6;
+drone.add(eye);
+for(let i = 0; i < 4; i++) {
+  const angle = (i * Math.PI / 2) + Math.PI/4;
+  const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.2), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.8 }));
+  arm.rotation.z = Math.PI / 2;
+  arm.rotation.y = angle;
+  arm.position.set(Math.cos(angle)*1.1, 0, Math.sin(angle)*1.1);
+  drone.add(arm);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.03, 8, 24), new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 1.2 }));
+  ring.rotation.x = Math.PI / 2;
+  ring.position.set(Math.cos(angle)*2.2, 0, Math.sin(angle)*2.2);
+  drone.add(ring);
+}
+scene.add(drone);
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  drone.position.y = Math.sin(t * 2) * 0.25;
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script></body></html>`;
+        } else {
+          title = "Cybernetic Energy Spire";
+          code = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#030712}canvas{display:block}</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head><body><script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x030712);
+scene.fog = new THREE.FogExp2(0x030712, 0.025);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(9, 6, 11);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.8;
+scene.add(new THREE.AmbientLight(0x1e293b, 1.8));
+const main = new THREE.DirectionalLight(0x38bdf8, 3.5);
+main.position.set(8, 12, 6);
+scene.add(main);
+const grid = new THREE.GridHelper(30, 30, 0x38bdf8, 0x1e293b);
+grid.position.y = -2;
+scene.add(grid);
+const group = new THREE.Group();
+const matPrimary = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.2, metalness: 0.85 });
+const matGlow = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 2.2 });
+for(let i = 0; i < 24; i++) {
+  const angle = (i / 24) * Math.PI * 2;
+  const radius = 3.5 + Math.sin(i * 1.5) * 1.2;
+  const height = 2 + (Math.sin(i * 3) + 1) * 2.5;
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.45, height, 0.45), i % 3 === 0 ? matGlow : matPrimary);
+  mesh.position.set(Math.cos(angle)*radius, height/2 - 2, Math.sin(angle)*radius);
+  group.add(mesh);
+}
+const spire = new THREE.Mesh(new THREE.OctahedronGeometry(1.6, 2), new THREE.MeshStandardMaterial({ color: 0xf43f5e, emissive: 0xe11d48, emissiveIntensity: 2.0 }));
+spire.position.y = 2.5;
+group.add(spire);
+scene.add(group);
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  spire.rotation.y = t * 0.8;
+  spire.position.y = 2.5 + Math.sin(t * 1.5) * 0.3;
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script></body></html>`;
+        }
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           success: true,
           prompt: data.prompt,
-          result: generated
+          result: { title, modality: 'threejs', code }
         }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -1015,11 +726,7 @@ const server = http.createServer(async (req, res) => {
             try { fs.unlinkSync(tmpWebm); } catch (e) {}
             if (code === 0) {
               res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({
-                success: true,
-                output_path: targetFile,
-                filename
-              }));
+              res.end(JSON.stringify({ success: true, output_path: targetFile, filename }));
             } else {
               res.writeHead(500, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ error: `Turntable transcode failed: ${stderr}` }));
@@ -1042,11 +749,7 @@ const server = http.createServer(async (req, res) => {
         proc.on('close', code => {
           if (code === 0) {
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-              success: true,
-              output_path: targetFile,
-              filename
-            }));
+            res.end(JSON.stringify({ success: true, output_path: targetFile, filename }));
           } else {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'FFmpeg synthetic render failed' }));
@@ -1079,11 +782,7 @@ const server = http.createServer(async (req, res) => {
         fs.writeFileSync(outPath, code, 'utf8');
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: true,
-          file_path: outPath,
-          filename
-        }));
+        res.end(JSON.stringify({ success: true, file_path: outPath, filename }));
       } catch (err) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));

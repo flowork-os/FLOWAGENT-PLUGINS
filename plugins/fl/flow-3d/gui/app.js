@@ -3,7 +3,14 @@
 let API_BASE = '';
 
 async function resolveApiBase() {
-  if (API_BASE) return API_BASE;
+  if (API_BASE) {
+    try {
+      const ping = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(400) });
+      if (ping.ok) return API_BASE;
+    } catch (_) {
+      API_BASE = '';
+    }
+  }
 
   // 1. Query parameter ?port= or ?api=
   const urlParams = new URLSearchParams(window.location.search);
@@ -18,7 +25,7 @@ async function resolveApiBase() {
 
   // 2. Direct probe on window.location.origin
   try {
-    const testRes = await fetch(`${window.location.origin}/api/health`, { signal: AbortSignal.timeout(600) });
+    const testRes = await fetch(`${window.location.origin}/api/health`, { signal: AbortSignal.timeout(500) });
     if (testRes.ok) {
       const info = await testRes.json();
       if (info.app === 'flow-3d') {
@@ -28,16 +35,21 @@ async function resolveApiBase() {
     }
   } catch (_) {}
 
-  // 3. Cockpit Host status discovery probe (port 19890 or current window host)
+  // 3. Cockpit Host status discovery & launch probe
   try {
     const hostPort = (window.location.port && window.location.port !== '80' && window.location.port !== '443') ? window.location.port : '19890';
     const portsToTry = [hostPort, '19890'];
     for (const p of portsToTry) {
       try {
-        const res = await fetch(`http://127.0.0.1:${p}/api/plugins/flow-3d/status`, { signal: AbortSignal.timeout(1000) });
+        let res = await fetch(`http://127.0.0.1:${p}/api/plugins/flow-3d/status`, { signal: AbortSignal.timeout(800) });
         if (res.ok) {
-          const info = await res.json();
-          if (info.port && info.running) {
+          let info = await res.json();
+          if (!info.running) {
+            // Auto launch if stopped!
+            const launchRes = await fetch(`http://127.0.0.1:${p}/api/plugins/flow-3d/launch`, { method: 'POST', signal: AbortSignal.timeout(2000) });
+            if (launchRes.ok) info = await launchRes.json();
+          }
+          if (info.port) {
             API_BASE = `http://127.0.0.1:${info.port}`;
             return API_BASE;
           }
@@ -91,10 +103,12 @@ const modalityTabs = document.getElementById('modality-tabs');
 
 const activeSceneTitle = document.getElementById('active-scene-title');
 const activeSceneFormat = document.getElementById('active-scene-format');
-const sceneFrame = document.getElementById('scene-frame');
+const viewportContainer = document.getElementById('viewport-container');
 const viewportOverlay = document.getElementById('viewport-overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayDesc = document.getElementById('overlay-desc');
+const btnExportCad = document.getElementById('btn-export-cad');
+const btnSynthesizeCad = document.getElementById('btn-synthesize-cad');
 
 const destinationDirInput = document.getElementById('destination-dir-input');
 const btnBrowseFolder = document.getElementById('btn-browse-folder');
@@ -130,7 +144,7 @@ async function fetchStats() {
     const data = await safeFetchJson('/api/stats');
     state.stats = data;
     if (statsBadge && data.total_models) {
-      statsBadge.textContent = `${data.total_models.toLocaleString()} Procedural Assets`;
+      statsBadge.textContent = `${data.total_models.toLocaleString()} Procedural Assets (${data.breakdown.threejs.count} WebGL Scenes)`;
     }
   } catch (err) {
     console.error('Failed to fetch stats:', err);
@@ -187,7 +201,7 @@ function renderAssetList(items) {
       <div class="asset-title" title="${item.name}">${item.name}</div>
       <div class="asset-meta-row">
         <span class="modality-pill ${pillClass}">${modLabel}</span>
-        <span class="asset-type">${item.type.split(' ')[0]}</span>
+        <span class="asset-type">${item.style || item.type.split(' ')[0]}</span>
       </div>
     `;
 
@@ -201,7 +215,7 @@ function renderAssetList(items) {
   });
 }
 
-// 5. Select Asset & Load Content
+// 5. Select Asset & Load Content with Fresh Browsing Context
 async function selectAsset(item) {
   state.activeAsset = item;
   activeSceneTitle.textContent = item.name;
@@ -212,34 +226,54 @@ async function selectAsset(item) {
 
   try {
     const data = await safeFetchJson(`/api/assets/${item.modality}/${encodeURIComponent(item.id)}`);
-
     codeEditor.value = data.code || '';
-    
+
     if (data.captions) {
-      metaStyle.textContent = data.captions.style || 'Parametric';
-      metaDescription.textContent = data.captions.user_instruction || data.captions.instruction || 'Procedural WebGL asset.';
+      metaStyle.textContent = data.captions.style || item.style || 'Parametric';
+      metaDescription.textContent = data.captions.user_instruction || data.captions.instruction || item.instruction || 'Interactive WebGL asset.';
     } else if (data.meta && data.meta.captions) {
       metaStyle.textContent = 'CSG Mechanical';
-      metaDescription.textContent = data.meta.captions.detailed || data.meta.captions.instruction || 'Parametric solid model.';
+      metaDescription.textContent = data.meta.captions.detailed || data.meta.captions.instruction || item.instruction || 'Parametric solid model.';
     } else {
-      metaStyle.textContent = 'Procedural';
-      metaDescription.textContent = 'Procedural 3D model with native parametric generation logic.';
+      metaStyle.textContent = item.style || 'Procedural';
+      metaDescription.textContent = item.instruction || 'Procedural model with native parametric generation logic.';
     }
 
-    const preview = data.preview_html || data.code;
-    if (preview && (preview.includes('<html') || preview.includes('<!DOCTYPE') || preview.includes('canvas'))) {
-      viewportOverlay.classList.add('hidden');
-      sceneFrame.style.display = 'block';
-      sceneFrame.srcdoc = preview;
+    if (item.modality === 'threejs' && data.code) {
+      // 100% Unique Three.js Scene: Load with clean navigation
+      const base = await resolveApiBase();
+      const sceneUrl = `${base}/api/scene/${encodeURIComponent(item.id)}/render?t=${Date.now()}`;
+      loadFreshIframe(sceneUrl);
     } else {
-      sceneFrame.style.display = 'none';
+      // Parametric CAD Blueprint Hub
+      destroyIframe();
       viewportOverlay.classList.remove('hidden');
       overlayTitle.textContent = item.name;
-      overlayDesc.textContent = `This model is authored in ${item.type}. You can inspect and edit the source code on the right panel or export it to disk.`;
+      overlayDesc.textContent = item.instruction || `This model is authored in ${item.type}. You can inspect and modify the raw parametric script in the editor, or click Synthesize to render an interactive 3D WebGL preview.`;
+      btnExportCad.textContent = `Download ${item.modality === 'openscad' ? '.SCAD' : '.PY'}`;
     }
   } catch (err) {
     console.error('Error fetching asset detail:', err);
   }
+}
+
+// Clean Iframe Reloading (Prevents Chromium Importmap Collision)
+function loadFreshIframe(url) {
+  viewportOverlay.classList.add('hidden');
+  const existing = document.getElementById('scene-frame');
+  if (existing) existing.remove();
+
+  const iframe = document.createElement('iframe');
+  iframe.id = 'scene-frame';
+  iframe.className = 'scene-frame';
+  iframe.sandbox = 'allow-scripts allow-same-origin allow-downloads';
+  iframe.src = url;
+  viewportContainer.appendChild(iframe);
+}
+
+function destroyIframe() {
+  const existing = document.getElementById('scene-frame');
+  if (existing) existing.remove();
 }
 
 // 6. Setup Event Listeners
@@ -308,7 +342,7 @@ function setupEventListeners() {
         destinationDirInput.value = data.path;
       }
     } catch (err) {
-      console.warn('Folder selection canceled or default applied:', err.message);
+      console.warn('Folder selection canceled or unavailable:', err.message);
     } finally {
       btnBrowseFolder.disabled = false;
       btnBrowseFolder.textContent = '📁 Save to...';
@@ -375,9 +409,14 @@ function setupEventListeners() {
         activeSceneFormat.textContent = 'Three.js AI Generated';
         codeEditor.value = data.result.code;
 
+        destroyIframe();
         viewportOverlay.classList.add('hidden');
-        sceneFrame.style.display = 'block';
-        sceneFrame.srcdoc = data.result.code;
+        const iframe = document.createElement('iframe');
+        iframe.id = 'scene-frame';
+        iframe.className = 'scene-frame';
+        iframe.sandbox = 'allow-scripts allow-same-origin allow-downloads';
+        iframe.srcdoc = data.result.code;
+        viewportContainer.appendChild(iframe);
 
         metaId.textContent = 'ai_synthesis_' + Date.now();
         metaDomain.textContent = 'AI Procedural WebGL';
@@ -391,6 +430,22 @@ function setupEventListeners() {
       btnGenerate3D.innerHTML = '<span class="btn-icon">✨</span> Synthesize 3D Model';
     }
   });
+
+  // Synthesize from CAD Overlay
+  if (btnSynthesizeCad) {
+    btnSynthesizeCad.addEventListener('click', () => {
+      if (state.activeAsset) {
+        promptInput.value = state.activeAsset.instruction || state.activeAsset.name;
+        document.querySelectorAll('.right-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        const genTab = document.querySelector('.right-tab[data-pane="pane-generator"]');
+        if (genTab) genTab.classList.add('active');
+        const genPane = document.getElementById('pane-generator');
+        if (genPane) genPane.classList.add('active');
+        btnGenerate3D.click();
+      }
+    });
+  }
 
   // Exemplar Chips
   document.querySelectorAll('.chip').forEach(chip => {
@@ -415,8 +470,13 @@ function setupEventListeners() {
     const updatedCode = codeEditor.value;
     if (updatedCode) {
       viewportOverlay.classList.add('hidden');
-      sceneFrame.style.display = 'block';
-      sceneFrame.srcdoc = updatedCode;
+      destroyIframe();
+      const iframe = document.createElement('iframe');
+      iframe.id = 'scene-frame';
+      iframe.className = 'scene-frame';
+      iframe.sandbox = 'allow-scripts allow-same-origin allow-downloads';
+      iframe.srcdoc = updatedCode;
+      viewportContainer.appendChild(iframe);
     }
   });
 
@@ -431,7 +491,8 @@ function setupEventListeners() {
   btnExportFile.addEventListener('click', async () => {
     const code = codeEditor.value;
     const dest = destinationDirInput.value.trim() || undefined;
-    const filename = `${state.activeAsset ? state.activeAsset.id : 'export'}_${Date.now()}.html`;
+    const ext = state.activeAsset?.modality === 'openscad' ? '.scad' : (state.activeAsset?.modality === 'cadquery' ? '.py' : '.html');
+    const filename = `${state.activeAsset ? state.activeAsset.id : 'export'}_${Date.now()}${ext}`;
 
     try {
       const data = await safeFetchJson('/api/export', {
@@ -446,6 +507,12 @@ function setupEventListeners() {
       alert(`Export error: ${err.message}`);
     }
   });
+
+  if (btnExportCad) {
+    btnExportCad.addEventListener('click', () => {
+      btnExportFile.click();
+    });
+  }
 
   // Viewport Toolbar Buttons
   document.getElementById('btn-reload-scene').addEventListener('click', () => {
