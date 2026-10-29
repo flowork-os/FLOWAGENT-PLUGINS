@@ -353,7 +353,7 @@
     uploadProgressText.textContent = `Uploading ${file.name}... 0%`;
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${API_BASE}/api/upload`);
+    xhr.open('POST', `${API_BASE}/api/upload?filename=${encodeURIComponent(file.name)}`);
     xhr.setRequestHeader('x-filename', encodeURIComponent(file.name));
 
     xhr.upload.onprogress = (e) => {

@@ -169,14 +169,23 @@ function checkOllama() {
 const PORT = parseInt(process.env.AUTOSHORTS_PORT || process.env.FLOWORK_APP_PORT || '17899', 10);
 
 const server = http.createServer(async (req, res) => {
-  // CORS & PNA Headers
+  // CORS & PNA Headers (Permissive for Canvas iframe, local web & cross-port IPC)
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range, Authorization, x-filename, X-Filename, *');
+  res.setHeader('Access-Control-Expose-Headers', '*');
   res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {
-    res.writeHead(204);
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Range, Authorization, x-filename, X-Filename, *',
+      'Access-Control-Expose-Headers': '*',
+      'Access-Control-Allow-Private-Network': 'true',
+      'Access-Control-Max-Age': '86400'
+    });
     return res.end();
   }
 
