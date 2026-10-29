@@ -84,7 +84,8 @@ const server = http.createServer(async (req, res) => {
   // CORS Headers for Sovereign Canvas UI
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -289,7 +290,7 @@ const server = http.createServer(async (req, res) => {
     // 5e. Raw Media Upload (POST /api/fs/upload-media)
     // -------------------------------------------------------------
     if (pathname === '/api/fs/upload-media' && req.method === 'POST') {
-      let rawHeader = req.headers['x-filename'] || `media_${Date.now()}.mp4`;
+      let rawHeader = parsedUrl.searchParams.get('filename') || req.headers['x-filename'] || `media_${Date.now()}.mp4`;
       let origName = rawHeader;
       try { origName = decodeURIComponent(rawHeader); } catch (_) {}
       const cleanName = origName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');

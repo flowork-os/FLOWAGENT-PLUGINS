@@ -13,12 +13,51 @@
   // -------------------------------------------------------------------
   let API_BASE = '';
 
-  function resolveApiBase() {
-    if (API_BASE) return API_BASE;
+  async function resolveApiBase(forceRefresh = false) {
+    if (API_BASE && !forceRefresh) return API_BASE;
 
     const host = window.location.hostname || '127.0.0.1';
 
-    // 1. Check URL query param ?port=xxxx (passed by Cockpit supervisor iframe)
+    // 1. Direct port probe if loaded directly from engine port (not Cockpit supervisor 19890)
+    if (window.location.port && window.location.port !== '19890') {
+      try {
+        const testRes = await fetch(`${window.location.origin}/api/health`, { signal: AbortSignal.timeout(600) });
+        if (testRes.ok) {
+          API_BASE = window.location.origin;
+          return API_BASE;
+        }
+      } catch (_) {}
+    }
+
+    // 2. Query Cockpit supervisor for plugin dynamic port
+    const supervisorPorts = [
+      (window.location.port && window.location.port !== '80' && window.location.port !== '443') ? window.location.port : '19890',
+      '19890'
+    ];
+    for (const p of supervisorPorts) {
+      try {
+        const res = await fetch(`http://${host}:${p}/api/plugins/stickman-studio/status`, { signal: AbortSignal.timeout(800) });
+        if (res.ok) {
+          const info = await res.json();
+          if (info && info.port) {
+            API_BASE = `http://${host}:${info.port}`;
+            return API_BASE;
+          }
+        }
+      } catch (_) {}
+      try {
+        const res = await fetch(`http://127.0.0.1:${p}/api/plugins/stickman-studio/status`, { signal: AbortSignal.timeout(800) });
+        if (res.ok) {
+          const info = await res.json();
+          if (info && info.port) {
+            API_BASE = `http://127.0.0.1:${info.port}`;
+            return API_BASE;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 3. Check URL query param ?port=xxxx (passed by Cockpit supervisor iframe)
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const paramPort = urlParams.get('port');
@@ -28,19 +67,16 @@
       }
     } catch (_) {}
 
-    // 2. Direct port probe if loaded directly from engine port (not Cockpit supervisor 19890)
-    if (window.location.port && window.location.port !== '19890') {
-      API_BASE = window.location.origin;
-      return API_BASE;
-    }
-
-    // 3. Fallback to default Stickman Studio port 18040
+    // 4. Fallback to default Stickman Studio port 18040
     API_BASE = `http://${host}:18040`;
     return API_BASE;
   }
 
+  // Pre-resolve API base immediately on script startup
+  resolveApiBase().catch(() => {});
+
   function api(endpoint) {
-    const base = resolveApiBase();
+    const base = API_BASE || (window.location.port === '19890' ? `http://${window.location.hostname || '127.0.0.1'}:18040` : window.location.origin);
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     return `${base}${cleanEndpoint}`;
   }
@@ -269,13 +305,11 @@
     systemStatusText.textContent = `Uploading ${file.name}...`;
 
     try {
-      // b) Upload via api('/api/fs/upload-media')
-      const uploadUrl = api('/api/fs/upload-media');
+      await resolveApiBase();
+      // b) Upload via query parameter to prevent non-safelisted header CORS preflight issues
+      const uploadUrl = api(`/api/fs/upload-media?filename=${encodeURIComponent(file.name)}`);
       const res = await fetch(uploadUrl, {
         method: 'POST',
-        headers: {
-          'x-filename': encodeURIComponent(file.name)
-        },
         body: file
       });
       if (!res.ok) {
@@ -320,6 +354,7 @@
 
   // Slice Media into ~3-Second Micro-Beats & Cognitive Director
   async function sliceMediaBeats(mediaPath) {
+    await resolveApiBase();
     const targetPath = mediaPath || state.videoPath || state.currentAudioServerPath;
     if (!targetPath) {
       systemStatusText.textContent = 'No media loaded to slice';
