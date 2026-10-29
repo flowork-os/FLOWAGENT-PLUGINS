@@ -62,6 +62,8 @@
   const transcriptStatus = document.getElementById('transcript-status');
   const viewportBox = document.getElementById('viewport-box');
   const aspectIndicator = document.getElementById('aspect-indicator');
+  const inputExportDir = document.getElementById('input-export-dir');
+  const btnBrowseExportDir = document.getElementById('btn-browse-export-dir');
 
   // Modal Elements
   const btnNewProject = document.getElementById('btn-new-project');
@@ -268,9 +270,15 @@
           </div>
         </div>
         ${c.rendered ? `
-          <div style="padding-top:8px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
-            <button class="btn btn-secondary btn-sm btn-play-short" style="color:var(--accent-cyan); border-color:var(--accent-cyan);">▶ Play 9:16 Short</button>
-            <a href="${API_BASE}${c.rendered_url}" download="Short_Rank_${c.rank}.mp4" class="btn btn-secondary btn-sm" style="text-decoration:none;">💾 Save MP4</a>
+          <div style="padding-top:8px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+              <button class="btn btn-secondary btn-sm btn-play-short" style="color:var(--accent-cyan); border-color:var(--accent-cyan);">▶ Play 9:16 Short</button>
+              <div style="display:flex; gap:4px;">
+                <button class="btn btn-secondary btn-sm btn-export-folder" title="Save directly to a destination folder on disk">📁 Save to...</button>
+                <a href="${API_BASE}${c.rendered_url}" download="Short_Rank_${c.rank}.mp4" class="btn btn-secondary btn-sm" style="text-decoration:none;" title="Download through browser">💾 Save</a>
+              </div>
+            </div>
+            ${c.exported_path ? `<span style="font-size:10px; color:var(--accent-green); word-break:break-all;">✓ Saved to: ${c.exported_path}</span>` : ''}
           </div>
         ` : ''}
       `;
@@ -286,6 +294,56 @@
             playRenderedShort(`${API_BASE}${c.rendered_url}`, c.rank);
           };
         }
+
+        const btnExportFolder = card.querySelector('.btn-export-folder');
+        if (btnExportFolder) {
+          btnExportFolder.onclick = async () => {
+            await resolveApiBase();
+            let destFolder = inputExportDir ? inputExportDir.value.trim() : '';
+
+            // If no destination directory specified, open native OS folder picker dialog
+            if (!destFolder) {
+              try {
+                const pickRes = await fetch(`${API_BASE}/api/pick-folder`, { method: 'POST' });
+                const pickData = await pickRes.json();
+                if (pickData.status === 'SUCCESS' && pickData.folderPath) {
+                  destFolder = pickData.folderPath;
+                  if (inputExportDir) inputExportDir.value = destFolder;
+                } else {
+                  return; // User canceled folder selection
+                }
+              } catch (err) {
+                alert('Folder picker error: ' + err.message);
+                return;
+              }
+            }
+
+            btnExportFolder.disabled = true;
+            btnExportFolder.textContent = '⏳ Saving...';
+            try {
+              const expRes = await fetch(`${API_BASE}/api/candidates/${c.id}/export`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  project_id: currentProject.id,
+                  destination_dir: destFolder
+                })
+              });
+              const expData = await expRes.json();
+              if (expData.status === 'SUCCESS') {
+                alert(`✓ Short successfully saved to:\n${expData.file_path}`);
+                await selectProject(currentProject.id);
+              } else {
+                alert('Export failed: ' + (expData.error || 'Unknown error'));
+              }
+            } catch (err) {
+              alert('Export network error: ' + err.message);
+            } finally {
+              btnExportFolder.disabled = false;
+              btnExportFolder.textContent = '📁 Save to...';
+            }
+          };
+        }
       }
 
       card.querySelector('.btn-render').onclick = async (e) => {
@@ -296,10 +354,16 @@
         try {
           const cropFocusSelect = document.getElementById('select-crop-focus');
           const cropFocus = cropFocusSelect ? cropFocusSelect.value : 'center';
+          const destinationDir = inputExportDir ? inputExportDir.value.trim() : '';
+
           const res = await fetch(`${API_BASE}/api/candidates/${c.id}/render`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ project_id: currentProject.id, crop_focus: cropFocus })
+            body: JSON.stringify({
+              project_id: currentProject.id,
+              crop_focus: cropFocus,
+              destination_dir: destinationDir
+            })
           });
           const renderData = await res.json();
           if (renderData.status === 'SUCCESS') {
@@ -320,6 +384,22 @@
 
       candidatesList.appendChild(card);
     });
+  }
+
+  // Hook up Browse Export Directory button
+  if (btnBrowseExportDir) {
+    btnBrowseExportDir.onclick = async () => {
+      await resolveApiBase();
+      try {
+        const res = await fetch(`${API_BASE}/api/pick-folder`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'SUCCESS' && data.folderPath) {
+          inputExportDir.value = data.folderPath;
+        }
+      } catch (err) {
+        console.warn('Folder picker failed:', err);
+      }
+    };
   }
 
   // 5. Actions: Transcribe

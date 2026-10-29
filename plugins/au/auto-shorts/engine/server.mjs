@@ -150,6 +150,94 @@ except Exception:
   proc.on('error', () => resolve(null));
 }
 
+function pickNativeFolder() {
+  if (process.env.FLOWORK_TEST_MODE === '1') {
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    const platform = process.platform;
+
+    if (platform === 'linux') {
+      const zenity = spawn('zenity', [
+        '--file-selection',
+        '--directory',
+        '--timeout=120',
+        '--title=Select Output Destination Directory for AutoShorts'
+      ]);
+
+      let out = '';
+      zenity.stdout.on('data', (d) => { out += d.toString(); });
+      zenity.on('close', (code) => {
+        if (code === 0 && out.trim()) {
+          return resolve(out.trim());
+        }
+        if (code === 1) {
+          return resolve(null);
+        }
+        fallbackTkinterFolder(resolve);
+      });
+      zenity.on('error', () => {
+        fallbackTkinterFolder(resolve);
+      });
+    } else if (platform === 'darwin') {
+      const script = 'POSIX path of (choose folder with prompt "Select Output Destination Directory for AutoShorts")';
+      const proc = spawn('osascript', ['-e', script]);
+      let out = '';
+      proc.stdout.on('data', (d) => { out += d.toString(); });
+      proc.on('close', (code) => {
+        if (code === 0 && out.trim()) {
+          resolve(out.trim());
+        } else {
+          fallbackTkinterFolder(resolve);
+        }
+      });
+      proc.on('error', () => fallbackTkinterFolder(resolve));
+    } else if (platform === 'win32') {
+      const ps = `Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description = 'Select Output Destination Directory for AutoShorts'; if($f.ShowDialog() -eq 'OK'){Write-Output $f.SelectedPath}`;
+      const proc = spawn('powershell', ['-NoProfile', '-Command', ps]);
+      let out = '';
+      proc.stdout.on('data', (d) => { out += d.toString(); });
+      proc.on('close', (code) => {
+        if (code === 0 && out.trim()) {
+          resolve(out.trim());
+        } else {
+          fallbackTkinterFolder(resolve);
+        }
+      });
+      proc.on('error', () => fallbackTkinterFolder(resolve));
+    } else {
+      fallbackTkinterFolder(resolve);
+    }
+  });
+}
+
+function fallbackTkinterFolder(resolve) {
+  const pyCode = `import sys
+try:
+    import tkinter as tk
+    from tkinter import filedialog
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    f = filedialog.askdirectory(title='Select Output Destination Directory for AutoShorts')
+    if f:
+        print(f.strip())
+except Exception:
+    pass
+`;
+  const proc = spawn(PYTHON_CMD, ['-c', pyCode]);
+  let out = '';
+  proc.stdout.on('data', (d) => { out += d.toString(); });
+  proc.on('close', (code) => {
+    if (code === 0 && out.trim()) {
+      resolve(out.trim());
+    } else {
+      resolve(null);
+    }
+  });
+  proc.on('error', () => resolve(null));
+}
+
 function checkBinary(name) {
   return new Promise((resolve) => {
     execFile(name, ['-version'], (err) => resolve(!err));
@@ -236,6 +324,32 @@ const server = http.createServer(async (req, res) => {
             filePath,
             fileName: path.basename(filePath),
             size: stats.size
+          }));
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          status: 'CANCELED',
+          success: false,
+          reason: 'canceled_or_unsupported'
+        }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+    }
+
+    // -------------------------------------------------------------
+    // API: Native OS Folder Picker Dialog (Linux / Windows / macOS)
+    // -------------------------------------------------------------
+    if (pathname === '/api/pick-folder' && (req.method === 'POST' || req.method === 'GET')) {
+      try {
+        const folderPath = await pickNativeFolder();
+        if (folderPath && fs.existsSync(folderPath)) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({
+            status: 'SUCCESS',
+            success: true,
+            folderPath
           }));
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -493,10 +607,89 @@ const server = http.createServer(async (req, res) => {
       cand.pan_percent = panPercent;
       cand.output_path = outputPath;
       cand.rendered_url = `/api/media/stream?path=${encodeURIComponent(outputPath)}`;
+
+      // Optional Auto-Export to chosen directory right after render
+      if (data.destination_dir && fs.existsSync(outputPath)) {
+        try {
+          const destDir = path.normalize(data.destination_dir.trim().replace(/^["']|["']$/g, ''));
+          fs.mkdirSync(destDir, { recursive: true });
+          const rawName = data.file_name || `${(proj.name || 'Short').replace(/[^a-zA-Z0-9_-]/g, '_')}_Rank_${cand.rank || 1}.mp4`;
+          const targetFile = path.join(destDir, path.basename(rawName));
+          fs.copyFileSync(outputPath, targetFile);
+          cand.exported_path = targetFile;
+        } catch (copyErr) {
+          console.warn('[AutoShorts] Auto-export failed:', copyErr);
+        }
+      }
+
       fs.writeFileSync(candidatesFile, JSON.stringify(candidates, null, 2));
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ status: 'SUCCESS', render: renderRes, candidate: cand }));
+    }
+
+    // -------------------------------------------------------------
+    // API: Export Candidate Clip to Destination Directory
+    // -------------------------------------------------------------
+    const exportMatch = pathname.match(/^\/api\/candidates\/([a-zA-Z0-9_\-]+)\/export$/);
+    if (exportMatch && req.method === 'POST') {
+      let body = '';
+      for await (const chunk of req) body += chunk;
+      const data = JSON.parse(body || '{}');
+
+      const candidateId = exportMatch[1];
+      const projectId = data.project_id;
+      const projects = loadProjects();
+      const proj = projects.find(p => p.id === projectId);
+      if (!proj) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Project not found' }));
+      }
+
+      const projectDir = path.join(DATA_DIR, projectId);
+      const candidatesFile = path.join(projectDir, 'candidates.json');
+      const candidates = fs.existsSync(candidatesFile) ? JSON.parse(fs.readFileSync(candidatesFile, 'utf-8')) : [];
+      const cand = candidates.find(c => c.id === candidateId);
+      if (!cand || !cand.output_path || !fs.existsSync(cand.output_path)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Clip is not rendered yet. Render it first before exporting.' }));
+      }
+
+      let destDir = (data.destination_dir || '').trim();
+      if (!destDir) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Missing destination_dir' }));
+      }
+
+      destDir = destDir.replace(/^["']|["']$/g, '');
+      destDir = path.normalize(destDir);
+
+      try {
+        fs.mkdirSync(destDir, { recursive: true });
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: `Cannot create destination folder: ${e.message}` }));
+      }
+
+      const rawFileName = data.file_name || `${(proj.name || 'Short').replace(/[^a-zA-Z0-9_-]/g, '_')}_Rank_${cand.rank || 1}.mp4`;
+      const safeFileName = path.basename(rawFileName);
+      const targetFilePath = path.join(destDir, safeFileName);
+
+      fs.copyFileSync(cand.output_path, targetFilePath);
+      const stats = fs.statSync(targetFilePath);
+
+      cand.exported_path = targetFilePath;
+      fs.writeFileSync(candidatesFile, JSON.stringify(candidates, null, 2));
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({
+        status: 'SUCCESS',
+        success: true,
+        destination_dir: destDir,
+        file_path: targetFilePath,
+        file_name: safeFileName,
+        size: stats.size
+      }));
     }
 
     // -------------------------------------------------------------

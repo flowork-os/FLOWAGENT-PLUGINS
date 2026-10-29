@@ -132,6 +132,13 @@ class TestAutoShortsStudio(unittest.TestCase):
                 self.assertEqual(resp.status, 200)
                 pick_data = json.loads(resp.read().decode())
                 self.assertIn("success", pick_data)
+
+            # 4. Test /api/pick-folder route exists and returns valid JSON without crashing
+            folder_req = urllib.request.Request(f"http://127.0.0.1:{test_port}/api/pick-folder", method="POST")
+            with urllib.request.urlopen(folder_req, timeout=3) as resp:
+                self.assertEqual(resp.status, 200)
+                folder_data = json.loads(resp.read().decode())
+                self.assertIn("success", folder_data)
         finally:
             proc.terminate()
             try:
