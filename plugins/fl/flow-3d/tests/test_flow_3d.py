@@ -161,6 +161,26 @@ class TestFlow3DStudio(unittest.TestCase):
                 self.assertTrue(gen_data.get("success"))
                 self.assertIn("threejs", gen_data.get("result", {}).get("modality"))
 
+            # 5. Multi-Modality 3D WebGL Scene Rendering
+            modalities = ["cadquery", "openscad", "bioinspired3d", "blender"]
+            rendered_scenes = {}
+            for mod in modalities:
+                req = urllib.request.Request(f"http://127.0.0.1:{test_port}/api/scene/{mod}/sample_asset_{mod}/render")
+                with urllib.request.urlopen(req, timeout=3) as resp:
+                    html = resp.read().decode()
+                    self.assertIn(f"⚡ {mod.upper()} — PROCEDURAL 3D CAD", html)
+                    self.assertIn("import * as THREE", html)
+                    self.assertIn("OrbitControls", html)
+                    rendered_scenes[mod] = html
+
+            # 6. Verify Deterministic Variety (No two fallback assets are identical)
+            req_a = urllib.request.Request(f"http://127.0.0.1:{test_port}/api/scene/cadquery/part_alpha/render")
+            req_b = urllib.request.Request(f"http://127.0.0.1:{test_port}/api/scene/cadquery/part_beta/render")
+            with urllib.request.urlopen(req_a, timeout=3) as resp_a, urllib.request.urlopen(req_b, timeout=3) as resp_b:
+                html_a = resp_a.read().decode()
+                html_b = resp_b.read().decode()
+                self.assertNotEqual(html_a, html_b, "Different assets must generate distinct 3D procedural scenes!")
+
         finally:
             server_proc.terminate()
             server_proc.wait(timeout=2)

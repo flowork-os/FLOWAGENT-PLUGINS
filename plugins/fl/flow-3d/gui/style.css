@@ -36,7 +36,8 @@ body {
 #flow-3d-root {
   display: flex;
   flex-direction: column;
-  width: 100vw;
+  width: 100%;
+  max-width: 100vw;
   height: 100vh;
   background-color: var(--bg-main);
   overflow: hidden;
@@ -106,9 +107,33 @@ body {
 /* Main Studio Layout */
 .studio-layout {
   display: grid;
-  grid-template-columns: 320px 1fr 340px;
+  grid-template-columns: 280px minmax(0, 1fr) 320px;
   flex: 1;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .studio-layout {
+    grid-template-columns: 250px minmax(0, 1fr) 280px;
+  }
+}
+
+@media (max-width: 960px) {
+  .studio-layout {
+    grid-template-columns: 220px minmax(0, 1fr) 250px;
+  }
+}
+
+.viewport-center {
+  display: flex;
+  flex-direction: column;
+  background: #020408;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
 }
 
 /* Left Sidebar: Asset Explorer */
@@ -505,7 +530,7 @@ body {
 
 .destination-group {
   flex: 1;
-  min-width: 260px;
+  min-width: 180px;
 }
 
 .path-input-wrapper {

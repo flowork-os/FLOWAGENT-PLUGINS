@@ -239,19 +239,10 @@ async function selectAsset(item) {
       metaDescription.textContent = item.instruction || 'Procedural model with native parametric generation logic.';
     }
 
-    if (item.modality === 'threejs' && data.code) {
-      // 100% Unique Three.js Scene: Load with clean navigation
-      const base = await resolveApiBase();
-      const sceneUrl = `${base}/api/scene/${encodeURIComponent(item.id)}/render?t=${Date.now()}`;
-      loadFreshIframe(sceneUrl);
-    } else {
-      // Parametric CAD Blueprint Hub
-      destroyIframe();
-      viewportOverlay.classList.remove('hidden');
-      overlayTitle.textContent = item.name;
-      overlayDesc.textContent = item.instruction || `This model is authored in ${item.type}. You can inspect and modify the raw parametric script in the editor, or click Synthesize to render an interactive 3D WebGL preview.`;
-      btnExportCad.textContent = `Download ${item.modality === 'openscad' ? '.SCAD' : '.PY'}`;
-    }
+    // Always render live 3D WebGL interactive scene for ALL modalities!
+    const base = await resolveApiBase();
+    const sceneUrl = `${base}/api/scene/${encodeURIComponent(item.modality)}/${encodeURIComponent(item.id)}/render?t=${Date.now()}`;
+    loadFreshIframe(sceneUrl);
   } catch (err) {
     console.error('Error fetching asset detail:', err);
   }
