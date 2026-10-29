@@ -94,19 +94,46 @@ class StickmanSceneComposer:
             for gy in range(int(self.h * 0.65), self.h, 45):
                 cv2.line(img, (0, gy), (self.w, gy), (0, 229, 255), 1)
 
+        elif bg_type == 'medical_lab':
+            # Clean High-Tech Medical & Science Laboratory
+            img[:] = (35, 40, 48)
+            # Medical Wall Tiles / Grid
+            for gy in range(0, int(self.h * 0.75), 60):
+                cv2.line(img, (0, gy), (self.w, gy), (45, 52, 62), 1)
+            # High-Tech ECG / DNA Monitor Screen
+            mon_x1, mon_y1, mon_x2, mon_y2 = 100 + ox, 140 + oy, 620 + ox, 380 + oy
+            cv2.rectangle(img, (mon_x1, mon_y1), (mon_x2, mon_y2), (20, 24, 30), -1)
+            cv2.rectangle(img, (mon_x1, mon_y1), (mon_x2, mon_y2), (0, 229, 255), 2)
+            cv2.putText(img, 'AI MEDICAL & SCIENCE LAB', (mon_x1 + 30, mon_y1 + 45), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 229, 255), 2)
+            # Animated / Stylized ECG Pulse & DNA Waves
+            ecg_pts = []
+            for ex in range(mon_x1 + 30, mon_x2 - 30, 20):
+                rel = (ex - mon_x1)
+                ey = int(mon_y1 + 130 + math.sin(rel * 0.08) * 25)
+                if 220 < rel < 320:
+                    ey = int(mon_y1 + 130 + ((rel % 40) - 20) * 3)
+                ecg_pts.append([ex, ey])
+            cv2.polylines(img, [np.array(ecg_pts, np.int32)], False, (60, 255, 120), 3)
+            # Medical Cross Icon
+            cv2.circle(img, (mon_x2 - 50, mon_y1 + 40), 16, (40, 200, 240), -1)
+            cv2.putText(img, '+', (mon_x2 - 58, mon_y1 + 48), cv2.FONT_HERSHEY_DUPLEX, 0.8, (255, 255, 255), 2)
+            # Lab Counter Table in foreground
+            cv2.rectangle(img, (0, int(self.h * 0.78)), (self.w, self.h), (25, 30, 38), -1)
+            cv2.line(img, (0, int(self.h * 0.78)), (self.w, int(self.h * 0.78)), (0, 229, 255), 3)
+
         elif bg_type == 'office_meeting':
             for y in range(0, int(self.h * 0.72)):
                 ratio = y / (self.h * 0.72)
                 cv2.line(img, (0, y), (self.w, y), (int(45 + ratio * 20), int(35 + ratio * 15), int(30 + ratio * 10)), 1)
             for y in range(int(self.h * 0.72), self.h):
                 cv2.line(img, (0, y), (self.w, y), (25, 22, 20), 1)
-            # Whiteboard
+            # Presentation Whiteboard
             sb_x1, sb_y1, sb_x2, sb_y2 = 120 + ox, 180 + oy, 600 + ox, 420 + oy
             cv2.rectangle(img, (sb_x1, sb_y1), (sb_x2, sb_y2), (40, 40, 45), -1)
             cv2.rectangle(img, (sb_x1+6, sb_y1+6), (sb_x2-6, sb_y2-6), (235, 240, 245), -1)
-            cv2.putText(img, 'HOTEL CRISIS: FLASH SALE!', (sb_x1+25, sb_y1+45), cv2.FONT_HERSHEY_DUPLEX, 0.65, (30, 30, 30), 2)
-            # Crashed chart line
-            cv2.polylines(img, [np.array([[sb_x1+40, sb_y1+90], [sb_x1+160, sb_y1+100], [sb_x1+280, sb_y2-80], [sb_x2-40, sb_y2-30]], np.int32)], False, (30, 30, 220), 4)
+            cv2.putText(img, 'EXECUTIVE STRATEGY', (sb_x1+35, sb_y1+45), cv2.FONT_HERSHEY_DUPLEX, 0.65, (30, 30, 30), 2)
+            # Growth diagram
+            cv2.polylines(img, [np.array([[sb_x1+40, sb_y2-40], [sb_x1+160, sb_y2-60], [sb_x1+280, sb_y1+100], [sb_x2-40, sb_y1+80]], np.int32)], False, (0, 180, 60), 4)
 
         else:
             # Minimal Dark Slate
@@ -115,10 +142,66 @@ class StickmanSceneComposer:
     def draw_prop(self, img, prop_type, px, py, sign=1, accent=(0, 229, 255)):
         if not prop_type:
             return
-        if prop_type == 'phone':
+        if prop_type == 'dna':
+            # Glowing Double Helix DNA strand
+            for i in range(-3, 4):
+                dy = py + i * 14
+                sin_v = math.sin(i * 1.0) * 18 * sign
+                p1 = (int(px - sin_v), dy)
+                p2 = (int(px + sin_v), dy)
+                cv2.line(img, p1, p2, (0, 229, 255), 2)
+                cv2.circle(img, p1, 5, (247, 85, 168), -1)
+                cv2.circle(img, p2, 5, (0, 229, 255), -1)
+        elif prop_type in ['bone', 'skeleton']:
+            # Cartoon Medical Bone for Skeleton co-host
+            bx, by = px, py - 10
+            cv2.line(img, (bx - 18, by), (bx + 18, by), (255, 255, 255), 8)
+            cv2.circle(img, (bx - 18, by - 6), 6, (240, 245, 255), -1)
+            cv2.circle(img, (bx - 18, by + 6), 6, (240, 245, 255), -1)
+            cv2.circle(img, (bx + 18, by - 6), 6, (240, 245, 255), -1)
+            cv2.circle(img, (bx + 18, by + 6), 6, (240, 245, 255), -1)
+        elif prop_type in ['book', 'flashcard']:
+            # Study Book / Flashcard
+            cv2.rectangle(img, (px - 22, py - 28), (px + 22, py + 22), (245, 245, 250), -1)
+            cv2.rectangle(img, (px - 22, py - 28), (px + 22, py + 22), (0, 180, 255), 2)
+            cv2.line(img, (px - 14, py - 16), (px + 14, py - 16), (40, 50, 70), 2)
+            cv2.line(img, (px - 14, py - 6), (px + 14, py - 6), (40, 50, 70), 2)
+            cv2.line(img, (px - 14, py + 4), (px + 14, py + 4), (40, 50, 70), 2)
+            cv2.putText(img, 'A+', (px + 4, py + 18), cv2.FONT_HERSHEY_DUPLEX, 0.45, (30, 30, 230), 2)
+        elif prop_type == 'bulb':
+            # Glowing Light Bulb (Idea)
+            cv2.circle(img, (px, py - 16), 18, (60, 230, 255), -1)
+            cv2.circle(img, (px, py - 16), 18, (255, 255, 255), 2)
+            cv2.rectangle(img, (px - 8, py + 2), (px + 8, py + 12), (180, 180, 190), -1)
+            for ray_ang in [-45, 0, 45, 180+45, 180, 180-45]:
+                rx = int(px + 28 * math.cos(math.radians(ray_ang)))
+                ry = int((py - 16) + 28 * math.sin(math.radians(ray_ang)))
+                cv2.line(img, (px, py - 16), (rx, ry), (60, 230, 255), 2)
+        elif prop_type == 'brain':
+            # AI / Brain Neural Node
+            cv2.circle(img, (px - 10, py - 14), 14, (247, 85, 168), -1)
+            cv2.circle(img, (px + 10, py - 14), 14, (247, 85, 168), -1)
+            cv2.circle(img, (px, py - 4), 16, (220, 70, 150), -1)
+            cv2.circle(img, (px, py - 10), 18, (255, 255, 255), 2)
+            cv2.line(img, (px - 12, py - 14), (px + 12, py - 14), (255, 255, 255), 2)
+        elif prop_type in ['quiz', 'target']:
+            # Exam Quiz Board with Checkmarks
+            cv2.rectangle(img, (px - 22, py - 26), (px + 22, py + 24), (240, 245, 250), -1)
+            cv2.rectangle(img, (px - 22, py - 26), (px + 22, py + 24), (0, 200, 120), 2)
+            for cy_off in [-14, -2, 10]:
+                cv2.line(img, (px - 14, py + cy_off), (px - 9, py + cy_off + 5), (30, 180, 50), 2)
+                cv2.line(img, (px - 9, py + cy_off + 5), (px - 2, py + cy_off - 5), (30, 180, 50), 2)
+                cv2.line(img, (px + 2, py + cy_off), (px + 16, py + cy_off), (80, 90, 110), 2)
+            cv2.putText(img, '100', (px + 2, py + 20), cv2.FONT_HERSHEY_DUPLEX, 0.4, (30, 180, 50), 1)
+        elif prop_type == 'chart_up':
+            cv2.rectangle(img, (px - 24, py - 18), (px + 24, py + 18), (30, 30, 40), -1)
+            cv2.rectangle(img, (px - 24, py - 18), (px + 24, py + 18), (0, 229, 255), 2)
+            cv2.line(img, (px - 18, py + 12), (px - 6, py + 2), (50, 220, 80), 3)
+            cv2.line(img, (px - 6, py + 2), (px + 18, py - 12), (50, 220, 80), 3)
+        elif prop_type == 'phone':
             # Smartphone
             cv2.rectangle(img, (px - 14, py - 26), (px + 14, py + 26), (30, 30, 35), -1)
-            cv2.rectangle(img, (px - 11, py - 22), (px + 11, py + 20), (240, 230, 50), -1) # Glowing screen
+            cv2.rectangle(img, (px - 11, py - 22), (px + 11, py + 20), (240, 230, 50), -1)
             cv2.rectangle(img, (px - 14, py - 26), (px + 14, py + 26), (255, 255, 255), 1)
         elif prop_type == 'coffee':
             # Coffee cup with steam

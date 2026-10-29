@@ -440,6 +440,23 @@
           updateTimelineDisplay();
         }
 
+        // Fetch and decode server-extracted audio stream for synchronous web playback
+        if (data.manifest.audio_url) {
+          const audioUrl = api(data.manifest.audio_url);
+          fetch(audioUrl)
+            .then(res => res.arrayBuffer())
+            .then(buf => {
+              initAudioContext();
+              return state.audioContext.decodeAudioData(buf);
+            })
+            .then(decoded => {
+              state.audioBuffer = decoded;
+              extractAudioEnvelope();
+              console.log('[Synchronized Audio Ready]', decoded.duration.toFixed(1), 's');
+            })
+            .catch(err => console.warn('[Audio Web Decode Warning]', err));
+        }
+
         renderStoryboardCards();
 
         // g) Select beat 0, update inspector with real keyframe snapshot and stickman parody frame
@@ -472,162 +489,296 @@
     }
   }
 
-  // Render Stickman Animation on Viewport Canvas
+  // Render Stickman Animation on Viewport Canvas (Dual-Actor & Background Synchronized)
   function renderStickman() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Background
-    ctx.fillStyle = state.colors.bg;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Floor Horizon Line
-    ctx.strokeStyle = '#222836';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, 520);
-    ctx.lineTo(canvas.width, 520);
-    ctx.stroke();
 
     const currentBeat = state.storyboardParts.find(p => state.currentTime >= p.start && state.currentTime < p.end) 
       || state.storyboardParts[state.activePartIndex] 
       || state.storyboardParts[0];
 
-    const pose = currentBeat ? currentBeat.pose : 'talk';
-    const emotion = currentBeat ? currentBeat.emotion : 'neutral';
-    const prop = currentBeat ? currentBeat.prop : 'bulb';
-    const accent = (currentBeat && currentBeat.accent) || state.colors.glow;
-    const stick = state.colors.stick;
-
-    // Head bobbing calculation
     const timeSec = state.currentTime;
-    const headBob = Math.sin(timeSec * 8 * state.kinematics.headBobRate) * 4;
+    const bgType = (currentBeat && currentBeat.background) || 'podcast_studio';
 
-    const cx = canvas.width / 2;
-    const cy = 290 + headBob;
+    // 1. Procedural Background Rendering
+    if (bgType === 'medical_lab') {
+      ctx.fillStyle = '#232830';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // High-Tech ECG / DNA Monitor on Wall
+      ctx.fillStyle = '#141820';
+      ctx.fillRect(40, 50, canvas.width - 80, 110);
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(40, 50, canvas.width - 80, 110);
+      // Title
+      ctx.font = 'bold 9px monospace';
+      ctx.fillStyle = '#00e5ff';
+      ctx.fillText('AI MEDICAL & SCIENCE LAB', 55, 70);
+      // Medical cross
+      ctx.fillStyle = '#00e5ff';
+      ctx.beginPath();
+      ctx.arc(canvas.width - 65, 68, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#141820';
+      ctx.font = 'bold 10px monospace';
+      ctx.fillText('+', canvas.width - 68, 71);
+      // Animated Green ECG Pulse Wave
+      ctx.strokeStyle = '#38ef7d';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const waveY = 115;
+      ctx.moveTo(55, waveY);
+      for (let x = 55; x < canvas.width - 55; x += 8) {
+        let pulse = Math.sin((x * 0.15) - (timeSec * 8)) * 8;
+        if (x > 140 && x < 190) {
+          pulse = Math.sin((x * 0.4) - (timeSec * 12)) * 22;
+        }
+        ctx.lineTo(x, waveY + pulse);
+      }
+      ctx.stroke();
+      // Foreground Lab Counter Desk
+      ctx.fillStyle = '#181d26';
+      ctx.fillRect(0, 480, canvas.width, 160);
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 480);
+      ctx.lineTo(canvas.width, 480);
+      ctx.stroke();
 
-    ctx.save();
-    ctx.shadowColor = accent;
-    ctx.shadowBlur = 14;
+    } else if (bgType === 'beach_bali') {
+      // Tropical Sunset Gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, 380);
+      skyGrad.addColorStop(0, '#f97316');
+      skyGrad.addColorStop(0.5, '#ec4899');
+      skyGrad.addColorStop(1, '#6366f1');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, canvas.width, 380);
+      // Glowing Sun
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, 220, 45, 0, Math.PI * 2);
+      ctx.fill();
+      // Ocean Water
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(0, 380, canvas.width, 100);
+      // Sandy Beach
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(0, 480, canvas.width, 160);
 
-    // Head
-    ctx.beginPath();
-    ctx.arc(cx, cy - 80, 40, 0, Math.PI * 2);
-    ctx.fillStyle = '#161b26';
-    ctx.fill();
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = stick;
-    ctx.stroke();
+    } else if (bgType === 'cyber_grid') {
+      ctx.fillStyle = '#0f111a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Perspective grid floor
+      ctx.fillStyle = '#090a10';
+      ctx.fillRect(0, 460, canvas.width, 180);
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, 460);
+      ctx.lineTo(canvas.width, 460);
+      for (let gx = -100; gx <= canvas.width + 100; gx += 40) {
+        ctx.moveTo(canvas.width / 2, 460);
+        ctx.lineTo(gx, 640);
+      }
+      ctx.stroke();
 
-    // Eyes
-    ctx.fillStyle = '#11141c';
-    ctx.beginPath();
-    ctx.arc(cx - 14, cy - 84, 5, 0, Math.PI * 2);
-    ctx.arc(cx + 14, cy - 84, 5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Mouth
-    ctx.strokeStyle = stick;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    if (emotion === 'happy') {
-      ctx.arc(cx, cy - 76, 14, 0, Math.PI);
-    } else if (emotion === 'surprised') {
-      ctx.arc(cx, cy - 70, 10, 0, Math.PI * 2);
-    } else if (emotion === 'angry') {
-      ctx.moveTo(cx - 14, cy - 66);
-      ctx.lineTo(cx + 14, cy - 74);
     } else {
-      ctx.moveTo(cx - 14, cy - 70);
-      ctx.lineTo(cx + 14, cy - 70);
+      // Default Modern Neon Podcast Studio
+      ctx.fillStyle = '#141822';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Side Neon Glow Bars
+      ctx.strokeStyle = '#ec4899';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(18, 0); ctx.lineTo(18, canvas.height);
+      ctx.stroke();
+      ctx.strokeStyle = '#00e5ff';
+      ctx.beginPath();
+      ctx.moveTo(canvas.width - 18, 0); ctx.lineTo(canvas.width - 18, canvas.height);
+      ctx.stroke();
+      // ON AIR Badge
+      ctx.fillStyle = '#1a1f2c';
+      ctx.fillRect(canvas.width / 2 - 45, 30, 90, 24);
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(canvas.width / 2 - 45, 30, 90, 24);
+      ctx.font = 'bold 9px monospace';
+      ctx.fillStyle = '#ef4444';
+      ctx.fillText('LIVE ON AIR', canvas.width / 2 - 32, 46);
+      // Foreground Podcast Desk
+      ctx.fillStyle = '#1e2433';
+      ctx.fillRect(0, 480, canvas.width, 160);
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 480);
+      ctx.lineTo(canvas.width, 480);
+      ctx.stroke();
     }
-    ctx.stroke();
 
-    // Body Spine
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - 40);
-    ctx.lineTo(cx, cy + 80);
-    ctx.lineWidth = 5;
-    ctx.stroke();
+    // 2. Character Rendering (Dual-Actor Staging or Solo)
+    const actors = currentBeat && currentBeat.actors ? currentBeat.actors : null;
 
-    // Arms based on pose
-    ctx.beginPath();
-    if (pose === 'talk') {
-      const armSwing = Math.sin(timeSec * 6) * 15;
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx - 50, cy - 10 + armSwing);
-      ctx.lineTo(cx - 65, cy - 45 + armSwing);
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx + 50, cy + 20 - armSwing);
-      ctx.lineTo(cx + 60, cy + 60 - armSwing);
-    } else if (pose === 'point') {
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx + 60, cy - 40);
-      ctx.lineTo(cx + 90, cy - 50);
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx - 40, cy + 30);
-    } else if (pose === 'think') {
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx + 40, cy - 60);
-      ctx.lineTo(cx + 20, cy - 75);
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx - 35, cy + 25);
-    } else if (pose === 'celebrate') {
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx - 55, cy - 75);
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx + 55, cy - 75);
-    } else if (pose === 'run') {
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx - 50, cy - 50);
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx + 50, cy + 10);
+    function drawStickActor(cx, cy, scale, flipped, action, emotion, propName, label, shout, speaking, accentColor) {
+      const sign = flipped ? -1 : 1;
+      const headRadius = 24 * scale;
+      const headBob = speaking ? Math.sin(timeSec * 14) * 4 : Math.sin(timeSec * 6) * 1.5;
+      const headCy = cy - (110 * scale) + headBob;
+
+      ctx.save();
+      ctx.shadowColor = accentColor || '#00e5ff';
+      ctx.shadowBlur = speaking ? 12 : 4;
+
+      // Head
+      ctx.beginPath();
+      ctx.arc(cx, headCy, headRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#161b26';
+      ctx.fill();
+      ctx.lineWidth = 3 * scale;
+      ctx.strokeStyle = accentColor || '#ffffff';
+      ctx.stroke();
+
+      // Eyes
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(cx - (8 * scale), headCy - (3 * scale), 2.5 * scale, 0, Math.PI * 2);
+      ctx.arc(cx + (8 * scale), headCy - (3 * scale), 2.5 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mouth (Animated when speaking)
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2 * scale;
+      ctx.beginPath();
+      if (speaking) {
+        const mouthOpen = 2 + Math.abs(Math.sin(timeSec * 16)) * 6;
+        ctx.ellipse(cx, headCy + (8 * scale), 5 * scale, mouthOpen * scale, 0, 0, Math.PI * 2);
+      } else if (emotion === 'happy') {
+        ctx.arc(cx, headCy + (5 * scale), 6 * scale, 0, Math.PI);
+      } else {
+        ctx.moveTo(cx - (5 * scale), headCy + (8 * scale));
+        ctx.lineTo(cx + (5 * scale), headCy + (8 * scale));
+      }
+      ctx.stroke();
+
+      // Spine Torso
+      ctx.beginPath();
+      ctx.moveTo(cx, headCy + headRadius);
+      ctx.lineTo(cx, cy);
+      ctx.lineWidth = 3.5 * scale;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      // Arms
+      ctx.beginPath();
+      const armSwing = speaking ? Math.sin(timeSec * 8) * 10 : 0;
+      if (action === 'point') {
+        ctx.moveTo(cx, headCy + headRadius + 10);
+        ctx.lineTo(cx + (40 * sign * scale), headCy + (10 * scale));
+        ctx.lineTo(cx + (75 * sign * scale), headCy - (5 * scale));
+        ctx.moveTo(cx, headCy + headRadius + 10);
+        ctx.lineTo(cx - (25 * sign * scale), cy - (20 * scale));
+      } else if (action === 'celebrate') {
+        ctx.moveTo(cx, headCy + headRadius + 10);
+        ctx.lineTo(cx - (35 * sign * scale), headCy - (30 * scale) + armSwing);
+        ctx.moveTo(cx, headCy + headRadius + 10);
+        ctx.lineTo(cx + (35 * sign * scale), headCy - (30 * scale) - armSwing);
+      } else if (action === 'think') {
+        ctx.moveTo(cx, headCy + headRadius + 10);
+        ctx.lineTo(cx + (25 * sign * scale), headCy);
+        ctx.lineTo(cx + (10 * sign * scale), headCy + (12 * scale));
+        ctx.moveTo(cx, headCy + headRadius + 10);
+        ctx.lineTo(cx - (25 * sign * scale), cy - (20 * scale));
+      } else {
+        ctx.moveTo(cx, headCy + headRadius + 10);
+        ctx.lineTo(cx - (30 * sign * scale), cy - (30 * scale) + armSwing);
+        ctx.moveTo(cx, headCy + headRadius + 10);
+        ctx.lineTo(cx + (30 * sign * scale), cy - (30 * scale) - armSwing);
+      }
+      ctx.stroke();
+
+      // Legs
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx - (20 * scale), cy + (75 * scale));
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + (20 * scale), cy + (75 * scale));
+      ctx.stroke();
+
+      // Prop Emoji Rendering
+      if (propName) {
+        const propEmojiMap = {
+          dna: '🧬', bone: '🦴', skeleton: '🦴', quiz: '📋', target: '📋',
+          book: '📖', flashcard: '📖', brain: '🧠', bulb: '💡', phone: '📱',
+          coffee: '☕', sunglasses: '🕶️', chart_up: '📈', chart_down: '📉',
+          money_bag: '💰', shopping_cart: '🛒', alert: '⚠️', question: '❓'
+        };
+        const emoji = propEmojiMap[propName] || '💡';
+        ctx.font = `${Math.floor(22 * scale)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const propX = cx + (42 * sign * scale);
+        const propY = headCy - (5 * scale);
+        ctx.fillText(emoji, propX, propY);
+      }
+
+      // Actor Label Badge
+      if (label) {
+        ctx.font = 'bold 9px monospace';
+        const lblW = ctx.measureText(label).width + 12;
+        ctx.fillStyle = '#141824';
+        ctx.fillRect(cx - lblW / 2, headCy - headRadius - 20, lblW, 14);
+        ctx.strokeStyle = accentColor || '#00e5ff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(cx - lblW / 2, headCy - headRadius - 20, lblW, 14);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, cx, headCy - headRadius - 10);
+      }
+
+      // Comic Shout Speech Bubble
+      if (shout && speaking) {
+        ctx.font = 'bold 11px sans-serif';
+        const shoutW = ctx.measureText(shout).width + 16;
+        const bX = Math.max(10, Math.min(canvas.width - shoutW - 10, cx - shoutW / 2));
+        const bY = headCy - headRadius - 48;
+        // Bubble body
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(bX, bY, shoutW, 22);
+        ctx.strokeStyle = '#00e5ff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(bX, bY, shoutW, 22);
+        // Text
+        ctx.fillStyle = '#0f172a';
+        ctx.textAlign = 'center';
+        ctx.fillText(shout, bX + shoutW / 2, bY + 15);
+      }
+
+      ctx.restore();
+    }
+
+    if (actors && actors.length >= 2) {
+      // 2-Character Dialogue Setup (Left vs Right)
+      const a1 = actors[0];
+      const a2 = actors[1];
+      const a1Color = a1.accent_color ? `rgb(${a1.accent_color.join(',')})` : '#ffd700';
+      const a2Color = a2.accent_color ? `rgb(${a2.accent_color.join(',')})` : '#00e5ff';
+
+      drawStickActor(105, 400, 0.95, false, a1.action || 'talk', a1.emotion || 'neutral', a1.prop, a1.label || 'HOST', a1.comic_shout, a1.speaking, a1Color);
+      drawStickActor(255, 400, 0.95, true, a2.action || 'listen', a2.emotion || 'neutral', a2.prop, a2.label || 'CO-HOST', a2.comic_shout, a2.speaking, a2Color);
+
     } else {
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx - 50, cy + 30);
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx + 50, cy + 30);
+      // Solo Staging
+      const pose = currentBeat ? currentBeat.pose : 'talk';
+      const emotion = currentBeat ? currentBeat.emotion : 'neutral';
+      const prop = currentBeat ? currentBeat.prop : 'bulb';
+      const accent = (currentBeat && currentBeat.accent) || '#00e5ff';
+      const shout = currentBeat ? currentBeat.comic_shout : null;
+
+      drawStickActor(canvas.width / 2, 400, 1.05, false, pose, emotion, prop, 'HOST', shout, true, accent);
     }
-    ctx.stroke();
 
-    // Legs
-    ctx.beginPath();
-    if (pose === 'run') {
-      ctx.moveTo(cx, cy + 80);
-      ctx.lineTo(cx - 45, cy + 140);
-      ctx.lineTo(cx - 70, cy + 130);
-      ctx.moveTo(cx, cy + 80);
-      ctx.lineTo(cx + 40, cy + 120);
-      ctx.lineTo(cx + 70, cy + 180);
-    } else if (pose === 'celebrate') {
-      ctx.moveTo(cx, cy + 80);
-      ctx.lineTo(cx - 40, cy + 130);
-      ctx.moveTo(cx, cy + 80);
-      ctx.lineTo(cx + 40, cy + 130);
-    } else {
-      ctx.moveTo(cx, cy + 80);
-      ctx.lineTo(cx - 35, cy + 190);
-      ctx.moveTo(cx, cy + 80);
-      ctx.lineTo(cx + 35, cy + 190);
-    }
-    ctx.stroke();
-
-    // Prop Emoji Rendering
-    const propEmojiMap = {
-      bulb: '💡', question: '❓', chart_up: '📈', chart_down: '📉',
-      alert: '⚠️', brain: '🧠', heart: '❤️', broken_heart: '💔',
-      clock: '⏰', phone: '📱', target: '🎯', battery: '🔋',
-      scale: '⚖️', lock: '🔒', eyes: '👀', book: '📖',
-      house: '🏠', people: '👥', mask: '🎭', bell: '🔔', fire: '🔥'
-    };
-    const emoji = propEmojiMap[prop] || '💡';
-    ctx.font = '40px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(emoji, cx + 70, cy - 65);
-
-    ctx.restore();
-
-    // Subtitle Overlay
+    // 3. Subtitle Overlay
     if (currentBeat && currentBeat.text) {
       subtitleOverlay.textContent = currentBeat.text;
       subtitleOverlay.style.display = 'block';

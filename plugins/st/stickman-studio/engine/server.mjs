@@ -415,6 +415,49 @@ const server = http.createServer(async (req, res) => {
     }
 
     // -------------------------------------------------------------
+    // 5g2. Extracted Audio Serving (GET /api/audio/:batchId/:filename)
+    // -------------------------------------------------------------
+    if (pathname.startsWith('/api/audio/')) {
+      const parts = pathname.replace('/api/audio/', '').split('/').filter(Boolean);
+      const audioName = parts.pop();
+      const batchDirName = parts.pop();
+
+      let foundAudio = null;
+      if (batchDirName && audioName) {
+        const candidate = path.join(DATA_DIR, batchDirName, audioName);
+        if (fs.existsSync(candidate)) foundAudio = candidate;
+      }
+
+      if (!foundAudio && audioName) {
+        // Fallback search across recent batch dirs
+        try {
+          const beatDirs = fs.readdirSync(DATA_DIR).filter(d => d.startsWith('beats_'));
+          beatDirs.sort().reverse();
+          for (const bd of beatDirs) {
+            const cand = path.join(DATA_DIR, bd, audioName);
+            if (fs.existsSync(cand)) {
+              foundAudio = cand;
+              break;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (foundAudio) {
+        res.writeHead(200, {
+          'Content-Type': 'audio/mpeg',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Private-Network': 'true'
+        });
+        return fs.createReadStream(foundAudio).pipe(res);
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Audio file not found' }));
+      }
+    }
+
+    // -------------------------------------------------------------
     // 5h. AutoShorts Bridge (GET /api/bridge/autoshorts)
     // -------------------------------------------------------------
     if (pathname === '/api/bridge/autoshorts' && req.method === 'GET') {

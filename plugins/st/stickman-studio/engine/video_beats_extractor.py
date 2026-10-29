@@ -246,6 +246,7 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_durat
 
     # 1. Extract 16kHz mono audio for Faster-Whisper if audio stream exists (capped to duration)
     audio_data = np.array([], dtype=np.float32)
+    audio_mp3_path = os.path.join(output_dir, "audio.mp3")
     if has_audio:
         cmd = [
             'ffmpeg', '-v', 'error',
@@ -261,6 +262,21 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_durat
         proc = subprocess.run(cmd, capture_output=True)
         if proc.returncode == 0 and proc.stdout:
             audio_data = np.frombuffer(proc.stdout, dtype=np.float32)
+
+        # Export lightweight MP3 for instant in-browser playback
+        mp3_cmd = [
+            'ffmpeg', '-y', '-v', 'error',
+            '-i', input_path,
+            '-t', str(duration),
+            '-vn',
+            '-acodec', 'libmp3lame',
+            '-q:a', '3',
+            audio_mp3_path
+        ]
+        try:
+            subprocess.run(mp3_cmd, capture_output=True)
+        except Exception:
+            pass
 
     # 2. Whisper transcription with word timestamps
     whisper_words = []
@@ -534,6 +550,8 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_durat
         'duration': round(duration, 2),
         'total_duration': round(duration, 2),
         'has_video': has_video,
+        'has_audio': has_audio,
+        'audio_url': f"/api/audio/{batch_id}/audio.mp3" if has_audio and os.path.exists(os.path.join(output_dir, "audio.mp3")) else None,
         'total_beats': len(beats),
         'batch_id': batch_id,
         'beats': beats

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# [FL_INDEX: keywords="cognitive_director, multimodal_director, scene_choreographer, dual_stickman, dialogue_director" | purpose="Multimodal cognitive director that analyzes video beats and narrative to craft lively dual-character stickman parody scenes"]
+# [FL_INDEX: keywords="cognitive_director, multimodal_director, scene_choreographer, dual_stickman, dialogue_director, semantic_ai, context_parody, props_rigging, medical_director, consistent_staging" | purpose="Multimodal cognitive director that analyzes video beats and narrative to craft lively, coherent dual-character stickman parody scenes"]
 """
-Stickman Studio Multimodal Cognitive Director (Dual-Stickman & Dynamic Staging)
+Stickman Studio Multimodal Cognitive Director (Context-Aware Staging & Dynamic Parody)
 Co-authored-by: Flowork OS <agent@floworkos.com>
 """
 
@@ -10,18 +10,79 @@ import os
 import json
 import re
 
+
 POSE_REACTIONS = [
+    {
+        'category': 'medical_dna',
+        'trigger_words': ['dna', 'replikasi', 'genetik', 'molekul', 'rantai', 'biologi', 'double helix'],
+        'pose': 'point',
+        'emotion': 'happy',
+        'prop': 'dna',
+        'background': 'medical_lab',
+        'accent': '#00e5ff',
+        'camera_shake': 1,
+        'comic_shout': 'REPLIKASI DNA!',
+        'template': "Host demonstrates interactive 3D DNA replication model with glowing base pairs for '{snippet}'"
+    },
+    {
+        'category': 'medical_bones',
+        'trigger_words': ['tulang', '206', '266', 'flashcard', 'muhafal', 'menghafal', 'hafal', 'rangka', 'situlang', 'si tulang', 'anatomi', 'skeleton'],
+        'pose': 'think',
+        'emotion': 'surprised',
+        'prop': 'bone',
+        'background': 'medical_lab',
+        'accent': '#38bdf8',
+        'camera_shake': 2,
+        'comic_shout': '206 TULANG?!',
+        'template': "Si Tulang holds anatomy flashcards as student stickman drills 206 human bones: '{snippet}'"
+    },
+    {
+        'category': 'medical_quiz',
+        'trigger_words': ['kuis', 'kuislatahan', 'latihan', 'ujian', 'tes', 'menguji', 'pemahaman', 'skor', 'lulus', 'tryout', 'quiz'],
+        'pose': 'celebrate',
+        'emotion': 'happy',
+        'prop': 'quiz',
+        'background': 'medical_lab',
+        'accent': '#10b981',
+        'camera_shake': 2,
+        'comic_shout': 'KUIS LATIHAN!',
+        'template': "Host and Si Tulang ace the practice exam with 100% checkmarks testing '{snippet}'"
+    },
+    {
+        'category': 'ai_gemini_study',
+        'trigger_words': ['gemini', 'ai', 'tiga cara', '3 cara', 'cara gemini', 'bantu', 'membantu', 'doktoran', 'kedokteran', 'praktek', 'intraktif', 'interaktif', 'fitur'],
+        'pose': 'talk',
+        'emotion': 'happy',
+        'prop': 'brain',
+        'background': 'medical_lab',
+        'accent': '#a855f7',
+        'camera_shake': 0,
+        'comic_shout': '3 CARA GEMINI!',
+        'template': "Host breaks down 3 breakthrough AI study workflows helping in medical education: '{snippet}'"
+    },
+    {
+        'category': 'call_to_action',
+        'trigger_words': ['daftar sekarang', 'daftar', 'sekarang', 'link', 'klik', 'join', 'unduh', 'download', 'coba gratis'],
+        'pose': 'point',
+        'emotion': 'happy',
+        'prop': 'phone',
+        'background': 'medical_lab',
+        'accent': '#00e5ff',
+        'camera_shake': 1,
+        'comic_shout': 'DAFTAR SEKARANG!',
+        'template': "Both stickmen point to the screen encouraging viewers: '{snippet}'"
+    },
     {
         'category': 'music_ambience',
         'trigger_words': ['[music', 'ambience', 'soundtrack', 'instrumental', 'ambient'],
         'pose': 'listen',
         'emotion': 'happy',
-        'prop': 'heart',
-        'background': 'cyber_grid',
+        'prop': 'brain',
+        'background': 'podcast_studio',
         'accent': '#a855f7',
         'camera_shake': 0,
         'comic_shout': 'MUSIC VIBES',
-        'template': "Stickman grooves with rhythmic head-bobbing and neon pulses in sync with the ambient soundscape"
+        'template': "Stickman grooves with rhythmic head-bobbing in sync with the ambient soundscape"
     },
     {
         'category': 'disaster',
@@ -35,16 +96,15 @@ POSE_REACTIONS = [
         'background': 'speedlines_panic',
         'accent': '#ef4444',
         'camera_shake': 4,
-        'comic_shout': 'BANGKRUT TOTAL?!',
-        'template': "Host stickman shouts crisis alert as red crashed financial chart spirals down regarding '{snippet}'"
+        'comic_shout': 'CRASH PARAH?!',
+        'template': "Crisis alert as financial chart spirals down regarding '{snippet}'"
     },
     {
         'category': 'cliffhanger',
         'trigger_words': [
             'tapi ternyata', 'jangan-jangan', 'plot twist', 'shocking', 'rahasia', 'waspada',
             'bahaya', 'jeng jeng', 'unbelievable', 'misteri', 'terbongkar', 'ketahuan', 'gawat',
-            'panik', 'waduh', 'oh no', 'secret', 'twist', 'warning', 'matiin kamera', 'nyala',
-            'kaget', 'syok', 'shock', 'malamuncul'
+            'panik', 'waduh', 'oh no', 'secret', 'twist', 'warning', 'kaget', 'syok', 'shock'
         ],
         'pose': 'surprised',
         'emotion': 'surprised',
@@ -68,7 +128,7 @@ POSE_REACTIONS = [
         'accent': '#f59e0b',
         'camera_shake': 1,
         'comic_shout': 'FLASH SALE 99%?!',
-        'template': "Co-host waves a shopping cart in disbelief comparing hotel liquidation to online clothing sales: '{snippet}'"
+        'template': "Co-host waves shopping cart comparing deals: '{snippet}'"
     },
     {
         'category': 'tourism_bali',
@@ -99,7 +159,7 @@ POSE_REACTIONS = [
         'accent': '#eab308',
         'camera_shake': 2,
         'comic_shout': 'WKWK KONYOL!',
-        'template': "Co-host spits out coffee wheezing in laughter at the ridiculous situation: '{snippet}'"
+        'template': "Co-host spits out coffee wheezing in laughter: '{snippet}'"
     },
     {
         'category': 'energetic',
@@ -109,12 +169,12 @@ POSE_REACTIONS = [
         ],
         'pose': 'celebrate',
         'emotion': 'happy',
-        'prop': 'money_bag',
+        'prop': 'chart_up',
         'background': 'cyber_grid',
         'accent': '#10b981',
         'camera_shake': 2,
         'comic_shout': 'CUAN MELIMPAH?!',
-        'template': "Stickman does an electric victory dance holding money bags celebrating '{snippet}'"
+        'template': "Stickman does a victory dance celebrating '{snippet}'"
     },
     {
         'category': 'question',
@@ -130,22 +190,7 @@ POSE_REACTIONS = [
         'accent': '#f59e0b',
         'camera_shake': 0,
         'comic_shout': 'KOK BISA?!',
-        'template': "Stickmen shrug quizzically as oversized question marks bounce around pondering '{snippet}'"
-    },
-    {
-        'category': 'news_evidence',
-        'trigger_words': [
-            'liat nih', 'lu liat', 'detik', 'cnbc', 'berita', 'koran', 'headline', 'fakta',
-            'terbukti', 'bukti', 'oktober', 'media', 'news', 'artikel'
-        ],
-        'pose': 'point',
-        'emotion': 'surprised',
-        'prop': 'phone',
-        'background': 'podcast_studio',
-        'accent': '#38bdf8',
-        'camera_shake': 1,
-        'comic_shout': 'LIAT BERITANYA!',
-        'template': "Host stickman pulls out glowing smartphone showing headline evidence of '{snippet}'"
+        'template': "Stickmen shrug quizzically pondering '{snippet}'"
     }
 ]
 
@@ -160,18 +205,84 @@ def clean_snippet(text, max_len=45):
     return cleaned
 
 
+def extract_punchy_shout(text, default="IKUTI INI!"):
+    """Extracts a short, relevant punchy comic shout from the actual spoken words."""
+    words = re.findall(r'[a-zA-Z0-9]+', text)
+    if not words:
+        return default
+    # Filter stopwords
+    stops = {'ini', 'dan', 'di', 'ke', 'dari', 'yang', 'untuk', 'pada', 'saya', 'dia', 'kamu', 'aku', 'adalah', 'dengan', 'juga', 'akan', 'bisa'}
+    meaningful = [w.upper() for w in words if w.lower() not in stops and len(w) > 2]
+    if len(meaningful) >= 2:
+        return f"{meaningful[0]} {meaningful[1]}!"
+    elif len(meaningful) == 1:
+        return f"{meaningful[0]}!"
+    else:
+        return f"{words[0].upper()}!"
+
+
+def detect_video_domain(all_text):
+    """Detects global narrative domain to guarantee consistent visual world and characters."""
+    t = all_text.lower()
+    
+    medical_words = ['doktoran', 'kedokteran', 'dokter', 'dna', 'tulang', 'medis', 'anatomi', 'flashcard', 'replikasi', 'situlang', 'gemini']
+    if any(w in t for w in medical_words):
+        return {
+            'theme': 'medical_ai',
+            'default_bg': 'medical_lab',
+            'actor1_label': 'MAHASISWA',
+            'actor2_label': 'SI TULANG',
+            'actor2_is_skeleton': True,
+            'fallback_props': ['brain', 'dna', 'bone', 'quiz', 'phone']
+        }
+    
+    tourism_words = ['bali', 'wisata', 'pantai', 'dewata', 'turis', 'liburan', 'hotel', 'villa']
+    if any(w in t for w in tourism_words):
+        return {
+            'theme': 'tourism_bali',
+            'default_bg': 'beach_bali',
+            'actor1_label': 'HOST',
+            'actor2_label': 'CO-HOST',
+            'actor2_is_skeleton': False,
+            'fallback_props': ['sunglasses', 'phone', 'coffee', 'megaphone']
+        }
+
+    finance_words = ['saham', 'trading', 'cuan', 'investasi', 'rupiah', 'dolar', 'profit', 'rugi', 'bangkrut', 'crypto']
+    if any(w in t for w in finance_words):
+        return {
+            'theme': 'finance_crypto',
+            'default_bg': 'office_meeting',
+            'actor1_label': 'TRADER',
+            'actor2_label': 'ANALYST',
+            'actor2_is_skeleton': False,
+            'fallback_props': ['chart_up', 'chart_down', 'phone', 'money_bag', 'coffee']
+        }
+
+    return {
+        'theme': 'creator_talk',
+        'default_bg': 'podcast_studio',
+        'actor1_label': 'HOST',
+        'actor2_label': 'CO-HOST',
+        'actor2_is_skeleton': False,
+        'fallback_props': ['bulb', 'phone', 'coffee', 'brain', 'megaphone']
+    }
+
+
 def direct_storyboard_beats(manifest):
     beats = manifest.get('beats', [])
     total_beats = len(beats)
 
-    # 1. Determine if Dialogue / Two-Character Staging applies
-    # A video with conversation, banter, or > 6 seconds benefits heavily from dual stickman staging!
+    # 1. Global Narrative Domain & World Establishment
+    full_transcript = " ".join([b.get('text', '') for b in beats])
+    domain = detect_video_domain(full_transcript)
+    manifest['domain_theme'] = domain['theme']
+
     enable_two_actors = total_beats >= 2
 
-    # Staging variations across beats to guarantee zero monotony
+    # Staging variations across beats to guarantee dynamic positions
     stagings_cycle = [
         'two_shot_dialogue', 'left_closeup', 'two_shot_dialogue', 'right_closeup', 
-        'split_panic', 'beach_shot', 'two_shot_dialogue', 'center_closeup'
+        'two_shot_dialogue', 'center_closeup'
     ]
 
     directed_beats = []
@@ -202,54 +313,69 @@ def direct_storyboard_beats(manifest):
             background = matched_reaction['background']
             accent = matched_reaction['accent']
             camera_shake = matched_reaction['camera_shake']
-            comic_shout = matched_reaction.get('comic_shout', 'HEBOH!')
+            comic_shout = matched_reaction.get('comic_shout') or extract_punchy_shout(text)
         else:
-            fallbacks = [
-                {'pose': 'talk', 'emotion': 'neutral', 'prop': 'megaphone', 'background': 'podcast_studio', 'accent': '#00e5ff', 'action': 'lays down the premise of', 'shout': 'HOT NEWS!'},
-                {'pose': 'point', 'emotion': 'surprised', 'prop': 'phone', 'background': 'office_meeting', 'accent': '#38bdf8', 'action': 'points out headline details of', 'shout': 'LIAT NIH!'},
-                {'pose': 'think', 'emotion': 'happy', 'prop': 'brain', 'background': 'beach_bali', 'accent': '#a855f7', 'action': 'analyzes the economic impact of', 'shout': 'MIKIR KERAS!'},
-                {'pose': 'shrug', 'emotion': 'confused', 'prop': 'coffee', 'background': 'podcast_studio', 'accent': '#f59e0b', 'action': 'reacts with disbelief to', 'shout': 'SERIUSAN?!'},
-                {'pose': 'celebrate', 'emotion': 'happy', 'prop': 'money_bag', 'background': 'cyber_grid', 'accent': '#10b981', 'action': 'delivers a punchline about', 'shout': 'GOKIL ABIS!'}
-            ]
-            fb = fallbacks[idx % len(fallbacks)]
-            pose = fb['pose']
-            emotion = fb['emotion']
-            prop = fb['prop']
-            background = fb['background']
-            accent = fb['accent']
+            # Context-Aware Fallback: Use domain's world background and thematic props!
+            background = domain['default_bg']
+            prop = domain['fallback_props'][idx % len(domain['fallback_props'])]
+            
+            poses = ['talk', 'point', 'think', 'celebrate']
+            pose = poses[idx % len(poses)]
+            emotion = 'happy' if pose == 'celebrate' else 'neutral'
+            accent = '#00e5ff'
             camera_shake = 0
-            comic_shout = fb['shout']
-            parody_idea = f"Host and Guest react with expressive comic timing to '{snippet}'"
+            comic_shout = extract_punchy_shout(text, default="SIMAK INI!")
+            parody_idea = f"{domain['actor1_label']} and {domain['actor2_label']} explore: '{snippet}'"
 
         # Staging assignment: alternates every beat
         staging = stagings_cycle[idx % len(stagings_cycle)]
 
-        # Determine speaker turn: Host speaks on even/narrative beats, Guest reacts/speaks on response beats
-        is_guest_speaking = (idx % 3 == 2) or ('udah kayak' in t_clean or 'aduh' in t_clean or 'shopee' in t_clean)
+        # Determine speaker turn:
+        # If text explicitly mentions "si tulang" or "suka banget", Si Tulang takes center stage!
+        if 'situlang' in t_clean or 'si tulang' in t_clean or 'suka banget' in t_clean:
+            is_actor2_speaking = True
+            actor2_action = 'celebrate'
+            actor2_prop = 'bone'
+            actor2_shout = 'SI TULANG SUKA!'
+        elif 'tulang' in t_clean or 'flashcard' in t_clean:
+            is_actor2_speaking = True
+            actor2_action = 'think'
+            actor2_prop = 'bone'
+            actor2_shout = comic_shout
+        elif idx % 3 == 2:
+            is_actor2_speaking = True
+            actor2_action = pose
+            actor2_prop = prop
+            actor2_shout = comic_shout
+        else:
+            is_actor2_speaking = False
+            actor2_action = 'listen'
+            actor2_prop = 'bone' if domain['actor2_is_skeleton'] else 'coffee'
+            actor2_shout = None
 
         # Build Dual Actor Specification
         actor_1 = {
-            'label': 'HOST',
+            'label': domain['actor1_label'],
             'x': 210,
-            'speaking': not is_guest_speaking,
-            'action': pose if not is_guest_speaking else 'listen',
-            'prop': prop if not is_guest_speaking else 'coffee',
-            'emotion': emotion if not is_guest_speaking else 'neutral',
-            'accent_color': [255, 230, 0], # Cyan / Gold aura
-            'comic_shout': comic_shout if not is_guest_speaking else None,
-            'scale': 1.05 if not is_guest_speaking else 0.95
+            'speaking': not is_actor2_speaking,
+            'action': pose if not is_actor2_speaking else 'listen',
+            'prop': prop if not is_actor2_speaking else 'coffee',
+            'emotion': emotion if not is_actor2_speaking else 'neutral',
+            'accent_color': [255, 230, 0],
+            'comic_shout': comic_shout if not is_actor2_speaking else None,
+            'scale': 1.05 if not is_actor2_speaking else 0.95
         }
 
         actor_2 = {
-            'label': 'CO-HOST',
+            'label': domain['actor2_label'],
             'x': 510,
-            'speaking': is_guest_speaking,
-            'action': pose if is_guest_speaking else ('surprised' if camera_shake > 0 else 'listen'),
-            'prop': prop if is_guest_speaking else 'question',
-            'emotion': emotion if is_guest_speaking else 'confused',
-            'accent_color': [247, 85, 168], # Magenta / Purple aura
-            'comic_shout': comic_shout if is_guest_speaking else None,
-            'scale': 1.05 if is_guest_speaking else 0.95
+            'speaking': is_actor2_speaking,
+            'action': actor2_action,
+            'prop': actor2_prop,
+            'emotion': 'happy' if is_actor2_speaking else 'neutral',
+            'accent_color': [0, 229, 255] if domain['actor2_is_skeleton'] else [247, 85, 168],
+            'comic_shout': actor2_shout,
+            'scale': 1.05 if is_actor2_speaking else 0.95
         }
 
         directed_beat = dict(beat)
