@@ -93,7 +93,7 @@
     startTime: 0,
     selectedProfile: 'kids',
     characterArchetype: 'classic',
-    renderMode: 'split_pip', // 'split_pip' or 'full_stickman'
+    renderMode: 'full_stickman', // 100% Full Animated Stickman by default
     destinationDir: '',
     videoPath: null,
     currentAudioServerPath: null,

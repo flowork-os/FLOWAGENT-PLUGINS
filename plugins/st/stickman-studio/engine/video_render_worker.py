@@ -201,16 +201,83 @@ def render_stickman_video(config_input, output_mp4, progress_file=None):
             bg = current_beat.get("background", bg_choice)
             composer.draw_background(full_frame, bg_type=bg, camera_shake=cam_shake)
 
-            actor_x = width // 2 + int(cam_shake[0])
-            actor_y = int(height * 0.72) + int(cam_shake[1])
-            energy = 0.5 + 0.5 * math.sin(t * 8.0)
-            pose_action = current_beat.get("pose", "talk")
-            composer.draw_expressive_stickman(full_frame, actor_x, actor_y, action=pose_action, t=t, energy=energy)
+            actors = current_beat.get("actors", [])
+            if len(actors) >= 2:
+                # 2-Person Stickman Dialogue Staging
+                # Actor 1 (Left, e.g. Host)
+                a1 = actors[0]
+                a1_x = int(a1.get("x", 210) + cam_shake[0])
+                a1_y = int(a1.get("y", height * 0.72) + cam_shake[1])
+                a1_spk = a1.get("speaking", True)
+                a1_energy = (0.5 + 0.5 * math.sin(t * 8.0)) if a1_spk else 0.15
+                composer.draw_expressive_stickman(
+                    full_frame, a1_x, a1_y,
+                    action=a1.get("action", "talk" if a1_spk else "listen"),
+                    t=t, energy=a1_energy, flipped=False,
+                    body_color=(245, 245, 250),
+                    accent_color=tuple(a1.get("accent_color", [255, 230, 0])),
+                    prop=a1.get("prop"), label=a1.get("label", "HOST"),
+                    scale_mult=a1.get("scale", 0.95),
+                    comic_shout=a1.get("comic_shout") if a1_spk else None
+                )
+
+                # Actor 2 (Right, e.g. Co-host / Reacting friend)
+                a2 = actors[1]
+                a2_x = int(a2.get("x", 510) + cam_shake[0])
+                a2_y = int(a2.get("y", height * 0.72) + cam_shake[1])
+                a2_spk = a2.get("speaking", False)
+                a2_energy = (0.5 + 0.5 * math.sin(t * 8.0)) if a2_spk else 0.15
+                composer.draw_expressive_stickman(
+                    full_frame, a2_x, a2_y,
+                    action=a2.get("action", "talk" if a2_spk else "surprised"),
+                    t=t, energy=a2_energy, flipped=True,
+                    body_color=(240, 240, 245),
+                    accent_color=tuple(a2.get("accent_color", [247, 85, 168])),
+                    prop=a2.get("prop"), label=a2.get("label", "CO-HOST"),
+                    scale_mult=a2.get("scale", 0.95),
+                    comic_shout=a2.get("comic_shout") if a2_spk else None
+                )
+            else:
+                # Dynamic Solo Staging: Position & scale shift every beat!
+                staging = current_beat.get("staging", "center")
+                actor_x = width // 2
+                actor_scale = 1.0
+                flipped = False
+
+                if staging == "left_focus":
+                    actor_x = int(width * 0.35)
+                    actor_scale = 1.1
+                    flipped = False
+                elif staging == "right_focus":
+                    actor_x = int(width * 0.65)
+                    actor_scale = 1.1
+                    flipped = True
+                elif staging == "center_closeup":
+                    actor_x = width // 2
+                    actor_scale = 1.25
+                    flipped = False
+                elif staging == "beach_shot":
+                    actor_x = int(width * 0.45)
+                    actor_scale = 1.05
+                    flipped = False
+
+                actor_x += int(cam_shake[0])
+                actor_y = int(height * 0.72) + int(cam_shake[1])
+                energy = 0.5 + 0.5 * math.sin(t * 8.0)
+                pose_action = current_beat.get("pose", "talk")
+                prop = current_beat.get("prop")
+                comic_shout = current_beat.get("comic_shout")
+
+                composer.draw_expressive_stickman(
+                    full_frame, actor_x, actor_y, action=pose_action, t=t,
+                    energy=energy, flipped=flipped, prop=prop, scale_mult=actor_scale,
+                    comic_shout=comic_shout
+                )
 
             # Header Banner
-            cv2.rectangle(full_frame, (0, 0), (width, 90), (15, 23, 42), -1)
-            cv2.line(full_frame, (0, 90), (width, 90), (0, 229, 255), 2)
-            cv2.putText(full_frame, title[:30].upper(), (30, 58), cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 229, 255), 2)
+            cv2.rectangle(full_frame, (0, 0), (width, 85), (15, 23, 42), -1)
+            cv2.line(full_frame, (0, 85), (width, 85), (0, 229, 255), 2)
+            cv2.putText(full_frame, title[:30].upper(), (30, 54), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 229, 255), 2)
 
             # Subtitles Box at Bottom
             sub_text = current_beat.get("text", "")
@@ -227,16 +294,16 @@ def render_stickman_video(config_input, output_mp4, progress_file=None):
                         cv2.line(full_frame, (bx, mb_y1 + 25 - bar_h // 2), (bx, mb_y1 + 25 + bar_h // 2), (168, 85, 247), 2)
                     cv2.putText(full_frame, "MUSIC / AMBIENCE", (mb_x1 + 110, mb_y1 + 32), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255), 1)
                 else:
-                    sub_y1 = height - 180
-                    sub_y2 = height - 60
+                    sub_y1 = height - 170
+                    sub_y2 = height - 55
                     cv2.rectangle(full_frame, (30, sub_y1), (width - 30, sub_y2), (15, 23, 42), -1)
-                    cv2.rectangle(full_frame, (30, sub_y1), (width - 30, sub_y2), (255, 255, 255), 2)
+                    cv2.rectangle(full_frame, (30, sub_y1), (width - 30, sub_y2), (0, 229, 255), 2)
                     words = sub_text.split()
                     line1 = " ".join(words[:len(words)//2 + 1])
                     line2 = " ".join(words[len(words)//2 + 1:])
-                    cv2.putText(full_frame, line1, (50, sub_y1 + 45), cv2.FONT_HERSHEY_DUPLEX, 0.65, (255, 255, 255), 2)
+                    cv2.putText(full_frame, line1, (45, sub_y1 + 42), cv2.FONT_HERSHEY_DUPLEX, 0.65, (255, 255, 255), 2)
                     if line2:
-                        cv2.putText(full_frame, line2, (50, sub_y1 + 90), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 229, 255), 2)
+                        cv2.putText(full_frame, line2, (45, sub_y1 + 84), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 229, 255), 2)
 
         out.write(full_frame)
 
