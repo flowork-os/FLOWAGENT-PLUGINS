@@ -1,6 +1,70 @@
 // Flow3D Studio Client Application
 
-const API_BASE = window.location.origin;
+let API_BASE = '';
+
+async function resolveApiBase() {
+  if (API_BASE) return API_BASE;
+
+  // 1. Query parameter ?port= or ?api=
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('port')) {
+    API_BASE = `http://127.0.0.1:${urlParams.get('port')}`;
+    return API_BASE;
+  }
+  if (urlParams.get('api')) {
+    API_BASE = urlParams.get('api');
+    return API_BASE;
+  }
+
+  // 2. Direct probe on window.location.origin
+  try {
+    const testRes = await fetch(`${window.location.origin}/api/health`, { signal: AbortSignal.timeout(600) });
+    if (testRes.ok) {
+      const info = await testRes.json();
+      if (info.app === 'flow-3d') {
+        API_BASE = window.location.origin;
+        return API_BASE;
+      }
+    }
+  } catch (_) {}
+
+  // 3. Cockpit Host status discovery probe (port 19890 or current window host)
+  try {
+    const hostPort = (window.location.port && window.location.port !== '80' && window.location.port !== '443') ? window.location.port : '19890';
+    const portsToTry = [hostPort, '19890'];
+    for (const p of portsToTry) {
+      try {
+        const res = await fetch(`http://127.0.0.1:${p}/api/plugins/flow-3d/status`, { signal: AbortSignal.timeout(1000) });
+        if (res.ok) {
+          const info = await res.json();
+          if (info.port && info.running) {
+            API_BASE = `http://127.0.0.1:${info.port}`;
+            return API_BASE;
+          }
+        }
+      } catch (_) {}
+    }
+  } catch (_) {}
+
+  // 4. Fallback to default port
+  API_BASE = 'http://127.0.0.1:17897';
+  return API_BASE;
+}
+
+async function safeFetchJson(endpoint, options = {}) {
+  const base = await resolveApiBase();
+  const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint}`;
+  const res = await fetch(url, options);
+  const text = await res.text();
+  if (!text || !text.trim()) {
+    throw new Error(`Empty response from ${endpoint} (HTTP ${res.status})`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    throw new Error(`Invalid JSON from ${endpoint} (HTTP ${res.status}): ${text.slice(0, 100)}`);
+  }
+}
 
 const state = {
   modality: 'threejs',
@@ -55,6 +119,7 @@ const metaDescription = document.getElementById('meta-description');
 // 1. Initialize Application
 async function init() {
   setupEventListeners();
+  await resolveApiBase();
   await fetchStats();
   await loadAssets();
 }
@@ -62,8 +127,7 @@ async function init() {
 // 2. Fetch Stats
 async function fetchStats() {
   try {
-    const res = await fetch(`${API_BASE}/api/stats`);
-    const data = await res.json();
+    const data = await safeFetchJson('/api/stats');
     state.stats = data;
     if (statsBadge && data.total_models) {
       statsBadge.textContent = `${data.total_models.toLocaleString()} Procedural Assets`;
@@ -83,8 +147,7 @@ async function loadAssets() {
       page: state.page,
       limit: state.limit
     });
-    const res = await fetch(`${API_BASE}/api/assets?${params.toString()}`);
-    const data = await res.json();
+    const data = await safeFetchJson(`/api/assets?${params.toString()}`);
 
     state.totalPages = data.total_pages || 1;
     state.page = data.page || 1;
@@ -148,8 +211,7 @@ async function selectAsset(item) {
   metaDomain.textContent = item.modality === 'threejs' ? 'Interactive WebGL' : 'Parametric Solid CAD';
 
   try {
-    const res = await fetch(`${API_BASE}/api/assets/${item.modality}/${encodeURIComponent(item.id)}`);
-    const data = await res.json();
+    const data = await safeFetchJson(`/api/assets/${item.modality}/${encodeURIComponent(item.id)}`);
 
     codeEditor.value = data.code || '';
     
@@ -239,8 +301,7 @@ function setupEventListeners() {
     btnBrowseFolder.disabled = true;
     btnBrowseFolder.textContent = 'Browsing...';
     try {
-      const res = await fetch(`${API_BASE}/api/pick-folder`);
-      const data = await res.json();
+      const data = await safeFetchJson('/api/pick-folder');
       if (data.path) {
         state.destinationDir = data.path;
         destinationDirInput.value = data.path;
@@ -269,12 +330,11 @@ function setupEventListeners() {
         filename: `flow3d_${Date.now()}_${state.aspectRatio.replace(':', 'x')}.mp4`
       };
 
-      const res = await fetch(`${API_BASE}/api/turntable/render`, {
+      const data = await safeFetchJson('/api/turntable/render', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await res.json();
 
       if (data.success) {
         progressBarFill.style.width = '100%';
@@ -303,12 +363,11 @@ function setupEventListeners() {
     btnGenerate3D.innerHTML = '<span class="btn-icon">⚡</span> Synthesizing...';
 
     try {
-      const res = await fetch(`${API_BASE}/api/generate`, {
+      const data = await safeFetchJson('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, modality: 'threejs' })
       });
-      const data = await res.json();
 
       if (data.success && data.result) {
         activeSceneTitle.textContent = data.result.title;
@@ -374,12 +433,11 @@ function setupEventListeners() {
     const filename = `${state.activeAsset ? state.activeAsset.id : 'export'}_${Date.now()}.html`;
 
     try {
-      const res = await fetch(`${API_BASE}/api/export`, {
+      const data = await safeFetchJson('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, destination_dir: dest, filename })
       });
-      const data = await res.json();
       if (data.success) {
         alert(`Exported file saved to: ${data.file_path}`);
       }
