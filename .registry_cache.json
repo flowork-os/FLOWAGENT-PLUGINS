@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-29T04:50:15Z",
+  "updated_at": "2026-10-29T05:20:29Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -329,7 +329,7 @@
       "description": "Sovereign AI 3D & WebGL CAD Forge. Browse 34,840 procedural 3D models across 7 modalities, inspect parametric code, generate 3D objects via AI few-shot RAG, and export to STL, STEP, GLB, and 360° YouTube turntable video.",
       "category": "Architecture & Spatial Engineering",
       "icon": "🧊",
-      "hash": "afd335d6289c1303",
+      "hash": "8d635b961f8acf0f",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"

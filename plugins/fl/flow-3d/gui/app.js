@@ -197,8 +197,11 @@ function renderAssetList(items) {
     let pillClass = `pill-${item.modality}`;
     let modLabel = item.modality.toUpperCase();
 
+    const idNum = item.id.match(/^(\d+)/)?.[1] || '';
+    const badgeHtml = idNum ? `<span class="asset-id-badge">#${idNum}</span> ` : '';
+
     card.innerHTML = `
-      <div class="asset-title" title="${item.name}">${item.name}</div>
+      <div class="asset-title" title="${item.name}">${badgeHtml}${item.name}</div>
       <div class="asset-meta-row">
         <span class="modality-pill ${pillClass}">${modLabel}</span>
         <span class="asset-type">${item.style || item.type.split(' ')[0]}</span>
