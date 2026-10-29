@@ -14,6 +14,10 @@ import cv2
 import numpy as np
 from faster_whisper import WhisperModel
 
+sys.path.append(os.path.dirname(__file__))
+from pose_tracker import PoseTracker
+from dynamic_cartoonist import DynamicCartoonist
+
 # Semantic pose and prop catalogs
 POSES_CATALOG = [
     'talk', 'think', 'shrug', 'point', 'celebrate', 'sad', 'angry', 'surprised',
@@ -288,24 +292,25 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_durat
                 if seg.words:
                     for w in seg.words:
                         w_text = w.word.strip()
-                        if w_text and w.end <= duration:
+                        if w_text and any(c.isalnum() for c in w_text) and w.end <= duration:
                             whisper_words.append({
                                 'start': round(float(w.start), 2),
                                 'end': round(float(w.end), 2),
                                 'word': w_text
                             })
                 elif seg.text and seg.text.strip():
-                    swords = seg.text.strip().split()
-                    seg_dur = max(0.1, min(duration, seg.end) - seg.start)
-                    step = seg_dur / len(swords)
-                    for i, sw in enumerate(swords):
-                        w_end = min(duration, seg.start + (i + 1) * step)
-                        if w_end <= duration:
-                            whisper_words.append({
-                                'start': round(float(seg.start + i * step), 2),
-                                'end': round(float(w_end), 2),
-                                'word': sw
-                            })
+                    swords = [sw for sw in seg.text.strip().split() if any(c.isalnum() for c in sw)]
+                    if swords:
+                        seg_dur = max(0.1, min(duration, seg.end) - seg.start)
+                        step = seg_dur / len(swords)
+                        for i, sw in enumerate(swords):
+                            w_end = min(duration, seg.start + (i + 1) * step)
+                            if w_end <= duration:
+                                whisper_words.append({
+                                    'start': round(float(seg.start + i * step), 2),
+                                    'end': round(float(w_end), 2),
+                                    'word': sw
+                                })
         except Exception as we:
             print(f"Whisper transcription note: {we}", file=sys.stderr)
 
@@ -386,37 +391,43 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_durat
         # Case B: Real spoken words transcribed
         first_w_start = whisper_words[0]['start']
         if first_w_start >= 1.5:
-            b_end = first_w_start
-            midpoint = round(b_end / 2.0, 2)
-            kf_filename = f"{batch_id}_beat_{beat_idx:03d}.jpg"
-            kf_path = os.path.join(keyframes_dir, kf_filename)
-            if has_video:
-                grab_keyframe(midpoint, kf_path)
-            else:
-                synthesize_audio_fallback_thumbnail(kf_path, beat_idx, "[Music / Ambience]")
-            choreo = derive_stickman_choreography("[Music / Ambience]", beat_idx - 1, 10, has_video)
-            beats.append({
-                'id': f"beat_{beat_idx:03d}",
-                'index': beat_idx,
-                'beat_id': beat_idx,
-                'batch_id': batch_id,
-                'start': 0.0,
-                'end': b_end,
-                'duration': round(b_end, 2),
-                'text': "[Music / Ambience]",
-                'words': [],
-                'keyframe_file': kf_filename,
-                'keyframe_url': f"/api/keyframes/{batch_id}/{kf_filename}",
-                'keyframe_path': kf_path,
-                'model': 'classic',
-                'pose': choreo['pose'],
-                'emotion': choreo['emotion'],
-                'prop': choreo['prop'],
-                'background': choreo['background'],
-                'meme_fx': choreo['meme_fx'],
-                'accent': '#a855f7'
-            })
-            beat_idx += 1
+            curr_gap_start = 0.0
+            while curr_gap_start < first_w_start:
+                gap_chunk_end = min(first_w_start, round(curr_gap_start + target_beat_seconds, 2))
+                if (first_w_start - gap_chunk_end) < 1.2:
+                    gap_chunk_end = first_w_start
+                dur = round(gap_chunk_end - curr_gap_start, 2)
+                midpoint = round((curr_gap_start + gap_chunk_end) / 2.0, 2)
+                kf_filename = f"{batch_id}_beat_{beat_idx:03d}.jpg"
+                kf_path = os.path.join(keyframes_dir, kf_filename)
+                if has_video:
+                    grab_keyframe(midpoint, kf_path)
+                else:
+                    synthesize_audio_fallback_thumbnail(kf_path, beat_idx, "[Music / Ambience]")
+                choreo = derive_stickman_choreography("[Music / Ambience]", beat_idx - 1, 10, has_video)
+                beats.append({
+                    'id': f"beat_{beat_idx:03d}",
+                    'index': beat_idx,
+                    'beat_id': beat_idx,
+                    'batch_id': batch_id,
+                    'start': curr_gap_start,
+                    'end': gap_chunk_end,
+                    'duration': dur,
+                    'text': "[Music / Ambience]",
+                    'words': [],
+                    'keyframe_file': kf_filename,
+                    'keyframe_url': f"/api/keyframes/{batch_id}/{kf_filename}",
+                    'keyframe_path': kf_path,
+                    'model': 'classic',
+                    'pose': choreo['pose'],
+                    'emotion': choreo['emotion'],
+                    'prop': choreo['prop'],
+                    'background': choreo['background'],
+                    'meme_fx': choreo['meme_fx'],
+                    'accent': '#a855f7'
+                })
+                beat_idx += 1
+                curr_gap_start = gap_chunk_end
 
         word_ptr = 0
         while word_ptr < len(whisper_words):
@@ -461,6 +472,8 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_durat
             current_words = []
             while word_ptr < len(whisper_words):
                 w = whisper_words[word_ptr]
+                if current_words and (w['start'] - current_words[-1]['end'] >= 1.5):
+                    break
                 current_words.append(w)
                 word_ptr += 1
                 curr_dur = w['end'] - beat_start
@@ -544,6 +557,28 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_durat
             cap.release()
         except Exception:
             pass
+
+    # 5. Extract Real Skeletal Poses & Generate Dynamic Cartoonist Parody Previews
+    try:
+        pose_tracker = PoseTracker()
+        dynamic_cartoonist = DynamicCartoonist(width=480, height=640)
+        for b in beats:
+            kf_path = b.get('keyframe_path')
+            if kf_path and os.path.exists(kf_path):
+                pose_res = pose_tracker.analyze_image(kf_path)
+                b['pose_data'] = pose_res
+            else:
+                b['pose_data'] = {'has_pose': False, 'screen_type': 'general'}
+
+            parody_filename = f"{batch_id}_parody_{b['index']:03d}.jpg"
+            parody_path = os.path.join(keyframes_dir, parody_filename)
+            parody_frame = dynamic_cartoonist.render_beat_frame(b, t=0.5, energy=0.8)
+            cv2.imwrite(parody_path, parody_frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+            b['parody_thumb_file'] = parody_filename
+            b['parody_thumb_url'] = f"/api/keyframes/{batch_id}/{parody_filename}"
+            b['parody_thumb_path'] = parody_path
+    except Exception as e:
+        print(f"Warning: Dynamic cartoonist pass encountered exception: {e}")
 
     manifest = {
         'input_path': os.path.abspath(input_path),

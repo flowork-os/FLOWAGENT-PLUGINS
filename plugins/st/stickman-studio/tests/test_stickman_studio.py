@@ -241,5 +241,54 @@ class TestStickmanStudio(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
+    def test_07_vision_pose_tracker_and_dynamic_cartoonist(self):
+        """Verify PoseTracker 33-point skeletal extraction and DynamicCartoonist zero-template redrawer."""
+        sys.path.append(os.path.join(APP_DIR, 'engine'))
+        from pose_tracker import PoseTracker
+        from dynamic_cartoonist import DynamicCartoonist
+        import numpy as np
+
+        tracker = PoseTracker()
+        cartoonist = DynamicCartoonist(width=720, height=1280)
+
+        # Test A: Graphic slide analysis (no human pose)
+        sample_slide = np.zeros((640, 480, 3), dtype=np.uint8)
+        sample_slide[200:250, 40:440] = (255, 255, 255) # Quiz button 1
+        sample_slide[280:330, 40:440] = (255, 255, 255) # Quiz button 2
+        sample_slide[360:410, 40:440] = (255, 255, 255) # Quiz button 3
+        slide_res = tracker.analyze_image(sample_slide)
+        self.assertFalse(slide_res['has_pose'])
+        self.assertIn(slide_res['screen_type'], ['quiz', 'flashcard', 'title', 'graphic'])
+
+        # Test B: Dynamic Cartoonist redraw of DNA scene
+        beat_dna = {
+            'index': 3,
+            'text': 'model interaktif untuk memahami replikasi DNA',
+            'pose_data': slide_res
+        }
+        frame_dna = cartoonist.render_beat_frame(beat_dna, t=1.0, energy=0.8)
+        self.assertEqual(frame_dna.shape, (1280, 720, 3))
+        self.assertGreater(np.mean(frame_dna), 5.0, "Rendered DNA frame should not be blank")
+
+        # Test C: Dynamic Cartoonist redraw of Flashcard bone scene
+        beat_fc = {
+            'index': 4,
+            'text': 'flashcard untuk menghafal 266 tulang',
+            'pose_data': slide_res
+        }
+        frame_fc = cartoonist.render_beat_frame(beat_fc, t=0.5, energy=0.7)
+        self.assertEqual(frame_fc.shape, (1280, 720, 3))
+        self.assertGreater(np.mean(frame_fc), 5.0, "Rendered flashcard frame should not be blank")
+
+        # Test D: Dynamic Cartoonist redraw of CTA scene
+        beat_cta = {
+            'index': 7,
+            'text': 'daftar sekarang',
+            'pose_data': slide_res
+        }
+        frame_cta = cartoonist.render_beat_frame(beat_cta, t=0.0, energy=0.9)
+        self.assertEqual(frame_cta.shape, (1280, 720, 3))
+        self.assertGreater(np.mean(frame_cta), 5.0, "Rendered CTA frame should not be blank")
+
 if __name__ == '__main__':
     unittest.main()

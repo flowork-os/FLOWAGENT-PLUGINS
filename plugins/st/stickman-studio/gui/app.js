@@ -942,8 +942,20 @@
 
   // Instant Canvas Part Preview Frame
   async function fetchPartPreview(part) {
-    if (partPreviewPlaceholder) partPreviewPlaceholder.style.display = 'none';
     if (!partPreviewImage || !part) return;
+
+    // Use AI Agent Dynamic Cartoonist parody thumbnail if available
+    let rawParody = part.parody_thumb_url || (part.parody_thumb_file ? `/api/keyframes/${part.parody_thumb_file}` : null);
+    if (rawParody) {
+      let fullUrl = rawParody.startsWith('http') ? rawParody : api(rawParody);
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + 't=' + (part.batch_id || Date.now());
+      partPreviewImage.src = fullUrl;
+      partPreviewImage.style.display = 'block';
+      if (partPreviewPlaceholder) partPreviewPlaceholder.style.display = 'none';
+      return;
+    }
+
+    if (partPreviewPlaceholder) partPreviewPlaceholder.style.display = 'none';
 
     try {
       const offscreen = document.createElement('canvas');
