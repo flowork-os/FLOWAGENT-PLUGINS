@@ -6,7 +6,7 @@
   "description": "Sovereign AI-driven long-form video to vertical 9:16 viral short-form clip generator. Features automated transcription, AI hook detection, viral moment ranking, mathematical center-cropping, and dynamic subtitle burning.",
   "category": "Media, Creative Writing & Journalism",
   "icon": "✂️",
-  "hash": "b11729e915bed5f5",
+  "hash": "21a82b9fab9c7717",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"

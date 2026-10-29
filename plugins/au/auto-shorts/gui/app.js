@@ -6,10 +6,41 @@
 (function () {
   'use strict';
 
-  // Dynamic API Root Resolution
-  const API_BASE = window.location.origin.includes('17899') 
-    ? window.location.origin 
-    : 'http://127.0.0.1:17899';
+  // Dynamic API Root Resolution (Cockpit Host Discovery & Fallback)
+  let API_BASE = '';
+
+  async function resolveApiBase() {
+    if (API_BASE) return API_BASE;
+
+    // 1. Direct engine port probe on current window origin
+    try {
+      const testRes = await fetch(`${window.location.origin}/api/status`, { signal: AbortSignal.timeout(600) });
+      if (testRes.ok) {
+        const info = await testRes.json();
+        if (info.app === 'auto-shorts') {
+          API_BASE = window.location.origin;
+          return API_BASE;
+        }
+      }
+    } catch (_) {}
+
+    // 2. Cockpit Host status discovery probe (port 19890 or window host)
+    try {
+      const hostPort = (window.location.port && window.location.port !== '80' && window.location.port !== '443') ? window.location.port : '19890';
+      const res = await fetch(`http://127.0.0.1:${hostPort}/api/plugins/auto-shorts/status`, { signal: AbortSignal.timeout(1000) });
+      if (res.ok) {
+        const info = await res.json();
+        if (info.port && info.running) {
+          API_BASE = `http://127.0.0.1:${info.port}`;
+          return API_BASE;
+        }
+      }
+    } catch (_) {}
+
+    // 3. Fallback to default port
+    API_BASE = 'http://127.0.0.1:17899';
+    return API_BASE;
+  }
 
   let currentProject = null;
   let currentDetail = null;
@@ -62,6 +93,7 @@
 
   // 1. Fetch Engine Status
   async function checkEngineStatus() {
+    await resolveApiBase();
     try {
       const res = await fetch(`${API_BASE}/api/status`);
       const data = await res.json();
@@ -87,6 +119,7 @@
 
   // 2. Fetch Projects List
   async function loadProjects() {
+    await resolveApiBase();
     try {
       const res = await fetch(`${API_BASE}/api/projects`);
       const data = await res.json();
@@ -123,6 +156,7 @@
 
   // 3. Select Project Detail
   async function selectProject(projectId) {
+    await resolveApiBase();
     try {
       const res = await fetch(`${API_BASE}/api/projects/${projectId}`);
       const data = await res.json();
@@ -204,6 +238,7 @@
       };
 
       card.querySelector('.btn-render').onclick = async (e) => {
+        await resolveApiBase();
         const btn = e.target;
         btn.disabled = true;
         btn.textContent = '⏳ Rendering...';
@@ -235,6 +270,7 @@
   // 5. Actions: Transcribe
   btnTranscribe.onclick = async () => {
     if (!currentProject) return;
+    await resolveApiBase();
     btnTranscribe.disabled = true;
     btnTranscribe.innerHTML = '<span>⏳ Transcribing Speech...</span>';
 
@@ -257,6 +293,7 @@
   // 6. Actions: Detect Viral Moments
   btnDetectMoments.onclick = async () => {
     if (!currentProject) return;
+    await resolveApiBase();
     btnDetectMoments.disabled = true;
     btnDetectMoments.innerHTML = '<span>⚡ Analyzing Moments...</span>';
 
@@ -308,6 +345,8 @@
   async function handleFileUpload(file) {
     if (!file) return;
 
+    await resolveApiBase();
+
     uploadProgressBox.classList.remove('hidden');
     selectedFileBadge.classList.add('hidden');
     uploadProgressFill.style.width = '0%';
@@ -345,13 +384,14 @@
 
     xhr.onerror = () => {
       uploadProgressBox.classList.add('hidden');
-      alert('Network error during file upload.');
+      alert(`Network error during file upload to ${API_BASE}. Please ensure AutoShorts engine is active.`);
     };
 
     xhr.send(file);
   }
 
   async function triggerOsFilePicker() {
+    await resolveApiBase();
     btnOsPicker.disabled = true;
     const originalText = btnOsPicker.innerHTML;
     btnOsPicker.innerHTML = '<span>⏳ Opening Dialog...</span>';
@@ -412,6 +452,7 @@
   btnCancelProject.onclick = () => modalProject.classList.add('hidden');
 
   btnSubmitProject.onclick = async () => {
+    await resolveApiBase();
     let name = inputProjectName.value.trim();
     let sourcePath = inputVideoPath.value.trim();
 
@@ -451,6 +492,11 @@
   };
 
   // Initial Boot
-  checkEngineStatus();
-  loadProjects();
+  async function init() {
+    await resolveApiBase();
+    await checkEngineStatus();
+    await loadProjects();
+  }
+
+  init();
 })();
