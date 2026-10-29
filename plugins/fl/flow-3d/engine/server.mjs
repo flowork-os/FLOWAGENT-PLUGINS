@@ -39,8 +39,8 @@ const assetIndex = {
 };
 
 function humanizeName(raw) {
-  let clean = raw.replace(/^codex_luna_opus_scene_|^opus_scene_|^00\d\d_|^thingiverse_/, '');
-  clean = clean.replace(/_[a-f0-9]{12}$/, '');
+  let clean = raw.replace(/^codex_luna_opus_scene_|^opus_scene_|^codex_terra_threejs_|^codex_sol_threejs_|^00\d\d_|^thingiverse_/, '');
+  clean = clean.replace(/_[a-f0-9]{12,}$/, '');
   clean = clean.replace(/_/g, ' ');
   return clean.replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -50,12 +50,15 @@ function buildAssetIndex() {
   const startTime = Date.now();
 
   try {
-    // 1. Three.js scenes
+    // 1. Three.js scenes (filter strictly for directories containing code.html)
     const threeDir = path.join(LIBRARY_DIR, 'threejs');
     if (fs.existsSync(threeDir)) {
       const items = fs.readdirSync(threeDir, { withFileTypes: true });
       assetIndex.threejs = items
-        .filter(d => d.isDirectory())
+        .filter(d => {
+          if (!d.isDirectory()) return false;
+          return fs.existsSync(path.join(threeDir, d.name, 'code.html'));
+        })
         .map(d => ({
           id: d.name,
           name: humanizeName(d.name),
@@ -155,21 +158,33 @@ function buildAssetIndex() {
 // Trigger background indexing
 buildAssetIndex();
 
-// Cross-Platform Native Folder Picker
+// Native Folder Picker
 function pickNativeFolder() {
+  if (process.env.FLOWORK_TEST_MODE === '1') {
+    return Promise.resolve(null);
+  }
+
   return new Promise((resolve) => {
     const platform = process.platform;
 
     if (platform === 'linux') {
-      const proc = spawn('zenity', ['--file-selection', '--directory', '--title=Select Destination Folder']);
+      const proc = spawn('zenity', [
+        '--file-selection',
+        '--directory',
+        '--timeout=120',
+        '--title=Select Destination Folder'
+      ]);
       let out = '';
       proc.stdout.on('data', d => { out += d.toString(); });
       proc.on('close', code => {
         if (code === 0 && out.trim()) {
-          resolve(out.trim());
-        } else {
-          fallbackTkinterFolder().then(resolve);
+          return resolve(out.trim());
         }
+        if (code === 1) {
+          // User canceled dialog
+          return resolve(null);
+        }
+        fallbackTkinterFolder().then(resolve);
       });
       proc.on('error', () => {
         fallbackTkinterFolder().then(resolve);
@@ -184,10 +199,9 @@ function pickNativeFolder() {
       proc.stdout.on('data', d => { out += d.toString(); });
       proc.on('close', code => {
         if (code === 0 && out.trim()) {
-          resolve(out.trim());
-        } else {
-          fallbackTkinterFolder().then(resolve);
+          return resolve(out.trim());
         }
+        return resolve(null);
       });
       proc.on('error', () => {
         fallbackTkinterFolder().then(resolve);
@@ -209,10 +223,9 @@ if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
       proc.stdout.on('data', d => { out += d.toString(); });
       proc.on('close', code => {
         if (code === 0 && out.trim()) {
-          resolve(out.trim());
-        } else {
-          fallbackTkinterFolder().then(resolve);
+          return resolve(out.trim());
         }
+        return resolve(null);
       });
       proc.on('error', () => {
         fallbackTkinterFolder().then(resolve);
@@ -236,20 +249,293 @@ try:
     root.attributes('-topmost', True)
     folder = filedialog.askdirectory(title="Select Destination Folder")
     if folder:
-        print(folder)
+        print(folder.strip())
 except Exception:
     pass
 `;
     const proc = spawn('python3', ['-c', pyScript]);
     let out = '';
     proc.stdout.on('data', d => { out += d.toString(); });
-    proc.on('close', () => {
-      resolve(out.trim() || path.join(os.homedir(), 'Downloads'));
+    proc.on('close', (code) => {
+      if (code === 0 && out.trim()) {
+        resolve(out.trim());
+      } else {
+        resolve(null);
+      }
     });
     proc.on('error', () => {
-      resolve(path.join(os.homedir(), 'Downloads'));
+      resolve(null);
     });
   });
+}
+
+// Procedural 3D Visualizer Synthesizer for OpenSCAD, CadQuery & Bio Assets
+function generateParametricPreview(name, modality, code = '', meta = {}) {
+  const n = (name + ' ' + (meta?.captions?.instruction || '')).toLowerCase();
+  
+  // 1. Gear / Sprocket
+  if (n.includes('gear') || n.includes('cog') || n.includes('sprocket')) {
+    return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050811}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050811);
+scene.fog = new THREE.FogExp2(0x050811, 0.03);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 5, 8);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 2.0;
+
+scene.add(new THREE.AmbientLight(0x1e293b, 1.5));
+const d1 = new THREE.DirectionalLight(0x00f0ff, 3.5);
+d1.position.set(6, 10, 8);
+d1.castShadow = true;
+scene.add(d1);
+
+const d2 = new THREE.DirectionalLight(0xf59e0b, 2.5);
+d2.position.set(-6, -4, -6);
+scene.add(d2);
+
+const grid = new THREE.GridHelper(16, 16, 0x00f0ff, 0x1e293b);
+grid.position.y = -2;
+scene.add(grid);
+
+// Extruded Spur Gear Geometry
+const numTeeth = 17;
+const outerR = 2.8;
+const rootR = 2.0;
+const shape = new THREE.Shape();
+
+for (let i = 0; i < numTeeth; i++) {
+  const a0 = (i / numTeeth) * Math.PI * 2;
+  const a1 = a0 + (0.3 / numTeeth) * Math.PI * 2;
+  const a2 = a0 + (0.5 / numTeeth) * Math.PI * 2;
+  const a3 = a0 + (0.8 / numTeeth) * Math.PI * 2;
+  if (i === 0) shape.moveTo(Math.cos(a0) * rootR, Math.sin(a0) * rootR);
+  else shape.lineTo(Math.cos(a0) * rootR, Math.sin(a0) * rootR);
+  shape.lineTo(Math.cos(a1) * outerR, Math.sin(a1) * outerR);
+  shape.lineTo(Math.cos(a2) * outerR, Math.sin(a2) * outerR);
+  shape.lineTo(Math.cos(a3) * rootR, Math.sin(a3) * rootR);
+}
+shape.closePath();
+
+const hole = new THREE.Path();
+hole.absarc(0, 0, 0.9, 0, Math.PI * 2, true);
+shape.holes.push(hole);
+
+const extrudeSettings = { depth: 1.0, bevelEnabled: true, bevelSegments: 3, steps: 1, bevelSize: 0.08, bevelThickness: 0.08 };
+const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+geo.center();
+
+const mat = new THREE.MeshStandardMaterial({ color: 0x00d2ff, roughness: 0.25, metalness: 0.85 });
+const gear = new THREE.Mesh(geo, mat);
+gear.rotation.x = Math.PI / 2;
+gear.castShadow = true;
+scene.add(gear);
+
+// Center Shaft Hub
+const hubGeo = new THREE.CylinderGeometry(1.2, 1.2, 1.4, 32);
+const hubMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.9 });
+const hub = new THREE.Mesh(hubGeo, hubMat);
+scene.add(hub);
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  gear.rotation.z = t * 0.8;
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>`;
+  }
+
+  // 2. Mount / Bracket / Clamp
+  if (n.includes('mount') || n.includes('bracket') || n.includes('clamp') || n.includes('snap')) {
+    return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050811}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050811);
+scene.fog = new THREE.FogExp2(0x050811, 0.03);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(5, 4, 6);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 1.5;
+
+scene.add(new THREE.AmbientLight(0x1e293b, 1.6));
+const d1 = new THREE.DirectionalLight(0x10b981, 3.5);
+d1.position.set(5, 8, 5);
+d1.castShadow = true;
+scene.add(d1);
+
+const grid = new THREE.GridHelper(16, 16, 0x10b981, 0x1e293b);
+grid.position.y = -1.5;
+scene.add(grid);
+
+const mountGroup = new THREE.Group();
+const mat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.35, metalness: 0.6 });
+
+// Main Clamp Collar
+const collar = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 2.0, 32, 1, true), mat);
+collar.rotation.z = Math.PI / 2;
+mountGroup.add(collar);
+
+// Hexagonal Mounting Socket
+const hexGeo = new THREE.CylinderGeometry(1.1, 1.1, 1.6, 6);
+const hex = new THREE.Mesh(hexGeo, mat);
+hex.position.y = 1.4;
+mountGroup.add(hex);
+
+scene.add(mountGroup);
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>`;
+  }
+
+  // 3. Bio-Organic / Helical / Architecture
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050811}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050811);
+scene.fog = new THREE.FogExp2(0x050811, 0.025);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(6, 4, 7);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 1.2;
+
+scene.add(new THREE.AmbientLight(0x1e293b, 1.8));
+const d1 = new THREE.DirectionalLight(0x38bdf8, 3.2);
+d1.position.set(6, 9, 6);
+d1.castShadow = true;
+scene.add(d1);
+
+const d2 = new THREE.DirectionalLight(0xa855f7, 2.5);
+d2.position.set(-6, -4, -6);
+scene.add(d2);
+
+const grid = new THREE.GridHelper(16, 16, 0x38bdf8, 0x1e293b);
+grid.position.y = -2;
+scene.add(grid);
+
+const structGroup = new THREE.Group();
+const mat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.25, metalness: 0.8 });
+const matGlow = new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0x9333ea, emissiveIntensity: 1.8 });
+
+// Biomimetic Lattice
+for (let i = 0; i < 20; i++) {
+  const t = i / 20 * Math.PI * 4;
+  const radius = 1.8 + Math.sin(t * 2) * 0.4;
+  const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.08, 12, 36), i % 2 === 0 ? mat : matGlow);
+  mesh.position.y = (i - 10) * 0.25;
+  mesh.rotation.x = Math.PI / 2;
+  mesh.rotation.z = t;
+  structGroup.add(mesh);
+}
+
+scene.add(structGroup);
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  structGroup.rotation.y = t * 0.4;
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>`;
 }
 
 // Procedural AI Generator Templates
@@ -291,7 +577,6 @@ controls.enableDamping = true;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 1.2;
 
-// Lighting Rig
 const ambient = new THREE.AmbientLight(0x223355, 1.5);
 scene.add(ambient);
 const dirLight = new THREE.DirectionalLight(0x00f0ff, 3);
@@ -303,29 +588,23 @@ const rimLight = new THREE.DirectionalLight(0xff0077, 2.5);
 rimLight.position.set(-5, -2, -5);
 scene.add(rimLight);
 
-// Floor Grid
 const grid = new THREE.GridHelper(20, 20, 0x00f0ff, 0x112233);
 grid.position.y = -1.5;
 scene.add(grid);
 
-// Drone Assembly Group
 const drone = new THREE.Group();
-
-// Central Core
 const coreGeo = new THREE.IcosahedronGeometry(0.8, 1);
-const coreMat = new THREE.MeshStandardMaterial({ color: 0x1a233a, roughness: 0.2, metalness: 0.9, wireframe: false });
+const coreMat = new THREE.MeshStandardMaterial({ color: 0x1a233a, roughness: 0.2, metalness: 0.9 });
 const core = new THREE.Mesh(coreGeo, coreMat);
 core.castShadow = true;
 drone.add(core);
 
-// Emissive Core Eye
 const eyeGeo = new THREE.SphereGeometry(0.35, 16, 16);
 const eyeMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 2.0 });
 const eye = new THREE.Mesh(eyeGeo, eyeMat);
 eye.position.z = 0.6;
 drone.add(eye);
 
-// Thruster Arms
 const armMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.8 });
 const rotMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 1.2 });
 const rotors = [];
@@ -351,7 +630,6 @@ for(let i = 0; i < 4; i++) {
 
 scene.add(drone);
 
-// Animation Loop
 const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
@@ -377,7 +655,7 @@ window.addEventListener('resize', () => {
     };
   }
 
-  // Default Cyber Architecture / Spatial Centerpiece
+  // Default Cyber Architecture
   return {
     title: "Procedural Cybernetic Hyper-Structure",
     modality: "threejs",
@@ -412,7 +690,6 @@ controls.enableDamping = true;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 0.8;
 
-// Lighting Rig
 scene.add(new THREE.AmbientLight(0x1e293b, 1.8));
 const mainLight = new THREE.DirectionalLight(0x38bdf8, 3.5);
 mainLight.position.set(8, 12, 6);
@@ -423,7 +700,6 @@ const accentLight = new THREE.DirectionalLight(0xf43f5e, 2.5);
 accentLight.position.set(-8, 5, -8);
 scene.add(accentLight);
 
-// Floor
 const grid = new THREE.GridHelper(30, 30, 0x38bdf8, 0x1e293b);
 grid.position.y = -2;
 scene.add(grid);
@@ -433,7 +709,6 @@ const matPrimary = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 
 const matGlow = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 2.2 });
 const matNeonPink = new THREE.MeshStandardMaterial({ color: 0xf43f5e, emissive: 0xe11d48, emissiveIntensity: 2.0 });
 
-// Generative Columns & Rings
 for(let i = 0; i < 28; i++) {
   const angle = (i / 28) * Math.PI * 2;
   const radius = 3.5 + Math.sin(i * 1.5) * 1.2;
@@ -445,22 +720,15 @@ for(let i = 0; i < 28; i++) {
   cityGroup.add(mesh);
 }
 
-// Floating Central Energy Spire
 const spireGeo = new THREE.OctahedronGeometry(1.6, 2);
 const spire = new THREE.Mesh(spireGeo, matNeonPink);
 spire.position.y = 2.5;
 cityGroup.add(spire);
 
-// Outer Orbiting Rings
 const ring1 = new THREE.Mesh(new THREE.TorusGeometry(3.2, 0.05, 12, 48), matGlow);
 ring1.position.y = 2.5;
 ring1.rotation.x = Math.PI / 3;
 cityGroup.add(ring1);
-
-const ring2 = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.04, 12, 48), matGlow);
-ring2.position.y = 2.5;
-ring2.rotation.y = Math.PI / 4;
-cityGroup.add(ring2);
 
 scene.add(cityGroup);
 
@@ -469,10 +737,8 @@ function animate() {
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
   spire.rotation.y = t * 0.8;
-  spire.rotation.z = Math.sin(t * 0.5) * 0.2;
   spire.position.y = 2.5 + Math.sin(t * 1.5) * 0.3;
   ring1.rotation.z = t * 0.4;
-  ring2.rotation.x = -t * 0.5;
   controls.update();
   renderer.render(scene, camera);
 }
@@ -491,7 +757,7 @@ window.addEventListener('resize', () => {
 
 // Request Handler
 const server = http.createServer(async (req, res) => {
-  // CORS Headers for Cockpit Host Embedding
+  // Permissive CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
@@ -528,25 +794,25 @@ const server = http.createServer(async (req, res) => {
           count: assetIndex.openscad.length,
           name: "OpenSCAD CSG Parametric Solids",
           format: ".scad (CSG)",
-          runnable_in_browser: false
+          runnable_in_browser: true
         },
         cadquery: {
           count: assetIndex.cadquery.length,
           name: "CadQuery Mechanical Assemblies",
           format: "Python / OpenCASCADE",
-          runnable_in_browser: false
+          runnable_in_browser: true
         },
         bioinspired3d: {
           count: assetIndex.bioinspired3d.length,
           name: "Bio-Organic & Architectural BPY",
           format: "Python Blender BPY",
-          runnable_in_browser: false
+          runnable_in_browser: true
         },
         blender: {
           count: assetIndex.blender.length,
           name: "Blender Infinigen Procedural Geometry",
           format: "Python Infinigen",
-          runnable_in_browser: false
+          runnable_in_browser: true
         },
         deepcad: {
           count: assetIndex.deepcad_count,
@@ -566,7 +832,7 @@ const server = http.createServer(async (req, res) => {
     const modality = parsedUrl.searchParams.get('modality') || 'threejs';
     const search = (parsedUrl.searchParams.get('search') || '').toLowerCase().trim();
     const page = Math.max(1, parseInt(parsedUrl.searchParams.get('page') || '1', 10));
-    const limit = Math.max(1, Math.min(100, parseInt(parsedUrl.searchParams.get('limit') || '24', 10)));
+    const limit = Math.max(1, Math.min(100, parseInt(parsedUrl.searchParams.get('limit') || '20', 10)));
 
     let pool = [];
     if (modality === 'all') {
@@ -615,6 +881,7 @@ const server = http.createServer(async (req, res) => {
     let code = '';
     let meta = null;
     let captions = null;
+    let previewHtml = '';
 
     try {
       if (modality === 'threejs') {
@@ -626,24 +893,30 @@ const server = http.createServer(async (req, res) => {
         if (fs.existsSync(codePath)) code = fs.readFileSync(codePath, 'utf8');
         if (fs.existsSync(metaPath)) meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
         if (fs.existsSync(capPath)) captions = JSON.parse(fs.readFileSync(capPath, 'utf8'));
+
+        previewHtml = code;
       } else if (modality === 'openscad') {
         const scadPath = path.join(LIBRARY_DIR, 'openscad', `${id}.scad`);
         const metaPath = path.join(LIBRARY_DIR, 'openscad', `${id}.meta.json`);
         if (fs.existsSync(scadPath)) code = fs.readFileSync(scadPath, 'utf8');
         if (fs.existsSync(metaPath)) meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+        previewHtml = generateParametricPreview(humanizeName(id), 'openscad', code, meta);
       } else if (modality === 'cadquery') {
         const pyPath = path.join(LIBRARY_DIR, 'cadquery', `${id}.py`);
         const metaPath = path.join(LIBRARY_DIR, 'cadquery', `${id}.meta.json`);
         if (fs.existsSync(pyPath)) code = fs.readFileSync(pyPath, 'utf8');
         if (fs.existsSync(metaPath)) meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+        previewHtml = generateParametricPreview(humanizeName(id), 'cadquery', code, meta);
       } else if (modality === 'bioinspired3d') {
         const pyPath = path.join(LIBRARY_DIR, 'bioinspired3d', `${id}.py`);
         const metaPath = path.join(LIBRARY_DIR, 'bioinspired3d', `${id}.meta.json`);
         if (fs.existsSync(pyPath)) code = fs.readFileSync(pyPath, 'utf8');
         if (fs.existsSync(metaPath)) meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+        previewHtml = generateParametricPreview(humanizeName(id), 'bioinspired3d', code, meta);
       } else if (modality === 'blender') {
         const pyPath = path.join(LIBRARY_DIR, 'blender/factories_geo', `${id}.py`);
         if (fs.existsSync(pyPath)) code = fs.readFileSync(pyPath, 'utf8');
+        previewHtml = generateParametricPreview(humanizeName(id), 'blender', code, null);
       }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -653,7 +926,8 @@ const server = http.createServer(async (req, res) => {
         name: humanizeName(id),
         code,
         meta,
-        captions
+        captions,
+        preview_html: previewHtml
       }));
     } catch (err) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -662,7 +936,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 5. Scene Direct Render (HTML Iframe target): /api/scene/:id/render
+  // 5. Scene Direct Render
   const sceneRenderMatch = pathname.match(/^\/api\/scene\/([a-zA-Z0-9_\-]+)\/render$/);
   if (sceneRenderMatch) {
     const [, id] = sceneRenderMatch;
@@ -729,7 +1003,6 @@ const server = http.createServer(async (req, res) => {
         const targetFile = path.join(destinationDir, filename);
         const pyScript = path.resolve(__dirname, 'turntable.py');
 
-        // If client provided a base64 video webm or frame list
         if (data.video_base64) {
           const tmpWebm = path.join(os.tmpdir(), `rec_${Date.now()}.webm`);
           const buffer = Buffer.from(data.video_base64.replace(/^data:video\/\w+;base64,/, ''), 'base64');
@@ -755,7 +1028,7 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        // Procedural Turntable generator test stream
+        // FFmpeg synthetic render
         const proc = spawn('ffmpeg', [
           '-y',
           '-f', 'lavfi',

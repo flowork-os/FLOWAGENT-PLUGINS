@@ -226,10 +226,11 @@ async function selectAsset(item) {
       metaDescription.textContent = 'Procedural 3D model with native parametric generation logic.';
     }
 
-    if (item.modality === 'threejs' && data.code) {
+    const preview = data.preview_html || data.code;
+    if (preview && (preview.includes('<html') || preview.includes('<!DOCTYPE') || preview.includes('canvas'))) {
       viewportOverlay.classList.add('hidden');
       sceneFrame.style.display = 'block';
-      sceneFrame.srcdoc = data.code;
+      sceneFrame.srcdoc = preview;
     } else {
       sceneFrame.style.display = 'none';
       viewportOverlay.classList.remove('hidden');
@@ -302,12 +303,12 @@ function setupEventListeners() {
     btnBrowseFolder.textContent = 'Browsing...';
     try {
       const data = await safeFetchJson('/api/pick-folder');
-      if (data.path) {
+      if (data && data.path) {
         state.destinationDir = data.path;
         destinationDirInput.value = data.path;
       }
     } catch (err) {
-      alert(`Folder browser error: ${err.message}`);
+      console.warn('Folder selection canceled or default applied:', err.message);
     } finally {
       btnBrowseFolder.disabled = false;
       btnBrowseFolder.textContent = '📁 Save to...';
