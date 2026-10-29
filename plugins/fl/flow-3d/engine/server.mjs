@@ -249,6 +249,12 @@ buildAssetIndex();
 // Procedural 3D Mesh Synthesizer for CAD & Procedural Models
 function synthesizeCadModelScene(title, instruction = '', modality = 'cadquery', id = '') {
   const t = (title + ' ' + instruction + ' ' + id).toLowerCase();
+  const cleanT = (title + ' ' + instruction + ' ' + id)
+    .toLowerCase()
+    .replace(/blender\s*(python)?\s*(code|script)?/gi, ' ')
+    .replace(/\b(bpy|bmesh|python|script|code|make|create|generate|construct|build|model|using|with|by_using|a|that|to)\b/gi, ' ')
+    .replace(/_/g, ' ')
+    .trim();
 
   let meshCode = '';
   let animCode = '';
@@ -703,7 +709,7 @@ function synthesizeCadModelScene(title, instruction = '', modality = 'cadquery',
 
       scene.add(root);
     `;
-  } else if (t.includes('blender') || t.includes('mixer') || t.includes('food_processor')) {
+  } else if (modality !== 'bioinspired3d' && modality !== 'blender' && (/\b(blenders?|mixers?|food processors?|smoothie)\b/i.test(title) || /\b(kitchen blender|food blender|countertop blender)\b/i.test(instruction))) {
     meshCode = `
       const root = new THREE.Group();
       const matBase = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.85 });
@@ -722,6 +728,280 @@ function synthesizeCadModelScene(title, instruction = '', modality = 'cadquery',
       lid.position.y = 2.7;
       root.add(lid);
 
+      scene.add(root);
+    `;
+  } else if (/\b(helical|helix|spiral|dna)\b/i.test(cleanT)) {
+    camPos = '5, 4, 7';
+    meshCode = `
+      const root = new THREE.Group();
+      const matStrand1 = new THREE.MeshStandardMaterial({ color: 0x00f0ff, roughness: 0.2, metalness: 0.8 });
+      const matStrand2 = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.2, metalness: 0.8 });
+      const matRung = new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0xa855f7, emissiveIntensity: 0.8 });
+
+      const numTurns = 28;
+      for (let i = 0; i < numTurns; i++) {
+        const a = (i / numTurns) * Math.PI * 4;
+        const y = (i / numTurns) * 4.4 - 2.2;
+        const r = 1.3;
+
+        const n1 = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), matStrand1);
+        n1.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+        root.add(n1);
+
+        const n2 = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), matStrand2);
+        n2.position.set(Math.cos(a + Math.PI) * r, y, Math.sin(a + Math.PI) * r);
+        root.add(n2);
+
+        if (i % 2 === 0) {
+          const rung = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, r * 2, 12), matRung);
+          rung.position.set(0, y, 0);
+          rung.rotation.z = Math.PI / 2;
+          rung.rotation.y = -a;
+          root.add(rung);
+        }
+      }
+      scene.add(root);
+    `;
+  } else if (/\b(cellular|porous|honeycomb|hexagonal|trabecular|lattice)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const matCell = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.3, metalness: 0.6 });
+      const matCore = new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 0.6 });
+
+      const hexRadius = 0.55;
+      const hexDepth = 1.6;
+      for (let row = -2; row <= 2; row++) {
+        for (let col = -2; col <= 2; col++) {
+          const x = (col + (row % 2) * 0.5) * hexRadius * 1.8;
+          const y = row * hexRadius * 1.55;
+          if (Math.sqrt(x*x + y*y) < 2.0) {
+            const prism = new THREE.Mesh(new THREE.CylinderGeometry(hexRadius * 0.9, hexRadius * 0.9, hexDepth, 6, 1, true), matCell);
+            prism.position.set(x, y, 0);
+            prism.rotation.x = Math.PI / 2;
+            root.add(prism);
+
+            const core = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 8), matCore);
+            core.position.set(x, y, 0);
+            root.add(core);
+          }
+        }
+      }
+      scene.add(root);
+    `;
+  } else if (/\b(tubular|vascular|capillar|osteon)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const matVessel = new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.25, metalness: 0.7 });
+      const matCore = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x38bdf8, emissiveIntensity: 0.9 });
+
+      for (let i = 0; i < 7; i++) {
+        const a = i === 0 ? 0 : (i - 1) * Math.PI * 2 / 6;
+        const r = i === 0 ? 0 : 0.9;
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 4.2, 24, 1, true), matVessel);
+        tube.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+        root.add(tube);
+
+        const lumen = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.25, 16), matCore);
+        lumen.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+        root.add(lumen);
+      }
+      scene.add(root);
+    `;
+  } else if (/\b(bouligand|twisted|chitin|lamell|plywood|layered)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const matChitin = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.35, metalness: 0.8 });
+      const matFiber = new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.8 });
+
+      const numLayers = 12;
+      for (let i = 0; i < numLayers; i++) {
+        const y = (i / numLayers) * 3.6 - 1.8;
+        const rotY = (i / numLayers) * Math.PI * 0.75;
+        const layer = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.2, 3.0), matChitin);
+        layer.position.y = y;
+        layer.rotation.y = rotY;
+        root.add(layer);
+
+        for (let j = -2; j <= 2; j++) {
+          const fiber = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.9, 8), matFiber);
+          fiber.rotation.z = Math.PI / 2;
+          fiber.rotation.y = rotY;
+          fiber.position.set(0, y + 0.11, j * 0.6);
+          root.add(fiber);
+        }
+      }
+      scene.add(root);
+    `;
+  } else if (/\b(sandwich|composite|corrugat)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const matFace = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.2, metalness: 0.9 });
+      const matCore = new THREE.MeshStandardMaterial({ color: 0x00f0ff, roughness: 0.3, metalness: 0.7 });
+
+      for (let y of [-1.2, 1.2]) {
+        const face = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.15, 2.4), matFace);
+        face.position.y = y;
+        root.add(face);
+      }
+
+      for (let i = -4; i <= 4; i++) {
+        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.4, 2.2), matCore);
+        strut.position.set(i * 0.4, 0, 0);
+        strut.rotation.z = (i % 2 === 0 ? 1 : -1) * 0.35;
+        root.add(strut);
+      }
+      scene.add(root);
+    `;
+  } else if (/\b(cubes?|cubic)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const mat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, metalness: 0.8 });
+      const matEdge = new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 1.2 });
+
+      const cube = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.4), mat);
+      cube.rotation.z = Math.PI / 4;
+      cube.rotation.y = Math.PI / 4;
+      root.add(cube);
+
+      const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(2.42, 2.42, 2.42)),
+        new THREE.LineBasicMaterial({ color: 0x00f0ff })
+      );
+      edges.rotation.z = Math.PI / 4;
+      edges.rotation.y = Math.PI / 4;
+      root.add(edges);
+
+      scene.add(root);
+    `;
+  } else if (/\b(cylinders?|cylindrical)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const mat = new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.25, metalness: 0.85 });
+      const matCap = new THREE.MeshStandardMaterial({ color: 0x34d399, emissive: 0x34d399, emissiveIntensity: 0.8 });
+
+      const cyl = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 3.4, 32), mat);
+      cyl.rotation.z = Math.PI / 2;
+      root.add(cyl);
+
+      for (let s of [-1.71, 1.71]) {
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.08, 16, 48), matCap);
+        rim.rotation.y = Math.PI / 2;
+        rim.position.x = s;
+        root.add(rim);
+      }
+      scene.add(root);
+    `;
+  } else if (/\b(cakes?)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const matTier = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3 });
+      const matDeco = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.25, metalness: 0.4 });
+
+      const t1 = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 0.9, 32), matTier);
+      t1.position.y = -0.9;
+      root.add(t1);
+
+      const t2 = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.8, 32), matTier);
+      t2.position.y = -0.05;
+      root.add(t2);
+
+      const t3 = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.7, 32), matTier);
+      t3.position.y = 0.7;
+      root.add(t3);
+
+      const topper = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), matDeco);
+      topper.position.y = 1.25;
+      root.add(topper);
+
+      scene.add(root);
+    `;
+  } else if (/\b(feeder|bird)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const matWood = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.5 });
+      const matRoof = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.35, metalness: 0.7 });
+      const matPerch = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.8 });
+
+      const tray = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.3, 2.0), matWood);
+      tray.position.y = -0.8;
+      root.add(tray);
+
+      for (let x of [-0.8, 0.8]) {
+        for (let z of [-0.8, 0.8]) {
+          const post = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.6, 12), matWood);
+          post.position.set(x, 0, z);
+          root.add(post);
+        }
+      }
+
+      const roofL = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 2.4), matRoof);
+      roofL.position.set(-0.55, 1.1, 0);
+      roofL.rotation.z = Math.PI / 4;
+      root.add(roofL);
+
+      const roofR = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 2.4), matRoof);
+      roofR.position.set(0.55, 1.1, 0);
+      roofR.rotation.z = -Math.PI / 4;
+      root.add(roofR);
+
+      const perch = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.2, 12), matPerch);
+      perch.rotation.z = Math.PI / 2;
+      perch.position.set(0, -0.65, 0);
+      root.add(perch);
+
+      scene.add(root);
+    `;
+  } else if (/\b(bookshelf|bookshelves|shelf|shelves|rack)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const matWood = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.4 });
+      const matBook = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3 });
+
+      for (let x of [-1.4, 1.4]) {
+        const side = new THREE.Mesh(new THREE.BoxGeometry(0.12, 3.8, 1.4), matWood);
+        side.position.x = x;
+        root.add(side);
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const y = -1.6 + i * 1.1;
+        const shelf = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.1, 1.4), matWood);
+        shelf.position.y = y;
+        root.add(shelf);
+
+        const book = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.65, 0.9), matBook);
+        book.position.set(-0.6, y + 0.38, 0);
+        root.add(book);
+      }
+      scene.add(root);
+    `;
+  } else if (/\b(sofas?|couches|couch)\b/i.test(cleanT)) {
+    meshCode = `
+      const root = new THREE.Group();
+      const matCushion = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+      const matFeet = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.4 });
+
+      const base = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.5, 1.8), matCushion);
+      base.position.y = -0.4;
+      root.add(base);
+
+      const back = new THREE.Mesh(new THREE.BoxGeometry(3.8, 1.4, 0.4), matCushion);
+      back.position.set(0, 0.4, -0.7);
+      root.add(back);
+
+      for (let s of [-1.9, 1.9]) {
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.0, 1.8), matCushion);
+        arm.position.set(s, 0.1, 0);
+        root.add(arm);
+      }
+
+      for (let x of [-1.7, 1.7]) {
+        for (let z of [-0.7, 0.7]) {
+          const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.04, 0.4, 12), matFeet);
+          foot.position.set(x, -0.85, z);
+          root.add(foot);
+        }
+      }
       scene.add(root);
     `;
   } else if (t.includes('gear') || t.includes('cog') || t.includes('sprocket') || t.includes('transmission')) {

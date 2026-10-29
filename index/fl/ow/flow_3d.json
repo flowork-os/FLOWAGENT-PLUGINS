@@ -6,7 +6,7 @@
   "description": "Sovereign AI 3D & WebGL CAD Forge. Browse 34,840 procedural 3D models across 7 modalities, inspect parametric code, generate 3D objects via AI few-shot RAG, and export to STL, STEP, GLB, and 360° YouTube turntable video.",
   "category": "Architecture & Spatial Engineering",
   "icon": "🧊",
-  "hash": "913086de00bf92ba",
+  "hash": "afd335d6289c1303",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"
