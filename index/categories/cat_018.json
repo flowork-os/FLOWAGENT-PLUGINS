@@ -1,6 +1,19 @@
 {
   "category_id": "CAT-018",
   "category": "Architecture & Spatial Engineering",
-  "total_items": 0,
-  "items": []
+  "total_items": 1,
+  "items": [
+    {
+      "id": "flow-3d",
+      "name": "Flow3D Studio",
+      "category_id": "CAT-018",
+      "category": "Architecture & Spatial Engineering",
+      "version": "1.0.0",
+      "description": "Sovereign AI 3D & WebGL CAD Forge. Browse 34,840 procedural 3D models across 7 modalities, inspect parametric code, generate 3D objects via AI few-shot RAG, and export to STL, STEP, GLB, and 360° YouTube turntable video.",
+      "icon": "🧊",
+      "shard": "index/fl/ow/flow_3d.json",
+      "source_path": "plugins/fl/flow-3d",
+      "hash": "23ff2e4781e0536c"
+    }
+  ]
 }

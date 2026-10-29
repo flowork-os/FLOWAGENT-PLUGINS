@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flow3D Studio - Sovereign WebGL CAD & Procedural Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/vendor/three/three.module.js",
+      "three/addons/": "/vendor/three/addons/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="flow-3d-root">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-icon">🧊</span>
+        <div class="brand-text">
+          <h1>Flow3D Studio</h1>
+          <span class="subtitle">Sovereign WebGL CAD & Procedural Design Forge</span>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge vault-badge" id="stats-badge">Loading Asset Vault...</span>
+        <span class="badge status-badge online">Engine Active</span>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <div class="studio-layout">
+      <!-- Left Column: Asset Explorer -->
+      <aside class="sidebar-left">
+        <div class="panel-header">
+          <h2>Asset Explorer</h2>
+          <span class="counter" id="asset-count">0 items</span>
+        </div>
+
+        <!-- Modality Filter Tabs -->
+        <div class="modality-tabs" id="modality-tabs">
+          <button class="tab-btn active" data-modality="threejs">Three.js WebGL</button>
+          <button class="tab-btn" data-modality="openscad">OpenSCAD CSG</button>
+          <button class="tab-btn" data-modality="cadquery">CadQuery CAD</button>
+          <button class="tab-btn" data-modality="bioinspired3d">Bio-Organic</button>
+          <button class="tab-btn" data-modality="blender">Blender Infinigen</button>
+          <button class="tab-btn" data-modality="all">All Modalities</button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Search 34k+ models, tags, components...">
+          <button id="clear-search-btn" title="Clear Search">✕</button>
+        </div>
+
+        <!-- Asset Card List -->
+        <div class="asset-list" id="asset-list">
+          <div class="loading-spinner">Scanning procedural repository...</div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-bar">
+          <button id="prev-page-btn" disabled>◀ Prev</button>
+          <span id="page-indicator">Page 1 / 1</span>
+          <button id="next-page-btn" disabled>Next ▶</button>
+        </div>
+      </aside>
+
+      <!-- Center Column: 3D Viewport & Turntable Studio -->
+      <main class="viewport-center">
+        <!-- Viewport Toolbar -->
+        <div class="viewport-toolbar">
+          <div class="toolbar-left">
+            <span class="current-scene-title" id="active-scene-title">Select or Generate a 3D Scene</span>
+            <span class="format-pill" id="active-scene-format">Three.js WebGL</span>
+          </div>
+          <div class="toolbar-right">
+            <button class="tool-btn" id="btn-wireframe" title="Toggle Wireframe">🌐 Wireframe</button>
+            <button class="tool-btn active" id="btn-rotate" title="Toggle Auto-Rotation">🔄 Auto-Rotate</button>
+            <button class="tool-btn" id="btn-reset-cam" title="Reset Camera">🎯 Center</button>
+            <button class="tool-btn" id="btn-reload-scene" title="Reload Scene">⚡ Run</button>
+          </div>
+        </div>
+
+        <!-- Interactive 3D Canvas / Frame Container -->
+        <div class="viewport-container" id="viewport-container">
+          <iframe id="scene-frame" class="scene-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+          <div id="viewport-overlay" class="viewport-overlay hidden">
+            <div class="overlay-card">
+              <span class="overlay-icon">📐</span>
+              <h3 id="overlay-title">Parametric CAD Code</h3>
+              <p id="overlay-desc">This procedural model is authored in parametric code. Inspect the source code on the right panel or export it to STL / STEP format.</p>
+              <button class="btn primary" id="btn-export-cad">Export CAD Script</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Studio: Turntable Video Studio -->
+        <section class="turntable-panel">
+          <div class="panel-section-title">
+            <span class="icon">🎬</span>
+            <h3>YouTube Turntable Video Studio</h3>
+            <span class="desc">Render smooth 360° spin video for YouTube long-form or 9:16 Shorts</span>
+          </div>
+
+          <div class="turntable-controls">
+            <div class="control-group">
+              <label>Framing Aspect Ratio</label>
+              <div class="radio-toggle-group">
+                <button class="ratio-btn active" data-ratio="16:9">16:9 Landscape</button>
+                <button class="ratio-btn" data-ratio="9:16">9:16 Vertical Shorts</button>
+                <button class="ratio-btn" data-ratio="1:1">1:1 Square</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label>Spin Duration</label>
+              <select id="select-duration">
+                <option value="5">5 Seconds (Shorts)</option>
+                <option value="10" selected>10 Seconds (Standard)</option>
+                <option value="15">15 Seconds (Cinematic)</option>
+              </select>
+            </div>
+
+            <div class="control-group destination-group">
+              <label>Destination Directory</label>
+              <div class="path-input-wrapper">
+                <input type="text" id="destination-dir-input" placeholder="Select destination folder...">
+                <button class="btn secondary" id="btn-browse-folder" type="button">📁 Save to...</button>
+              </div>
+            </div>
+
+            <div class="control-group action-group">
+              <button class="btn accent" id="btn-render-turntable">
+                <span class="btn-icon">⚡</span>
+                <span>Render Turntable MP4</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Render Progress / Result Banner -->
+          <div class="render-feedback hidden" id="render-feedback">
+            <div class="progress-bar-wrapper">
+              <div class="progress-bar-fill" id="progress-bar-fill"></div>
+            </div>
+            <span class="status-msg" id="render-status-msg">Encoding high-bitrate H.264 MP4 with normalized PTS...</span>
+          </div>
+        </section>
+      </main>
+
+      <!-- Right Column: AI Prompt-to-3D & Code Inspector -->
+      <aside class="sidebar-right">
+        <!-- Tab Navigation -->
+        <div class="right-tabs">
+          <button class="right-tab active" data-pane="pane-generator">✨ Prompt-to-3D</button>
+          <button class="right-tab" data-pane="pane-inspector">💻 Code Inspector</button>
+        </div>
+
+        <!-- Pane 1: AI Prompt-to-3D Generator -->
+        <div class="tab-pane active" id="pane-generator">
+          <div class="generator-card">
+            <h3>Procedural 3D Generator</h3>
+            <p class="hint">Generate sovereign WebGL 3D scenes and parametric parts using few-shot exemplar RAG.</p>
+
+            <div class="form-group">
+              <label>Generation Prompt</label>
+              <textarea id="prompt-input" rows="4" placeholder="Describe the 3D structure, vehicle, building, or mechanical part... (e.g., 'Autonomous recon drone with dual glowing thrusters and holographic scanner')"></textarea>
+            </div>
+
+            <div class="preset-chips">
+              <span class="chip-label">Exemplar Presets:</span>
+              <button class="chip" data-prompt="Autonomous recon drone with dual glowing thrusters and cybernetic sensor eye">🤖 Cyber Drone</button>
+              <button class="chip" data-prompt="Futuristic energy spire with revolving planetary rings and neon accents">🏛️ Energy Spire</button>
+              <button class="chip" data-prompt="Parametric industrial mount bracket with hexagon socket and zip-tie slots">⚙️ Mount Bracket</button>
+              <button class="chip" data-prompt="Bio-organic crystal pavilion with bioluminescent subsurface lighting">🌿 Bio Crystal</button>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn primary full-width" id="btn-generate-3d">
+                <span class="btn-icon">✨</span>
+                <span>Synthesize 3D Model</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Metadata & Description Card -->
+          <div class="metadata-card" id="metadata-card">
+            <h3>Active Model Specifications</h3>
+            <div class="meta-row">
+              <span class="meta-label">Identifier:</span>
+              <span class="meta-val" id="meta-id">-</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Domain:</span>
+              <span class="meta-val" id="meta-domain">Interactive Web3D</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Style / Architecture:</span>
+              <span class="meta-val" id="meta-style">-</span>
+            </div>
+            <div class="meta-description" id="meta-description">
+              Select an asset from the vault or generate a new procedural model to inspect technical specifications.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 2: Code Inspector & Exporter -->
+        <div class="tab-pane" id="pane-inspector">
+          <div class="inspector-header">
+            <h3>Source Code</h3>
+            <div class="inspector-actions">
+              <button class="btn small secondary" id="btn-copy-code">Copy</button>
+              <button class="btn small primary" id="btn-export-file">Save File</button>
+            </div>
+          </div>
+          <div class="editor-wrapper">
+            <textarea id="code-editor" spellcheck="false" placeholder="Procedural source code will appear here..."></textarea>
+          </div>
+          <div class="inspector-footer">
+            <button class="btn success full-width" id="btn-apply-code">⚡ Apply & Hot-Reload Viewport</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

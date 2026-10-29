@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-29T03:47:51Z",
+  "updated_at": "2026-10-29T03:54:01Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -320,6 +320,27 @@
       "shard": "index/au/to/auto_shorts.json",
       "source_path": "plugins/au/auto-shorts",
       "category_id": "CAT-010"
+    },
+    {
+      "id": "flow-3d",
+      "name": "Flow3D Studio",
+      "version": "1.0.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Sovereign AI 3D & WebGL CAD Forge. Browse 34,840 procedural 3D models across 7 modalities, inspect parametric code, generate 3D objects via AI few-shot RAG, and export to STL, STEP, GLB, and 360° YouTube turntable video.",
+      "category": "Architecture & Spatial Engineering",
+      "icon": "🧊",
+      "hash": "23ff2e4781e0536c",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 17897
+      },
+      "shard": "index/fl/ow/flow_3d.json",
+      "source_path": "plugins/fl/flow-3d",
+      "category_id": "CAT-018"
     }
   ]
 }
