@@ -329,7 +329,8 @@ const server = http.createServer(async (req, res) => {
       const outDir = path.join(DATA_DIR, 'beats_' + Date.now());
       fs.mkdirSync(outDir, { recursive: true });
 
-      const args1 = [beatsScript, media_path, outDir, String(target_seconds || 3.0)];
+      const maxDur = body.max_duration !== undefined ? String(body.max_duration) : '90.0';
+      const args1 = [beatsScript, media_path, outDir, String(target_seconds || 3.0), maxDur];
       execFile('python3', args1, { maxBuffer: 10 * 1024 * 1024 }, (err1, stdout1, stderr1) => {
         if (err1) {
           console.error('[Beats Extractor Error]', stderr1 || err1.message);
@@ -361,35 +362,50 @@ const server = http.createServer(async (req, res) => {
     }
 
     // -------------------------------------------------------------
-    // 5g. Keyframes Static Serving (GET /api/keyframes/:filename)
+    // 5g. Keyframes Static Serving (GET /api/keyframes/:batchId/:filename or /api/keyframes/:filename)
     // -------------------------------------------------------------
     if (pathname.startsWith('/api/keyframes/')) {
-      const keyframeName = path.basename(pathname);
-      let foundPath = null;
-      const searchDirs = [
-        path.join(DATA_DIR, 'keyframes'),
-        path.join(__dirname, 'output', 'keyframes'),
-        path.join('/tmp', 'test_beats', 'keyframes')
-      ];
-      try {
-        const beatDirs = fs.readdirSync(DATA_DIR).filter(d => d.startsWith('beats_'));
-        for (const bd of beatDirs) {
-          searchDirs.unshift(path.join(DATA_DIR, bd, 'keyframes'));
-        }
-      } catch (_) {}
+      const parts = pathname.replace('/api/keyframes/', '').split('/').filter(Boolean);
+      const keyframeName = parts.pop();
+      const batchDirName = parts.pop();
 
-      for (const sd of searchDirs) {
-        const candidate = path.join(sd, keyframeName);
-        if (fs.existsSync(candidate)) {
-          foundPath = candidate;
-          break;
+      let foundPath = null;
+      if (batchDirName) {
+        const candidate = path.join(DATA_DIR, batchDirName, 'keyframes', keyframeName);
+        if (fs.existsSync(candidate)) foundPath = candidate;
+      }
+
+      if (!foundPath) {
+        const searchDirs = [
+          path.join(DATA_DIR, 'keyframes'),
+          path.join(__dirname, 'output', 'keyframes'),
+          path.join('/tmp', 'test_beats', 'keyframes')
+        ];
+        try {
+          const beatDirs = fs.readdirSync(DATA_DIR).filter(d => d.startsWith('beats_') || d.startsWith('demo_') || d.startsWith('cand2_'));
+          beatDirs.sort().reverse();
+          for (const bd of beatDirs) {
+            searchDirs.unshift(path.join(DATA_DIR, bd, 'keyframes'));
+          }
+        } catch (_) {}
+
+        for (const sd of searchDirs) {
+          const candidate = path.join(sd, keyframeName);
+          if (fs.existsSync(candidate)) {
+            foundPath = candidate;
+            break;
+          }
         }
       }
 
       if (foundPath) {
         res.writeHead(200, {
           'Content-Type': 'image/jpeg',
-          'Cache-Control': 'public, max-age=3600'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Private-Network': 'true'
         });
         return fs.createReadStream(foundPath).pipe(res);
       } else {

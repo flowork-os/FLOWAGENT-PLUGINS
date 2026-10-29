@@ -223,25 +223,34 @@ def derive_stickman_choreography(text, beat_idx, total_beats, has_video=False):
     }
 
 
-def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
+def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_duration=90.0):
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input file not found: {input_path}")
 
     os.makedirs(output_dir, exist_ok=True)
     keyframes_dir = os.path.join(output_dir, 'keyframes')
     os.makedirs(keyframes_dir, exist_ok=True)
+    batch_id = os.path.basename(os.path.abspath(output_dir))
 
     media_info = extract_media_info(input_path)
-    duration = media_info['duration']
+    raw_duration = media_info['duration']
     has_video = media_info['has_video']
     has_audio = media_info['has_audio']
 
-    # 1. Extract 16kHz mono audio for Faster-Whisper if audio stream exists
+    # For high-retention Short Video format: Cap raw inputs (e.g. 20-min raw files) to max_duration (default 90.0s)
+    # to guarantee instant response and avoid timeout
+    if max_duration and max_duration > 0 and raw_duration > max_duration:
+        duration = float(max_duration)
+    else:
+        duration = raw_duration
+
+    # 1. Extract 16kHz mono audio for Faster-Whisper if audio stream exists (capped to duration)
     audio_data = np.array([], dtype=np.float32)
     if has_audio:
         cmd = [
             'ffmpeg', '-v', 'error',
             '-i', input_path,
+            '-t', str(duration),
             '-vn',
             '-f', 'f32le',
             '-acodec', 'pcm_f32le',
@@ -263,7 +272,7 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                 if seg.words:
                     for w in seg.words:
                         w_text = w.word.strip()
-                        if w_text:
+                        if w_text and w.end <= duration:
                             whisper_words.append({
                                 'start': round(float(w.start), 2),
                                 'end': round(float(w.end), 2),
@@ -271,22 +280,54 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                             })
                 elif seg.text and seg.text.strip():
                     swords = seg.text.strip().split()
-                    seg_dur = max(0.1, seg.end - seg.start)
+                    seg_dur = max(0.1, min(duration, seg.end) - seg.start)
                     step = seg_dur / len(swords)
                     for i, sw in enumerate(swords):
-                        whisper_words.append({
-                            'start': round(float(seg.start + i * step), 2),
-                            'end': round(float(seg.start + (i + 1) * step), 2),
-                            'word': sw
-                        })
+                        w_end = min(duration, seg.start + (i + 1) * step)
+                        if w_end <= duration:
+                            whisper_words.append({
+                                'start': round(float(seg.start + i * step), 2),
+                                'end': round(float(w_end), 2),
+                                'word': sw
+                            })
         except Exception as we:
             print(f"Whisper transcription note: {we}", file=sys.stderr)
 
-    # 3. Create ~3.0 Second Micro-Beats
+    # 3. Fast Keyframe Extractor using persistent OpenCV capture
+    cap = None
+    if has_video:
+        try:
+            cap = cv2.VideoCapture(input_path)
+        except Exception:
+            cap = None
+
+    def grab_keyframe(ts, out_path):
+        saved = False
+        if cap and cap.isOpened():
+            try:
+                cap.set(cv2.CAP_PROP_POS_MSEC, max(0.0, float(ts)) * 1000.0)
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    h, w = frame.shape[:2]
+                    scale = min(480 / w, 640 / h)
+                    nw, nh = max(1, int(w * scale)), max(1, int(h * scale))
+                    resized = cv2.resize(frame, (nw, nh), interpolation=cv2.INTER_AREA)
+                    canvas = np.zeros((640, 480, 3), dtype=np.uint8)
+                    x_off = (480 - nw) // 2
+                    y_off = (640 - nh) // 2
+                    canvas[y_off:y_off+nh, x_off:x_off+nw] = resized
+                    cv2.imwrite(out_path, canvas, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                    saved = True
+            except Exception:
+                saved = False
+        if not saved:
+            extract_keyframe(input_path, ts, out_path)
+
+    # 4. Create ~3.0 Second Micro-Beats
     beats = []
     beat_idx = 1
 
-    # Case A: If audio has no detected spoken words (silence, tone, music, background ambience)
+    # Case A: If audio has no detected spoken words
     if not whisper_words:
         num_beats = max(1, int(math.ceil(duration / target_beat_seconds)))
         for b_i in range(num_beats):
@@ -295,11 +336,11 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
             if b_end <= b_start:
                 continue
             midpoint = round((b_start + b_end) / 2.0, 2)
-            kf_filename = f"beat_{b_i+1:03d}.jpg"
+            kf_filename = f"{batch_id}_beat_{b_i+1:03d}.jpg"
             kf_path = os.path.join(keyframes_dir, kf_filename)
             
             if has_video:
-                extract_keyframe(input_path, midpoint, kf_path)
+                grab_keyframe(midpoint, kf_path)
             else:
                 synthesize_audio_fallback_thumbnail(kf_path, b_i+1, "[Music / Ambience]")
 
@@ -308,13 +349,14 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                 'id': f"beat_{b_i+1:03d}",
                 'index': b_i + 1,
                 'beat_id': b_i + 1,
+                'batch_id': batch_id,
                 'start': b_start,
                 'end': b_end,
                 'duration': round(b_end - b_start, 2),
                 'text': "[Music / Ambience]",
                 'words': [],
                 'keyframe_file': kf_filename,
-                'keyframe_url': f"/api/keyframes/{kf_filename}",
+                'keyframe_url': f"/api/keyframes/{batch_id}/{kf_filename}",
                 'keyframe_path': kf_path,
                 'model': 'classic',
                 'pose': choreo['pose'],
@@ -326,15 +368,14 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
             })
     else:
         # Case B: Real spoken words transcribed
-        # Check for leading silence/music before the first spoken word
         first_w_start = whisper_words[0]['start']
         if first_w_start >= 1.5:
             b_end = first_w_start
             midpoint = round(b_end / 2.0, 2)
-            kf_filename = f"beat_{beat_idx:03d}.jpg"
+            kf_filename = f"{batch_id}_beat_{beat_idx:03d}.jpg"
             kf_path = os.path.join(keyframes_dir, kf_filename)
             if has_video:
-                extract_keyframe(input_path, midpoint, kf_path)
+                grab_keyframe(midpoint, kf_path)
             else:
                 synthesize_audio_fallback_thumbnail(kf_path, beat_idx, "[Music / Ambience]")
             choreo = derive_stickman_choreography("[Music / Ambience]", beat_idx - 1, 10, has_video)
@@ -342,13 +383,14 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                 'id': f"beat_{beat_idx:03d}",
                 'index': beat_idx,
                 'beat_id': beat_idx,
+                'batch_id': batch_id,
                 'start': 0.0,
                 'end': b_end,
                 'duration': round(b_end, 2),
                 'text': "[Music / Ambience]",
                 'words': [],
                 'keyframe_file': kf_filename,
-                'keyframe_url': f"/api/keyframes/{kf_filename}",
+                'keyframe_url': f"/api/keyframes/{batch_id}/{kf_filename}",
                 'keyframe_path': kf_path,
                 'model': 'classic',
                 'pose': choreo['pose'],
@@ -360,19 +402,17 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
             })
             beat_idx += 1
 
-        # Group words into ~3.0s boundaries with zero timeline gaps
         word_ptr = 0
         while word_ptr < len(whisper_words):
             last_end = beats[-1]['end'] if beats else 0.0
             curr_start = whisper_words[word_ptr]['start']
             
-            # If there is a noticeable pause/gap between phrases
             if curr_start - last_end >= 2.0:
                 gap_mid = round((last_end + curr_start) / 2.0, 2)
-                kf_filename = f"beat_{beat_idx:03d}.jpg"
+                kf_filename = f"{batch_id}_beat_{beat_idx:03d}.jpg"
                 kf_path = os.path.join(keyframes_dir, kf_filename)
                 if has_video:
-                    extract_keyframe(input_path, gap_mid, kf_path)
+                    grab_keyframe(gap_mid, kf_path)
                 else:
                     synthesize_audio_fallback_thumbnail(kf_path, beat_idx, "[Music / Ambience]")
                 choreo = derive_stickman_choreography("[Music / Ambience]", beat_idx - 1, 10, has_video)
@@ -380,13 +420,14 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                     'id': f"beat_{beat_idx:03d}",
                     'index': beat_idx,
                     'beat_id': beat_idx,
+                    'batch_id': batch_id,
                     'start': last_end,
                     'end': curr_start,
                     'duration': round(curr_start - last_end, 2),
                     'text': "[Music / Ambience]",
                     'words': [],
                     'keyframe_file': kf_filename,
-                    'keyframe_url': f"/api/keyframes/{kf_filename}",
+                    'keyframe_url': f"/api/keyframes/{batch_id}/{kf_filename}",
                     'keyframe_path': kf_path,
                     'model': 'classic',
                     'pose': choreo['pose'],
@@ -407,22 +448,20 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                 current_words.append(w)
                 word_ptr += 1
                 curr_dur = w['end'] - beat_start
-                # Slicing threshold ~3.0s or punctuation cadence
                 if curr_dur >= target_beat_seconds or (curr_dur >= 2.0 and w['word'].endswith(('.', '!', '?', ','))):
                     break
 
             beat_end = current_words[-1]['end']
-            # Extend last beat to full duration if remainder is small
             if word_ptr >= len(whisper_words) and (duration - beat_end) < 2.0:
                 beat_end = round(duration, 2)
 
             joined_text = " ".join([w['word'] for w in current_words]).strip()
             midpoint = round((beat_start + beat_end) / 2.0, 2)
-            kf_filename = f"beat_{beat_idx:03d}.jpg"
+            kf_filename = f"{batch_id}_beat_{beat_idx:03d}.jpg"
             kf_path = os.path.join(keyframes_dir, kf_filename)
 
             if has_video:
-                extract_keyframe(input_path, midpoint, kf_path)
+                grab_keyframe(midpoint, kf_path)
             else:
                 synthesize_audio_fallback_thumbnail(kf_path, beat_idx, joined_text)
 
@@ -432,13 +471,14 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                 'id': f"beat_{beat_idx:03d}",
                 'index': beat_idx,
                 'beat_id': beat_idx,
+                'batch_id': batch_id,
                 'start': round(beat_start, 2),
                 'end': round(beat_end, 2),
                 'duration': round(beat_end - beat_start, 2),
                 'text': joined_text,
                 'words': current_words,
                 'keyframe_file': kf_filename,
-                'keyframe_url': f"/api/keyframes/{kf_filename}",
+                'keyframe_url': f"/api/keyframes/{batch_id}/{kf_filename}",
                 'keyframe_path': kf_path,
                 'model': 'classic',
                 'pose': choreo['pose'],
@@ -450,15 +490,14 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
             })
             beat_idx += 1
 
-        # Check for trailing silence/music at the tail of video
         if beats and (duration - beats[-1]['end']) >= 1.5:
             trail_start = beats[-1]['end']
             trail_end = round(duration, 2)
             midpoint = round((trail_start + trail_end) / 2.0, 2)
-            kf_filename = f"beat_{beat_idx:03d}.jpg"
+            kf_filename = f"{batch_id}_beat_{beat_idx:03d}.jpg"
             kf_path = os.path.join(keyframes_dir, kf_filename)
             if has_video:
-                extract_keyframe(input_path, midpoint, kf_path)
+                grab_keyframe(midpoint, kf_path)
             else:
                 synthesize_audio_fallback_thumbnail(kf_path, beat_idx, "[Music / Ambience]")
             choreo = derive_stickman_choreography("[Music / Ambience]", beat_idx - 1, 10, has_video)
@@ -466,13 +505,14 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                 'id': f"beat_{beat_idx:03d}",
                 'index': beat_idx,
                 'beat_id': beat_idx,
+                'batch_id': batch_id,
                 'start': trail_start,
                 'end': trail_end,
                 'duration': round(trail_end - trail_start, 2),
                 'text': "[Music / Ambience]",
                 'words': [],
                 'keyframe_file': kf_filename,
-                'keyframe_url': f"/api/keyframes/{kf_filename}",
+                'keyframe_url': f"/api/keyframes/{batch_id}/{kf_filename}",
                 'keyframe_path': kf_path,
                 'model': 'classic',
                 'pose': choreo['pose'],
@@ -483,11 +523,19 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
                 'accent': '#a855f7'
             })
 
+    if cap is not None:
+        try:
+            cap.release()
+        except Exception:
+            pass
+
     manifest = {
         'input_path': os.path.abspath(input_path),
         'duration': round(duration, 2),
+        'total_duration': round(duration, 2),
         'has_video': has_video,
         'total_beats': len(beats),
+        'batch_id': batch_id,
         'beats': beats
     }
 
@@ -500,15 +548,16 @@ def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print(json.dumps({'error': 'Usage: video_beats_extractor.py <video_or_audio_path> [output_dir] [target_seconds]'}))
+        print(json.dumps({'error': 'Usage: video_beats_extractor.py <video_or_audio_path> [output_dir] [target_seconds] [max_duration]'}))
         sys.exit(1)
 
     in_file = sys.argv[1]
     out_d = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), 'output')
     t_seconds = float(sys.argv[3]) if len(sys.argv) > 3 else 3.0
+    m_duration = float(sys.argv[4]) if len(sys.argv) > 4 else 90.0
     
     try:
-        res = slice_video_beats(in_file, out_d, target_beat_seconds=t_seconds)
+        res = slice_video_beats(in_file, out_d, target_beat_seconds=t_seconds, max_duration=m_duration)
         print(json.dumps({'success': True, 'manifest': res}, indent=2))
         sys.exit(0)
     except Exception as e:

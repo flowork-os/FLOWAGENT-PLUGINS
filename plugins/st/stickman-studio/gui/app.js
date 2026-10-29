@@ -292,6 +292,27 @@
   async function uploadMediaFile(file) {
     if (!file) return;
 
+    // Reset previous storyboard state immediately to prevent stale beats
+    state.storyboardParts = [];
+    state.activePartIndex = 0;
+    if (activePartBadge) activePartBadge.textContent = 'SLICING...';
+    if (beatKeyframeImage) beatKeyframeImage.style.display = 'none';
+    if (keyframePlaceholder) keyframePlaceholder.style.display = 'block';
+    if (partPreviewImage) partPreviewImage.style.display = 'none';
+    if (partPreviewPlaceholder) partPreviewPlaceholder.style.display = 'block';
+    if (beatParodyIdeaText) {
+      beatParodyIdeaText.textContent = `Analyzing ${file.name} for 2-character stickman parody choreography...`;
+    }
+    if (storyboardScenesList) {
+      storyboardScenesList.innerHTML = `
+        <div style="padding: 32px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+          <div class="fl-spinner" style="margin: 0 auto 12px auto; width: 28px; height: 28px; border-width: 3px;"></div>
+          <div style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 4px;">Slicing Video & Directing Parody Beats...</div>
+          <div style="font-size: 11px;">Extracting speech timestamps and synchronized keyframes</div>
+        </div>
+      `;
+    }
+
     // a) Instantly show active progress spinner inside the card
     if (uploadProgressState) {
       uploadProgressState.style.display = 'block';
@@ -349,6 +370,7 @@
       if (uploadProgressDetail) {
         uploadProgressDetail.textContent = err.message || 'Check network/server connection';
       }
+      renderStoryboardCards();
     }
   }
 
@@ -361,13 +383,29 @@
       return;
     }
 
+    // Immediately clear previous storyboard parts to prevent showing stale beats
+    state.storyboardParts = [];
+    state.activePartIndex = 0;
+    if (activePartBadge) activePartBadge.textContent = 'SLICING...';
+    if (beatKeyframeImage) beatKeyframeImage.style.display = 'none';
+    if (keyframePlaceholder) keyframePlaceholder.style.display = 'block';
+    if (storyboardScenesList) {
+      storyboardScenesList.innerHTML = `
+        <div style="padding: 32px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+          <div class="fl-spinner" style="margin: 0 auto 12px auto; width: 28px; height: 28px; border-width: 3px;"></div>
+          <div style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 4px;">Slicing Video & Directing Parody Beats...</div>
+          <div style="font-size: 11px;">Extracting speech timestamps and synchronized keyframes</div>
+        </div>
+      `;
+    }
+
     if (uploadProgressState) {
       uploadProgressState.style.display = 'block';
       if (uploadProgressTitle) {
-        uploadProgressTitle.textContent = '⚡ Uploading & Slicing into ~3s Micro-Beats with AI Director...';
+        uploadProgressTitle.textContent = '⚡ Slicing into ~3s Micro-Beats with AI Director...';
       }
       if (uploadProgressDetail) {
-        uploadProgressDetail.textContent = 'Extracting ~3s keyframes & calculating AI parody choreography...';
+        uploadProgressDetail.textContent = 'Extracting speech timestamps & synchronized keyframes...';
       }
     }
     systemStatusText.textContent = 'Slicing ~3s Beats & Directing Stickman Parody...';
@@ -377,7 +415,7 @@
       const res = await fetch(sliceUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ media_path: targetPath, target_seconds: 3.0 })
+        body: JSON.stringify({ media_path: targetPath, target_seconds: 3.0, max_duration: 90.0 })
       });
       if (!res.ok) {
         throw new Error(`Server returned HTTP ${res.status}`);
@@ -393,8 +431,9 @@
           transcriptInput.value = data.manifest.full_transcript;
         }
 
-        if (data.manifest.total_duration) {
-          state.audioDuration = data.manifest.total_duration;
+        const durationSec = data.manifest.total_duration || data.manifest.duration;
+        if (durationSec) {
+          state.audioDuration = durationSec;
           if (loadedFileDuration) {
             loadedFileDuration.textContent = `${state.audioDuration.toFixed(1)}s`;
           }
@@ -429,6 +468,7 @@
       if (uploadProgressDetail) {
         uploadProgressDetail.textContent = err.message || 'Check server connection and video format';
       }
+      renderStoryboardCards();
     }
   }
 
@@ -648,6 +688,9 @@
       
       let rawThumb = part.keyframe_url || (part.keyframe_file ? `/api/keyframes/${part.keyframe_file}` : '');
       let thumbSrc = rawThumb ? (rawThumb.startsWith('http') ? rawThumb : api(rawThumb)) : '';
+      if (thumbSrc) {
+        thumbSrc += (thumbSrc.includes('?') ? '&' : '?') + 't=' + (part.batch_id || Date.now());
+      }
 
       card.innerHTML = `
         <div class="fl-beat-card-grid">
@@ -722,7 +765,8 @@
     // Update Keyframe Image
     let rawKeyframe = part.keyframe_url || (part.keyframe_file ? `/api/keyframes/${part.keyframe_file}` : null);
     if (rawKeyframe) {
-      const fullUrl = rawKeyframe.startsWith('http') ? rawKeyframe : api(rawKeyframe);
+      let fullUrl = rawKeyframe.startsWith('http') ? rawKeyframe : api(rawKeyframe);
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + 't=' + (part.batch_id || Date.now());
       beatKeyframeImage.src = fullUrl;
       beatKeyframeImage.style.display = 'block';
       if (keyframePlaceholder) keyframePlaceholder.style.display = 'none';
