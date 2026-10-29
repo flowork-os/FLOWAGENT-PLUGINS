@@ -32,12 +32,12 @@
       "name": "AutoShorts Studio",
       "category_id": "CAT-010",
       "category": "Media, Creative Writing & Journalism",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Sovereign AI-driven long-form video to vertical 9:16 viral short-form clip generator. Features automated transcription, AI hook detection, viral moment ranking, mathematical center-cropping, and dynamic subtitle burning.",
       "icon": "✂️",
       "shard": "index/au/to/auto_shorts.json",
       "source_path": "plugins/au/auto-shorts",
-      "hash": "6e258d1541639f39"
+      "hash": "6de72c7a4f0c98ad"
     }
   ]
 }

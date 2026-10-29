@@ -167,6 +167,9 @@
       currentProjectTitle.textContent = currentProject.name;
       currentProjectDuration.textContent = formatTime(currentProject.duration);
       aspectIndicator.textContent = currentProject.is_landscape ? '16:9 Landscape' : '9:16 Portrait';
+      if (viewportBox) {
+        viewportBox.style.aspectRatio = currentProject.is_landscape ? '16 / 9' : '9 / 16';
+      }
 
       // Load Video Stream
       const streamUrl = `${API_BASE}/api/media/stream?path=${encodeURIComponent(currentProject.source_path)}`;
@@ -198,6 +201,42 @@
     }
   }
 
+  // Bounded playback monitor for candidate preview
+  let previewEndBoundary = null;
+  function onTimeUpdateBoundary() {
+    if (previewEndBoundary !== null && mainVideo.currentTime >= previewEndBoundary) {
+      mainVideo.pause();
+      previewEndBoundary = null;
+      mainVideo.removeEventListener('timeupdate', onTimeUpdateBoundary);
+    }
+  }
+
+  function playSourceRange(start, end) {
+    if (currentProject) {
+      const streamUrl = `${API_BASE}/api/media/stream?path=${encodeURIComponent(currentProject.source_path)}`;
+      if (mainVideo.src !== streamUrl) {
+        mainVideo.src = streamUrl;
+        aspectIndicator.textContent = currentProject.is_landscape ? '16:9 Landscape' : '9:16 Portrait';
+        if (viewportBox) viewportBox.style.aspectRatio = currentProject.is_landscape ? '16 / 9' : '9 / 16';
+      }
+    }
+    previewEndBoundary = end;
+    mainVideo.removeEventListener('timeupdate', onTimeUpdateBoundary);
+    mainVideo.addEventListener('timeupdate', onTimeUpdateBoundary);
+    mainVideo.currentTime = start;
+    mainVideo.play().catch(() => {});
+  }
+
+  function playRenderedShort(shortUrl, rank) {
+    previewEndBoundary = null;
+    mainVideo.removeEventListener('timeupdate', onTimeUpdateBoundary);
+    mainVideo.src = shortUrl;
+    aspectIndicator.textContent = `9:16 Vertical Short (Rank #${rank})`;
+    if (viewportBox) viewportBox.style.aspectRatio = '9 / 16';
+    mainVideo.currentTime = 0;
+    mainVideo.play().catch(() => {});
+  }
+
   // 4. Render Candidates Cards
   function renderCandidates(candidates) {
     candidatesCount.textContent = candidates.length;
@@ -210,9 +249,13 @@
     candidates.forEach((c) => {
       const card = document.createElement('div');
       card.className = 'candidate-card';
+      const labelBadge = c.label ? `<span style="font-size:10px; color:var(--accent-cyan); font-weight:600;">${c.label}</span>` : '';
       card.innerHTML = `
         <div class="candidate-header">
-          <span class="candidate-rank">Rank #${c.rank}</span>
+          <div>
+            <span class="candidate-rank">Rank #${c.rank}</span>
+            ${labelBadge ? ' • ' + labelBadge : ''}
+          </div>
           <span class="score-badge">Viral Score: ${c.score}/100</span>
         </div>
         <div class="candidate-hook">"${c.hook}"</div>
@@ -225,17 +268,25 @@
           </div>
         </div>
         ${c.rendered ? `
-          <div style="padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; color:var(--accent-green);">✓ Rendered 1080x1920 MP4</span>
+          <div style="padding-top:8px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
+            <button class="btn btn-secondary btn-sm btn-play-short" style="color:var(--accent-cyan); border-color:var(--accent-cyan);">▶ Play 9:16 Short</button>
             <a href="${API_BASE}${c.rendered_url}" download="Short_Rank_${c.rank}.mp4" class="btn btn-secondary btn-sm" style="text-decoration:none;">💾 Save MP4</a>
           </div>
         ` : ''}
       `;
 
       card.querySelector('.btn-preview').onclick = () => {
-        mainVideo.currentTime = c.start;
-        mainVideo.play();
+        playSourceRange(c.start, c.end);
       };
+
+      if (c.rendered) {
+        const btnPlayShort = card.querySelector('.btn-play-short');
+        if (btnPlayShort) {
+          btnPlayShort.onclick = () => {
+            playRenderedShort(`${API_BASE}${c.rendered_url}`, c.rank);
+          };
+        }
+      }
 
       card.querySelector('.btn-render').onclick = async (e) => {
         await resolveApiBase();
@@ -243,14 +294,18 @@
         btn.disabled = true;
         btn.textContent = '⏳ Rendering...';
         try {
+          const cropFocusSelect = document.getElementById('select-crop-focus');
+          const cropFocus = cropFocusSelect ? cropFocusSelect.value : 'center';
           const res = await fetch(`${API_BASE}/api/candidates/${c.id}/render`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ project_id: currentProject.id })
+            body: JSON.stringify({ project_id: currentProject.id, crop_focus: cropFocus })
           });
           const renderData = await res.json();
           if (renderData.status === 'SUCCESS') {
-            selectProject(currentProject.id);
+            await selectProject(currentProject.id);
+            // Auto play the rendered short
+            playRenderedShort(`${API_BASE}${renderData.candidate.rendered_url}`, renderData.candidate.rank);
           } else {
             alert('Render failed: ' + (renderData.error || 'Unknown error'));
             btn.disabled = false;

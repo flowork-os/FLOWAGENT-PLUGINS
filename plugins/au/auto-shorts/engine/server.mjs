@@ -205,7 +205,7 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({
         status: 'SUCCESS',
         app: 'auto-shorts',
-        version: '1.0.0',
+        version: '1.0.1',
         port: PORT,
         has_ffmpeg: hasFfmpeg,
         has_ffprobe: hasFfprobe,
@@ -474,16 +474,23 @@ const server = http.createServer(async (req, res) => {
       fs.mkdirSync(clipsDir, { recursive: true });
       const outputPath = path.join(clipsDir, `${candidateId}.mp4`);
 
+      const cropFocus = data.crop_focus || cand.crop_focus || proj.crop_focus || 'center';
+      const panPercent = data.pan_percent || cand.pan_percent || 50;
+
       const renderRes = await runPython([
         'render',
         '--source', proj.source_path,
         '--output', outputPath,
         '--start', String(cand.start),
         '--end', String(cand.end),
-        '--caption-style', proj.caption_style || 'modern-box'
+        '--caption-style', proj.caption_style || 'modern-box',
+        '--crop-focus', cropFocus,
+        '--pan-percent', String(panPercent)
       ]);
 
       cand.rendered = true;
+      cand.crop_focus = cropFocus;
+      cand.pan_percent = panPercent;
       cand.output_path = outputPath;
       cand.rendered_url = `/api/media/stream?path=${encodeURIComponent(outputPath)}`;
       fs.writeFileSync(candidatesFile, JSON.stringify(candidates, null, 2));

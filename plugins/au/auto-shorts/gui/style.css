@@ -385,6 +385,7 @@ body {
   justify-content: center;
   aspect-ratio: 16 / 9;
   max-height: 480px;
+  transition: aspect-ratio 0.3s ease;
 }
 
 .viewport-wrapper video {
