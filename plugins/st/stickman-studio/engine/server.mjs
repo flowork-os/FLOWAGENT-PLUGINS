@@ -289,7 +289,9 @@ const server = http.createServer(async (req, res) => {
     // 5e. Raw Media Upload (POST /api/fs/upload-media)
     // -------------------------------------------------------------
     if (pathname === '/api/fs/upload-media' && req.method === 'POST') {
-      const origName = req.headers['x-filename'] || `media_${Date.now()}.mp4`;
+      let rawHeader = req.headers['x-filename'] || `media_${Date.now()}.mp4`;
+      let origName = rawHeader;
+      try { origName = decodeURIComponent(rawHeader); } catch (_) {}
       const cleanName = origName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
       const targetFile = path.join(UPLOADS_DIR, `${Date.now()}_${cleanName}`);
       const writeStream = fs.createWriteStream(targetFile);
@@ -400,10 +402,11 @@ const server = http.createServer(async (req, res) => {
     // -------------------------------------------------------------
     if (pathname === '/api/bridge/autoshorts' && req.method === 'GET') {
       const candidatePaths = [
-        path.resolve(APP_ROOT, '..', 'auto-shorts', 'data', 'projects'),
+        path.resolve(APP_ROOT, '..', 'auto-shorts', 'data'),
         path.resolve(APP_ROOT, '..', 'flow-studio', 'samples'),
         path.resolve(APP_ROOT, '..', 'flow-studio', 'exports'),
-        path.resolve(APP_ROOT, '..', 'yt-downloader', '~', 'Downloads')
+        path.resolve(APP_ROOT, '..', 'yt-downloader', '~', 'Downloads'),
+        UPLOADS_DIR
       ];
       const clips = [];
       for (const cp of candidatePaths) {
@@ -426,7 +429,7 @@ const server = http.createServer(async (req, res) => {
       }
       clips.sort((a, b) => new Date(b.modified_at) - new Date(a.modified_at));
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ clips: clips.slice(0, 15) }));
+      return res.end(JSON.stringify({ clips: clips.slice(0, 20) }));
     }
 
     // -------------------------------------------------------------

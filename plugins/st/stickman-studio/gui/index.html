@@ -37,7 +37,11 @@
           </button>
         </div>
 
-        <!-- AutoShorts Bridge Import -->
+        <!-- Import Actions in Top Bar -->
+        <button id="btnImportVideoTop" class="fl-btn fl-btn-secondary" style="border-color: var(--accent-green); color: var(--accent-green);" title="Choose local video file">
+          📥 Import Video
+        </button>
+
         <button id="btnImportAutoShorts" class="fl-btn fl-btn-secondary" style="border-color: var(--accent-cyan); color: var(--accent-cyan);" title="Import clip directly from AutoShorts Studio">
           ⚡ AutoShorts
         </button>
@@ -66,21 +70,21 @@
         <div class="fl-panel-content">
           <!-- Storyboard Navigation Switcher -->
           <div class="fl-tab-nav">
-            <button id="tabAudioSource" class="fl-tab-btn">📹 Media & Voice</button>
-            <button id="tabStoryboard" class="fl-tab-btn active">🎬 Storyboard Beats (~3s)</button>
+            <button id="tabAudioSource" class="fl-tab-btn active">📹 Media & Voice</button>
+            <button id="tabStoryboard" class="fl-tab-btn">🎬 Storyboard Beats (~3s)</button>
           </div>
 
           <!-- Tab Content 1: Media Ingestion & Voice FX -->
-          <div id="tabContentAudio" style="display: none;">
+          <div id="tabContentAudio" style="display: block;">
             <!-- Media Ingest Dropzone (Accepts Video & Audio) -->
             <div class="fl-card">
               <div class="fl-card-header">
                 <span>📹</span> Video / Audio Input
               </div>
-              <div id="uploadDropzone" class="fl-upload-zone">
+              <div id="uploadDropzone" class="fl-upload-zone" style="cursor: pointer;">
                 <span class="fl-upload-icon">🎬</span>
                 <div style="font-size: 13px; font-weight: 600;">Drop Video or Audio File Here</div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">MP4, MOV, WEBM, WAV, MP3</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Click or drag MP4, MOV, WEBM, WAV, MP3</div>
                 <input type="file" id="mediaFileInput" accept="video/*,audio/*" style="display: none;">
                 <input type="file" id="audioFileInput" accept="audio/*,video/*" style="display: none;">
               </div>
@@ -158,7 +162,7 @@
           </div>
 
           <!-- Tab Content 2: Storyboard Multi-Part Scene List -->
-          <div id="tabContentStoryboard" style="display: block;">
+          <div id="tabContentStoryboard" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <span style="font-size: 11px; font-weight: 700; color: var(--accent-cyan);">~3s MICRO-BEAT PARODY SCENES</span>
               <button id="btnAddScenePart" class="fl-btn fl-btn-secondary" style="width: auto; padding: 3px 8px; font-size: 11px;">
@@ -167,9 +171,21 @@
             </div>
 
             <div id="storyboardScenesList" class="fl-storyboard-list">
-              <!-- Dynamically populated scene cards -->
-              <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
-                Upload a video or audio file and click "Slice into ~3s Micro-Beats" to generate synchronized parody scenes.
+              <!-- Dynamically populated or empty state with direct action buttons -->
+              <div id="storyboardEmptyState" class="fl-empty-storyboard-box">
+                <div style="font-size: 28px; margin-bottom: 6px;">🎬</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">No Video Moment Loaded</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin: 6px 0 14px 0; line-height: 1.4;">
+                  Import a video to automatically slice it into ~3-second micro-beats with AI stickman parody direction.
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                  <button id="btnEmptyBrowseVideo" class="fl-btn fl-btn-accent" style="width: auto; padding: 6px 12px; font-size: 11px;">
+                    📥 Browse Video File
+                  </button>
+                  <button id="btnEmptyAutoShorts" class="fl-btn fl-btn-secondary" style="width: auto; padding: 6px 12px; font-size: 11px; border-color: var(--accent-cyan); color: var(--accent-cyan);">
+                    ⚡ Import AutoShorts
+                  </button>
+                </div>
               </div>
             </div>
           </div>

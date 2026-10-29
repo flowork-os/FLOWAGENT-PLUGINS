@@ -1,4 +1,4 @@
-// [FL_INDEX: keywords="stickman_renderer, procedural_kinematics, storyboard_director, multi_part_scenes, live_part_inspector, autoshorts_bridge, split_pip, micro_beats" | purpose="Sovereign Stickman Studio client-side controller featuring procedural 2D stickman rigging, ~3s micro-beat parody director, dual-view keyframe inspection, AutoShorts bridge, and split-screen PIP video exporter"]
+// [FL_INDEX: keywords="stickman_renderer, procedural_kinematics, storyboard_director, multi_part_scenes, live_part_inspector, autoshorts_bridge, split_pip, micro_beats" | purpose="Sovereign Stickman Studio client-side controller featuring dynamic Cockpit port resolution, procedural 2D stickman rigging, ~3s micro-beat parody director, dual-view keyframe inspection, AutoShorts bridge, and split-screen PIP video exporter"]
 
 /**
  * Stickman Studio — Sovereign Client Controller & Kinematics Renderer
@@ -7,6 +7,42 @@
 
 (() => {
   'use strict';
+
+  // -------------------------------------------------------------------
+  // Dynamic API Base Resolution for Cockpit Iframe & Standalone Port
+  // -------------------------------------------------------------------
+  let API_BASE = '';
+
+  function resolveApiBase() {
+    if (API_BASE) return API_BASE;
+
+    // 1. Check URL query param ?port=xxxx (passed by Cockpit supervisor iframe)
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paramPort = urlParams.get('port');
+      if (paramPort) {
+        API_BASE = `http://${window.location.hostname || '127.0.0.1'}:${paramPort}`;
+        return API_BASE;
+      }
+    } catch (_) {}
+
+    // 2. Direct port probe if loaded directly from engine port (not Cockpit supervisor 19890)
+    if (window.location.port && window.location.port !== '19890') {
+      API_BASE = window.location.origin;
+      return API_BASE;
+    }
+
+    // 3. Fallback to default Stickman Studio port 18040
+    const host = window.location.hostname || '127.0.0.1';
+    API_BASE = `http://${host}:18040`;
+    return API_BASE;
+  }
+
+  function api(endpoint) {
+    const base = resolveApiBase();
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return `${base}${cleanEndpoint}`;
+  }
 
   // Global State
   const state = {
@@ -122,6 +158,7 @@
   const activeModeBadge = document.getElementById('activeModeBadge');
   const destinationDirInput = document.getElementById('destinationDirInput');
   const btnBrowseFolder = document.getElementById('btnBrowseFolder');
+  const btnImportVideoTop = document.getElementById('btnImportVideoTop');
   const btnImportAutoShorts = document.getElementById('btnImportAutoShorts');
   const modalAutoShorts = document.getElementById('modalAutoShorts');
   const btnCloseAutoShortsModal = document.getElementById('btnCloseAutoShortsModal');
@@ -260,14 +297,15 @@
     timelineProgress.style.width = `${progress}%`;
   }
 
-  // Upload Media File to Server
+  // Upload Media File to Server & Automatically Trigger Slicing
   async function uploadMediaFile(file) {
     systemStatusText.textContent = `Uploading ${file.name}...`;
     try {
-      const res = await fetch('/api/fs/upload-media', {
+      const uploadUrl = api('/api/fs/upload-media');
+      const res = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
-          'x-filename': file.name
+          'x-filename': encodeURIComponent(file.name)
         },
         body: file
       });
@@ -281,7 +319,7 @@
         if (btnSliceBeats) btnSliceBeats.style.display = 'block';
         if (btnAutoChunkStoryboard) btnAutoChunkStoryboard.style.display = 'block';
 
-        // Decode audio if audio file or browser video support
+        // Attempt AudioContext decode for audio waveform envelope
         try {
           const arrayBuf = await file.arrayBuffer();
           initAudioContext();
@@ -293,14 +331,17 @@
           loadedFileDuration.textContent = 'Ready';
         }
 
-        systemStatusText.textContent = 'Media Loaded: Ready for ~3s Slicing';
+        systemStatusText.textContent = 'Uploaded! Slicing ~3s micro-beats with AI director...';
         updateTimelineDisplay();
+
+        // Automatic seamless slicing trigger
+        await sliceMediaBeats(data.path);
       } else {
         throw new Error(data.error || 'Upload failed');
       }
     } catch (err) {
       console.error('[Upload Error]', err);
-      systemStatusText.textContent = 'Upload Failed';
+      systemStatusText.textContent = 'Upload Failed: Check network/server connection';
     }
   }
 
@@ -314,7 +355,8 @@
 
     systemStatusText.textContent = 'Slicing ~3s Beats & Directing Stickman Parody...';
     try {
-      const res = await fetch('/api/beats/slice', {
+      const sliceUrl = api('/api/beats/slice');
+      const res = await fetch(sliceUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ media_path: targetPath, target_seconds: 3.0 })
@@ -338,14 +380,15 @@
         renderStoryboardCards();
         selectPart(0);
 
+        // Switch automatically to Storyboard tab
         if (tabStoryboard) tabStoryboard.click();
-        systemStatusText.textContent = `Extracted ${state.storyboardParts.length} ~3s Parody Beats!`;
+        systemStatusText.textContent = `Ready: ${state.storyboardParts.length} ~3s Parody Beats Generated!`;
       } else {
         throw new Error(data.error || 'Failed to extract micro-beats');
       }
     } catch (err) {
-      console.warn('[Beats Slicing Warning]', err);
-      systemStatusText.textContent = 'Fallback: Generating Synthetic Beats';
+      console.warn('[Beats Slicing Warning, using resilient client fallback]', err);
+      systemStatusText.textContent = 'Generated Client Parody Beats';
       fallbackChunking();
     }
   }
@@ -583,11 +626,34 @@
     if (!storyboardScenesList) return;
     storyboardScenesList.innerHTML = '';
 
+    if (!state.storyboardParts || state.storyboardParts.length === 0) {
+      storyboardScenesList.innerHTML = `
+        <div class="fl-empty-storyboard-box">
+          <div style="font-size: 28px; margin-bottom: 6px;">🎬</div>
+          <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">No Video Moment Loaded</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin: 6px 0 14px 0; line-height: 1.4;">
+            Import a video to automatically slice it into ~3-second micro-beats with AI stickman parody direction.
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button id="btnEmptyBrowseVideo" class="fl-btn fl-btn-accent" style="width: auto; padding: 6px 12px; font-size: 11px;">
+              📥 Browse Video File
+            </button>
+            <button id="btnEmptyAutoShorts" class="fl-btn fl-btn-secondary" style="width: auto; padding: 6px 12px; font-size: 11px; border-color: var(--accent-cyan); color: var(--accent-cyan);">
+              ⚡ Import AutoShorts
+            </button>
+          </div>
+        </div>
+      `;
+      wireEmptyStateButtons();
+      return;
+    }
+
     state.storyboardParts.forEach((part, index) => {
       const card = document.createElement('div');
       card.className = `fl-scene-card ${index === state.activePartIndex ? 'active' : ''}`;
       
-      const thumbSrc = part.keyframe_url || (part.keyframe_file ? `/api/keyframes/${part.keyframe_file}` : '');
+      let rawThumb = part.keyframe_url || (part.keyframe_file ? `/api/keyframes/${part.keyframe_file}` : '');
+      let thumbSrc = rawThumb ? (rawThumb.startsWith('http') ? rawThumb : api(rawThumb)) : '';
 
       card.innerHTML = `
         <div class="fl-beat-card-grid">
@@ -619,6 +685,22 @@
     });
   }
 
+  function wireEmptyStateButtons() {
+    const btnEmptyBrowse = document.getElementById('btnEmptyBrowseVideo');
+    if (btnEmptyBrowse) {
+      btnEmptyBrowse.addEventListener('click', () => {
+        if (mediaFileInput) mediaFileInput.click();
+        else if (audioFileInput) audioFileInput.click();
+      });
+    }
+    const btnEmptyAS = document.getElementById('btnEmptyAutoShorts');
+    if (btnEmptyAS && btnImportAutoShorts) {
+      btnEmptyAS.addEventListener('click', () => {
+        btnImportAutoShorts.click();
+      });
+    }
+  }
+
   // Select Active Part for Editing in Beat Inspector
   function selectPart(index) {
     if (!state.storyboardParts[index]) return;
@@ -634,9 +716,10 @@
     if (glowColorPicker) glowColorPicker.value = part.accent || '#00e5ff';
 
     // Update Keyframe Image
-    const keyframeUrl = part.keyframe_url || (part.keyframe_file ? `/api/keyframes/${part.keyframe_file}` : null);
-    if (keyframeUrl) {
-      beatKeyframeImage.src = keyframeUrl;
+    let rawKeyframe = part.keyframe_url || (part.keyframe_file ? `/api/keyframes/${part.keyframe_file}` : null);
+    if (rawKeyframe) {
+      const fullUrl = rawKeyframe.startsWith('http') ? rawKeyframe : api(rawKeyframe);
+      beatKeyframeImage.src = fullUrl;
       beatKeyframeImage.style.display = 'block';
       if (keyframePlaceholder) keyframePlaceholder.style.display = 'none';
     } else {
@@ -798,7 +881,8 @@
       }
 
       try {
-        const res = await fetch('/api/bridge/autoshorts');
+        const autoshortsUrl = api('/api/bridge/autoshorts');
+        const res = await fetch(autoshortsUrl);
         const data = await res.json();
         if (data.clips && data.clips.length > 0) {
           autoshortsClipsList.innerHTML = '';
@@ -814,19 +898,20 @@
                 Select & Slice
               </button>
             `;
-            card.addEventListener('click', () => {
+            card.addEventListener('click', async () => {
               if (modalAutoShorts) modalAutoShorts.style.display = 'none';
               state.videoPath = clip.path;
               state.currentAudioServerPath = clip.path;
               loadedFileName.textContent = clip.name;
               loadedFileInfo.style.display = 'block';
               if (btnSliceBeats) btnSliceBeats.style.display = 'block';
-              sliceMediaBeats(clip.path);
+              systemStatusText.textContent = `Selected: ${clip.name}. Slicing beats...`;
+              await sliceMediaBeats(clip.path);
             });
             autoshortsClipsList.appendChild(card);
           });
         } else {
-          autoshortsClipsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">No video clips found in AutoShorts projects yet. You can upload any MP4 video directly.</div>';
+          autoshortsClipsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">No video clips found in AutoShorts directory yet. Click "Browse Video File" to import any MP4 video directly.</div>';
         }
       } catch (err) {
         console.error('[AutoShorts Bridge Error]', err);
@@ -842,13 +927,24 @@
   }
 
   // -------------------------------------------------------------
+  // Top Import Video Button
+  // -------------------------------------------------------------
+  if (btnImportVideoTop) {
+    btnImportVideoTop.addEventListener('click', () => {
+      if (mediaFileInput) mediaFileInput.click();
+      else if (audioFileInput) audioFileInput.click();
+    });
+  }
+
+  // -------------------------------------------------------------
   // Native Folder Picker Integration
   // -------------------------------------------------------------
   if (btnBrowseFolder) {
     btnBrowseFolder.addEventListener('click', async () => {
       systemStatusText.textContent = 'Selecting Output Folder...';
       try {
-        const res = await fetch('/api/pick-folder');
+        const folderUrl = api('/api/pick-folder');
+        const res = await fetch(folderUrl);
         const data = await res.json();
         if (data && data.path) {
           state.destinationDir = data.path;
@@ -1167,7 +1263,8 @@
           fps: 30
         };
 
-        const res = await fetch('/api/render/video', {
+        const renderUrl = api('/api/render/video');
+        const res = await fetch(renderUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1184,7 +1281,8 @@
         // Polling Progress HUD
         const pollInterval = setInterval(async () => {
           try {
-            const pollRes = await fetch(`/api/jobs/${jobId}`);
+            const jobStatusUrl = api(`/api/jobs/${jobId}`);
+            const pollRes = await fetch(jobStatusUrl);
             const jobData = await pollRes.json();
             if (jobData && jobData.status) {
               if (renderStageText) renderStageText.textContent = jobData.stage.toUpperCase();
@@ -1202,7 +1300,8 @@
 
                 if (renderDownloadBox && btnDownloadRendered) {
                   renderDownloadBox.style.display = 'block';
-                  btnDownloadRendered.href = jobData.output_url || `/exports/${jobData.output_file}`;
+                  const downloadUrl = jobData.output_url ? api(jobData.output_url) : api(`/exports/${jobData.output_file}`);
+                  btnDownloadRendered.href = downloadUrl;
                   btnDownloadRendered.textContent = `⬇️ Download ${jobData.output_file || 'Short Video (MP4)'}`;
                 }
               } else if (jobData.status === 'failed' || jobData.status === 'cancelled') {
@@ -1225,6 +1324,7 @@
   }
 
   // Initialize Storyboard & Animation Loop
+  resolveApiBase();
   renderStoryboardCards();
   selectPart(0);
   animationTick();
