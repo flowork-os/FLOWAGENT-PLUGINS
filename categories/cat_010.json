@@ -1,7 +1,7 @@
 {
   "category_id": "CAT-010",
   "category": "Media, Creative Writing & Journalism",
-  "total_items": 3,
+  "total_items": 4,
   "items": [
     {
       "id": "yt-downloader",
@@ -38,6 +38,18 @@
       "shard": "index/au/to/auto_shorts.json",
       "source_path": "plugins/au/auto-shorts",
       "hash": "6c4e40e13ddfe28c"
+    },
+    {
+      "id": "stickman-studio",
+      "name": "Stickman Studio",
+      "category_id": "CAT-010",
+      "category": "Media, Creative Writing & Journalism",
+      "version": "1.0.0",
+      "description": "Sovereign AI-driven audio to 2D dynamic stickman animation generator. Features real-time voice transformation (kids, cartoon, chipmunk), procedural stickman action state machine, kinetic word-by-word subtitles, and 9:16 viral short video rendering.",
+      "icon": "🤺",
+      "shard": "index/st/ic/stickman_studio.json",
+      "source_path": "plugins/st/stickman-studio",
+      "hash": "b46f50705d208b11"
     }
   ]
 }

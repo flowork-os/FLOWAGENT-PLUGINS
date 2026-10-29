@@ -1,0 +1,21 @@
+{
+  "id": "stickman-studio",
+  "name": "Stickman Studio",
+  "version": "1.0.0",
+  "author": "Awenk Audico & Flowork OS",
+  "description": "Sovereign AI-driven audio to 2D dynamic stickman animation generator. Features real-time voice transformation (kids, cartoon, chipmunk), procedural stickman action state machine, kinetic word-by-word subtitles, and 9:16 viral short video rendering.",
+  "category": "Media, Creative Writing & Journalism",
+  "icon": "🤺",
+  "hash": "b46f50705d208b11",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 18040
+  },
+  "shard": "index/st/ic/stickman_studio.json",
+  "source_path": "plugins/st/stickman-studio",
+  "category_id": "CAT-010"
+}

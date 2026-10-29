@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<!-- [FL_INDEX: keywords="stickman_studio, canvas_ui, vertical_short, 2d_animation, lipsync_engine, autoshorts_bridge, split_pip, micro_beats" | purpose="Sovereign Stickman Studio main interface for AI video/audio-to-stickman procedural 2D animation, ~3s micro-beat parody director, split-screen PIP generator, and vertical video exporter"] -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stickman Studio — Sovereign 2D Animation & Parody Short Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stickman-studio-root">
+    
+    <!-- Top Sovereign Navigation Header -->
+    <header class="fl-app-header">
+      <div class="fl-header-brand">
+        <span class="fl-brand-badge">PRO v1.2</span>
+        <div class="fl-brand-title">
+          <span>🤺</span> Stickman Studio
+        </div>
+      </div>
+
+      <div class="fl-header-actions">
+        <!-- Render Mode Switcher -->
+        <div class="fl-mode-select-wrap">
+          <label style="font-size: 11px; color: var(--text-secondary); margin-right: 4px;">Mode:</label>
+          <select id="selectRenderMode" class="fl-select-sm" title="Select Video Composite Mode">
+            <option value="split_pip" selected>🎬 Split-PIP (Top Video + Bottom Stickman)</option>
+            <option value="full_stickman">🤺 100% Animated Stickman</option>
+          </select>
+        </div>
+
+        <!-- Destination Directory Picker -->
+        <div class="fl-dest-picker-wrap">
+          <input type="text" id="destinationDirInput" placeholder="Auto-save: data/exports/" readonly class="fl-input-dest" title="Output directory">
+          <button id="btnBrowseFolder" class="fl-btn fl-btn-secondary" title="Choose destination folder">
+            📁 Save to...
+          </button>
+        </div>
+
+        <!-- AutoShorts Bridge Import -->
+        <button id="btnImportAutoShorts" class="fl-btn fl-btn-secondary" style="border-color: var(--accent-cyan); color: var(--accent-cyan);" title="Import clip directly from AutoShorts Studio">
+          ⚡ AutoShorts
+        </button>
+
+        <div class="fl-status-indicator">
+          <div class="fl-status-dot"></div>
+          <span id="systemStatusText">Engine Ready</span>
+        </div>
+
+        <button id="btnExportVideo" class="fl-btn fl-btn-accent" style="width: auto; padding: 6px 14px;">
+          <span>⚡ Export Short (9:16)</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="fl-workspace">
+      
+      <!-- Left Panel: Media Ingestion & Storyboard Scene Split View -->
+      <section class="fl-panel">
+        <div class="fl-panel-header">
+          <span>1. Scenes & Storyboard</span>
+          <span id="activeModeBadge" style="font-size: 10px; background: rgba(0, 229, 255, 0.1); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 229, 255, 0.2);">SPLIT-PIP</span>
+        </div>
+        
+        <div class="fl-panel-content">
+          <!-- Storyboard Navigation Switcher -->
+          <div class="fl-tab-nav">
+            <button id="tabAudioSource" class="fl-tab-btn">📹 Media & Voice</button>
+            <button id="tabStoryboard" class="fl-tab-btn active">🎬 Storyboard Beats (~3s)</button>
+          </div>
+
+          <!-- Tab Content 1: Media Ingestion & Voice FX -->
+          <div id="tabContentAudio" style="display: none;">
+            <!-- Media Ingest Dropzone (Accepts Video & Audio) -->
+            <div class="fl-card">
+              <div class="fl-card-header">
+                <span>📹</span> Video / Audio Input
+              </div>
+              <div id="uploadDropzone" class="fl-upload-zone">
+                <span class="fl-upload-icon">🎬</span>
+                <div style="font-size: 13px; font-weight: 600;">Drop Video or Audio File Here</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">MP4, MOV, WEBM, WAV, MP3</div>
+                <input type="file" id="mediaFileInput" accept="video/*,audio/*" style="display: none;">
+                <input type="file" id="audioFileInput" accept="audio/*,video/*" style="display: none;">
+              </div>
+              
+              <div id="loadedFileInfo" style="display: none; margin-top: 10px; font-size: 12px; color: var(--accent-cyan);">
+                File: <span id="loadedFileName">clip.mp4</span> (<span id="loadedFileDuration">0.0s</span>)
+              </div>
+
+              <button id="btnSliceBeats" class="fl-btn fl-btn-accent" style="margin-top: 12px; display: none;">
+                <span>⚡ Slice into ~3s Micro-Beats & AI Director</span>
+              </button>
+
+              <button id="btnAutoChunkStoryboard" class="fl-btn fl-btn-secondary" style="margin-top: 6px; display: none; font-size: 11px;">
+                <span>Audio-Only Chunker (Fallback)</span>
+              </button>
+            </div>
+
+            <!-- Voice Transformation Presets -->
+            <div class="fl-card" style="margin-top: 14px;">
+              <div class="fl-card-header">
+                <span>🎭</span> Voice Transformation
+              </div>
+              <div class="fl-profile-grid">
+                <div class="fl-profile-card active" data-profile="kids">
+                  <div style="font-size: 18px;">👶</div>
+                  <div class="name">Cute Kids</div>
+                  <div class="desc">High formant</div>
+                </div>
+                <div class="fl-profile-card" data-profile="cartoon">
+                  <div style="font-size: 18px;">🤪</div>
+                  <div class="name">Wacky Cartoon</div>
+                  <div class="desc">Expressive</div>
+                </div>
+                <div class="fl-profile-card" data-profile="chipmunk">
+                  <div style="font-size: 18px;">🐿️</div>
+                  <div class="name">Chipmunk</div>
+                  <div class="desc">Ultra high</div>
+                </div>
+                <div class="fl-profile-card" data-profile="robot">
+                  <div style="font-size: 18px;">🤖</div>
+                  <div class="name">Robot Vocoder</div>
+                  <div class="desc">Cyber flange</div>
+                </div>
+              </div>
+
+              <!-- Custom Controls -->
+              <div class="fl-slider-group">
+                <div class="fl-slider-header">
+                  <span>Pitch Multiplier</span>
+                  <span id="pitchValDisplay">1.45x</span>
+                </div>
+                <input type="range" id="pitchSlider" min="0.5" max="2.5" step="0.05" value="1.45">
+              </div>
+
+              <div class="fl-slider-group" style="margin-top: 12px;">
+                <div class="fl-slider-header">
+                  <span>Speed Factor</span>
+                  <span id="speedValDisplay">1.05x</span>
+                </div>
+                <input type="range" id="speedSlider" min="0.5" max="2.0" step="0.05" value="1.05">
+              </div>
+
+              <button id="btnTransformVoice" class="fl-btn fl-btn-primary" style="margin-top: 14px;">
+                <span>✨ Apply Voice FX</span>
+              </button>
+            </div>
+
+            <!-- Transcript & Subtitles Input -->
+            <div class="fl-card" style="margin-top: 14px;">
+              <div class="fl-card-header">
+                <span>💬</span> Dialogue Transcript
+              </div>
+              <textarea id="transcriptInput" rows="3" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 8px; border-radius: var(--radius-sm); font-family: var(--font-sans); font-size: 12px; resize: none;" placeholder="Paste dialogue text here for animated word-by-word subtitles..."></textarea>
+            </div>
+          </div>
+
+          <!-- Tab Content 2: Storyboard Multi-Part Scene List -->
+          <div id="tabContentStoryboard" style="display: block;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--accent-cyan);">~3s MICRO-BEAT PARODY SCENES</span>
+              <button id="btnAddScenePart" class="fl-btn fl-btn-secondary" style="width: auto; padding: 3px 8px; font-size: 11px;">
+                + Add Beat
+              </button>
+            </div>
+
+            <div id="storyboardScenesList" class="fl-storyboard-list">
+              <!-- Dynamically populated scene cards -->
+              <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
+                Upload a video or audio file and click "Slice into ~3s Micro-Beats" to generate synchronized parody scenes.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Center Viewport: Stickman 9:16 Canvas Simulation -->
+      <section class="fl-center-viewport">
+        <div class="fl-viewport-toolbar">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">VIEWPORT: 9:16 (720x1280)</span>
+            <span id="fpsBadge" style="font-size: 11px; padding: 2px 6px; background: var(--bg-tertiary); border-radius: 4px; color: var(--accent-green);">60 FPS</span>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="btnResetPose" class="fl-btn fl-btn-secondary" style="width: auto; padding: 4px 10px; font-size: 11px;">
+              Reset Pose
+            </button>
+          </div>
+        </div>
+
+        <div class="fl-stage-wrapper">
+          <div class="fl-canvas-frame">
+            <canvas id="stickmanCanvas" width="360" height="640"></canvas>
+            <div id="subtitleOverlay" class="fl-subtitle-overlay">
+              STICKMAN PARODY STUDIO
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline & Playback Bar -->
+        <div class="fl-timeline-bar">
+          <button id="btnPlayPause" class="fl-play-btn">
+            ▶
+          </button>
+          
+          <div id="timelineTrack" class="fl-timeline-track">
+            <div id="timelineProgress" class="fl-timeline-progress"></div>
+          </div>
+
+          <span id="timecodeDisplay" style="font-size: 12px; font-family: var(--font-mono); color: var(--text-secondary); width: 85px;">
+            00:00 / 00:00
+          </span>
+        </div>
+      </section>
+
+      <!-- Right Panel: Scene Part Inspector & Rigging -->
+      <section class="fl-panel fl-panel-right">
+        <div class="fl-panel-header">
+          <span>2. Beat Inspector</span>
+          <span id="activePartBadge" style="font-size: 10px; background: var(--bg-surface); padding: 2px 6px; border-radius: 4px; color: var(--accent-cyan); border: 1px solid var(--border-subtle);">BEAT 1</span>
+        </div>
+
+        <div class="fl-panel-content">
+          <!-- Live Dual Beat Preview (Original Keyframe + Stickman Frame) -->
+          <div class="fl-card">
+            <div class="fl-card-header">
+              <span>👁️</span> Dual Beat Preview (Video + Stickman)
+            </div>
+            
+            <div class="fl-dual-preview-row">
+              <div class="fl-preview-box-half">
+                <div class="fl-preview-label">Original Video</div>
+                <img id="beatKeyframeImage" src="" alt="Video Frame" style="display: none;">
+                <span id="keyframePlaceholder" style="font-size: 10px; color: var(--text-muted); text-align: center; padding: 8px;">
+                  No Keyframe
+                </span>
+              </div>
+              <div class="fl-preview-box-half">
+                <div class="fl-preview-label">Stickman Parody</div>
+                <img id="partPreviewImage" src="" alt="Stickman Frame" style="display: block;">
+                <span id="partPreviewPlaceholder" style="display: none; font-size: 10px; color: var(--text-muted); text-align: center; padding: 8px;">
+                  Scene Frame
+                </span>
+              </div>
+            </div>
+
+            <!-- Parody Concept Explanation Box -->
+            <div id="beatParodyIdeaBox" class="fl-parody-idea-box" style="margin-top: 8px;">
+              <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 2px;">💡 AI Parody Director:</div>
+              <div id="beatParodyIdeaText" style="color: var(--text-secondary); font-size: 11px; line-height: 1.35;">
+                Select or slice a video moment to reveal the cognitive parody direction.
+              </div>
+            </div>
+
+            <button id="btnRefreshPartPreview" class="fl-btn fl-btn-secondary" style="margin-top: 8px; padding: 4px 8px; font-size: 11px;">
+              🔄 Re-render Part Frame
+            </button>
+          </div>
+
+          <!-- Character Model Picker for this Part -->
+          <div class="fl-card">
+            <div class="fl-card-header">
+              <span>🥋</span> Character Model
+            </div>
+            <div class="fl-character-picker">
+              <div class="fl-char-item active" data-char="classic">
+                <span class="fl-char-icon">🤺</span>
+                <span>Classic</span>
+              </div>
+              <div class="fl-char-item" data-char="ninja">
+                <span class="fl-char-icon">🥷</span>
+                <span>Ninja</span>
+              </div>
+              <div class="fl-char-item" data-char="cyber">
+                <span class="fl-char-icon">🤖</span>
+                <span>Cyborg</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Part Action & Prop Assignment -->
+          <div class="fl-card">
+            <div class="fl-card-header">
+              <span>🎭</span> Action & Prop Rigging
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Primary Prop:</label>
+              <select id="partPropSelect" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 6px; border-radius: var(--radius-sm); font-size: 11px;">
+                <option value="bulb">💡 Light Bulb (Idea)</option>
+                <option value="question">❓ Question Mark</option>
+                <option value="chart_up">📈 Chart Up (Growth)</option>
+                <option value="chart_down">📉 Chart Down (Drop)</option>
+                <option value="alert">⚠️ Warning Alert</option>
+                <option value="brain">🧠 Brainstorm</option>
+                <option value="heart">❤️ Heart Emotion</option>
+                <option value="broken_heart">💔 Broken Heart</option>
+                <option value="clock">⏰ Clock / Time</option>
+                <option value="phone">📱 Smartphone</option>
+                <option value="target">🎯 Goal Target</option>
+                <option value="battery">🔋 Battery Energy</option>
+                <option value="scale">⚖️ Legal Scale</option>
+                <option value="lock">🔒 Security Lock</option>
+                <option value="eyes">👀 Shifty Eyes</option>
+                <option value="book">📖 Study Book</option>
+                <option value="house">🏠 Property House</option>
+                <option value="people">👥 Swarm Audience</option>
+                <option value="mask">🎭 Mask Mystery</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Character Pose:</label>
+              <select id="partPoseSelect" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 6px; border-radius: var(--radius-sm); font-size: 11px;">
+                <option value="talk">🗣️ Talk & Gesture</option>
+                <option value="point">👉 Point at Prop</option>
+                <option value="think">🤔 Deep Thinking</option>
+                <option value="shrug">🤷 Clueless Shrug</option>
+                <option value="celebrate">🎉 Joy Celebration</option>
+                <option value="surprised">😲 Surprised Shock</option>
+                <option value="angry">😡 Furious Rage</option>
+                <option value="sad">😢 Melancholy Sad</option>
+                <option value="run">🏃 Urgent Dash</option>
+                <option value="read">📖 Attentive Read</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Facial Emotion:</label>
+              <select id="partEmotionSelect" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 6px; border-radius: var(--radius-sm); font-size: 11px;">
+                <option value="neutral">😐 Neutral Calm</option>
+                <option value="happy">😄 Happy Grin</option>
+                <option value="surprised">😲 Wide Eyed Shock</option>
+                <option value="confused">🤨 Raised Brow Doubt</option>
+                <option value="angry">😠 Piercing Anger</option>
+                <option value="sad">🥺 Downturned Eyes</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Color Customization -->
+          <div class="fl-card">
+            <div class="fl-card-header">
+              <span>🎨</span> Scene Color Palette
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text-secondary);">Stick Color:</span>
+              <input type="color" id="stickColorPicker" value="#ffffff" style="background: none; border: none; cursor: pointer; width: 32px; height: 32px;">
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text-secondary);">Accent / Glow:</span>
+              <input type="color" id="glowColorPicker" value="#00e5ff" style="background: none; border: none; cursor: pointer; width: 32px; height: 32px;">
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 12px; color: var(--text-secondary);">Background:</span>
+              <input type="color" id="bgColorPicker" value="#11141c" style="background: none; border: none; cursor: pointer; width: 32px; height: 32px;">
+            </div>
+          </div>
+
+          <!-- Real-time Render Progress & Remote API HUD -->
+          <div class="fl-card" id="renderProgressCard" style="display: none; border-color: var(--accent-cyan);">
+            <div class="fl-card-header" style="color: var(--accent-cyan); display: flex; justify-content: space-between;">
+              <span>⚡ Live Render Progress</span>
+              <span id="renderStageText" style="font-size: 10px; color: var(--accent-green);">QUEUED</span>
+            </div>
+            
+            <div style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; margin: 8px 0;">
+              <div id="renderProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green)); transition: width 0.3s ease;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary);">
+              <span id="renderJobId">Job: -</span>
+              <span id="renderPercentText">0%</span>
+            </div>
+
+            <div id="renderDestinationNotice" style="font-size: 10px; color: var(--accent-cyan); margin-top: 6px; word-break: break-all; display: none;">
+              Saved to: <span id="renderDestinationPath">-</span>
+            </div>
+
+            <div id="renderDownloadBox" style="display: none; margin-top: 10px;">
+              <a id="btnDownloadRendered" href="#" target="_blank" class="fl-btn fl-btn-accent" style="display: block; text-align: center; text-decoration: none; padding: 6px 10px; font-size: 11px;">
+                ⬇️ Download Rendered Short (MP4)
+              </a>
+            </div>
+          </div>
+
+          <!-- Headless Control Endpoint Badge -->
+          <div class="fl-card" style="background: rgba(0, 229, 255, 0.03); border: 1px dashed rgba(0, 229, 255, 0.2);">
+            <div style="font-size: 11px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 4px;">
+              🤖 Headless REST & SSE Control
+            </div>
+            <div style="font-size: 10px; color: var(--text-secondary); line-height: 1.4;">
+              API Endpoint: <code style="color: var(--accent-green); background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 3px;">http://127.0.0.1:18040/api</code><br>
+              Documented in Sovereign Skill: <b style="color: var(--text-primary);">stickman_studio</b>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- AutoShorts Import Modal -->
+    <div id="modalAutoShorts" class="fl-modal" style="display: none;">
+      <div class="fl-modal-content">
+        <div class="fl-modal-header">
+          <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <span>⚡</span> Import Video Clip from AutoShorts Studio
+          </div>
+          <button id="btnCloseAutoShortsModal" class="fl-btn-close">&times;</button>
+        </div>
+        <div class="fl-modal-body">
+          <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 12px;">
+            Select a viral moment clip to slice into ~3-second micro-beats and generate synchronized Stickman parodies:
+          </p>
+          <div id="autoshortsClipsList" class="fl-clips-grid">
+            <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
+              Scanning for clips...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
