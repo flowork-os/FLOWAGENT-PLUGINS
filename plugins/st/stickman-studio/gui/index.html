@@ -162,10 +162,15 @@
           <!-- Tab Content 2: Storyboard Multi-Part Scene List -->
           <div id="tabContentStoryboard" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--accent-cyan);">~3s MICRO-BEAT PARODY SCENES</span>
-              <button id="btnAddScenePart" class="fl-btn fl-btn-secondary" style="width: auto; padding: 3px 8px; font-size: 11px;">
-                + Add Beat
-              </button>
+              <span style="font-size: 11px; font-weight: 700; color: var(--accent-cyan);">~3s MICRO-BEATS</span>
+              <div style="display: flex; gap: 6px;">
+                <button id="btnGenerateAllSticky" class="fl-btn fl-btn-accent" style="width: auto; padding: 4px 10px; font-size: 11px; font-weight: 700; background: linear-gradient(135deg, #00e5ff, #8b5cf6); color: #fff; border: none; box-shadow: 0 0 8px rgba(0, 229, 255, 0.35);">
+                  ⚡ Generate All (Agent Chat)
+                </button>
+                <button id="btnAddScenePart" class="fl-btn fl-btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">
+                  + Add Beat
+                </button>
+              </div>
             </div>
 
             <div id="storyboardScenesList" class="fl-storyboard-list">
@@ -270,9 +275,20 @@
               </div>
             </div>
 
-            <button id="btnRefreshPartPreview" class="fl-btn fl-btn-secondary" style="margin-top: 8px; padding: 4px 8px; font-size: 11px;">
-              🔄 Re-render Part Frame
-            </button>
+            <div style="display: flex; gap: 6px; margin-top: 10px;">
+              <button id="btnGenerateStickyBeat" class="fl-btn fl-btn-accent" style="flex: 1; padding: 6px 10px; font-size: 11px; font-weight: 700; background: linear-gradient(135deg, #00e5ff, #3b82f6); color: #000; border: none;">
+                ✨ Ask Agent to Draw This Beat
+              </button>
+              <button id="btnRefreshPartPreview" class="fl-btn fl-btn-secondary" style="width: auto; padding: 6px 10px; font-size: 11px;">
+                🔄 Refresh
+              </button>
+            </div>
+
+            <!-- 3D Asset Vault Bridge Indicator -->
+            <div style="margin-top: 8px; padding: 6px 10px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 6px; font-size: 10px; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px;">
+              <span>📐</span>
+              <span><strong>3D Asset Vault:</strong> 34,840 Models Connected (DNA, Skeleton & Props)</span>
+            </div>
           </div>
 
           <!-- Character Model Picker for this Part -->
@@ -445,6 +461,6 @@
 
   </div>
 
-  <script src="app.js?v=20261029_nyambung_v7"></script>
+  <script src="app.js?v=20261029_chat_prompt_injection_v8"></script>
 </body>
 </html>

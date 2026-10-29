@@ -493,6 +493,67 @@ const server = http.createServer(async (req, res) => {
     }
 
     // -------------------------------------------------------------
+    // 5i. 3D Model Vault Registry & Inspection (GET /api/vault/3d)
+    // -------------------------------------------------------------
+    if (pathname === '/api/vault/3d' && req.method === 'GET') {
+      const vaultManifestPath = path.resolve(APP_ROOT, '..', '..', 'system', 'library', 'manifest.json');
+      const query = (parsedUrl.searchParams.get('q') || '').toLowerCase();
+      const modality = parsedUrl.searchParams.get('modality') || '';
+
+      if (fs.existsSync(vaultManifestPath)) {
+        try {
+          const manifest = JSON.parse(fs.readFileSync(vaultManifestPath, 'utf8'));
+          const libraryDir = path.dirname(vaultManifestPath);
+          
+          let results = [];
+          if (query) {
+            const searchDirs = modality && manifest.modalities[modality]
+              ? [path.join(libraryDir, manifest.modalities[modality].path.replace('system/library/', ''))]
+              : [
+                  path.join(libraryDir, 'bioinspired3d'),
+                  path.join(libraryDir, 'threejs'),
+                  path.join(libraryDir, 'cadquery'),
+                  path.join(libraryDir, 'openscad')
+                ];
+
+            for (const sDir of searchDirs) {
+              if (!fs.existsSync(sDir)) continue;
+              const files = fs.readdirSync(sDir);
+              for (const f of files) {
+                if (f.toLowerCase().includes(query)) {
+                  results.push({
+                    name: f,
+                    path: path.join(sDir, f),
+                    modality: path.basename(sDir)
+                  });
+                  if (results.length >= 50) break;
+                }
+              }
+              if (results.length >= 50) break;
+            }
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({
+            status: 'connected',
+            vault_name: manifest.name,
+            total_assets: manifest.total_generators_and_designs,
+            modalities: manifest.modalities,
+            search_query: query || null,
+            results_count: results.length,
+            results: results
+          }));
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Failed to read vault manifest', details: e.message }));
+        }
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: '3D Asset Vault manifest not found' }));
+      }
+    }
+
+    // -------------------------------------------------------------
     // 6. Asynchronous Render Stickman Animation Video (POST /api/render/video)
     // -------------------------------------------------------------
     if (pathname === '/api/render/video' && req.method === 'POST') {

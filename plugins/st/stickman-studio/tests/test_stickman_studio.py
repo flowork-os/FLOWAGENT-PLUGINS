@@ -290,5 +290,26 @@ class TestStickmanStudio(unittest.TestCase):
         self.assertEqual(frame_cta.shape, (1280, 720, 3))
         self.assertGreater(np.mean(frame_cta), 5.0, "Rendered CTA frame should not be blank")
 
+    def test_08_3d_vault_registry_and_connectivity(self):
+        """Verify 3D vault manifest integrity and availability of 34,840 models in system/library."""
+        vault_path = os.path.abspath(os.path.join(APP_DIR, '..', '..', 'system', 'library'))
+        manifest_path = os.path.join(vault_path, 'manifest.json')
+        self.assertTrue(os.path.exists(manifest_path), f"3D Vault manifest not found at {manifest_path}")
+
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            manifest = json.load(f)
+
+        self.assertIn('total_generators_and_designs', manifest)
+        self.assertEqual(manifest['total_generators_and_designs'], 34840)
+        self.assertIn('modalities', manifest)
+        self.assertIn('bioinspired_structures', manifest['modalities'])
+        self.assertIn('threejs_scenes', manifest['modalities'])
+
+        # Verify physical directories exist
+        bio_dir = os.path.join(vault_path, 'bioinspired3d')
+        three_dir = os.path.join(vault_path, 'threejs')
+        self.assertTrue(os.path.isdir(bio_dir), f"Bioinspired 3D dir missing: {bio_dir}")
+        self.assertTrue(os.path.isdir(three_dir), f"ThreeJS dir missing: {three_dir}")
+
 if __name__ == '__main__':
     unittest.main()

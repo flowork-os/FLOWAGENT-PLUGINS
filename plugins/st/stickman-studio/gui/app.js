@@ -1229,6 +1229,57 @@
     });
   }
 
+  // Inject Prompt into Flowork OS Chat (Standard Dual-Wing Architecture)
+  function injectAgentPrompt(promptText) {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'FLOWORK_PROMPT_DISPATCH',
+        prompt: promptText,
+        autoSend: true
+      }, '*');
+    } else {
+      console.log('[Stickman Studio] Local prompt dispatch:', promptText);
+    }
+  }
+
+  const btnGenerateStickyBeat = document.getElementById('btnGenerateStickyBeat');
+  if (btnGenerateStickyBeat) {
+    btnGenerateStickyBeat.addEventListener('click', () => {
+      const part = state.storyboardParts[state.activePartIndex];
+      if (!part) {
+        showFeedbackNotice('No beat selected to generate.', 'warning');
+        return;
+      }
+      const idx = state.activePartIndex + 1;
+      const poseDesc = part.pose_data?.has_pose ? 'Tracked Pose (Anatomi 33 titik sendi terdeteksi)' : (part.pose_data?.screen_type || 'Slide Grafis/Layar');
+      const prompt = `[STICKMAN STUDIO DIRECTOR] 🎬🎨 Selesaikan gambar ulang Stickman untuk Beat #${idx} (${part.start}s - ${part.end}s)!
+Narasi: "${part.text || '[Music / Ambience]'}"
+Tipe Visual: ${poseDesc}
+Inspirasi 3D Vault: Manfaatkan referensi 3D (system/library) bila relevan.
+Tolong Dr. Flow gambar ulang dan sesuaikan komposisi adegan karakter ini agar hidup dan presisi!`;
+      injectAgentPrompt(prompt);
+      showFeedbackNotice(`Dispatched Beat #${idx} to Agent Chat!`, 'success');
+      if (systemStatusText) systemStatusText.textContent = `Prompt for Beat #${idx} injected to Chat`;
+    });
+  }
+
+  const btnGenerateAllSticky = document.getElementById('btnGenerateAllSticky');
+  if (btnGenerateAllSticky) {
+    btnGenerateAllSticky.addEventListener('click', () => {
+      if (!state.storyboardParts || state.storyboardParts.length === 0) {
+        showFeedbackNotice('No storyboard beats loaded. Drop or import a video first.', 'warning');
+        return;
+      }
+      const count = state.storyboardParts.length;
+      const prompt = `[STICKMAN STUDIO DIRECTOR] 🎬🚀 BATCH GENERATE ALL STICKY BEATS (${count} Beats)!
+Total Durasi: ${state.audioDuration ? state.audioDuration.toFixed(1) + 's' : 'Video'}.
+Instruksi: Agent wajib gambar ulang seluruh ${count} beat storyboard secara dinamis tanpa template statis. Sesuaikan tiap 3 detik dengan gestur pose, narasi dialog, dan padukan aset 3D (system/library) untuk adegan layar demo. Render 100% full stickman hidup!`;
+      injectAgentPrompt(prompt);
+      showFeedbackNotice(`Dispatched all ${count} beats to Agent Chat!`, 'success');
+      if (systemStatusText) systemStatusText.textContent = `Batch prompt (${count} beats) injected to Chat`;
+    });
+  }
+
   if (partPropSelect) {
     partPropSelect.addEventListener('change', () => {
       const p = state.storyboardParts[state.activePartIndex];
