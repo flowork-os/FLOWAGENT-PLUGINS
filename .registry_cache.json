@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-29T07:21:43Z",
+  "updated_at": "2026-10-29T07:36:36Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -350,7 +350,7 @@
       "description": "Sovereign AI-driven audio to 2D dynamic stickman animation generator. Features real-time voice transformation (kids, cartoon, chipmunk), procedural stickman action state machine, kinetic word-by-word subtitles, and 9:16 viral short video rendering.",
       "category": "Media, Creative Writing & Journalism",
       "icon": "🤺",
-      "hash": "9c67234159a3c139",
+      "hash": "39d8cd93b048a8ce",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"

@@ -16,12 +16,14 @@
   function resolveApiBase() {
     if (API_BASE) return API_BASE;
 
+    const host = window.location.hostname || '127.0.0.1';
+
     // 1. Check URL query param ?port=xxxx (passed by Cockpit supervisor iframe)
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const paramPort = urlParams.get('port');
-      if (paramPort) {
-        API_BASE = `http://${window.location.hostname || '127.0.0.1'}:${paramPort}`;
+      if (paramPort && paramPort !== '19890') {
+        API_BASE = `http://${host}:${paramPort}`;
         return API_BASE;
       }
     } catch (_) {}
@@ -33,7 +35,6 @@
     }
 
     // 3. Fallback to default Stickman Studio port 18040
-    const host = window.location.hostname || '127.0.0.1';
     API_BASE = `http://${host}:18040`;
     return API_BASE;
   }
@@ -75,54 +76,8 @@
     currentMouthOpen: 0,
     animationFrameId: null,
     
-    // Multi-Part Storyboard Beats State
-    storyboardParts: [
-      {
-        id: 'beat_001',
-        index: 1,
-        start: 0.0,
-        end: 3.0,
-        duration: 3.0,
-        text: 'Wait, did you see what just happened?!',
-        prop: 'bulb',
-        pose: 'surprised',
-        emotion: 'surprised',
-        model: 'classic',
-        accent: '#00e5ff',
-        camera_shake: true,
-        parody_idea: 'Exaggerated shock reaction with eyes popping out and lightbulb pop'
-      },
-      {
-        id: 'beat_002',
-        index: 2,
-        start: 3.0,
-        end: 6.0,
-        duration: 3.0,
-        text: 'This changes literally everything we knew.',
-        prop: 'chart_up',
-        pose: 'point',
-        emotion: 'happy',
-        model: 'ninja',
-        accent: '#00ff88',
-        camera_shake: false,
-        parody_idea: 'Stickman proudly pointing at rocket chart shooting off-screen'
-      },
-      {
-        id: 'beat_003',
-        index: 3,
-        start: 6.0,
-        end: 9.0,
-        duration: 3.0,
-        text: 'Stay until the end to catch the full story!',
-        prop: 'bell',
-        pose: 'celebrate',
-        emotion: 'happy',
-        model: 'cyber',
-        accent: '#ffe600',
-        camera_shake: false,
-        parody_idea: 'Wild victory dance with celebration rings'
-      }
-    ],
+    // Multi-Part Storyboard Beats State (Empty by design until media is sliced)
+    storyboardParts: [],
     activePartIndex: 0
   };
 
@@ -135,6 +90,9 @@
   const timecodeDisplay = document.getElementById('timecodeDisplay');
   const subtitleOverlay = document.getElementById('subtitleOverlay');
   const uploadDropzone = document.getElementById('uploadDropzone');
+  const uploadProgressState = document.getElementById('uploadProgressState');
+  const uploadProgressTitle = document.getElementById('uploadProgressTitle');
+  const uploadProgressDetail = document.getElementById('uploadProgressDetail');
   const mediaFileInput = document.getElementById('mediaFileInput');
   const audioFileInput = document.getElementById('audioFileInput');
   const loadedFileInfo = document.getElementById('loadedFileInfo');
@@ -158,19 +116,16 @@
   const activeModeBadge = document.getElementById('activeModeBadge');
   const destinationDirInput = document.getElementById('destinationDirInput');
   const btnBrowseFolder = document.getElementById('btnBrowseFolder');
-  const btnImportVideoTop = document.getElementById('btnImportVideoTop');
   const btnImportAutoShorts = document.getElementById('btnImportAutoShorts');
   const modalAutoShorts = document.getElementById('modalAutoShorts');
   const btnCloseAutoShortsModal = document.getElementById('btnCloseAutoShortsModal');
   const autoshortsClipsList = document.getElementById('autoshortsClipsList');
-  const btnSliceBeats = document.getElementById('btnSliceBeats');
 
   // Storyboard DOM Elements
   const tabAudioSource = document.getElementById('tabAudioSource');
   const tabStoryboard = document.getElementById('tabStoryboard');
   const tabContentAudio = document.getElementById('tabContentAudio');
   const tabContentStoryboard = document.getElementById('tabContentStoryboard');
-  const btnAutoChunkStoryboard = document.getElementById('btnAutoChunkStoryboard');
   const storyboardScenesList = document.getElementById('storyboardScenesList');
   const btnAddScenePart = document.getElementById('btnAddScenePart');
 
@@ -299,8 +254,22 @@
 
   // Upload Media File to Server & Automatically Trigger Slicing
   async function uploadMediaFile(file) {
+    if (!file) return;
+
+    // a) Instantly show active progress spinner inside the card
+    if (uploadProgressState) {
+      uploadProgressState.style.display = 'block';
+      if (uploadProgressTitle) {
+        uploadProgressTitle.textContent = '⚡ Uploading & Slicing into ~3s Micro-Beats with AI Director...';
+      }
+      if (uploadProgressDetail) {
+        uploadProgressDetail.textContent = `Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)...`;
+      }
+    }
     systemStatusText.textContent = `Uploading ${file.name}...`;
+
     try {
+      // b) Upload via api('/api/fs/upload-media')
       const uploadUrl = api('/api/fs/upload-media');
       const res = await fetch(uploadUrl, {
         method: 'POST',
@@ -309,39 +278,43 @@
         },
         body: file
       });
-      const data = await res.json();
-      if (data.success && data.path) {
-        state.videoPath = data.path;
-        state.currentAudioServerPath = data.path;
-        loadedFileName.textContent = file.name;
-        loadedFileInfo.style.display = 'block';
-
-        if (btnSliceBeats) btnSliceBeats.style.display = 'block';
-        if (btnAutoChunkStoryboard) btnAutoChunkStoryboard.style.display = 'block';
-
-        // Attempt AudioContext decode for audio waveform envelope
-        try {
-          const arrayBuf = await file.arrayBuffer();
-          initAudioContext();
-          state.audioBuffer = await state.audioContext.decodeAudioData(arrayBuf);
-          state.audioDuration = state.audioBuffer.duration;
-          extractAudioEnvelope();
-          loadedFileDuration.textContent = `${state.audioDuration.toFixed(1)}s`;
-        } catch (_) {
-          loadedFileDuration.textContent = 'Ready';
-        }
-
-        systemStatusText.textContent = 'Uploaded! Slicing ~3s micro-beats with AI director...';
-        updateTimelineDisplay();
-
-        // Automatic seamless slicing trigger
-        await sliceMediaBeats(data.path);
-      } else {
-        throw new Error(data.error || 'Upload failed');
+      if (!res.ok) {
+        throw new Error(`Upload failed with HTTP ${res.status}`);
       }
+      const data = await res.json();
+      if (!data.success || !data.path) {
+        throw new Error(data.error || 'Upload failed: missing server path');
+      }
+
+      state.videoPath = data.path;
+      state.currentAudioServerPath = data.path;
+      if (loadedFileName) loadedFileName.textContent = file.name;
+      if (loadedFileInfo) loadedFileInfo.style.display = 'block';
+
+      // c) DO NOT block on browser AudioContext decoding of giant MP4s!
+      // If audio file and small, decode non-blocking in background without awaiting
+      if (file.type && file.type.startsWith('audio/') && file.size < 20 * 1024 * 1024) {
+        file.arrayBuffer().then(buf => {
+          initAudioContext();
+          return state.audioContext.decodeAudioData(buf);
+        }).then(decoded => {
+          state.audioBuffer = decoded;
+          extractAudioEnvelope();
+        }).catch(() => {});
+      }
+
+      // d) Directly call api('/api/beats/slice') with uploaded server path and target_seconds=3.0
+      await sliceMediaBeats(data.path);
+
     } catch (err) {
       console.error('[Upload Error]', err);
-      systemStatusText.textContent = 'Upload Failed: Check network/server connection';
+      systemStatusText.textContent = `Upload Failed: ${err.message || 'Check network/server connection'}`;
+      if (uploadProgressTitle) {
+        uploadProgressTitle.textContent = '❌ Upload Failed';
+      }
+      if (uploadProgressDetail) {
+        uploadProgressDetail.textContent = err.message || 'Check network/server connection';
+      }
     }
   }
 
@@ -353,7 +326,17 @@
       return;
     }
 
+    if (uploadProgressState) {
+      uploadProgressState.style.display = 'block';
+      if (uploadProgressTitle) {
+        uploadProgressTitle.textContent = '⚡ Uploading & Slicing into ~3s Micro-Beats with AI Director...';
+      }
+      if (uploadProgressDetail) {
+        uploadProgressDetail.textContent = 'Extracting ~3s keyframes & calculating AI parody choreography...';
+      }
+    }
     systemStatusText.textContent = 'Slicing ~3s Beats & Directing Stickman Parody...';
+
     try {
       const sliceUrl = api('/api/beats/slice');
       const res = await fetch(sliceUrl, {
@@ -361,81 +344,57 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ media_path: targetPath, target_seconds: 3.0 })
       });
+      if (!res.ok) {
+        throw new Error(`Server returned HTTP ${res.status}`);
+      }
       const data = await res.json();
 
-      if (data.success && data.manifest && data.manifest.beats) {
+      // e) On response: populate state.storyboardParts with real sliced beats and keyframes returned by server
+      if (data.success && data.manifest && Array.isArray(data.manifest.beats)) {
         state.storyboardParts = data.manifest.beats;
         state.activePartIndex = 0;
 
-        if (data.manifest.full_transcript) {
+        if (data.manifest.full_transcript && transcriptInput) {
           transcriptInput.value = data.manifest.full_transcript;
         }
 
         if (data.manifest.total_duration) {
           state.audioDuration = data.manifest.total_duration;
-          loadedFileDuration.textContent = `${state.audioDuration.toFixed(1)}s`;
+          if (loadedFileDuration) {
+            loadedFileDuration.textContent = `${state.audioDuration.toFixed(1)}s`;
+          }
           updateTimelineDisplay();
         }
 
         renderStoryboardCards();
+
+        // g) Select beat 0, update inspector with real keyframe snapshot and stickman parody frame
         selectPart(0);
 
-        // Switch automatically to Storyboard tab
-        if (tabStoryboard) tabStoryboard.click();
+        // Hide progress spinner on completion
+        if (uploadProgressState) {
+          uploadProgressState.style.display = 'none';
+        }
+
+        // f) AUTOMATICALLY switch active tab to "🎬 Storyboard Beats (~3s)"!
+        if (tabStoryboard) {
+          tabStoryboard.click();
+        }
+
         systemStatusText.textContent = `Ready: ${state.storyboardParts.length} ~3s Parody Beats Generated!`;
       } else {
-        throw new Error(data.error || 'Failed to extract micro-beats');
+        throw new Error(data.error || 'Failed to extract micro-beats from media');
       }
     } catch (err) {
-      console.warn('[Beats Slicing Warning, using resilient client fallback]', err);
-      systemStatusText.textContent = 'Generated Client Parody Beats';
-      fallbackChunking();
+      console.error('[Beats Slicing Error]', err);
+      systemStatusText.textContent = `Slice Failed: ${err.message || 'Error processing media'}`;
+      if (uploadProgressTitle) {
+        uploadProgressTitle.textContent = '❌ Slicing Failed';
+      }
+      if (uploadProgressDetail) {
+        uploadProgressDetail.textContent = err.message || 'Check server connection and video format';
+      }
     }
-  }
-
-  // Client-Side Fallback Chunking
-  function fallbackChunking() {
-    const totalDur = (state.audioDuration && state.audioDuration > 0) ? state.audioDuration : 15.0;
-    const partLength = 3.0;
-    const numParts = Math.max(1, Math.ceil(totalDur / partLength));
-    const fallbackParts = [];
-    const defaultProps = ['bulb', 'brain', 'target', 'heart', 'chart_up', 'alert'];
-    const defaultPoses = ['talk', 'point', 'think', 'celebrate', 'shrug', 'talk'];
-    const defaultEmotions = ['neutral', 'happy', 'confused', 'surprised', 'neutral', 'happy'];
-    const parodyIdeas = [
-      'Dramatic eye widen reaction with bulb pop',
-      'Pointing aggressively at surging stock chart',
-      'Clueless shrug with rotating question mark',
-      'Wild victory celebration with bouncy hops',
-      'Confused scratching head while gears spin'
-    ];
-
-    for (let i = 0; i < numParts; i++) {
-      const startSec = i * partLength;
-      const endSec = Math.min(totalDur, (i + 1) * partLength);
-      fallbackParts.push({
-        id: `beat_${String(i + 1).padStart(3, '0')}`,
-        index: i + 1,
-        start: startSec,
-        end: endSec,
-        duration: endSec - startSec,
-        text: `Beat ${i + 1} (${formatTime(startSec)} - ${formatTime(endSec)})`,
-        prop: defaultProps[i % defaultProps.length],
-        pose: defaultPoses[i % defaultPoses.length],
-        emotion: defaultEmotions[i % defaultEmotions.length],
-        model: state.characterArchetype || 'classic',
-        accent: state.colors.glow || '#00e5ff',
-        camera_shake: i % 2 === 1,
-        parody_idea: parodyIdeas[i % parodyIdeas.length]
-      });
-    }
-
-    state.storyboardParts = fallbackParts;
-    state.activePartIndex = 0;
-    renderStoryboardCards();
-    selectPart(0);
-    if (tabStoryboard) tabStoryboard.click();
-    systemStatusText.textContent = `Generated ${fallbackParts.length} ~3s scene beats!`;
   }
 
   // Render Stickman Animation on Viewport Canvas
@@ -703,7 +662,17 @@
 
   // Select Active Part for Editing in Beat Inspector
   function selectPart(index) {
-    if (!state.storyboardParts[index]) return;
+    if (!state.storyboardParts || state.storyboardParts.length === 0 || !state.storyboardParts[index]) {
+      if (activePartBadge) activePartBadge.textContent = 'NO BEAT';
+      if (beatKeyframeImage) beatKeyframeImage.style.display = 'none';
+      if (keyframePlaceholder) keyframePlaceholder.style.display = 'block';
+      if (partPreviewImage) partPreviewImage.style.display = 'none';
+      if (partPreviewPlaceholder) partPreviewPlaceholder.style.display = 'block';
+      if (beatParodyIdeaText) {
+        beatParodyIdeaText.textContent = 'Drop or import a video to automatically slice into ~3s micro-beats with AI director.';
+      }
+      return;
+    }
     state.activePartIndex = index;
     const part = state.storyboardParts[index];
 
@@ -904,7 +873,6 @@
               state.currentAudioServerPath = clip.path;
               loadedFileName.textContent = clip.name;
               loadedFileInfo.style.display = 'block';
-              if (btnSliceBeats) btnSliceBeats.style.display = 'block';
               systemStatusText.textContent = `Selected: ${clip.name}. Slicing beats...`;
               await sliceMediaBeats(clip.path);
             });
@@ -923,16 +891,6 @@
   if (btnCloseAutoShortsModal) {
     btnCloseAutoShortsModal.addEventListener('click', () => {
       if (modalAutoShorts) modalAutoShorts.style.display = 'none';
-    });
-  }
-
-  // -------------------------------------------------------------
-  // Top Import Video Button
-  // -------------------------------------------------------------
-  if (btnImportVideoTop) {
-    btnImportVideoTop.addEventListener('click', () => {
-      if (mediaFileInput) mediaFileInput.click();
-      else if (audioFileInput) audioFileInput.click();
     });
   }
 
@@ -972,15 +930,6 @@
   }
 
   // -------------------------------------------------------------
-  // Micro-Beat Slicing Button
-  // -------------------------------------------------------------
-  if (btnSliceBeats) {
-    btnSliceBeats.addEventListener('click', () => {
-      sliceMediaBeats();
-    });
-  }
-
-  // -------------------------------------------------------------
   // Storyboard Scene Management & Inspector Logic
   // -------------------------------------------------------------
   if (tabAudioSource && tabStoryboard) {
@@ -996,12 +945,6 @@
       tabAudioSource.classList.remove('active');
       tabContentStoryboard.style.display = 'block';
       tabContentAudio.style.display = 'none';
-    });
-  }
-
-  if (btnAutoChunkStoryboard) {
-    btnAutoChunkStoryboard.addEventListener('click', () => {
-      fallbackChunking();
     });
   }
 
@@ -1079,20 +1022,24 @@
 
   // Dropzone Handlers
   if (uploadDropzone) {
-    uploadDropzone.addEventListener('click', () => {
+    uploadDropzone.addEventListener('click', (e) => {
+      if (e.target === mediaFileInput || e.target === audioFileInput) return;
       if (mediaFileInput) mediaFileInput.click();
       else if (audioFileInput) audioFileInput.click();
     });
     uploadDropzone.addEventListener('dragover', (e) => {
       e.preventDefault();
       uploadDropzone.style.borderColor = 'var(--accent-cyan)';
+      uploadDropzone.style.background = 'rgba(0, 229, 255, 0.08)';
     });
     uploadDropzone.addEventListener('dragleave', () => {
       uploadDropzone.style.borderColor = 'var(--border-subtle)';
+      uploadDropzone.style.background = 'rgba(26, 32, 44, 0.4)';
     });
     uploadDropzone.addEventListener('drop', (e) => {
       e.preventDefault();
       uploadDropzone.style.borderColor = 'var(--border-subtle)';
+      uploadDropzone.style.background = 'rgba(26, 32, 44, 0.4)';
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         uploadMediaFile(e.dataTransfer.files[0]);
       }
@@ -1102,7 +1049,9 @@
   if (mediaFileInput) {
     mediaFileInput.addEventListener('change', (e) => {
       if (e.target.files && e.target.files[0]) {
-        uploadMediaFile(e.target.files[0]);
+        const file = e.target.files[0];
+        e.target.value = '';
+        uploadMediaFile(file);
       }
     });
   }
@@ -1110,7 +1059,9 @@
   if (audioFileInput) {
     audioFileInput.addEventListener('change', (e) => {
       if (e.target.files && e.target.files[0]) {
-        uploadMediaFile(e.target.files[0]);
+        const file = e.target.files[0];
+        e.target.value = '';
+        uploadMediaFile(file);
       }
     });
   }

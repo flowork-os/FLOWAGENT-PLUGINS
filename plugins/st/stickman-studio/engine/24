@@ -1,0 +1,413 @@
+{
+  "duration": 4.676,
+  "sample_rate": 16000,
+  "window_sec": 0.08,
+  "frames": [
+    {
+      "t": 0.0,
+      "rms": 0.0687,
+      "mouth": 0.55,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.08,
+      "rms": 0.0804,
+      "mouth": 0.64,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.16,
+      "rms": 0.0805,
+      "mouth": 0.64,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.24,
+      "rms": 0.0806,
+      "mouth": 0.64,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.32,
+      "rms": 0.0806,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.4,
+      "rms": 0.0806,
+      "mouth": 0.64,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.48,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.56,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.64,
+      "rms": 0.0808,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.72,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.8,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.88,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 0.96,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.04,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.12,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.2,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.28,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.36,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.44,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.52,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.6,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.68,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.76,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.84,
+      "rms": 0.0808,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 1.92,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.0,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.08,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.16,
+      "rms": 0.0806,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.24,
+      "rms": 0.0806,
+      "mouth": 0.64,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.32,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.4,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.48,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.56,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.64,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.72,
+      "rms": 0.0808,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.8,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.88,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 2.96,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.04,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.12,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.2,
+      "rms": 0.0806,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.28,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.36,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.44,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.52,
+      "rms": 0.0808,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.6,
+      "rms": 0.0808,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.68,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.76,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.84,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 3.92,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 4.0,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 4.08,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 4.16,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 4.24,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 4.32,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 4.4,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 4.48,
+      "rms": 0.0807,
+      "mouth": 0.65,
+      "speaking": true,
+      "emotion": "talking"
+    },
+    {
+      "t": 4.56,
+      "rms": 0.0804,
+      "mouth": 0.64,
+      "speaking": true,
+      "emotion": "talking"
+    }
+  ]
+}

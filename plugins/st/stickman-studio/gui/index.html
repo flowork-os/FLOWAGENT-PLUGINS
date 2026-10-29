@@ -37,11 +37,6 @@
           </button>
         </div>
 
-        <!-- Import Actions in Top Bar -->
-        <button id="btnImportVideoTop" class="fl-btn fl-btn-secondary" style="border-color: var(--accent-green); color: var(--accent-green);" title="Choose local video file">
-          📥 Import Video
-        </button>
-
         <button id="btnImportAutoShorts" class="fl-btn fl-btn-secondary" style="border-color: var(--accent-cyan); color: var(--accent-cyan);" title="Import clip directly from AutoShorts Studio">
           ⚡ AutoShorts
         </button>
@@ -89,17 +84,20 @@
                 <input type="file" id="audioFileInput" accept="audio/*,video/*" style="display: none;">
               </div>
               
-              <div id="loadedFileInfo" style="display: none; margin-top: 10px; font-size: 12px; color: var(--accent-cyan);">
-                File: <span id="loadedFileName">clip.mp4</span> (<span id="loadedFileDuration">0.0s</span>)
+              <!-- Active Progress Spinner for Ingestion & Auto-Slicing -->
+              <div id="uploadProgressState" style="display: none; padding: 16px 12px; text-align: center; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: var(--radius-md); margin-top: 10px;">
+                <div class="fl-spinner" style="margin: 0 auto 10px auto;"></div>
+                <div id="uploadProgressTitle" style="font-size: 12px; font-weight: 700; color: var(--accent-cyan); line-height: 1.4;">
+                  ⚡ Uploading & Slicing into ~3s Micro-Beats with AI Director...
+                </div>
+                <div id="uploadProgressDetail" style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+                  Extracting keyframes & generating stickman parody...
+                </div>
               </div>
 
-              <button id="btnSliceBeats" class="fl-btn fl-btn-accent" style="margin-top: 12px; display: none;">
-                <span>⚡ Slice into ~3s Micro-Beats & AI Director</span>
-              </button>
-
-              <button id="btnAutoChunkStoryboard" class="fl-btn fl-btn-secondary" style="margin-top: 6px; display: none; font-size: 11px;">
-                <span>Audio-Only Chunker (Fallback)</span>
-              </button>
+              <div id="loadedFileInfo" style="display: none; margin-top: 10px; font-size: 12px; color: var(--accent-cyan); background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <span>📁</span> <span id="loadedFileName" style="font-weight: 600;">clip.mp4</span> (<span id="loadedFileDuration">0.0s</span>)
+              </div>
             </div>
 
             <!-- Voice Transformation Presets -->
@@ -257,8 +255,8 @@
               </div>
               <div class="fl-preview-box-half">
                 <div class="fl-preview-label">Stickman Parody</div>
-                <img id="partPreviewImage" src="" alt="Stickman Frame" style="display: block;">
-                <span id="partPreviewPlaceholder" style="display: none; font-size: 10px; color: var(--text-muted); text-align: center; padding: 8px;">
+                <img id="partPreviewImage" src="" alt="Stickman Frame" style="display: none;">
+                <span id="partPreviewPlaceholder" style="display: block; font-size: 10px; color: var(--text-muted); text-align: center; padding: 8px;">
                   Scene Frame
                 </span>
               </div>
@@ -447,6 +445,6 @@
 
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=20261029_direct_autoslice_v4"></script>
 </body>
 </html>

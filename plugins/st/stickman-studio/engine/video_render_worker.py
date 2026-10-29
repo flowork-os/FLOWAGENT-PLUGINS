@@ -92,6 +92,7 @@ def render_stickman_video(config_input, output_mp4, progress_file=None):
 
     report_progress("rendering_frames", 10, 0, total_frames)
     last_reported_pct = -1
+    last_orig_frame = None
 
     for frame_idx in range(total_frames):
         t = frame_idx / fps
@@ -118,13 +119,15 @@ def render_stickman_video(config_input, output_mp4, progress_file=None):
             cam_shake = (math.sin(t * 30.0) * shake_amp, math.cos(t * 25.0) * shake_amp)
 
         if render_mode == 'split_pip' and cap is not None:
-            # --- 1. TOP HALF: Original Real Video Frame (720x640) ---
+            # --- 1. TOP HALF: Original Real Video Frame (720x640) Synchronized ---
+            cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000.0)
             ret, orig_frame = cap.read()
-            if not ret:
-                cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000)
-                ret, orig_frame = cap.read()
+            if not ret or orig_frame is None:
+                orig_frame = last_orig_frame
+            else:
+                last_orig_frame = orig_frame.copy()
 
-            if ret and orig_frame is not None:
+            if orig_frame is not None:
                 # Center-crop original frame to 720x640 (aspect ratio 9:8)
                 of_h, of_w = orig_frame.shape[:2]
                 target_ratio = 720.0 / 640.0
@@ -139,7 +142,7 @@ def render_stickman_video(config_input, output_mp4, progress_file=None):
                     start_y = (of_h - new_h) // 2
                     cropped = orig_frame[start_y:start_y+new_h, :]
 
-                resized_top = cv2.resize(cropped, (720, 640))
+                resized_top = cv2.resize(cropped, (720, 640), interpolation=cv2.INTER_LINEAR)
                 full_frame[0:640, 0:720] = resized_top
             else:
                 full_frame[0:640, 0:720] = (20, 24, 32)
@@ -167,17 +170,29 @@ def render_stickman_video(config_input, output_mp4, progress_file=None):
             pose_action = current_beat.get("pose", "talk")
             composer.draw_expressive_stickman(stickman_layer, actor_x, actor_y, action=pose_action, t=t, energy=energy)
 
-            # Subtitle at bottom of stickman frame
+            # Subtitle or Ambience Badge at bottom of stickman frame
             sub_text = current_beat.get("text", "")
             if sub_text:
-                cv2.rectangle(stickman_layer, (30, 530), (width - 30, 615), (15, 23, 42), -1)
-                cv2.rectangle(stickman_layer, (30, 530), (width - 30, 615), (0, 229, 255), 2)
-                words = sub_text.split()
-                line1 = " ".join(words[:len(words)//2 + 1])
-                line2 = " ".join(words[len(words)//2 + 1:])
-                cv2.putText(stickman_layer, line1, (45, 565), cv2.FONT_HERSHEY_DUPLEX, 0.6, (255, 255, 255), 2)
-                if line2:
-                    cv2.putText(stickman_layer, line2, (45, 600), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 229, 255), 2)
+                if sub_text == "[Music / Ambience]":
+                    mb_w, mb_h = 240, 42
+                    mb_x1 = (width - mb_w) // 2
+                    mb_y1 = 560
+                    cv2.rectangle(stickman_layer, (mb_x1, mb_y1), (mb_x1 + mb_w, mb_y1 + mb_h), (15, 23, 42), -1)
+                    cv2.rectangle(stickman_layer, (mb_x1, mb_y1), (mb_x1 + mb_w, mb_y1 + mb_h), (168, 85, 247), 1)
+                    for i_bar in range(6):
+                        bar_h = int(10 + 8 * math.sin(t * 12.0 + i_bar * 0.8))
+                        bx = mb_x1 + 18 + i_bar * 9
+                        cv2.line(stickman_layer, (bx, mb_y1 + 21 - bar_h // 2), (bx, mb_y1 + 21 + bar_h // 2), (168, 85, 247), 2)
+                    cv2.putText(stickman_layer, "MUSIC / AMBIENCE", (mb_x1 + 80, mb_y1 + 26), cv2.FONT_HERSHEY_DUPLEX, 0.42, (255, 255, 255), 1)
+                else:
+                    cv2.rectangle(stickman_layer, (30, 530), (width - 30, 615), (15, 23, 42), -1)
+                    cv2.rectangle(stickman_layer, (30, 530), (width - 30, 615), (0, 229, 255), 2)
+                    words = sub_text.split()
+                    line1 = " ".join(words[:len(words)//2 + 1])
+                    line2 = " ".join(words[len(words)//2 + 1:])
+                    cv2.putText(stickman_layer, line1, (45, 565), cv2.FONT_HERSHEY_DUPLEX, 0.6, (255, 255, 255), 2)
+                    if line2:
+                        cv2.putText(stickman_layer, line2, (45, 600), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 229, 255), 2)
 
             full_frame[640:1280, 0:720] = stickman_layer
 
@@ -197,19 +212,31 @@ def render_stickman_video(config_input, output_mp4, progress_file=None):
             cv2.line(full_frame, (0, 90), (width, 90), (0, 229, 255), 2)
             cv2.putText(full_frame, title[:30].upper(), (30, 58), cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 229, 255), 2)
 
-            # Kinetic Subtitles Box at Bottom
+            # Subtitles Box at Bottom
             sub_text = current_beat.get("text", "")
             if sub_text:
-                sub_y1 = height - 180
-                sub_y2 = height - 60
-                cv2.rectangle(full_frame, (30, sub_y1), (width - 30, sub_y2), (15, 23, 42), -1)
-                cv2.rectangle(full_frame, (30, sub_y1), (width - 30, sub_y2), (255, 255, 255), 2)
-                words = sub_text.split()
-                line1 = " ".join(words[:len(words)//2 + 1])
-                line2 = " ".join(words[len(words)//2 + 1:])
-                cv2.putText(full_frame, line1, (50, sub_y1 + 45), cv2.FONT_HERSHEY_DUPLEX, 0.65, (255, 255, 255), 2)
-                if line2:
-                    cv2.putText(full_frame, line2, (50, sub_y1 + 90), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 229, 255), 2)
+                if sub_text == "[Music / Ambience]":
+                    mb_w, mb_h = 280, 50
+                    mb_x1 = (width - mb_w) // 2
+                    mb_y1 = height - 120
+                    cv2.rectangle(full_frame, (mb_x1, mb_y1), (mb_x1 + mb_w, mb_y1 + mb_h), (15, 23, 42), -1)
+                    cv2.rectangle(full_frame, (mb_x1, mb_y1), (mb_x1 + mb_w, mb_y1 + mb_h), (168, 85, 247), 2)
+                    for i_bar in range(8):
+                        bar_h = int(14 + 10 * math.sin(t * 12.0 + i_bar * 0.8))
+                        bx = mb_x1 + 22 + i_bar * 10
+                        cv2.line(full_frame, (bx, mb_y1 + 25 - bar_h // 2), (bx, mb_y1 + 25 + bar_h // 2), (168, 85, 247), 2)
+                    cv2.putText(full_frame, "MUSIC / AMBIENCE", (mb_x1 + 110, mb_y1 + 32), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255), 1)
+                else:
+                    sub_y1 = height - 180
+                    sub_y2 = height - 60
+                    cv2.rectangle(full_frame, (30, sub_y1), (width - 30, sub_y2), (15, 23, 42), -1)
+                    cv2.rectangle(full_frame, (30, sub_y1), (width - 30, sub_y2), (255, 255, 255), 2)
+                    words = sub_text.split()
+                    line1 = " ".join(words[:len(words)//2 + 1])
+                    line2 = " ".join(words[len(words)//2 + 1:])
+                    cv2.putText(full_frame, line1, (50, sub_y1 + 45), cv2.FONT_HERSHEY_DUPLEX, 0.65, (255, 255, 255), 2)
+                    if line2:
+                        cv2.putText(full_frame, line2, (50, sub_y1 + 90), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 229, 255), 2)
 
         out.write(full_frame)
 
@@ -217,33 +244,51 @@ def render_stickman_video(config_input, output_mp4, progress_file=None):
         cap.release()
     out.release()
 
-    # 3. Audio Muxing & Encoding
+    # 3. Audio Muxing & Encoding: Strict H.264 Video + AAC Audio Output
     report_progress("muxing_audio", 88)
 
-    cmd = [
-        'ffmpeg', '-y',
-        '-i', temp_raw_video,
-    ]
+    has_audio_stream = False
     if audio_path and os.path.exists(audio_path):
-        cmd.extend([
+        probe_cmd = ['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_type', '-of', 'json', audio_path]
+        p_res = subprocess.run(probe_cmd, capture_output=True, text=True)
+        if 'audio' in p_res.stdout:
+            has_audio_stream = True
+
+    if has_audio_stream:
+        cmd = [
+            'ffmpeg', '-y',
+            '-i', temp_raw_video,
             '-i', audio_path,
+            '-map', '0:v:0',
+            '-map', '1:a:0',
             '-c:v', 'libx264',
             '-preset', 'veryfast',
             '-crf', '22',
             '-c:a', 'aac',
             '-b:a', '192k',
+            '-pix_fmt', 'yuv420p',
             '-movflags', '+faststart',
             '-shortest',
             output_mp4
-        ])
+        ]
     else:
-        cmd.extend([
+        # Universal fallback: provide genuine AAC silent stereo track
+        cmd = [
+            'ffmpeg', '-y',
+            '-i', temp_raw_video,
+            '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
+            '-map', '0:v:0',
+            '-map', '1:a:0',
             '-c:v', 'libx264',
             '-preset', 'veryfast',
             '-crf', '22',
+            '-c:a', 'aac',
+            '-b:a', '128k',
+            '-pix_fmt', 'yuv420p',
             '-movflags', '+faststart',
+            '-shortest',
             output_mp4
-        ])
+        ]
 
     subprocess.run(cmd, check=True)
 

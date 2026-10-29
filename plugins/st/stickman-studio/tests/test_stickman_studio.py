@@ -201,5 +201,45 @@ class TestStickmanStudio(unittest.TestCase):
         for pw in prohibited_words:
             self.assertNotIn(pw.lower(), html.lower(), f"Prohibited non-English word found in HTML: '{pw}'")
 
+    def test_06_autoshorts_candidate_cand2_e2e(self):
+        """End-to-end verification of AutoShorts cand-2.mp4 clip processing."""
+        cand2_path = os.path.join(APP_DIR, '..', 'auto-shorts', 'data', 'proj-1793257603999', 'clips', 'cand-2.mp4')
+        if not os.path.exists(cand2_path):
+            self.skipTest(f"AutoShorts candidate video not found at {cand2_path}")
+
+        tmp_dir = tempfile.mkdtemp(prefix='test_cand2_')
+        try:
+            # 1. Run video_beats_extractor.py
+            script = os.path.join(APP_DIR, 'engine', 'video_beats_extractor.py')
+            cmd = ['python3', script, cand2_path, tmp_dir, '3.0']
+            res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.assertEqual(res.returncode, 0, f"video_beats_extractor on cand-2 failed: {res.stderr}")
+
+            manifest_file = os.path.join(tmp_dir, 'beats_manifest.json')
+            self.assertTrue(os.path.exists(manifest_file), "beats_manifest.json missing for cand-2")
+
+            with open(manifest_file, 'r', encoding='utf-8') as f:
+                manifest = json.load(f)
+
+            beats = manifest.get('beats', [])
+            self.assertGreaterEqual(len(beats), 10, f"Expected at least 10 beats from cand-2.mp4, got {len(beats)}")
+
+            # 2. Run cognitive_director.py
+            director_script = os.path.join(APP_DIR, 'engine', 'cognitive_director.py')
+            res2 = subprocess.run(['python3', director_script, manifest_file],
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.assertEqual(res2.returncode, 0, f"cognitive_director on cand-2 failed: {res2.stderr}")
+
+            with open(manifest_file, 'r', encoding='utf-8') as f:
+                directed_manifest = json.load(f)
+
+            for b in directed_manifest['beats']:
+                self.assertIn('parody_idea', b)
+                self.assertGreater(len(b['parody_idea']), 5)
+                self.assertTrue(os.path.exists(b['keyframe_path']), f"Keyframe file missing: {b['keyframe_path']}")
+                self.assertGreater(os.path.getsize(b['keyframe_path']), 1000)
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+
 if __name__ == '__main__':
     unittest.main()

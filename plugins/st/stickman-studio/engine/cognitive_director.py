@@ -12,147 +12,243 @@ import re
 
 POSE_REACTIONS = [
     {
-        'trigger_words': ['hancur', 'rusak', 'bangkrut', 'rugi', 'turun', 'drop', 'minus', 'fail', 'batal', 'hilang', 'habis', 'terpuruk'],
+        'category': 'music_ambience',
+        'trigger_words': ['[music', 'ambience', 'soundtrack', 'instrumental', 'ambient'],
+        'pose': 'listen',
+        'emotion': 'happy',
+        'prop': 'heart',
+        'background': 'cyber_grid',
+        'accent': '#a855f7',
+        'camera_shake': 0,
+        'template': "Stickman grooves with rhythmic head-bobbing and neon pulses in sync with the ambient soundscape"
+    },
+    {
+        'category': 'cliffhanger',
+        'trigger_words': [
+            'tapi ternyata', 'jangan-jangan', 'plot twist', 'shocking', 'rahasia', 'waspada',
+            'bahaya', 'jeng jeng', 'unbelievable', 'misteri', 'terbongkar', 'ketahuan', 'gawat',
+            'panik', 'waduh', 'oh no', 'secret', 'twist', 'warning', 'matiin kamera', 'nyala',
+            'ketangkap', 'kamera nyala', 'kaget', 'syok', 'shock'
+        ],
         'pose': 'panic_look',
         'emotion': 'surprised',
-        'prop': 'chart_down',
-        'background': 'speedlines_panic',
-        'accent': '#ef4444',
-        'camera_shake': 4,
-        'parody_idea': 'Stickman looks at portfolio in horror with sweat drops flying and red chart crashing down'
-    },
-    {
-        'trigger_words': ['cuan', 'untung', 'kaya', 'profit', 'naik', 'milyar', 'juta', 'sukses', 'menang', 'kaya raya', 'sultan'],
-        'pose': 'celebrate',
-        'emotion': 'happy',
-        'prop': 'money_bag',
-        'background': 'cyber_grid',
-        'accent': '#10b981',
-        'camera_shake': 0,
-        'parody_idea': 'Stickman does victory dance under floating bags of money and cyber neon grid'
-    },
-    {
-        'trigger_words': ['kenapa', 'gimana', 'bingung', 'maksudnya', 'what', 'why', 'how', 'apaan', 'kok bisa', 'gak ngerti', 'aneh'],
-        'pose': 'shrug',
-        'emotion': 'confused',
-        'prop': 'question',
-        'background': 'office_meeting',
-        'accent': '#f59e0b',
-        'camera_shake': 0,
-        'parody_idea': 'Stickman shrugs with oversized question marks popping above head'
-    },
-    {
-        'trigger_words': ['ide', 'pikir', 'rencananya', 'solusi', 'trik', 'rahasia', 'strategi', 'concept', 'rumus', 'otak'],
-        'pose': 'think',
-        'emotion': 'happy',
-        'prop': 'brain',
-        'background': 'podcast_studio',
-        'accent': '#00e5ff',
-        'camera_shake': 0,
-        'parody_idea': 'Stickman taps chin with glowing neural brain pulsing above head'
-    },
-    {
-        'trigger_words': ['marah', 'gila', 'kacau', 'kesel', 'ngamuk', 'ribut', 'bodoh', 'hate', 'emosi', 'kecewa', 'parah'],
-        'pose': 'angry',
-        'emotion': 'angry',
         'prop': 'alert',
         'background': 'speedlines_panic',
-        'accent': '#f43f5e',
+        'accent': '#ef4444',
         'camera_shake': 5,
-        'parody_idea': 'Stickman slams fists with cartoon lightning and pulsing red warning siren'
+        'template': "Stickman freezes in sheer panic as red warning beacons spin and screen vibrates violently at the sudden twist: '{snippet}'"
     },
     {
-        'trigger_words': ['dia bilang', 'katanya', 'menurutku', 'saya rasa', 'dengerin', 'kamu harus', 'ingat ya', 'pesanku'],
-        'pose': 'point',
-        'emotion': 'neutral',
-        'prop': 'megaphone',
-        'background': 'podcast_studio',
-        'accent': '#00e5ff',
-        'camera_shake': 0,
-        'parody_idea': 'Stickman leans forward aggressively pointing finger through a giant megaphone'
-    },
-    {
-        'trigger_words': ['wkwk', 'haha', 'lucu', 'ngakak', 'ketawa', 'jokes', 'konyol', 'lawak', 'parodi'],
+        'category': 'funny',
+        'trigger_words': [
+            'wkwk', 'haha', 'lucu', 'ngakak', 'ketawa', 'jokes', 'konyol', 'lawak', 'parodi',
+            'absurd', 'silly', 'lol', 'lmao', 'rofl', 'hilarious', 'humor', 'prank', 'joke',
+            'meme', 'kocak', 'gokil', 'ngocol', 'asem bener', 'malu'
+        ],
         'pose': 'cough_fail',
         'emotion': 'happy',
         'prop': 'eyes',
         'background': 'podcast_studio',
         'accent': '#eab308',
         'camera_shake': 2,
-        'parody_idea': 'Stickman doubles over with cartoon tears streaming from eyes'
+        'template': "Stickman doubles over wheezing with tears streaming from bulging cartoon eyes reacting to '{snippet}'"
     },
     {
-        'trigger_words': ['rapat', 'kantor', 'meeting', 'zoom', 'kerja', 'bos', 'klien', 'proyek', 'deadline'],
+        'category': 'energetic',
+        'trigger_words': [
+            'cuan', 'untung', 'kaya', 'profit', 'naik', 'milyar', 'juta', 'sukses', 'menang',
+            'kaya raya', 'sultan', 'gass', 'semangat', 'ayo', 'cepat', 'buru', 'viral',
+            'let\'s go', 'fire', 'boom', 'win', 'juara', 'champion', 'best', 'mantap', 'keren'
+        ],
+        'pose': 'celebrate',
+        'emotion': 'happy',
+        'prop': 'money_bag',
+        'background': 'cyber_grid',
+        'accent': '#10b981',
+        'camera_shake': 2,
+        'template': "Stickman does an electric victory hype dance under flying money bags and cyber neon grid celebrating '{snippet}'"
+    },
+    {
+        'category': 'storytelling',
+        'trigger_words': [
+            'ceritanya', 'suatu hari', 'dulu', 'kemarin', 'waktu itu', 'awalnya', 'tiba-tiba',
+            'pengalaman', 'kisah', 'ingat', 'flashback', 'jadi begini', 'once upon', 'remember',
+            'back then', 'happened', 'story', 'journey', 'kejadian', 'seumur hidup', 'cerita'
+        ],
+        'pose': 'point',
+        'emotion': 'neutral',
+        'prop': 'book',
+        'background': 'living_room',
+        'accent': '#38bdf8',
+        'camera_shake': 0,
+        'template': "Stickman dramatically opens an ancient storybook illustrating the narrative flashback of '{snippet}'"
+    },
+    {
+        'category': 'technical',
+        'trigger_words': [
+            'server', 'coding', 'code', 'python', 'javascript', 'database', 'ai', 'prompt',
+            'model', 'bug', 'error', 'sistem', 'arsitektur', 'deploy', 'api', 'flowork',
+            'cloud', 'data', 'teknis', 'laptop', 'komputer', 'software', 'tech', 'algorithm',
+            'pipeline', 'wi -fi', 'wifi', 'kabel', 'colokan', 'internet'
+        ],
+        'pose': 'think',
+        'emotion': 'happy',
+        'prop': 'brain',
+        'background': 'cyber_grid',
+        'accent': '#00e5ff',
+        'camera_shake': 0,
+        'template': "Stickman's brain surges with neon neural circuitry furiously decoding the technical puzzle of '{snippet}'"
+    },
+    {
+        'category': 'question',
+        'trigger_words': [
+            'kenapa', 'gimana', 'mengapa', 'bagaimana', 'kok', 'apakah', 'siapa', 'dimana',
+            'kapan', 'really', 'what', 'how', 'why', 'who', 'seriously', 'bingung', 'penasaran',
+            'maksudnya', 'apaan', 'kok bisa', 'gak ngerti', 'aneh', 'tau gak', 'pernah ga', 'apa'
+        ],
+        'pose': 'shrug',
+        'emotion': 'confused',
+        'prop': 'question',
+        'background': 'office_meeting',
+        'accent': '#f59e0b',
+        'camera_shake': 0,
+        'template': "Stickman shrugs quizzically as oversized question marks bounce around pondering '{snippet}'"
+    },
+    {
+        'category': 'disaster',
+        'trigger_words': [
+            'hancur', 'rusak', 'bangkrut', 'rugi', 'turun', 'drop', 'minus', 'fail', 'batal',
+            'hilang', 'habis', 'terpuruk', 'putus', 'mati', 'down', 'crash', 'bencana'
+        ],
+        'pose': 'panic_look',
+        'emotion': 'surprised',
+        'prop': 'chart_down',
+        'background': 'speedlines_panic',
+        'accent': '#ef4444',
+        'camera_shake': 4,
+        'template': "Stickman stares in utter horror as a red financial chart crashes into a downward spiral regarding '{snippet}'"
+    },
+    {
+        'category': 'angry',
+        'trigger_words': [
+            'marah', 'gila', 'kacau', 'kesel', 'ngamuk', 'ribut', 'bodoh', 'hate', 'emosi',
+            'kecewa', 'parah', 'lawan', 'tinju', 'tarung', 'duel', 'hajar', 'fight', 'debat',
+            'adu', 'benci', 'toxic', 'nyebelin', 'agresif'
+        ],
+        'pose': 'angry',
+        'emotion': 'angry',
+        'prop': 'boxing_glove',
+        'background': 'speedlines_panic',
+        'accent': '#f43f5e',
+        'camera_shake': 4,
+        'template': "Stickman slams cartoon boxing gloves with lightning flashing over '{snippet}'"
+    },
+    {
+        'category': 'office',
+        'trigger_words': [
+            'rapat', 'kantor', 'meeting', 'zoom', 'kerja', 'bos', 'klien', 'proyek', 'deadline',
+            'target', 'masuk kantor', 'presentasi', 'corporate', 'lembur', 'meja', 'dus'
+        ],
         'pose': 'talk',
         'emotion': 'neutral',
         'prop': 'clock',
         'background': 'office_meeting',
         'accent': '#38bdf8',
         'camera_shake': 0,
-        'parody_idea': 'Stickman gestures at formal boardroom desk with ticking clock'
+        'template': "Stickman gestures across the formal boardroom whiteboard racing against the clock for '{snippet}'"
     },
     {
-        'trigger_words': ['kopi', 'santai', 'nongkrong', 'kafe', 'istirahat', 'chill', 'tenang'],
+        'category': 'chill',
+        'trigger_words': [
+            'kopi', 'santai', 'nongkrong', 'kafe', 'istirahat', 'chill', 'tenang', 'ngopi',
+            'relax', 'weekend', 'makan', 'mie instan', 'dusmi'
+        ],
         'pose': 'rest',
         'emotion': 'happy',
         'prop': 'coffee',
         'background': 'living_room',
         'accent': '#d97706',
         'camera_shake': 0,
-        'parody_idea': 'Stickman kicks feet up while sipping hot steam from a giant mug'
-    },
-    {
-        'trigger_words': ['lawan', 'tinju', 'tarung', 'duel', 'hajar', 'fight', 'debat', 'adu'],
-        'pose': 'run',
-        'emotion': 'angry',
-        'prop': 'boxing_glove',
-        'background': 'courtroom',
-        'accent': '#ef4444',
-        'camera_shake': 3,
-        'parody_idea': 'Stickman winds up with oversized red boxing glove ready to strike'
+        'template': "Stickman kicks feet up sipping a steaming beverage while casually reflecting on '{snippet}'"
     }
 ]
 
 
+def clean_snippet(text, max_len=45):
+    """Clean text snippet for human-readable parody prompts."""
+    cleaned = re.sub(r'\[.*?\]', '', text).strip()
+    if not cleaned:
+        cleaned = text.strip()
+    if len(cleaned) > max_len:
+        cleaned = cleaned[:max_len] + '...'
+    return cleaned
+
+
 def direct_storyboard_beats(manifest):
     beats = manifest.get('beats', [])
+    has_video = manifest.get('has_video', False)
     total_beats = len(beats)
 
     directed_beats = []
     for idx, beat in enumerate(beats):
         text = beat.get('text', '')
         t_clean = text.lower()
+        snippet = clean_snippet(text)
 
         matched_reaction = None
         for r in POSE_REACTIONS:
-            if any(re.search(r'\b' + re.escape(w) + r'\b', t_clean) for w in r['trigger_words']):
-                matched_reaction = r
+            for w in r['trigger_words']:
+                if ' ' in w or '[' in w:
+                    if w in t_clean:
+                        matched_reaction = r
+                        break
+                else:
+                    if re.search(r'\b' + re.escape(w) + r'\b', t_clean):
+                        matched_reaction = r
+                        break
+            if matched_reaction:
                 break
 
-        if not matched_reaction:
-            # Rhythmically cycle through conversational archetypes
+        if matched_reaction:
+            parody_idea = matched_reaction['template'].format(snippet=snippet)
+            if has_video and matched_reaction['category'] not in ['music_ambience']:
+                parody_idea = f"In top/bottom split parody, {parody_idea}"
+            pose = matched_reaction['pose']
+            emotion = matched_reaction['emotion']
+            prop = matched_reaction['prop']
+            background = matched_reaction['background']
+            accent = matched_reaction['accent']
+            camera_shake = matched_reaction['camera_shake']
+        else:
+            # Rhythmically cycle through expressive conversational archetypes with dialogue context
             fallbacks = [
-                {'pose': 'talk', 'emotion': 'neutral', 'prop': 'bulb', 'background': 'podcast_studio', 'accent': '#00e5ff', 'idea': 'Speaker lays down opening premise with animated lightbulb'},
-                {'pose': 'point', 'emotion': 'neutral', 'prop': 'target', 'background': 'office_meeting', 'accent': '#38bdf8', 'idea': 'Speaker underscores core focal point'},
-                {'pose': 'think', 'emotion': 'happy', 'prop': 'brain', 'background': 'podcast_studio', 'accent': '#a855f7', 'idea': 'Speaker poses deep reflective question'},
-                {'pose': 'shrug', 'emotion': 'confused', 'prop': 'phone', 'background': 'office_meeting', 'accent': '#f59e0b', 'idea': 'Speaker reacts to external message/callout'},
-                {'pose': 'celebrate', 'emotion': 'happy', 'prop': 'money_bag', 'background': 'cyber_grid', 'accent': '#10b981', 'idea': 'Speaker delivers punchy takeaway conclusion'}
+                {'pose': 'talk', 'emotion': 'neutral', 'prop': 'bulb', 'background': 'podcast_studio', 'accent': '#00e5ff', 'action': 'lays down the premise of'},
+                {'pose': 'point', 'emotion': 'neutral', 'prop': 'target', 'background': 'office_meeting', 'accent': '#38bdf8', 'action': 'underscores the key takeaway of'},
+                {'pose': 'think', 'emotion': 'happy', 'prop': 'brain', 'background': 'podcast_studio', 'accent': '#a855f7', 'action': 'ponders the implications of'},
+                {'pose': 'shrug', 'emotion': 'confused', 'prop': 'phone', 'background': 'office_meeting', 'accent': '#f59e0b', 'action': 'reacts with candid humor to'},
+                {'pose': 'celebrate', 'emotion': 'happy', 'prop': 'money_bag', 'background': 'cyber_grid', 'accent': '#10b981', 'action': 'delivers a high-energy punchline about'}
             ]
-            matched_reaction = fallbacks[idx % len(fallbacks)]
-            matched_reaction['camera_shake'] = 0
-            matched_reaction['parody_idea'] = matched_reaction['idea']
+            fb = fallbacks[idx % len(fallbacks)]
+            pose = fb['pose']
+            emotion = fb['emotion']
+            prop = fb['prop']
+            background = fb['background']
+            accent = fb['accent']
+            camera_shake = 0
+            prefix = "In top/bottom split parody, " if has_video else ""
+            parody_idea = f"{prefix}Stickman {fb['action']} '{snippet}' with expressive comic timing"
 
         # Construct enriched beat
         directed_beat = dict(beat)
         directed_beat.update({
             'model': beat.get('model', 'classic'),
-            'pose': matched_reaction['pose'],
-            'emotion': matched_reaction['emotion'],
-            'prop': matched_reaction['prop'],
-            'background': matched_reaction['background'],
-            'accent': matched_reaction['accent'],
-            'camera_shake': matched_reaction.get('camera_shake', 0),
-            'parody_idea': matched_reaction['parody_idea'],
+            'pose': pose,
+            'emotion': emotion,
+            'prop': prop,
+            'background': background,
+            'accent': accent,
+            'camera_shake': camera_shake,
+            'parody_idea': parody_idea,
             'title': f"Beat #{beat.get('beat_id') or beat.get('index') or beat.get('id', idx + 1)} ({beat.get('start', 0)}s - {beat.get('end', 0)}s)"
         })
         directed_beats.append(directed_beat)
