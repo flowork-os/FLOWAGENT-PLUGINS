@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://playcrabdash.com/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Crab Dash</title>
+<meta name="description" content="A one-button rhythm platformer starring a crab. Six levels from Easy to Demon, practice mode, an icon kit and a level editor.">
+<meta name="theme-color" content="#05102e">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Crab Dash">
+<meta property="og:description" content="A one-button rhythm platformer starring a crab. Six levels from Easy to Demon, practice mode, an icon kit and a level editor.">
+<meta property="og:url" content="https://playcrabdash.com/">
+<meta property="og:image" content="https://playcrabdash.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Crab Dash">
+<meta name="twitter:description" content="A one-button rhythm platformer starring a crab. Six levels from Easy to Demon, practice mode, an icon kit and a level editor.">
+<meta name="twitter:image" content="https://playcrabdash.com/og.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #05102e; }
+  html, body { height: 100%; margin: 0; background: var(--ground); overflow: hidden; }
+  body { font-family: "Lilita One", "Arial Rounded MT Bold", system-ui, sans-serif; color: #fff; }
+  #game { display: block; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; outline: none; cursor: pointer; }
+  #rotate { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px; background: rgba(3, 10, 30, 0.92); font-size: 20px; line-height: 1.4; }
+  @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
+  @media (prefers-reduced-motion: reduce) { #game { cursor: default; } }
+</style>
+</head>
+<body>
+<canvas id="game" tabindex="0" aria-label="Crab Dash game. Click, tap or press Space to jump."></canvas>
+<div id="rotate" role="status">Turn your phone sideways to play Crab Dash</div>
+<script src="js/core.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/art.js"></script>
+<script src="js/render.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

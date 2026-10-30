@@ -1,0 +1,3476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://www.angiecarel.com/jiggle-buddies/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jiggle Buddies — Angie Carel</title>
+<meta name="description" content="Two jello characters wander a room on their own. Poke them, stretch them, fling them, dye them, make them dance, and give them toys.">
+<link rel="canonical" href="https://www.angiecarel.com/jiggle-buddies">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Angie Carel">
+<meta property="og:title" content="Jiggle Buddies">
+<meta property="og:description" content="Two jello characters wander a room on their own. Poke them, stretch them, fling them, dye them, make them dance, and give them toys.">
+<meta property="og:url" content="https://www.angiecarel.com/jiggle-buddies">
+<meta property="og:image" content="https://www.angiecarel.com/img/jiggle-buddies-preview.jpg">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="720">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Jiggle Buddies">
+<meta name="twitter:description" content="Two jello characters wander a room on their own. Poke them, stretch them, fling them, dye them, make them dance, and give them toys.">
+<meta name="twitter:image" content="https://www.angiecarel.com/img/jiggle-buddies-preview.jpg">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Bangers&family=Nunito:wght@600;700;800&display=swap">
+<style>
+  :root {
+    --plum: #3d1838;
+    --plum-soft: #7a4a6e;
+    --glass: rgba(255, 255, 255, 0.62);
+    --edge: rgba(255, 255, 255, 0.9);
+    --ground: #f5e4ee;
+    color-scheme: light;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; }
+  /* Phones: no double-tap zoom (quick taps on Dance used to zoom the page and push the menu off
+     screen) and no rubber-band scrolling. Pinch-zoom still works. */
+  html, body { touch-action: manipulation; overscroll-behavior: none; overflow: hidden; }
+  body {
+    background: var(--ground);
+    color: var(--plum);
+    overflow: hidden;
+    font-family: "Nunito", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #c {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  .brand {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 18px);
+    left: 16px;
+    max-width: min(34rem, calc(100% - 400px));
+    padding: 10px 14px 12px;
+    border-radius: 18px;
+    background: var(--glass);
+    border: 1px solid var(--edge);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 20px rgba(90, 30, 70, 0.1);
+    pointer-events: none;
+    transition: opacity 0.9s ease, transform 0.9s ease, visibility 0s linear 0s;
+  }
+  /* the title card steps aside after a few seconds so it doesn't cover the buddies */
+  .brand.gone {
+    opacity: 0; transform: translateY(-10px); visibility: hidden;
+    transition: opacity 0.9s ease, transform 0.9s ease, visibility 0s linear 0.9s;
+  }
+  @media (prefers-reduced-motion: reduce) { .brand, .brand.gone { transform: none; } }
+  h1 {
+    font-family: "Bagel Fat One", "Arial Rounded MT Bold", system-ui, sans-serif;
+    font-weight: 400;
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1;
+    margin: 0;
+    color: var(--plum);
+    text-wrap: balance;
+  }
+  #hint {
+    margin: 0.45em 0 0;
+    font-weight: 700;
+    font-size: 15px;
+    max-width: 34ch;
+    color: var(--plum-soft);
+    transition: opacity 1.2s ease;
+  }
+  #hint.faded { opacity: 0.6; }
+  .room-pick { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .room-pick select {
+    font: inherit; font-weight: 800; letter-spacing: 0.02em;
+    color: var(--plum);
+    /* our own arrow, with room reserved for it so long names never run under it */
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233d1838' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 2px center / 10px 6px;
+    border: 0; padding: 0 18px 0 2px; margin: -4px 0;
+    cursor: pointer;
+  }
+  .room-pick select option { color: #3d1838; background: #fff; }
+  /* iPhone zooms into any menu with text under 16px when you tap it; keep it at 16px on touch screens */
+  @media (hover: none) and (pointer: coarse) {
+    .room-pick { font-size: 14px; }
+    .room-pick select { font-size: 16px; }
+  }
+  .touch .room-pick { font-size: 14px; }
+  .touch .room-pick select { font-size: 16px; }
+  .room-pick select:focus, .room-pick select:focus-visible { outline: none; }
+  /* keyboard users get a soft ring around the whole pill; mouse and touch users see nothing */
+  .using-keys .room-pick:focus-within { box-shadow: 0 0 0 3px rgba(61, 24, 56, 0.35), 0 6px 20px rgba(90, 30, 70, 0.1); }
+  .corner {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 18px);
+    right: 16px;
+    display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px;
+    max-width: calc(100% - 32px);
+  }
+  .pill {
+    font: 800 13px/1 "Nunito", ui-rounded, system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    color: var(--plum);
+    background: var(--glass);
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+    padding: 10px 14px;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 20px rgba(90, 30, 70, 0.1);
+  }
+  .dock {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+    width: max-content;
+    max-width: calc(100% - 32px);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .dock-label {
+    font-size: 12px; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--plum-soft);
+    text-align: center;
+  }
+  .swatches {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+    padding: 10px 14px;
+    border-radius: 28px;
+    background: var(--glass);
+    border: 1px solid var(--edge);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 30px rgba(90, 30, 70, 0.12);
+  }
+  .sw, .drop {
+    background:
+      radial-gradient(circle at 33% 27%, rgba(255,255,255,0.95) 0 7%, rgba(255,255,255,0) 22%),
+      radial-gradient(circle at 50% 60%, var(--c) 0 50%, color-mix(in srgb, var(--c) 68%, #000) 100%);
+    box-shadow: inset 0 -3px 6px rgba(0,0,0,0.18), 0 3px 8px color-mix(in srgb, var(--c) 45%, transparent);
+  }
+  .sw {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 0; padding: 0;
+    cursor: grab;
+    touch-action: none;
+    transition: transform 0.15s cubic-bezier(.3,1.6,.5,1);
+  }
+  .sw:hover { transform: scale(1.14); }
+  .sw:active { transform: scale(0.9); cursor: grabbing; }
+  .sw:focus-visible, .pill:focus-visible { outline: 3px solid var(--plum); outline-offset: 3px; }
+  .drop {
+    position: fixed; left: 0; top: 0;
+    width: 46px; height: 46px;
+    border-radius: 50% 50% 50% 50% / 58% 58% 42% 42%;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .stepper {
+    display: flex; align-items: center; gap: 10px;
+    padding: 5px 6px;
+    border-radius: 999px;
+    background: var(--glass);
+    border: 1px solid var(--edge);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 20px rgba(90, 30, 70, 0.1);
+  }
+  .step {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 0;
+    background: var(--plum);
+    color: #fff;
+    font: 800 18px/1 "Nunito", ui-rounded, system-ui, sans-serif;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: transform 0.15s cubic-bezier(.3,1.6,.5,1), opacity 0.2s;
+  }
+  .step:hover { transform: scale(1.1); }
+  .step:active { transform: scale(0.9); }
+  .step[aria-disabled="true"] { opacity: 0.35; }
+  .step:focus-visible { outline: 3px solid var(--plum); outline-offset: 3px; }
+  .count {
+    min-width: 7.5ch; text-align: center;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.04em;
+    color: var(--plum);
+    font-variant-numeric: tabular-nums;
+  }
+  .toast {
+    position: fixed;
+    left: 50%; top: 22%;
+    transform: translateX(-50%);
+    max-width: calc(100% - 32px);
+    width: max-content;
+    padding: 12px 20px;
+    border-radius: 18px;
+    background: var(--plum);
+    color: #fff;
+    font-weight: 800; font-size: 16px;
+    text-align: center;
+    box-shadow: 0 12px 36px rgba(61, 24, 56, 0.3);
+    animation: toast-in 0.35s cubic-bezier(.3,1.6,.5,1);
+    z-index: 6;
+  }
+  @keyframes toast-in { from { transform: translateX(-50%) scale(0.7); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+  /* "Best with sound" bubble, pointing up at the Sound button */
+  .sound-tip {
+    position: fixed; z-index: 4;
+    top: 0; left: 0;
+    padding: 9px 14px;
+    border: 0; border-radius: 14px;
+    background: var(--plum); color: #fff;
+    font: 800 14px/1.2 "Nunito", ui-rounded, system-ui, sans-serif;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(61, 24, 56, 0.28);
+    animation: tip-bob 1.6s ease-in-out infinite;
+  }
+  .sound-tip::before {
+    content: ""; position: absolute; top: -7px; right: var(--arrow-x, 24px);
+    border: 8px solid transparent; border-top: 0; border-bottom-color: var(--plum);
+  }
+  .sound-tip:focus-visible { outline: 3px solid var(--plum); outline-offset: 3px; }
+  @keyframes tip-bob { 50% { transform: translateY(5px); } }
+  @media (prefers-reduced-motion: reduce) { .sound-tip { animation: none; } }
+  /* our own pull-to-refresh (the 3D scene needs every drag, so the phone's built-in one can't run) */
+  .ptr {
+    position: fixed; z-index: 7; left: 50%; top: 0;
+    transform: translate(-50%, -60px);
+    padding: 9px 16px; border-radius: 999px;
+    background: var(--plum); color: #fff;
+    font: 800 14px/1.2 "Nunito", ui-rounded, system-ui, sans-serif;
+    white-space: nowrap; pointer-events: none;
+    box-shadow: 0 8px 24px rgba(61, 24, 56, 0.28);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .ptr.on { opacity: 1; transition: none; }
+  .ptr.back { transition: transform 0.25s ease, opacity 0.25s ease; }
+  .fail {
+    position: fixed; inset: 0; display: grid; place-items: center;
+    padding-inline: 24px; text-align: center; font-weight: 700; color: var(--plum);
+  }
+  @media (max-width: 760px) {
+    .brand { max-width: calc(100% - 32px); top: calc(env(safe-area-inset-top, 0px) + 64px); }
+  }
+  @media (max-width: 520px) {
+    .sw { width: 30px; height: 30px; }
+    .swatches { gap: 8px; padding: 8px 12px; }
+    #hint { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Two jello people you can poke, stretch, fling and squish together"></canvas>
+
+<header class="brand">
+  <h1>Jiggle Buddies</h1>
+  <p id="hint">Tap to poke. Drag to stretch or fling. Drop a buddy on the trampoline. Space to jump.</p>
+</header>
+
+<div class="corner">
+  <button class="pill" id="jump" type="button">Jump</button>
+  <button class="pill" id="dance" type="button">Dance</button>
+  <label class="pill room-pick" for="room">Room <select id="room"></select></label>
+  <button class="pill" id="snd" type="button" aria-pressed="false">Sound off</button>
+</div>
+
+<div class="dock">
+  <div class="stepper" role="group" aria-label="How many buddies">
+    <button class="step" id="minus" type="button" aria-label="Remove a buddy">&minus;</button>
+    <span class="count" aria-live="polite"><span id="count">2</span> buddies</span>
+    <button class="step" id="plus" type="button" aria-label="Add a buddy">+</button>
+  </div>
+  <div class="dock-label">Drag a color onto a buddy</div>
+  <div class="swatches" id="sw" role="group" aria-label="Jello colors"></div>
+</div>
+
+<button class="sound-tip" id="soundTip" type="button">Best with sound</button>
+<div class="drop" id="drop" hidden></div>
+<div class="ptr" id="ptr" aria-hidden="true">&darr; Pull to refresh</div>
+<div class="toast" id="toast" role="status" aria-live="assertive" hidden></div>
+<div class="fail" id="fail" hidden>This page needs WebGL, which your browser has turned off.</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+const V3 = THREE.Vector3;
+const $ = s => document.querySelector(s);
+const lin = hex => new THREE.Color(hex).convertSRGBToLinear();
+
+/* ------------------------------------------------------------------ *
+ *  Renderer, camera, room
+ * ------------------------------------------------------------------ */
+const canvas = $('#c');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+} catch (err) {
+  $('#fail').hidden = false;
+  return;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.NoToneMapping; // filmic tone mapping washed the candy colors out
+
+const scene = new THREE.Scene();
+scene.background = lin('#f5e4ee');
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 200);
+
+// Reflections come from a little studio: a pale room with bright softboxes.
+// Those softboxes are the crisp white highlights you see gliding over the jello.
+function makeEnvironment() {
+  const s = new THREE.Scene();
+  const room = new THREE.Mesh(
+    new THREE.BoxGeometry(24, 14, 24),
+    new THREE.MeshBasicMaterial({ color: lin('#f1dde8'), side: THREE.BackSide })
+  );
+  room.position.y = 4;
+  s.add(room);
+  const panel = (w, h, x, y, z, power, hex) => {
+    const m = new THREE.Mesh(
+      new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({ color: lin(hex).multiplyScalar(power), side: THREE.DoubleSide })
+    );
+    m.position.set(x, y, z);
+    m.lookAt(0, 1, 0);
+    s.add(m);
+  };
+  panel(5, 3.2, -5, 6.5, 5, 7, '#ffffff');   // key softbox, upper left front
+  panel(1.6, 7, 7, 3, 3, 4, '#fff1e4');      // warm strip on the right
+  panel(9, 0.8, 0, 9, -4, 3.5, '#ffffff');   // top rim strip
+  panel(2.5, 5, -8, 2, -3, 2.2, '#e6eeff');  // cool fill
+  panel(12, 2, 0, -1.5, 6, 0.9, '#ffe1ee');  // bounce from the floor
+  const pm = new THREE.PMREMGenerator(renderer);
+  const tex = pm.fromScene(s, 0.015).texture;
+  pm.dispose();
+  return tex;
+}
+scene.environment = makeEnvironment();
+
+function canvasTexture(w, h, draw) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.encoding = THREE.sRGBEncoding;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+
+// Back wall. Only the part near the floor is ever on screen, so the wall is just
+// big enough to fill the view, which keeps its pictures sharp. Room pictures are
+// drawn in a 2048 x 819 space and scaled up 2x for crispness.
+const WALL_W = 30, WALL_H = 12, WALL_BOTTOM = -2;
+const WALL_PX = [2048, 819]; // drawing space; the floor line is at y = 682
+const wallTex = canvasTexture(4096, 1638, (g, w, h) => { g.fillStyle = '#f4dcec'; g.fillRect(0, 0, w, h); });
+const wall = new THREE.Mesh(
+  new THREE.PlaneGeometry(WALL_W, WALL_H),
+  new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.85, envMapIntensity: 0.14 })
+);
+wall.position.set(0, WALL_BOTTOM + WALL_H / 2, -4.5);
+scene.add(wall);
+
+// Floor: tiles, redrawn for each room.
+const floorTex = canvasTexture(1024, 1024, (g, w, h) => { g.fillStyle = '#f8ecf2'; g.fillRect(0, 0, w, h); });
+floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+floorTex.repeat.set(10, 6);
+floorTex.minFilter = THREE.LinearMipmapLinearFilter;
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(40, 24),
+  new THREE.MeshPhysicalMaterial({ map: floorTex, roughness: 0.35, clearcoat: 0.7, clearcoatRoughness: 0.2, envMapIntensity: 0.32 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.position.z = 6;
+scene.add(floor);
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0xf2cfe0, 0.52);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 0.5);
+sun.position.set(-3, 6, 5);
+scene.add(sun);
+
+/* ------------------------------------------------------------------ *
+ *  Rooms. The jello bends whatever is behind it, so a new wall and
+ *  floor change how the buddies look, too. Some rooms are painted
+ *  pictures; the moving ones are drawn live on the graphics chip.
+ * ------------------------------------------------------------------ */
+function drawDaisy(g, x, y, r, petal, center) {
+  g.fillStyle = petal;
+  for (let k = 0; k < 10; k++) {
+    const a = k / 10 * Math.PI * 2;
+    g.beginPath();
+    g.ellipse(x + Math.cos(a) * r * 0.55, y + Math.sin(a) * r * 0.55, r * 0.5, r * 0.2, a, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.beginPath(); g.arc(x, y, r * 0.32, 0, Math.PI * 2); g.fillStyle = center; g.fill();
+}
+function tiles(g, w, h, n, a, b, grout, groutW = 4) {
+  const sz = w / n;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    g.fillStyle = (i + j) % 2 ? b : a;
+    g.fillRect(i * sz, j * sz, sz, sz);
+  }
+  if (grout) {
+    g.strokeStyle = grout; g.lineWidth = groutW;
+    for (let i = 0; i <= n; i++) {
+      g.beginPath(); g.moveTo(i * sz, 0); g.lineTo(i * sz, h); g.stroke();
+      g.beginPath(); g.moveTo(0, i * sz); g.lineTo(w, i * sz); g.stroke();
+    }
+  }
+}
+function seeded(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
+
+// Comic Book pieces
+function burst(g, x, y, r, spikes, fill, text, textColor, size, rot) {
+  g.save(); g.translate(x, y); g.rotate(rot);
+  g.beginPath();
+  for (let k = 0; k < spikes * 2; k++) {
+    const a = k / (spikes * 2) * Math.PI * 2, rr = k % 2 ? r * 0.62 : r;
+    g.lineTo(Math.cos(a) * rr * 1.25, Math.sin(a) * rr * 0.85);
+  }
+  g.closePath();
+  g.fillStyle = fill; g.fill();
+  g.lineWidth = 10; g.strokeStyle = '#111'; g.lineJoin = 'round'; g.stroke();
+  g.font = `${size}px "Bangers", "Impact", sans-serif`;
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineWidth = 9; g.strokeStyle = '#111'; g.strokeText(text, 0, 4);
+  g.fillStyle = textColor; g.fillText(text, 0, 4);
+  g.restore();
+}
+
+const ROOMS = [
+  {
+    name: 'Polka Dot', bg: '#f5e4ee', repeat: [10, 6],
+    wall(g, w, h) {
+      const grad = g.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#f7d3e3'); grad.addColorStop(0.55, '#f4dcec'); grad.addColorStop(1, '#ecdff5');
+      g.fillStyle = grad; g.fillRect(0, 0, w, h);
+      const step = 51.2;
+      for (let y = step / 2, row = 0; y < h; y += step, row++)
+        for (let x = (row % 2 ? step : step / 2); x < w; x += step) {
+          g.beginPath(); g.arc(x, y, 9, 0, Math.PI * 2); g.fillStyle = 'rgba(255,255,255,0.75)'; g.fill();
+        }
+    },
+    floor(g, w, h) { tiles(g, w, h, 8, '#f8ecf2', '#f3e1ec', '#e4c8d8'); },
+  },
+  {
+    name: 'Flower Child', bg: '#f3d9a4', repeat: [8, 5],
+    wall(g, w, h) {
+      g.fillStyle = '#fbe7b5'; g.fillRect(0, 0, w, h);
+      const bands = ['#7a9a3a', '#f6c945', '#f28c28', '#e8562a', '#a8432a'];
+      bands.forEach((c, i) => {
+        g.beginPath();
+        const y0 = h * 0.5 + i * 34;
+        g.moveTo(0, y0);
+        for (let x = 0; x <= w; x += 16) g.lineTo(x, y0 + Math.sin(x / 190) * 60);
+        for (let x = w; x >= 0; x -= 16) g.lineTo(x, y0 + 34 + Math.sin(x / 190) * 60);
+        g.closePath(); g.fillStyle = c; g.fill();
+      });
+      const rnd = seeded(7);
+      for (let k = 0; k < 46; k++) {
+        const x = rnd() * w, y = rnd() * h, r = 28 + rnd() * 52;
+        drawDaisy(g, x, y, r, k % 5 === 0 ? '#ffd9e8' : '#ffffff', k % 3 ? '#f28c28' : '#e8562a');
+      }
+    },
+    floor(g, w, h) { tiles(g, w, h, 8, '#f6e2b8', '#e8792b', '#c9602a'); },
+  },
+  {
+    name: 'Psychedelic', bg: '#2a0a3a', repeat: [6, 4], wallShader: 'psych',
+    look: { env: 1.4, glow: 0.08, inner: 0.42, sat: 1.6, irid: 0.9 },
+    floor(g, w, h) {
+      const n = 8, sz = w / n;
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        g.fillStyle = `hsl(${(i * 45 + j * 90) % 360}, 95%, ${(i + j) % 2 ? 58 : 45}%)`;
+        g.fillRect(i * sz, j * sz, sz, sz);
+      }
+      g.strokeStyle = 'rgba(20,0,30,0.6)'; g.lineWidth = 6;
+      for (let i = 0; i <= n; i++) {
+        g.beginPath(); g.moveTo(i * sz, 0); g.lineTo(i * sz, h); g.stroke();
+        g.beginPath(); g.moveTo(0, i * sz); g.lineTo(w, i * sz); g.stroke();
+      }
+    },
+  },
+  {
+    name: 'Black & White', bg: '#dddddd', repeat: [12, 7], wallShader: 'bw',
+    look: { inner: 0.24, sat: 1.25 },
+    floor(g, w, h) { tiles(g, w, h, 8, '#ffffff', '#111111', null); },
+  },
+  {
+    name: 'Disco', bg: '#0c0414', wallShader: 'disco', floorShader: 'disco',
+    light: { hemi: 0.12, sun: 0.08, hemiSky: 0xb070ff, hemiGround: 0x200030 },
+    look: { env: 0.95, glow: 0.2, inner: 0.38, sat: 1.3 }, fx: 'disco',
+  },
+  {
+    name: 'Underwater', bg: '#03243f', wallShader: 'water', floorShader: 'water',
+    light: { hemi: 0.4, sun: 0.28, hemiSky: 0x9fdcff, hemiGround: 0x1a5070 },
+    look: { env: 1.0, glow: 0.1, inner: 0.32, sat: 1.25 }, fx: 'bubbles',
+  },
+  {
+    name: 'Neon Arcade', bg: '#07010f', wallShader: 'neon', floorShader: 'neon',
+    light: { hemi: 0.1, sun: 0.05, hemiSky: 0xff4fd8, hemiGround: 0x2040ff },
+    look: { env: 0.95, glow: 0.22, inner: 0.38, sat: 1.35 },
+  },
+  {
+    name: 'Comic Book', bg: '#ffe14d', repeat: [10, 6], fonts: ['64px "Bangers"'],
+    look: { env: 1.4, glow: 0, inner: 0.18, sat: 1.2 },
+    wall(g, w, h) {
+      g.fillStyle = '#ffe14d'; g.fillRect(0, 0, w, h);
+      // halftone dots that swell and shrink
+      for (let y = 14; y < h; y += 28) for (let x = (y / 28 % 2) * 14; x < w; x += 28) {
+        const r = 3 + 9 * (0.5 + 0.5 * Math.sin(x / 170) * Math.cos(y / 130));
+        g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = 'rgba(255,59,59,0.85)'; g.fill();
+      }
+      // comic panel borders
+      g.strokeStyle = '#111'; g.lineWidth = 14;
+      [[700, 0, 700, 682], [1350, 0, 1350, 682], [0, 400, 2048, 400]].forEach(([a, b, c, d]) => {
+        g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.stroke();
+      });
+      burst(g, 745, 585, 74, 12, '#ffffff', 'BOING!', '#ff2448', 38, -0.12);
+      burst(g, 1030, 540, 84, 10, '#ff2448', 'POW!', '#ffffff', 58, 0.08);
+      burst(g, 1315, 585, 76, 14, '#35c8ff', 'SPLAT!', '#fff200', 40, -0.06);
+      burst(g, 1030, 390, 70, 11, '#fff200', 'WOBBLE!', '#8a3dff', 36, 0.05);
+    },
+    floor(g, w, h) {
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
+      for (let y = 16; y < h; y += 32) for (let x = 16; x < w; x += 32) {
+        g.beginPath(); g.arc(x, y, 8, 0, Math.PI * 2); g.fillStyle = '#35c8ff'; g.fill();
+      }
+      g.strokeStyle = '#111'; g.lineWidth = 12;
+      for (let i = 0; i <= 4; i++) {
+        g.beginPath(); g.moveTo(i * 256, 0); g.lineTo(i * 256, h); g.stroke();
+        g.beginPath(); g.moveTo(0, i * 256); g.lineTo(w, i * 256); g.stroke();
+      }
+    },
+  },
+];
+
+// Live-drawn walls and floors (they run on the graphics chip, and some move).
+const roomTime = { value: 0 };
+const GLSL_COMMON = `
+  float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  vec3 discoCol(float h) {
+    return h < 0.25 ? vec3(1.0, 0.15, 0.55) : h < 0.5 ? vec3(0.15, 0.85, 1.0) : h < 0.75 ? vec3(1.0, 0.85, 0.15) : vec3(0.6, 0.3, 1.0);
+  }
+  // a field of round light spots; returns brightness, writes the spot's color
+  float spots(vec2 q, out vec3 col) {
+    vec2 c = floor(q), f = fract(q) - 0.5;
+    float h = h21(c);
+    col = discoCol(h21(c + 3.7));
+    if (h > 0.55) return 0.0;
+    vec2 o = (vec2(h21(c + 1.3), h21(c + 5.1)) - 0.5) * 0.4;
+    float d = length(f - o), aa = fwidth(d) + 0.01;
+    return 1.0 - smoothstep(0.14 - aa, 0.14 + aa, d);
+  }
+  // underwater light patterns: a warped grid of bright lines
+  float caust(vec2 p, float t) {
+    vec2 q = p;
+    q += 0.35 * vec2(sin(q.y * 1.3 + t), cos(q.x * 1.1 - t * 0.8));
+    q += 0.25 * vec2(sin(q.y * 2.1 - t * 1.3), cos(q.x * 1.9 + t * 1.1));
+    float v = sin(q.x * 2.2) * sin(q.y * 2.2);
+    return pow(1.0 - abs(v), 8.0);
+  }
+`;
+const WALL_VERT = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+const FLOOR_VERT = `varying vec3 vW; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
+function wallShader(body) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime: roomTime },
+    vertexShader: WALL_VERT,
+    fragmentShader: `uniform float uTime; varying vec2 vUv; ${GLSL_COMMON}
+      void main() {
+        float X = (vUv.x - 0.5) * ${WALL_W.toFixed(1)}, Y = ${WALL_BOTTOM.toFixed(1)} + vUv.y * ${WALL_H.toFixed(1)};
+        vec3 col = vec3(0.0);
+        ${body}
+        gl_FragColor = vec4(col, 1.0);
+        #include <encodings_fragment>
+      }`,
+  });
+}
+function floorShader(body) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime: roomTime },
+    vertexShader: FLOOR_VERT,
+    fragmentShader: `uniform float uTime; varying vec3 vW; ${GLSL_COMMON}
+      void main() {
+        float x = vW.x, z = vW.z;
+        vec3 col = vec3(0.0);
+        ${body}
+        gl_FragColor = vec4(col, 1.0);
+        #include <encodings_fragment>
+      }`,
+  });
+}
+const WALL_SHADERS = {
+  psych: wallShader(`
+    vec2 p = vec2(X / 3.75, (Y - 2.0) / 3.0);
+    float r = length(p), a = atan(p.y, p.x);
+    float v = sin(r * 3.2 - uTime * 1.3 + sin(a * 5.0 + uTime * 0.6) * 1.3) + 0.5 * sin(p.x * 1.7 + uTime * 0.8);
+    col = pow(0.5 + 0.5 * cos(6.2831 * (v * 0.22 + vec3(0.0, 0.33, 0.67)) + uTime * 0.25), vec3(2.2)) * 0.85;`),
+  bw: wallShader(`
+    vec2 d = vec2(X / 40.0, (Y - 2.5) / 20.0);
+    float warped = X + 1.76 * exp(-(d.x * d.x * 9.0 + d.y * d.y * 6.0)) * sin((Y - 2.5) / 2.34);
+    float tri = abs(fract(warped / 1.016) * 2.0 - 1.0);
+    float aa = fwidth(tri) * 1.2;
+    col = vec3(mix(0.006, 0.8, smoothstep(0.5 - aa, 0.5 + aa, tri)));`),
+  disco: wallShader(`
+    col = vec3(0.012, 0.004, 0.022) + vec3(0.02, 0.0, 0.03) * smoothstep(8.0, 0.0, Y);
+    vec3 sc; float s = spots(vec2(X * 0.9 + uTime * 0.9, Y * 0.9), sc);
+    col += sc * s * 1.4;
+    vec3 sc2; float s2 = spots(vec2(X * 0.6 - uTime * 0.5, Y * 0.6 + 7.0), sc2);
+    col += sc2 * s2 * 0.6;`),
+  water: wallShader(`
+    col = mix(vec3(0.0, 0.03, 0.09), vec3(0.02, 0.32, 0.5), smoothstep(-1.0, 9.0, Y));
+    float rays = pow(0.5 + 0.5 * sin(X * 0.9 + Y * 0.35 + sin(uTime * 0.4) * 0.6 + uTime * 0.25), 6.0) * smoothstep(-1.0, 9.0, Y);
+    col += vec3(0.35, 0.75, 0.9) * rays * 0.35;
+    col += vec3(0.4, 0.8, 0.9) * caust(vec2(X, Y) * 0.7, uTime) * 0.07;`),
+  neon: wallShader(`
+    float up = clamp(Y / 9.0, 0.0, 1.0);
+    col = mix(vec3(0.9, 0.12, 0.35), vec3(0.02, 0.0, 0.06), smoothstep(0.0, 0.8, up));
+    col = mix(vec3(1.0, 0.45, 0.1), col, smoothstep(0.0, 0.08, up));
+    // the striped sunset sun
+    vec2 sp = vec2(X, Y - 2.6);
+    float sd = length(sp), aa = fwidth(sd);
+    float sunA = 1.0 - smoothstep(2.6 - aa, 2.6 + aa, sd);
+    float cut = sp.y < 0.0 ? step(fract(sp.y * 1.6), 0.25 + (-sp.y) * 0.18) : 0.0;
+    vec3 sunCol = mix(vec3(1.0, 0.08, 0.4), vec3(1.0, 0.75, 0.1), smoothstep(-2.6, 2.6, sp.y));
+    col = mix(col, sunCol, sunA * (1.0 - cut));
+    // stars
+    vec2 sc = floor(vec2(X, Y) * 2.5);
+    float star = step(0.985, h21(sc)) * smoothstep(4.0, 7.0, Y) * (0.6 + 0.4 * sin(uTime * 3.0 + h21(sc + 2.0) * 20.0));
+    col += vec3(star);
+    col += vec3(1.0, 0.2, 0.7) * exp(-abs(Y) * 5.0) * 0.8;`),
+};
+const FLOOR_SHADERS = {
+  disco: floorShader(`
+    float ck = mod(floor(x * 2.0) + floor(z * 2.0), 2.0);
+    col = mix(vec3(0.012, 0.005, 0.02), vec3(0.035, 0.015, 0.055), ck);
+    float a = uTime * 0.4, c = cos(a), s = sin(a);
+    vec2 q = mat2(c, -s, s, c) * (vec2(x, z) - vec2(0.0, -1.0)) * 1.2;
+    vec3 sc; float sp = spots(q, sc);
+    col += sc * sp * 1.1;`),
+  water: floorShader(`
+    vec3 sand = vec3(0.69, 0.54, 0.27);
+    col = mix(sand * 0.55, vec3(0.03, 0.22, 0.35), 0.35);
+    col += vec3(0.55, 0.85, 0.95) * caust(vec2(x, z) * 1.1, uTime) * 0.42;
+    float far = smoothstep(-1.0, -6.0, z);
+    col = mix(col, vec3(0.02, 0.18, 0.3), far * 0.6);`),
+  neon: floorShader(`
+    col = vec3(0.004, 0.0, 0.012);
+    float zz = z + uTime * 1.5;
+    float dx = abs(fract(x + 0.5) - 0.5), dz = abs(fract(zz + 0.5) - 0.5);
+    float wx = fwidth(x), wz = fwidth(zz);
+    float lx = 1.0 - smoothstep(0.015, 0.015 + wx * 1.5, dx);
+    float lz = 1.0 - smoothstep(0.015, 0.015 + wz * 1.5, dz);
+    col += vec3(1.0, 0.1, 0.6) * (lx + exp(-dx * 16.0) * 0.3);
+    col += vec3(0.1, 0.9, 1.0) * (lz + exp(-dz * 16.0) * 0.3);
+    col = mix(col, vec3(0.3, 0.02, 0.15), smoothstep(-1.0, -5.5, z));`),
+};
+
+// Extras some rooms have: a mirror ball and circling colored lights, or bubbles.
+const discoFx = new THREE.Group();
+const mirrorBall = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(0.42, 2),
+  new THREE.MeshStandardMaterial({ color: 0xe8e8f0, metalness: 1, roughness: 0.08, flatShading: true })
+);
+mirrorBall.position.set(0.4, 3.35, -2.0);
+const ballString = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 3, 6), new THREE.MeshBasicMaterial({ color: 0x555566 }));
+ballString.position.set(0.4, 5.0, -2.0);
+discoFx.add(mirrorBall, ballString);
+scene.add(discoFx);
+const discoLights = [0xff3fa8, 0x3fe0ff, 0xffd23f].map(c => {
+  const L = new THREE.PointLight(c, 0, 9, 1.2);
+  scene.add(L);
+  return L;
+});
+const BUBBLES = 40;
+const bubbleMesh = new THREE.InstancedMesh(
+  new THREE.SphereGeometry(0.06, 14, 10),
+  new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0, transparent: true, opacity: 0.35, envMapIntensity: 2.5, clearcoat: 1 }),
+  BUBBLES
+);
+bubbleMesh.frustumCulled = false;
+scene.add(bubbleMesh);
+const bubbles = Array.from({ length: BUBBLES }, () => ({ x: 0, y: -1, z: 0, sp: 0, ph: 0, s: 1 }));
+const bm = new THREE.Matrix4();
+function resetBubble(b, anywhere) {
+  b.x = (Math.random() - 0.5) * 8; b.z = -2.3 + Math.random() * 3;
+  b.y = anywhere ? Math.random() * 6 : -0.1;
+  b.sp = 0.5 + Math.random() * 0.7; b.ph = Math.random() * 6; b.s = 0.5 + Math.random() * 1.1;
+}
+bubbles.forEach(b => resetBubble(b, true));
+
+let roomLook = { env: 1.45, glow: 0, inner: 0.16, sat: 1.15, irid: 0 };
+function updateRoomFx(dt, t) {
+  roomTime.value = t;
+  const R = ROOMS[roomIdx];
+  if (R.fx === 'disco') {
+    mirrorBall.rotation.y = t * 0.8;
+    discoLights.forEach((L, k) => {
+      const a = t * 0.9 + k * 2.1;
+      L.position.set(Math.cos(a) * 2.6, 2.4 + Math.sin(t * 1.3 + k) * 0.4, -1 + Math.sin(a) * 1.6);
+    });
+  }
+  if (R.fx === 'bubbles') {
+    bubbles.forEach((b, k) => {
+      b.y += b.sp * dt;
+      b.x += Math.sin(t * 2 + b.ph) * 0.25 * dt;
+      if (b.y > 6.5) resetBubble(b, false);
+      bm.makeScale(b.s, b.s, b.s).setPosition(b.x, b.y, b.z);
+      bubbleMesh.setMatrixAt(k, bm);
+    });
+    bubbleMesh.instanceMatrix.needsUpdate = true;
+  }
+}
+
+const wallStd = wall.material, floorStd = floor.material;
+let roomIdx = 0;
+function drawRoomPictures(R) {
+  if (R.wall) {
+    const wc = wallTex.image, g = wc.getContext('2d');
+    g.setTransform(wc.width / WALL_PX[0], 0, 0, wc.height / WALL_PX[1], 0, 0);
+    R.wall(g, WALL_PX[0], WALL_PX[1]);
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    wallTex.needsUpdate = true;
+  }
+  if (R.floor) {
+    const fc = floorTex.image;
+    R.floor(fc.getContext('2d'), fc.width, fc.height);
+    floorTex.needsUpdate = true;
+    floorTex.repeat.set(R.repeat[0], R.repeat[1]);
+  }
+}
+function applyRoom(i) {
+  const R = ROOMS[i];
+  roomIdx = i;
+  drawRoomPictures(R);
+  // rooms that use a handwriting or comic font redraw once the font arrives
+  if (R.fonts && document.fonts) {
+    Promise.all(R.fonts.map(f => document.fonts.load(f))).then(() => { if (roomIdx === i) drawRoomPictures(R); }).catch(() => {});
+  }
+  wall.material = R.wallShader ? WALL_SHADERS[R.wallShader] : wallStd;
+  floor.material = R.floorShader ? FLOOR_SHADERS[R.floorShader] : floorStd;
+  scene.background = lin(R.bg);
+  const L = Object.assign({ hemi: 0.52, sun: 0.5, hemiSky: 0xffffff, hemiGround: 0xf2cfe0 }, R.light || {});
+  hemi.intensity = L.hemi; sun.intensity = L.sun;
+  hemi.color.setHex(L.hemiSky); hemi.groundColor.setHex(L.hemiGround);
+  roomLook = Object.assign({ env: 1.45, glow: 0, inner: 0.16, sat: 1.15, irid: 0 }, R.look || {});
+  discoFx.visible = R.fx === 'disco';
+  discoLights.forEach(Lt => { Lt.intensity = R.fx === 'disco' ? 1.3 : 0; });
+  bubbleMesh.visible = R.fx === 'bubbles';
+  const sel = document.getElementById('room');
+  if (sel) sel.value = String(i);
+}
+
+/* ------------------------------------------------------------------ *
+ *  The jello body: one smooth shape, built from a formula.
+ *  A "signed distance function" says how far any point is from the
+ *  body's skin. Head, torso, arms and legs are blended with a soft
+ *  union so they melt into one piece, like a real molded gummy.
+ * ------------------------------------------------------------------ */
+function sdCapsule(px, py, pz, ax, ay, bx, by, r) {
+  const pax = px - ax, pay = py - ay, bax = bx - ax, bay = by - ay;
+  let h = (pax * bax + pay * bay) / (bax * bax + bay * bay);
+  h = h < 0 ? 0 : h > 1 ? 1 : h;
+  const dx = pax - bax * h, dy = pay - bay * h;
+  return Math.sqrt(dx * dx + dy * dy + pz * pz) - r;
+}
+function smin(a, b, k) {
+  const h = Math.max(k - Math.abs(a - b), 0) / k;
+  return Math.min(a, b) - h * h * k * 0.25;
+}
+function bodySDF(x, y, z) {
+  z *= 1.12;
+  const ax = Math.abs(x);
+  let d = sdCapsule(x, y, z, 0, 0.82, 0, 1.32, 0.40);
+  d = smin(d, Math.sqrt(x * x + (y - 1.88) * (y - 1.88) + z * z) - 0.38, 0.16);
+  d = smin(d, sdCapsule(ax, y, z, 0.30, 1.42, 0.70, 0.84, 0.145), 0.10);
+  d = smin(d, sdCapsule(ax, y, z, 0.23, 0.72, 0.27, 0.16, 0.17), 0.12);
+  return -smin(-d, y, 0.04); // flat soles so they stand
+}
+
+// Turn the formula into triangles ("surface nets"), then snap every vertex
+// exactly onto the skin so the surface is perfectly smooth.
+function buildBody() {
+  const h = 0.021, X0 = -1.0, Y0 = -0.05, Z0 = -0.46;
+  const nx = Math.ceil(2.0 / h) + 1, ny = Math.ceil(2.42 / h) + 1, nz = Math.ceil(0.92 / h) + 1;
+  const F = new Float32Array(nx * ny * nz);
+  let p = 0;
+  for (let k = 0; k < nz; k++) for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++)
+    F[p++] = bodySDF(X0 + i * h, Y0 + j * h, Z0 + k * h);
+  const at = (i, j, k) => F[i + nx * (j + ny * k)];
+  const cx = nx - 1, cy = ny - 1, cz = nz - 1;
+  const cellV = new Int32Array(cx * cy * cz).fill(-1);
+  const cell = (i, j, k) => cellV[i + cx * (j + cy * k)];
+  const C = [[0,0,0],[1,0,0],[0,1,0],[1,1,0],[0,0,1],[1,0,1],[0,1,1],[1,1,1]];
+  const E = [[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+  const val = new Float32Array(8);
+  const pos = [];
+  for (let k = 0; k < cz; k++) for (let j = 0; j < cy; j++) for (let i = 0; i < cx; i++) {
+    let mask = 0;
+    for (let c = 0; c < 8; c++) {
+      val[c] = at(i + C[c][0], j + C[c][1], k + C[c][2]);
+      if (val[c] < 0) mask |= 1 << c;
+    }
+    if (mask === 0 || mask === 255) continue;
+    let sx = 0, sy = 0, sz = 0, n = 0;
+    for (const [a, b] of E) {
+      if ((val[a] < 0) !== (val[b] < 0)) {
+        const t = val[a] / (val[a] - val[b]);
+        sx += C[a][0] + (C[b][0] - C[a][0]) * t;
+        sy += C[a][1] + (C[b][1] - C[a][1]) * t;
+        sz += C[a][2] + (C[b][2] - C[a][2]) * t;
+        n++;
+      }
+    }
+    cellV[i + cx * (j + cy * k)] = pos.length / 3;
+    pos.push(X0 + (i + sx / n) * h, Y0 + (j + sy / n) * h, Z0 + (k + sz / n) * h);
+  }
+  const quads = [];
+  for (let k = 0; k < nz; k++) for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const a = at(i, j, k) < 0;
+    if (i < cx && j >= 1 && j < cy && k >= 1 && k < cz && a !== (at(i + 1, j, k) < 0))
+      quads.push(cell(i, j - 1, k - 1), cell(i, j, k - 1), cell(i, j, k), cell(i, j - 1, k));
+    if (j < cy && i >= 1 && i < cx && k >= 1 && k < cz && a !== (at(i, j + 1, k) < 0))
+      quads.push(cell(i - 1, j, k - 1), cell(i, j, k - 1), cell(i, j, k), cell(i - 1, j, k));
+    if (k < cz && i >= 1 && i < cx && j >= 1 && j < cy && a !== (at(i, j, k + 1) < 0))
+      quads.push(cell(i - 1, j - 1, k), cell(i, j - 1, k), cell(i, j, k), cell(i - 1, j, k));
+  }
+  const nor = new Float32Array(pos.length);
+  const e = 1e-3;
+  const grad = (x, y, z) => [
+    bodySDF(x + e, y, z) - bodySDF(x - e, y, z),
+    bodySDF(x, y + e, z) - bodySDF(x, y - e, z),
+    bodySDF(x, y, z + e) - bodySDF(x, y, z - e),
+  ];
+  for (let v = 0; v < pos.length; v += 3) {
+    let x = pos[v], y = pos[v + 1], z = pos[v + 2];
+    for (let it = 0; it < 4; it++) {
+      const d = bodySDF(x, y, z);
+      const [gx, gy, gz] = grad(x, y, z);
+      const g2 = (gx * gx + gy * gy + gz * gz) / (4 * e * e) || 1;
+      const s = d / g2 / (2 * e);
+      x -= gx * s; y -= gy * s; z -= gz * s;
+    }
+    pos[v] = x; pos[v + 1] = y; pos[v + 2] = z;
+    const [gx, gy, gz] = grad(x, y, z);
+    const l = Math.hypot(gx, gy, gz) || 1;
+    nor[v] = gx / l; nor[v + 1] = gy / l; nor[v + 2] = gz / l;
+  }
+  const idx = [];
+  for (let q = 0; q < quads.length; q += 4) {
+    const a = quads[q], b = quads[q + 1], c = quads[q + 2], d = quads[q + 3];
+    if (a < 0 || b < 0 || c < 0 || d < 0) continue;
+    const ux = pos[b*3] - pos[a*3], uy = pos[b*3+1] - pos[a*3+1], uz = pos[b*3+2] - pos[a*3+2];
+    const vx = pos[c*3] - pos[a*3], vy = pos[c*3+1] - pos[a*3+1], vz = pos[c*3+2] - pos[a*3+2];
+    const tx = uy * vz - uz * vy, ty = uz * vx - ux * vz, tz = ux * vy - uy * vx;
+    const dot = tx * (nor[a*3] + nor[c*3]) + ty * (nor[a*3+1] + nor[c*3+1]) + tz * (nor[a*3+2] + nor[c*3+2]);
+    if (dot >= 0) idx.push(a, b, c, a, c, d); else idx.push(a, c, b, a, d, c);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  geo.setIndex(idx);
+  geo.computeBoundingSphere();
+  geo.computeBoundingBox();
+  return geo;
+}
+const BODY = buildBody();
+
+/* ------------------------------------------------------------------ *
+ *  The wobble skeleton: seven invisible weights on springs.
+ *  Head, chest, hips, two hands, two feet. Each is pulled toward a
+ *  target spot by its own spring and tugged by its neighbours, so a
+ *  poke on the head ripples down through the body and dies away.
+ *  Walking, hugging and dizziness work by moving those target spots.
+ * ------------------------------------------------------------------ */
+const REST = [
+  [0, 1.88, 0], [0, 1.32, 0], [0, 0.78, 0],
+  [-0.70, 0.84, 0], [0.70, 0.84, 0],
+  [-0.27, 0.18, 0], [0.27, 0.18, 0],
+].map(a => new V3(...a));
+const HOME = [105, 150, 175, 80, 80, 1500, 1500];      // spring toward the target spot
+const FOOT_SLIDE = 230;                                  // feet grip the floor loosely side to side
+const SWAY = [1.45, 1.05, 0.8, 1.55, 1.55, 0.12, 0.12]; // how much each part lags behind
+const REACH = [0.8, 0.45, 0.45, 0.95, 0.95, 0.5, 0.5];  // stretch before the body follows
+const RADIUS = [0.38, 0.4, 0.4, 0.145, 0.145, 0.17, 0.17];
+const LINKS = [[0, 1], [1, 2], [1, 3], [1, 4], [2, 5], [2, 6]];
+const LINK_K = 95, DAMP = 1.45;
+const EYE_REST = [new V3(-0.14, 1.95, 0.29), new V3(0.14, 1.95, 0.29)];
+
+/* ------------------------------------------------------------------ *
+ *  Shader patch. Every frame the graphics chip bends each point of the
+ *  skin by the skeleton, adds poke dents and ripples, bulges the legs
+ *  when the hips sink, flattens the side pressed against the other
+ *  buddy, and re-works the surface direction so the reflections slide
+ *  around as it wobbles.
+ * ------------------------------------------------------------------ */
+const VERT_HEAD = /* glsl */`
+uniform vec3 uOff[7];
+uniform vec3 uRest[7];
+uniform vec4 uRip[4];
+uniform vec4 uRipAmp;
+uniform float uSquash;
+uniform float uLeg;
+uniform float uRootY;
+uniform vec4 uContact;
+varying vec3 vRest;
+vec3 jDeform(vec3 p, vec3 n) {
+  vec3 d = vec3(0.0); float ws = 0.0;
+  for (int i = 0; i < 7; i++) {
+    vec3 r = p - uRest[i];
+    float w = exp(-dot(r, r) * 7.0);
+    d += w * uOff[i]; ws += w;
+  }
+  vec3 q = p + d / max(ws, 1e-5);
+  q.xz += p.xz * uSquash * 0.6 * smoothstep(0.0, 0.7, p.y);
+  // legs: when the hips sink the legs bulge out and splay, like a jelly under a weight
+  float legBand = smoothstep(0.0, 0.25, p.y) * (1.0 - smoothstep(0.45, 0.85, p.y));
+  float side = p.x / (abs(p.x) + 0.04);
+  q.x += (p.x - side * 0.25) * uLeg * 1.6 * legBand + side * uLeg * 0.3 * (1.0 - smoothstep(0.0, 0.8, p.y));
+  q.z += p.z * uLeg * 1.6 * legBand;
+  for (int k = 0; k < 4; k++) {
+    float t = uRip[k].w;
+    float dist = length(p - uRip[k].xyz);
+    float wave = sin(dist * 15.0 - t * 24.0) * exp(-t * 2.2) * exp(-dist * 1.4) * 0.045 * smoothstep(0.0, 0.06, t);
+    float dent = -exp(-dist * dist * 20.0) * exp(-t * 7.0) * 0.17;
+    q += n * uRipAmp[k] * (wave + dent);
+  }
+  vec2 cd = uContact.xy;
+  float e = max(dot(q.xz, cd) - uContact.z, 0.0) * uContact.w;
+  e = e * e / (e + 0.03);
+  e = 0.3 * tanh(e / 0.3);
+  vec2 perp = vec2(-cd.y, cd.x);
+  float sp = dot(p.xz, perp);
+  q.xz += -cd * e * 0.8 + perp * e * 0.75 * sp / (abs(sp) + 0.1);
+  q.y += e * 0.35 * (p.y - 1.1);
+  // The floor: jello pushed down into it flattens and spreads out in a
+  // puddle instead of passing through. Smooth, so there's no hard crease.
+  float wy = q.y + uRootY;
+  if (wy < 0.04) {
+    float lifted = 0.04 * exp((wy - 0.04) / 0.04);
+    float squashed = lifted - wy;
+    q.y += squashed;
+    vec2 out2 = n.xz + q.xz * 0.15;
+    q.xz += normalize(out2 + vec2(1e-4)) * squashed * 0.75;
+  }
+  return q;
+}
+`;
+const VERT_NORMAL = /* glsl */`
+vec3 jN = normalize(normal);
+vec3 jT = normalize(cross(jN, abs(jN.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+vec3 jB = cross(jN, jT);
+vec3 jQ = jDeform(position, jN);
+vec3 jQ1 = jDeform(position + jT * 0.012, jN);
+vec3 jQ2 = jDeform(position + jB * 0.012, jN);
+vec3 objectNormal = normalize(cross(jQ1 - jQ, jQ2 - jQ));
+vRest = position;
+`;
+const FRAG_HEAD = /* glsl */`
+uniform float uInner;
+uniform float uSat;
+uniform vec3 uColA;
+uniform vec3 uColB;
+uniform vec3 uDyeO;
+uniform float uDyeR;
+uniform vec3 uOther;
+uniform vec4 uStain;
+varying vec3 vRest;
+`;
+const FRAG_COLOR = /* glsl */`
+float jd = length(vRest - uDyeO) + 0.08 * sin(vRest.x * 11.0 + vRest.y * 7.0) * sin(vRest.y * 9.0 - vRest.z * 13.0);
+vec3 jc = mix(uColA, uColB, 1.0 - smoothstep(uDyeR - 0.2, uDyeR, jd));
+float js = smoothstep(uStain.z - 0.6, uStain.z + 0.05, dot(vRest.xz, uStain.xy)) * uStain.w;
+jc = mix(jc, uOther, js * 0.62);
+vec4 diffuseColor = vec4(jc, opacity);
+`;
+
+/* ------------------------------------------------------------------ *
+ *  Soft shadow + colored glow on the floor (light passing through
+ *  colored jello tints the floor under it).
+ * ------------------------------------------------------------------ */
+const blobTex = canvasTexture(256, 256, (g, w) => {
+  const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  r.addColorStop(0, 'rgba(255,255,255,1)');
+  r.addColorStop(0.45, 'rgba(255,255,255,0.45)');
+  r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, w, w);
+});
+blobTex.encoding = THREE.LinearEncoding;
+function floorBlob(color, opacity) {
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshBasicMaterial({ map: blobTex, color, transparent: true, opacity, depthWrite: false })
+  );
+  m.rotation.x = -Math.PI / 2;
+  scene.add(m);
+  return m;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Turning. A buddy's skeleton lives in its own "local" frame (front
+ *  is +z). These convert between that frame and the room.
+ * ------------------------------------------------------------------ */
+function toWorld(P, v, out) {
+  const c = Math.cos(P.yaw), s = Math.sin(P.yaw);
+  return out.set(v.x * c + v.z * s, v.y, -v.x * s + v.z * c);
+}
+function toLocal(P, v, out) {
+  const c = Math.cos(P.yaw), s = Math.sin(P.yaw);
+  return out.set(v.x * c - v.z * s, v.y, v.x * s + v.z * c);
+}
+const wrapAngle = a => Math.atan2(Math.sin(a), Math.cos(a));
+const rand = (a, b) => a + Math.random() * (b - a);
+
+/* ------------------------------------------------------------------ *
+ *  A buddy
+ * ------------------------------------------------------------------ */
+const eyeGeo = new THREE.SphereGeometry(0.068, 24, 16);
+const eyeMat = new THREE.MeshPhysicalMaterial({ color: lin('#1a0b17'), roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05 });
+
+function makeBuddy(x, z, hex, pitch, name) {
+  const col = lin(hex);
+  const P = {
+    name, id: name,
+    root: new V3(x, 1.6, z),
+    vel: new V3(), prevVel: new V3(),
+    yaw: 0, yawRate: 0,
+    d: REST.map(() => new V3()),
+    v: REST.map(() => new V3()),
+    tgt: REST.map(() => new V3()),
+    rip: [0, 1, 2, 3].map(() => ({ c: new V3(0, -9, 0), age: 9, amp: 0 })),
+    ripNext: 0,
+    pitch,
+    phase: Math.random() * 6,
+    color: col.clone(),
+    dye: null,
+    stain: { amt: 0, dx: 1, dz: 0, plane: 9 },
+    touching: false, wasTouching: false,
+    cDir: { x: 1, z: 0 }, cPlane: 9,
+    grab: null,
+    crouch: 0,
+    want: new V3(),          // the velocity the brain would like
+    gait: 0, gaitStep: 0, walkAmt: 0,
+    brain: { state: 'idle', t: rand(0.8, 2), target: new V3(), face: 'cam', flag: 0 },
+    pokes: [],
+    blink: rand(1, 4), blinkOn: 0,
+    look: new V3(0, 1.8, 6), lookT: 0,
+    landedHard: 0,
+    gy: 0, spin: 0, giggleT: 0,
+    slipCool: 0,
+    tiltX: 0, tiltZ: 0, tiltVX: 0, tiltVZ: 0, tiltHold: 0, tiltGoalX: 0, tiltGoalZ: 0,
+    socialAfter: rand(6, 10), // no visits or chases in the first few seconds
+  };
+  P.U = {
+    uOff: { value: P.d.map(() => new V3()) },
+    uRest: { value: REST },
+    uRip: { value: P.rip.map(() => new THREE.Vector4(0, -9, 0, 9)) },
+    uRipAmp: { value: new THREE.Vector4() },
+    uSquash: { value: 0 },
+    uLeg: { value: 0 },
+    uRootY: { value: 0 },
+    uContact: { value: new THREE.Vector4(1, 0, 99, 0) },
+    uColA: { value: col.clone() },
+    uColB: { value: col.clone() },
+    uDyeO: { value: new V3(0, 1.8, 0) },
+    uDyeR: { value: 9 },
+    uOther: { value: col.clone() },
+    uStain: { value: new THREE.Vector4(1, 0, 99, 0) },
+    uInner: { value: 0.16 },
+    uSat: { value: 1.15 },
+  };
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: col.clone(),
+    transmission: 1,
+    thickness: 1.1,
+    roughness: 0.06,
+    ior: 1.36,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    attenuationColor: col.clone(),
+    attenuationDistance: 0.34,
+    iridescence: 0, iridescenceIOR: 1.3, iridescenceThicknessRange: [120, 420],
+    specularIntensity: 1,
+    envMapIntensity: 1.25,
+  });
+  mat.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, P.U);
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\n' + VERT_HEAD)
+      .replace('#include <beginnormal_vertex>', VERT_NORMAL)
+      .replace('#include <begin_vertex>', 'vec3 transformed = jQ;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\n' + FRAG_HEAD)
+      .replace('vec4 diffuseColor = vec4( diffuse, opacity );', FRAG_COLOR)
+      // Light bouncing around inside the jello (subsurface scattering): it never
+      // goes darker than a glow of its own color, and the color stays rich.
+      .replace('#include <transmission_fragment>', `#include <transmission_fragment>
+        totalDiffuse = max(totalDiffuse, material.diffuseColor * uInner);
+        float jLum = dot(totalDiffuse, vec3(0.2126, 0.7152, 0.0722));
+        totalDiffuse = max(mix(vec3(jLum), totalDiffuse, uSat), 0.0);`);
+  };
+  P.mat = mat;
+  P.mesh = new THREE.Mesh(BODY, mat);
+  P.mesh.frustumCulled = false;
+  P.mesh.rotation.order = 'YXZ'; // turn first, then tip
+  scene.add(P.mesh);
+  // Eyes: two glossy candy beads pressed into the front of the head.
+  P.eyes = EYE_REST.map(() => {
+    const e = new THREE.Mesh(eyeGeo, eyeMat);
+    P.mesh.add(e);
+    return e;
+  });
+  P.shadow = floorBlob(new THREE.Color(0x5a2048), 0.28);
+  P.glow = floorBlob(col.clone(), 0.55);
+  return P;
+}
+
+const PALETTE = [
+  ['Strawberry', '#ff2448'], ['Tangerine', '#ff8c00'], ['Lemon', '#fff200'], ['Lime', '#5fd916'],
+  ['Mint', '#12d6a8'], ['Blueberry', '#2659ff'], ['Grape', '#8a3dff'], ['Bubblegum', '#ff5cc8'],
+];
+const A = makeBuddy(-1.05, -0.9, '#ff2448', 1.0, 'red');
+const B = makeBuddy(1.05, -0.4, '#2659ff', 0.8, 'blue');
+const BUDDIES = [A, B];
+A.other = B; B.other = A;
+A.root.y = 1.2; B.root.y = 1.7; // they drop in on load
+let lastTouched = A;
+let nextId = 3;
+
+// Who a buddy hangs out with right now: another buddy, preferring one that's free.
+function pickPartner(P) {
+  const others = BUDDIES.filter(o => o !== P);
+  const free = others.filter(o => ['idle', 'wander', 'admire', 'look'].includes(o.brain.state));
+  const pool = free.length ? free : others;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/* ------------------------------------------------------------------ *
+ *  Sound, synthesized on the spot (no audio files).
+ * ------------------------------------------------------------------ */
+let actx = null, master = null, noiseBuf = null, soundOn = false, interacted = false; // browsers stay silent until you tap, so start honest: off
+function audio() {
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    actx = new AC();
+    const comp = actx.createDynamicsCompressor();
+    master = actx.createGain(); master.gain.value = 0.8;
+    master.connect(comp).connect(actx.destination);
+    noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.4, actx.sampleRate);
+    const ch = noiseBuf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+  }
+  if (actx.state !== 'running') actx.resume(); // 'suspended', or 'interrupted' on iPhone after a call or app switch
+  return actx;
+}
+
+/* Phones. Must run inside a tap:
+   - iPhone mutes Web Audio when the ringer switch is on silent, but not media playback. Declaring
+     the page a "playback" session (newer Safari) and looping a silent media track (older Safari)
+     makes the sound play even on silent.
+   - Some browsers only fully unlock audio after a sound starts during the tap: play one silent sample. */
+let silentTrack = null, audioUnlocked = false, lastWake = 0;
+// A sound engine the phone put to sleep can refuse to wake. Throw it away and build a fresh one
+// (only inside a tap, where phones allow it).
+function rebuildAudio() {
+  try { if (actx) actx.close(); } catch (e) {}
+  actx = null; master = null; noiseBuf = null; audioUnlocked = false;
+}
+function silentWavUrl() {
+  const rate = 8000, n = 800, bytes = new Uint8Array(44 + n * 2), v = new DataView(bytes.buffer);
+  const str = (o, t) => { for (let i = 0; i < t.length; i++) bytes[o + i] = t.charCodeAt(i); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); str(8, 'WAVEfmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, n * 2, true);
+  let bin = ''; bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return 'data:audio/wav;base64,' + btoa(bin);
+}
+function unlockAudio() {
+  // 1. The silent media track goes first: on iPhone, starting media can pause the page's
+  //    sound engine, so start it before waking the engine, not after.
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  try {
+    if (!silentTrack) {
+      silentTrack = document.createElement('audio');
+      silentTrack.setAttribute('playsinline', ''); silentTrack.setAttribute('x-webkit-airplay', 'deny');
+      silentTrack.loop = true; silentTrack.preload = 'auto';
+      silentTrack.src = silentWavUrl();
+    }
+    if (silentTrack.paused) {
+      const pr = silentTrack.play();
+      // 3. ...and once the track is really playing, wake the engine again in case it paused.
+      if (pr && pr.then) pr.then(() => { if (actx && actx.state !== 'running') actx.resume(); }).catch(() => {});
+    }
+  } catch (e) {}
+  // 2. Wake the sound engine (this also resumes it if a call or app switch paused it).
+  //    Still asleep a moment after the last try? Start over with a fresh one.
+  const now = performance.now();
+  if (actx && actx.state !== 'running' && now - lastWake > 600) rebuildAudio();
+  lastWake = now;
+  const a = audio(); if (!a) return;
+  if (!audioUnlocked) {
+    audioUnlocked = true;
+    try {
+      const src = a.createBufferSource(); src.buffer = a.createBuffer(1, 1, 22050);
+      src.connect(a.destination); src.start(0);
+    } catch (e) {}
+    a.onstatechange = () => { if (soundCheckEl) soundCheckEl.update(); };
+  }
+  if (a.state !== 'running') a.resume();
+}
+// Sound check: add #sound-check to the address to see what the phone's audio is doing.
+let soundCheckEl = null;
+if (location.hash === '#sound-check') {
+  soundCheckEl = document.createElement('button');
+  soundCheckEl.type = 'button';
+  soundCheckEl.style.cssText = 'position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);z-index:9;max-width:calc(100% - 24px);padding:10px 12px;border:0;border-radius:12px;background:#3d1838;color:#fff;font:700 12px/1.45 ui-monospace,Menlo,monospace;text-align:left;white-space:pre-wrap';
+  soundCheckEl.update = () => {
+    const sess = navigator.audioSession ? navigator.audioSession.type : 'not supported';
+    soundCheckEl.textContent =
+      'SOUND CHECK (tap me for a test beep)\n' +
+      'Sound button: ' + (soundOn ? 'on' : 'off') + '\n' +
+      'Sound engine: ' + (actx ? actx.state : 'not started') + '\n' +
+      'Silent track: ' + (silentTrack ? (silentTrack.error ? 'error ' + silentTrack.error.code : silentTrack.paused ? 'paused' : 'playing') : 'not started') + '\n' +
+      'Audio mode: ' + sess;
+  };
+  soundCheckEl.addEventListener('click', () => { interacted = true; if (!soundOn) setSound(true); unlockAudio(); plip(1.2); setTimeout(soundCheckEl.update, 300); });
+  document.body.appendChild(soundCheckEl);
+  soundCheckEl.update();
+  setInterval(soundCheckEl.update, 500);
+}
+// Wake the sound back up after a phone call, an app switch or a locked screen.
+['touchend', 'click', 'keydown'].forEach(type => window.addEventListener(type, () => {
+  if (soundOn) unlockAudio();
+}, { passive: true, capture: true }));
+// Leaving or refreshing the page: let go of the phone's audio so the new page starts clean.
+window.addEventListener('pagehide', () => {
+  try { if (silentTrack) silentTrack.pause(); } catch (e) {}
+  try { if (actx) actx.close(); } catch (e) {}
+});
+window.addEventListener('pageshow', e => { if (e.persisted) { actx = null; audioUnlocked = false; } });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && soundOn && actx) actx.resume();
+});
+function wet(a, t, vol, f0, f1, dur) {
+  const src = a.createBufferSource(); src.buffer = noiseBuf;
+  const bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 3;
+  bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  src.connect(bp).connect(g).connect(master);
+  src.start(t); src.stop(t + dur + 0.02);
+}
+function blorp(strength, pitch = 1, low = false) {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime, s = Math.min(1, Math.max(0.15, strength));
+  const f = (low ? 260 : 480) * pitch * (0.85 + Math.random() * 0.3);
+  const o = a.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(f * 1.6, t);
+  o.frequency.exponentialRampToValueAtTime(f * 0.42, t + (low ? 0.22 : 0.15));
+  const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500; lp.Q.value = 7;
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.32 * s, t + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + (low ? 0.32 : 0.22));
+  o.connect(lp).connect(g).connect(master);
+  o.start(t); o.stop(t + 0.35);
+  wet(a, t, 0.1 * s, low ? 1200 : 2400, 500, low ? 0.16 : 0.09);
+}
+// a very soft footstep squelch
+function pat(pitch = 1) {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  const o = a.createOscillator(); o.type = 'sine';
+  const f = 300 * pitch * rand(0.9, 1.15);
+  o.frequency.setValueAtTime(f * 1.4, t);
+  o.frequency.exponentialRampToValueAtTime(f * 0.6, t + 0.07);
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.05, t + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+  o.connect(g).connect(master);
+  o.start(t); o.stop(t + 0.1);
+}
+function boing(strength, pitch = 1) {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime, s = Math.min(1, Math.max(0.2, strength));
+  const o = a.createOscillator(); o.type = 'triangle';
+  const base = 170 * pitch;
+  o.frequency.setValueAtTime(base * 0.7, t);
+  o.frequency.exponentialRampToValueAtTime(base * 1.9, t + 0.09);
+  o.frequency.exponentialRampToValueAtTime(base * 1.25, t + 0.5);
+  const lfo = a.createOscillator(); lfo.frequency.value = 13;
+  const depth = a.createGain();
+  depth.gain.setValueAtTime(60 * s * pitch, t);
+  depth.gain.exponentialRampToValueAtTime(1, t + 0.55);
+  lfo.connect(depth).connect(o.frequency);
+  const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1100;
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.28 * s, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+  o.connect(lp).connect(g).connect(master);
+  o.start(t); lfo.start(t); o.stop(t + 0.62); lfo.stop(t + 0.62);
+}
+function plip(pitch = 1) {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  const o = a.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(700 * pitch, t);
+  o.frequency.exponentialRampToValueAtTime(1500 * pitch, t + 0.07);
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.22, t + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+  o.connect(g).connect(master);
+  o.start(t); o.stop(t + 0.16);
+}
+// two rising notes: a happy little "mm-hm"
+function coo(pitch = 1) {
+  plip(pitch * 0.8);
+  setTimeout(() => plip(pitch * 1.1), 110);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Layout: how much floor the camera can see decides where they can walk.
+ * ------------------------------------------------------------------ */
+const TAN = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+const ZMIN = -2.3, ZMAX = 0.6;
+let camDist = 8, aspect = 1, laidOutW = -1, laidOutH = -1;
+function resize() {
+  // The page can load inside a panel that is briefly 0 pixels wide. Never do
+  // layout math with that (0 / 0 breaks every position), just wait for a real size.
+  const w = window.innerWidth, h = window.innerHeight;
+  if (!(w > 0 && h > 0)) return;
+  laidOutW = w; laidOutH = h;
+  renderer.setSize(w, h, false);
+  aspect = w / h;
+  camera.aspect = aspect;
+  const needW = aspect < 0.8 ? 2.3 : 3.3;
+  camDist = Math.max(2.25 / TAN, needW / (TAN * aspect));
+  camera.position.set(0, 1.9 + camDist * 0.07, camDist);
+  // on tall phone screens aim higher, so the buddies sit lower (below the buttons, clear of the title)
+  camera.lookAt(0, aspect < 0.8 ? 1.9 : 0.95, -0.7);
+  camera.updateProjectionMatrix();
+}
+// how far left/right a buddy can go at a given depth
+const xBound = z => {
+  const b = (camDist - z) * TAN * aspect - 1.15;
+  return Number.isFinite(b) ? Math.max(0.9, b) : 2.5;
+};
+window.addEventListener('resize', resize);
+resize();
+if (aspect < 0.8) { A.root.x = -0.95; B.root.x = 0.95; }
+
+function randomSpot(out) {
+  const z = rand(ZMIN + 0.2, ZMAX - 0.2);
+  const xb = xBound(z) - 0.3;
+  return out.set(rand(-xb, xb), 0, z);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Toys: a trampoline, a cupcake and a rubber duck. The buddies go and
+ *  find them on their own, and you can drag any of them somewhere new.
+ * ------------------------------------------------------------------ */
+function toyMat(hex, rough = 0.28) {
+  return new THREE.MeshPhysicalMaterial({ color: lin(hex), roughness: rough, clearcoat: 0.8, clearcoatRoughness: 0.12 });
+}
+const toyShadowColor = new THREE.Color(0x5a2048);
+const T_R = 0.85, T_H = 0.34; // trampoline radius and height
+
+function makeTrampoline() {
+  const g = new THREE.Group();
+  const ringMat = toyMat('#ff86bd', 0.35);
+  ringMat.emissive = lin('#ff4fa3'); ringMat.emissiveIntensity = 0;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(T_R, 0.07, 18, 72), ringMat);
+  ring.rotation.x = -Math.PI / 2; ring.position.y = T_H; g.add(ring);
+  const matGeo = new THREE.RingGeometry(0.001, T_R - 0.02, 48, 10);
+  const mat = new THREE.Mesh(matGeo, new THREE.MeshStandardMaterial({ color: lin('#2a1b38'), roughness: 0.55, side: THREE.DoubleSide }));
+  mat.rotation.x = -Math.PI / 2; mat.position.y = T_H - 0.02; g.add(mat);
+  const legMat = toyMat('#ffd3e8');
+  for (let k = 0; k < 4; k++) {
+    const a = k * Math.PI / 2 + Math.PI / 4;
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, T_H, 12), legMat);
+    leg.position.set(Math.cos(a) * T_R * 0.92, T_H / 2, Math.sin(a) * T_R * 0.92);
+    g.add(leg);
+  }
+  scene.add(g);
+  return {
+    kind: 'trampoline', group: g, pos: g.position, block: T_R + 0.1,
+    mat, ringMat, glowAmt: 0, hover: false, base: matGeo.attributes.position.array.slice(), sag: 0, sagV: 0, user: null,
+    shadow: floorBlob(toyShadowColor, 0.2), shadowSize: 2.3,
+  };
+}
+
+const FROSTINGS = ['#ff5cc8', '#fff200', '#5fd916', '#12d6a8', '#8a3dff', '#ff8c00', '#2659ff', '#ff2448'];
+function makeCupcake() {
+  const g = new THREE.Group();
+  const wrap = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.15, 0.24, 18),
+    new THREE.MeshStandardMaterial({ color: lin('#ffe6f1'), roughness: 0.5, flatShading: true })
+  );
+  wrap.position.y = 0.12; g.add(wrap);
+  const frostMat = toyMat('#ff5cc8', 0.3);
+  [[0.17, 0.075, 0.27], [0.12, 0.065, 0.37]].forEach(([r, t, y]) => {
+    const m = new THREE.Mesh(new THREE.TorusGeometry(r, t, 16, 40), frostMat);
+    m.rotation.x = -Math.PI / 2; m.position.y = y; g.add(m);
+  });
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 14), frostMat);
+  tip.position.y = 0.43; g.add(tip);
+  const cherry = new THREE.Mesh(new THREE.SphereGeometry(0.055, 18, 12), toyMat('#e0102e', 0.1));
+  cherry.position.y = 0.55; g.add(cherry);
+  scene.add(g);
+  return {
+    kind: 'cupcake', group: g, pos: g.position, block: 0.3, frostMat, frost: '#ff5cc8',
+    bites: 0, gone: false, respawn: 0, grow: 1, squish: 0, user: null,
+    shadow: floorBlob(toyShadowColor, 0.2), shadowSize: 0.75,
+  };
+}
+function setFrosting(C, hex) { C.frost = hex; C.frostMat.color.copy(lin(hex)); }
+
+function makeDuck() {
+  const g = new THREE.Group(), inner = new THREE.Group();
+  g.add(inner);
+  const yellow = toyMat('#ffd21f', 0.2);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.2, 28, 18), yellow);
+  body.scale.set(1, 0.78, 1.25); body.position.y = 0.16; inner.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 24, 16), yellow);
+  head.position.set(0, 0.36, 0.13); inner.add(head);
+  const beak = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 10), toyMat('#ff7a00', 0.25));
+  beak.scale.set(1.3, 0.55, 1.4); beak.position.set(0, 0.34, 0.26); inner.add(beak);
+  const eyeM = toyMat('#1a0b17', 0.1);
+  [-1, 1].forEach(sd => {
+    const e = new THREE.Mesh(new THREE.SphereGeometry(0.022, 12, 8), eyeM);
+    e.position.set(sd * 0.07, 0.4, 0.23); inner.add(e);
+  });
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.14, 14), yellow);
+  tail.position.set(0, 0.25, -0.24); tail.rotation.x = -0.9; inner.add(tail);
+  scene.add(g);
+  return {
+    kind: 'duck', group: g, inner, pos: g.position, vel: new V3(), yaw: 0,
+    wob: 0, wobV: 0, hopV: 0, block: 0.24, lastSqueak: 0, squash: 0, squashV: 0, stood: 0,
+    shadow: floorBlob(toyShadowColor, 0.2), shadowSize: 0.8,
+  };
+}
+
+const TRAMP = makeTrampoline(), CAKE = makeCupcake(), DUCK = makeDuck();
+const TOYS = [TRAMP, CAKE, DUCK];
+/* ---- Bowling ball: heavy, glossy, rolls; a fast one knocks a buddy over ---- */
+const ballTex = canvasTexture(512, 256, (g, w, h) => {
+  g.fillStyle = '#4a1f7a'; g.fillRect(0, 0, w, h);
+  const rnd = seeded(31);
+  for (let k = 0; k < 26; k++) {
+    g.strokeStyle = ['rgba(255,92,200,0.55)', 'rgba(53,200,255,0.45)', 'rgba(255,255,255,0.35)', 'rgba(20,0,40,0.5)'][k % 4];
+    g.lineWidth = 3 + rnd() * 10;
+    g.beginPath();
+    const y0 = rnd() * h, a = 10 + rnd() * 40, f = 1 + Math.floor(rnd() * 3), ph = rnd() * 6;
+    for (let x = 0; x <= w; x += 8) g.lineTo(x, y0 + Math.sin(x / w * Math.PI * 2 * f + ph) * a);
+    g.stroke();
+  }
+});
+const BALL_R = 0.3;
+function makeBall() {
+  const g = new THREE.Group(), inner = new THREE.Group();
+  g.add(inner);
+  inner.add(new THREE.Mesh(
+    new THREE.SphereGeometry(BALL_R, 40, 28),
+    new THREE.MeshPhysicalMaterial({ map: ballTex, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.03 })
+  ));
+  const holeMat = new THREE.MeshStandardMaterial({ color: lin('#0d0512'), roughness: 0.9 });
+  const up = new V3(0, 1, 0);
+  [[0, 1, 0.35], [-0.2, 0.95, 0.12], [0.2, 0.95, 0.12]].forEach(([x, y, z]) => {
+    const d = new V3(x, y, z).normalize();
+    const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.03, 16), holeMat);
+    hole.position.copy(d).multiplyScalar(BALL_R - 0.008);
+    hole.quaternion.setFromUnitVectors(up, d);
+    inner.add(hole);
+  });
+  g.position.y = BALL_R;
+  scene.add(g);
+  return {
+    kind: 'ball', group: g, inner, pos: g.position, vel: new V3(), block: BALL_R,
+    shadow: floorBlob(toyShadowColor, 0.26), shadowSize: 0.9,
+  };
+}
+
+/* ---- Banana peel: nobody sees it; step on it and down you go ---- */
+function makePeel() {
+  const g = new THREE.Group(), inner = new THREE.Group();
+  g.add(inner);
+  const yellow = toyMat('#ffd23a', 0.35), brown = toyMat('#6b4a1f', 0.5);
+  const middle = new THREE.Mesh(new THREE.SphereGeometry(0.08, 18, 12), yellow);
+  middle.scale.set(1, 0.5, 1.4); middle.position.y = 0.035; inner.add(middle);
+  for (let k = 0; k < 4; k++) {
+    const arm = new THREE.Group();
+    const petal = new THREE.Mesh(new THREE.SphereGeometry(0.1, 18, 10), yellow);
+    petal.scale.set(0.85, 0.22, 2.3); petal.position.set(0, 0.03, 0.2); petal.rotation.x = -0.18;
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.025, 10, 8), brown);
+    tip.position.set(0, 0.07, 0.42);
+    arm.add(petal, tip);
+    arm.rotation.y = k * Math.PI / 2 + 0.3 + (k % 2) * 0.2;
+    inner.add(arm);
+  }
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.028, 0.1, 10), brown);
+  stem.position.y = 0.09; inner.add(stem);
+  scene.add(g);
+  return {
+    kind: 'peel', group: g, inner, pos: g.position, vel: new V3(), spinV: 0, block: 0.3,
+    shadow: floorBlob(toyShadowColor, 0.14), shadowSize: 0.8,
+  };
+}
+
+const BALL = makeBall(), PEEL = makePeel();
+TOYS.push(BALL, PEEL);
+
+function placeToys() {
+  const zt = -1.75;
+  TRAMP.pos.set(-Math.min(2.4, xBound(zt) * 0.6), 0, zt);
+  const zc = -1.2;
+  CAKE.pos.set(Math.min(2.4, xBound(zc) * 0.62), 0, zc);
+  DUCK.pos.set(0.15, 0, 0.35);
+  if (TOYS.length > 3) { // the ball, fan and peel exist
+    BALL.pos.set(-0.55, BALL_R, -0.45);
+    PEEL.pos.set(1.05, 0, 0.45);
+  }
+}
+placeToys();
+
+// a free spot on the floor, away from the other toys and the buddies
+function freeSpot(out, self) {
+  for (let k = 0; k < 20; k++) {
+    randomSpot(out);
+    let ok = true;
+    for (const T of TOYS) if (T !== self && Math.hypot(out.x - T.pos.x, out.z - T.pos.z) < T.block + 0.9) ok = false;
+    for (const P of BUDDIES) if (Math.hypot(out.x - P.root.x, out.z - P.root.z) < 1.1) ok = false;
+    if (ok) break;
+  }
+  return out;
+}
+
+// How high the floor is under a buddy: the trampoline mat, the top of the
+// duck (it squashes), or the ground.
+const DUCK_H = 0.46;
+const duckTop = () => DUCK.pos.y + DUCK_H * (1 - DUCK.squash);
+function groundUnder(P) {
+  P.onTramp = false; P.onDuck = false;
+  const dx = P.root.x - TRAMP.pos.x, dz = P.root.z - TRAMP.pos.z;
+  if (dx * dx + dz * dz < (T_R - 0.12) ** 2 && P.root.y > T_H - 0.16 - TRAMP.sag) { P.onTramp = true; return T_H - TRAMP.sag; }
+  const ex = P.root.x - DUCK.pos.x, ez = P.root.z - DUCK.pos.z, top = duckTop();
+  if (!DUCK.dragging && ex * ex + ez * ez < 0.36 * 0.36 && P.root.y > top - 0.2) { P.onDuck = true; return top; }
+  return 0;
+}
+function stompDuck(impact) {
+  DUCK.squashV += 1.5 + impact * 0.7;
+  DUCK.wobV += 6;
+  if (time - DUCK.lastSqueak > 0.2) { squeak(0.75); DUCK.lastSqueak = time; }
+}
+
+// Toys are solid: a buddy walking into one slides around it.
+function pushOutOfToys(P) {
+  for (const T of TOYS) {
+    if (T === DUCK || T === BALL || T === PEEL || (T === CAKE && CAKE.gone)) continue;
+    if (T === TRAMP && P.root.y > T_H - 0.2) continue; // on top of it or flying over
+    const dx = P.root.x - T.pos.x, dz = P.root.z - T.pos.z;
+    const d = Math.hypot(dx, dz), min = T.block + 0.42;
+    if (d < min && d > 1e-4) {
+      const nx = dx / d, nz = dz / d;
+      P.root.x = T.pos.x + nx * min; P.root.z = T.pos.z + nz * min;
+      const vn = P.vel.x * nx + P.vel.z * nz;
+      if (vn < 0) { P.vel.x -= vn * nx; P.vel.z -= vn * nz; }
+    }
+  }
+}
+
+function squeak(pitch = 1) {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  const o = a.createOscillator(); o.type = 'sawtooth';
+  o.frequency.setValueAtTime(900 * pitch, t);
+  o.frequency.linearRampToValueAtTime(1350 * pitch, t + 0.06);
+  o.frequency.linearRampToValueAtTime(1050 * pitch, t + 0.18);
+  const bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1600; bp.Q.value = 2.5;
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.18, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+  o.connect(bp).connect(g).connect(master);
+  o.start(t); o.stop(t + 0.22);
+}
+function munch() {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  wet(a, t, 0.16, 1400, 500, 0.07);
+  wet(a, t + 0.09, 0.12, 1100, 400, 0.07);
+}
+
+// A buddy lands on the trampoline mat.
+const tv = new V3();
+function trampLand(P, impact) {
+  TRAMP.sagV += Math.min(impact, 9) * 0.55;
+  P.spin = 0;
+  const b = P.brain;
+  if (b.state === 'bounce') {
+    b.count = (b.count || 0) + 1;
+    if (b.count > b.n) {
+      // hop off, away from the middle
+      tv.set(P.root.x - TRAMP.pos.x, 0, P.root.z - TRAMP.pos.z);
+      if (tv.lengthSq() < 1e-4) tv.set(Math.random() - 0.5, 0, 0.6);
+      tv.normalize();
+      P.vel.set(tv.x * 2.8, 5.5, tv.z * 2.8);
+      TRAMP.user = null;
+      setState(P, 'wander', 4);
+      P.brain.target.copy(TRAMP.pos).addScaledVector(tv, 2.6);
+      boing(0.8, P.pitch * 1.2);
+      return;
+    }
+  }
+  // spring back up, drifting toward the middle so they don't bounce off the edge
+  P.vel.x = P.vel.x * 0.3 + (TRAMP.pos.x - P.root.x) * 1.4;
+  P.vel.z = P.vel.z * 0.3 + (TRAMP.pos.z - P.root.z) * 1.4;
+  P.vel.y = impact > 1.2 ? Math.min(6.6, Math.max(5.0, impact * 0.95 + 1.2)) : 0;
+  if (P.vel.y > 0) {
+    boing(Math.min(1, impact / 7), P.pitch * rand(0.9, 1.2));
+    // sometimes a twirl in the air: one full turn before landing
+    if (b.state === 'bounce' && Math.random() < 0.4) P.spin = (Math.random() < 0.5 ? -1 : 1) * Math.PI * 2 / (2 * P.vel.y / 17);
+  }
+}
+
+// Make room: a buddy on (or heading to) the trampoline hops off and wanders away.
+function kickOffTrampoline(Q) {
+  if (TRAMP.user === Q) TRAMP.user = null;
+  if (Q.onTramp || Q.brain.state === 'bounce') {
+    tv.set(Q.root.x - TRAMP.pos.x, 0, Q.root.z - TRAMP.pos.z);
+    if (tv.lengthSq() < 0.01) tv.set(TRAMP.pos.x > 0 ? -1 : 1, 0, 0.4);
+    tv.normalize();
+    if (Q.onTramp) {
+      Q.vel.x = tv.x * 3.4; Q.vel.z = tv.z * 3.4;
+      if (Q.root.y - Q.gy < 0.1) Q.vel.y = 4.8;
+    }
+    Q.spin = 0;
+    setState(Q, 'wander', 4);
+    Q.brain.target.copy(TRAMP.pos).addScaledVector(tv, 2.6);
+  }
+}
+
+// Something a buddy should go look at (you just moved it, or a new cupcake appeared).
+function noticeToy(T) {
+  let best = null, bd = Infinity;
+  for (const P of BUDDIES) {
+    if (busy(P) || ['bounce', 'snack', 'dance'].includes(P.brain.state)) continue;
+    const d = Math.hypot(P.root.x - T.pos.x, P.root.z - T.pos.z);
+    if (d < bd) { bd = d; best = P; }
+  }
+  if (!best) return;
+  if (T === TRAMP && !TRAMP.user) setState(best, 'bounce', 14, { n: 2 + Math.floor(Math.random() * 3), count: 0 });
+  else if (T === CAKE && !CAKE.gone && !CAKE.user) setState(best, 'snack', 12, { eat: 0, bites: 0 });
+  else if (T === DUCK) setState(best, 'play', 9, { kicks: 0 });
+  else if (T === BALL && BUDDIES.length > 1) setState(best, 'bowl', 10, { charging: false, pushed: false });
+  else if (T === PEEL) { setState(best, 'wander', 6); best.brain.target.set(PEEL.pos.x, 0, PEEL.pos.z); } // curious...
+  else return;
+  coo(best.pitch * 1.3);
+}
+
+function thud(power = 1) {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  const o = a.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.2);
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.45 * power, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+  o.connect(g).connect(master); o.start(t); o.stop(t + 0.32);
+  wet(a, t, 0.12 * power, 900, 200, 0.18);
+}
+// a little "hee-hee-hee-hee": short squeaky notes, each with a breathy "h"
+function giggle(pitch = 1, n = 5) {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  let t = a.currentTime + 0.01;
+  for (let k = 0; k < n; k++) {
+    const f = 560 * pitch * (1 - k * 0.035) * (k % 2 ? 1.07 : 1);
+    const o = a.createOscillator(); o.type = 'triangle';
+    o.frequency.setValueAtTime(f * 1.15, t);
+    o.frequency.exponentialRampToValueAtTime(f * 0.88, t + 0.085);
+    const vib = a.createOscillator(); vib.frequency.value = 28;
+    const vd = a.createGain(); vd.gain.value = f * 0.03;
+    vib.connect(vd).connect(o.frequency);
+    const ee = a.createBiquadFilter(); ee.type = 'bandpass'; ee.frequency.value = 2300; ee.Q.value = 1.4;
+    const dry = a.createGain(); dry.gain.value = 0.55;
+    const g = a.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.2, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.095);
+    o.connect(dry).connect(g); o.connect(ee).connect(g); g.connect(master);
+    o.start(t); vib.start(t); o.stop(t + 0.1); vib.stop(t + 0.1);
+    wet(a, t, 0.05, 3200, 1600, 0.035);
+    t += 0.115 + (k % 2) * 0.025;
+  }
+}
+function zwip() {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  const o = a.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(380, t); o.frequency.exponentialRampToValueAtTime(1500, t + 0.28);
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+  o.connect(g).connect(master); o.start(t); o.stop(t + 0.34);
+}
+// Tip the whole body over (it springs back up by itself).
+function tipOver(P, localX, localZ, hold) {
+  P.tiltGoalX = localZ; P.tiltGoalZ = -localX; P.tiltHold = hold;
+}
+const kv = new V3();
+function knockOver(P, nx, nz, power) {
+  if (P.grab && P.grab.active) return;
+  P.vel.x += nx * power * 0.8; P.vel.z += nz * power * 0.8;
+  P.vel.y = Math.max(P.vel.y, 2.4);
+  toLocal(P, kv.set(nx, 0, nz), kv);
+  tipOver(P, kv.x * 1.05, kv.z * 1.05, 0.6);
+  for (let i = 0; i < 5; i++) P.v[i].addScaledVector(kv, power * SWAY[i] * 0.8);
+  if (!['held', 'leaving'].includes(P.brain.state)) setState(P, 'dizzy', 2.2);
+  thud(Math.min(1, power / 4)); blorp(0.7, P.pitch * 0.7, true);
+}
+function slipOnPeel(P) {
+  P.slipCool = 2.5;
+  const sp = Math.hypot(P.vel.x, P.vel.z) || 1;
+  const dx = P.vel.x / sp, dz = P.vel.z / sp;
+  P.vel.x += dx * 1.4; P.vel.z += dz * 1.4; P.vel.y = 3.4;
+  tipOver(P, 0, -1.15, 0.9);        // feet fly forward, falls over backward
+  P.v[5].z += 3; P.v[6].z += 3; P.v[0].z -= 2; P.v[0].y -= 1;
+  PEEL.vel.set(-dx * 2.4, 0, -dz * 2.4); PEEL.spinV = 14;
+  if (!['held', 'leaving'].includes(P.brain.state)) setState(P, 'dizzy', 2.4);
+  zwip();
+}
+
+function updateNewToys(dt) {
+  for (const P of BUDDIES) P.slipCool = Math.max(0, (P.slipCool || 0) - dt);
+
+  // --- bowling ball: rolls, slows, bounces off edges and toys, meets buddies ---
+  const Bl = BALL;
+  if (!Bl.dragging) {
+    Bl.pos.x += Bl.vel.x * dt; Bl.pos.z += Bl.vel.z * dt;
+    const sp = Math.hypot(Bl.vel.x, Bl.vel.z);
+    if (sp > 0) { const ns = Math.max(0, sp - 0.25 * dt) * Math.exp(-0.45 * dt); Bl.vel.x *= ns / sp; Bl.vel.z *= ns / sp; }
+  }
+  Bl.pos.y = BALL_R;
+  const bxb = xBound(Bl.pos.z) + 0.5;
+  if (Math.abs(Bl.pos.x) > bxb) { Bl.pos.x = Math.sign(Bl.pos.x) * bxb; Bl.vel.x *= -0.5; if (Math.abs(Bl.vel.x) > 0.8) thud(0.4); }
+  if (Bl.pos.z < ZMIN) { Bl.pos.z = ZMIN; Bl.vel.z *= -0.5; }
+  if (Bl.pos.z > ZMAX + 0.3) { Bl.pos.z = ZMAX + 0.3; Bl.vel.z *= -0.5; }
+  for (const T of [TRAMP, CAKE, DUCK, PEEL]) {
+    if (T === CAKE && CAKE.gone) continue;
+    const dx = Bl.pos.x - T.pos.x, dz = Bl.pos.z - T.pos.z, d = Math.hypot(dx, dz), min = T.block + BALL_R;
+    if (d < min && d > 1e-4) {
+      const nx = dx / d, nz = dz / d;
+      if (T === DUCK || T === PEEL) {
+        // the ball shoves the little things out of the way
+        const vn = Bl.vel.x * -nx + Bl.vel.z * -nz;
+        T.vel.x -= nx * Math.max(1.5, vn * 1.4); T.vel.z -= nz * Math.max(1.5, vn * 1.4);
+        T.pos.x = Bl.pos.x - nx * min; T.pos.z = Bl.pos.z - nz * min;
+        if (T === DUCK && time - DUCK.lastSqueak > 0.25) { squeak(1.2); DUCK.lastSqueak = time; DUCK.hopV = 2.5; }
+        if (T === PEEL) PEEL.spinV = 10;
+      } else {
+        Bl.pos.x = T.pos.x + nx * min; Bl.pos.z = T.pos.z + nz * min;
+        const vn = Bl.vel.x * nx + Bl.vel.z * nz;
+        if (vn < 0) { Bl.vel.x -= 1.5 * vn * nx; Bl.vel.z -= 1.5 * vn * nz; if (-vn > 0.8) thud(0.5); }
+      }
+    }
+  }
+  for (const P of BUDDIES) {
+    if (P.root.y - P.gy > 0.5) continue;
+    const dx = P.root.x - Bl.pos.x, dz = P.root.z - Bl.pos.z, d = Math.hypot(dx, dz), min = BALL_R + 0.42;
+    if (d >= min || d < 1e-4) continue;
+    const nx = dx / d, nz = dz / d;
+    const incoming = Bl.vel.x * nx + Bl.vel.z * nz; // only the ball's own speed toward the buddy counts
+    if (incoming > 1.6 && !Bl.dragging) {
+      // strike! the ball knocks the buddy over and loses most of its speed
+      knockOver(P, nx, nz, incoming);
+      Bl.vel.multiplyScalar(0.3);
+      Bl.pos.x = P.root.x - nx * min; Bl.pos.z = P.root.z - nz * min;
+    } else {
+      // a buddy walking into the ball pushes it (it's heavy, but it rolls)
+      Bl.pos.x = P.root.x - nx * min; Bl.pos.z = P.root.z - nz * min;
+      const push = Math.max(0, -(P.vel.x * nx + P.vel.z * nz));
+      const bowling = P.brain.state === 'bowl' && P.brain.charging;
+      const k = bowling ? 1.7 : 1.1;
+      Bl.vel.x = -nx * Math.max(push * k, 0.4); Bl.vel.z = -nz * Math.max(push * k, 0.4);
+      if (bowling && !P.brain.pushed) { P.brain.pushed = true; thud(0.5); coo(P.pitch * 1.3); }
+    }
+  }
+  const bsp = Math.hypot(Bl.vel.x, Bl.vel.z);
+  if (bsp > 1e-3) {
+    kv.set(Bl.vel.z, 0, -Bl.vel.x).normalize();
+    Bl.inner.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(kv, bsp * dt / BALL_R));
+  }
+
+  // --- banana peel: skids when kicked, trips anyone who steps on it ---
+  const Pe = PEEL;
+  if (!Pe.dragging) {
+    Pe.pos.x += Pe.vel.x * dt; Pe.pos.z += Pe.vel.z * dt;
+    Pe.vel.multiplyScalar(Math.exp(-1.6 * dt));
+  }
+  Pe.pos.y = 0;
+  Pe.spinV *= Math.exp(-2 * dt);
+  Pe.group.rotation.y += Pe.spinV * dt;
+  const pxb = xBound(Pe.pos.z) + 0.5;
+  if (Math.abs(Pe.pos.x) > pxb) { Pe.pos.x = Math.sign(Pe.pos.x) * pxb; Pe.vel.x *= -0.5; }
+  Pe.pos.z = Math.max(ZMIN, Math.min(ZMAX + 0.3, Pe.pos.z));
+  for (const T of [TRAMP, CAKE]) {
+    if (T === CAKE && CAKE.gone) continue;
+    const dx = Pe.pos.x - T.pos.x, dz = Pe.pos.z - T.pos.z, d = Math.hypot(dx, dz), min = T.block + 0.25;
+    if (d < min && d > 1e-4) { Pe.pos.x = T.pos.x + dx / d * min; Pe.pos.z = T.pos.z + dz / d * min; Pe.vel.multiplyScalar(-0.4); }
+  }
+  for (const P of BUDDIES) {
+    if (P.slipCool > 0 || P.root.y - P.gy > 0.05 || (P.grab && P.grab.active) || P.leaving) continue;
+    const sp = Math.hypot(P.vel.x, P.vel.z);
+    if (sp > 0.4 && Math.hypot(P.root.x - Pe.pos.x, P.root.z - Pe.pos.z) < 0.36) slipOnPeel(P);
+  }
+}
+
+function easeOutBack(k) { const c = 1.7; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); }
+
+function updateToys(dt) {
+  // trampoline mat: sags under weight and wobbles back
+  const loaded = BUDDIES.some(P => P.onTramp);
+  TRAMP.sagV += (-(TRAMP.sag - (loaded ? 0.06 : 0)) * 140 - TRAMP.sagV * 5) * dt;
+  TRAMP.sag = Math.max(-0.08, Math.min(0.28, TRAMP.sag + TRAMP.sagV * dt));
+  const arr = TRAMP.mat.geometry.attributes.position.array, base = TRAMP.base, R2 = (T_R - 0.02) ** 2;
+  for (let i = 0; i < arr.length; i += 3) {
+    const r2 = (base[i] * base[i] + base[i + 1] * base[i + 1]) / R2;
+    arr[i + 2] = -TRAMP.sag * (1 - r2);
+  }
+  TRAMP.mat.geometry.attributes.position.needsUpdate = true;
+  // the ring lights up while you carry a buddy over it: "let go here"
+  TRAMP.glowAmt += ((TRAMP.hover ? 1 : 0) - TRAMP.glowAmt) * (1 - Math.exp(-10 * dt));
+  TRAMP.ringMat.emissiveIntensity = TRAMP.glowAmt * (0.55 + 0.25 * Math.sin(time * 9));
+
+  // cupcake: shrinks as it's eaten, pops back up somewhere new
+  if (CAKE.gone) {
+    CAKE.group.visible = false;
+    CAKE.respawn -= dt;
+    if (CAKE.respawn <= 0) {
+      freeSpot(CAKE.pos, CAKE);
+      const taken = BUDDIES.map(P => P.color.getHex());
+      let hex;
+      do { hex = FROSTINGS[Math.floor(Math.random() * FROSTINGS.length)]; } while (taken.includes(lin(hex).getHex()) && Math.random() < 0.9);
+      setFrosting(CAKE, hex);
+      CAKE.gone = false; CAKE.bites = 0; CAKE.grow = 0;
+      CAKE.group.visible = true;
+      plip(1.3);
+      if (Math.random() < 0.5) noticeToy(CAKE);
+    }
+  } else {
+    CAKE.grow = Math.min(1, CAKE.grow + dt * 2.2);
+    CAKE.squish *= Math.exp(-8 * dt);
+    const sc = easeOutBack(CAKE.grow) * (1 - CAKE.bites * 0.22);
+    CAKE.group.scale.set(sc * (1 + CAKE.squish * 0.15), sc * (1 - CAKE.squish * 0.25), sc * (1 + CAKE.squish * 0.15));
+  }
+
+  // duck: slides, bounces off the edges and toys, gets kicked, wobbles
+  const D = DUCK;
+  if (!D.dragging) {
+    D.pos.x += D.vel.x * dt; D.pos.z += D.vel.z * dt;
+    D.vel.multiplyScalar(Math.exp(-1.8 * dt));
+    D.hopV -= 17 * dt;
+    D.pos.y += D.hopV * dt;
+    if (D.pos.y > 2.5) { D.pos.y = 2.5; D.hopV = Math.min(D.hopV, 0); }
+    if (D.pos.y < 0) { D.pos.y = 0; D.hopV = D.hopV < -1.5 ? -D.hopV * 0.3 : 0; }
+    const xb = xBound(D.pos.z) + 0.6;
+    if (Math.abs(D.pos.x) > xb) { D.pos.x = Math.sign(D.pos.x) * xb; D.vel.x *= -0.6; D.wobV += 5; }
+    if (D.pos.z < ZMIN) { D.pos.z = ZMIN; D.vel.z *= -0.6; }
+    if (D.pos.z > ZMAX + 0.3) { D.pos.z = ZMAX + 0.3; D.vel.z *= -0.6; }
+    for (const T of [TRAMP, CAKE]) {
+      if (T === CAKE && CAKE.gone) continue;
+      const dx = D.pos.x - T.pos.x, dz = D.pos.z - T.pos.z, d = Math.hypot(dx, dz), min = T.block + D.block;
+      if (d < min && d > 1e-4) {
+        const nx = dx / d, nz = dz / d, vn = D.vel.x * nx + D.vel.z * nz;
+        D.pos.x = T.pos.x + nx * min; D.pos.z = T.pos.z + nz * min;
+        if (vn < 0) { D.vel.x -= 1.6 * vn * nx; D.vel.z -= 1.6 * vn * nz; D.wobV += 4; }
+      }
+    }
+    for (const P of BUDDIES) {
+      if (P.onDuck || P.root.y > duckTop() - 0.2 || P.root.y - P.gy > 0.6) continue;
+      const dx = D.pos.x - P.root.x, dz = D.pos.z - P.root.z, d = Math.hypot(dx, dz), min = D.block + 0.45;
+      if (d < min && d > 1e-4) {
+        const nx = dx / d, nz = dz / d;
+        D.pos.x = P.root.x + nx * min; D.pos.z = P.root.z + nz * min;
+        const push = Math.max(1.8, (P.vel.x * nx + P.vel.z * nz) * 1.8 + 1.2);
+        if (D.vel.x * nx + D.vel.z * nz < push * 0.8) {
+          D.vel.x = nx * push; D.vel.z = nz * push;
+          if (D.pos.y < 0.05) D.hopV = Math.max(D.hopV, 2.2);
+          D.wobV += 8;
+          if (time - D.lastSqueak > 0.25) { squeak(rand(0.9, 1.15)); D.lastSqueak = time; }
+          if (P.brain.state === 'play') P.brain.kicks = (P.brain.kicks || 0) + 1;
+        }
+      }
+    }
+  }
+  // squashed flat under a buddy's weight; after a moment it squirts out sideways
+  const standing = BUDDIES.filter(P => P.onDuck);
+  D.squashV += ((standing.length ? 0.55 : 0) - D.squash) * 120 * dt - D.squashV * 9 * dt;
+  D.squash = Math.max(-0.25, Math.min(0.7, D.squash + D.squashV * dt));
+  D.stood = standing.length ? D.stood + dt : 0;
+  if (D.stood > 0.8) {
+    const P = standing[0];
+    let nx = D.pos.x - P.root.x, nz = D.pos.z - P.root.z, l = Math.hypot(nx, nz);
+    if (l < 0.05) { nx = Math.random() - 0.5; nz = Math.random() - 0.5; l = Math.hypot(nx, nz); }
+    D.vel.set(nx / l * 4.2, 0, nz / l * 4.2);
+    D.pos.x += nx / l * 0.4; D.pos.z += nz / l * 0.4;
+    D.hopV = 2.8; D.wobV += 12; D.stood = 0; D.squashV -= 4;
+    squeak(1.35); D.lastSqueak = time;
+  }
+  D.inner.scale.set(1 + D.squash * 0.5, 1 - D.squash, 1 + D.squash * 0.5);
+  const sp = Math.hypot(D.vel.x, D.vel.z);
+  if (sp > 0.3) D.yaw += wrapAngle(Math.atan2(D.vel.x, D.vel.z) - D.yaw) * Math.min(1, 8 * dt);
+  D.group.rotation.y = D.yaw;
+  // a rubber duck rocks, it doesn't flip: keep the wobble within a gentle range
+  D.wobV = Math.max(-14, Math.min(14, D.wobV));
+  D.wobV += (-D.wob * 90 - D.wobV * 5) * dt;
+  D.wob = Math.max(-1.3, Math.min(1.3, D.wob + D.wobV * dt));
+  D.inner.rotation.z = D.wob * 0.35;
+  D.inner.rotation.x = D.wob * 0.15;
+
+  updateNewToys(dt);
+  for (const T of TOYS) {
+    const lift = T === DUCK ? D.pos.y : 0;
+    T.shadow.visible = !(T === CAKE && CAKE.gone);
+    T.shadow.position.set(T.pos.x, 0.003, T.pos.z + 0.04);
+    T.shadow.scale.set(T.shadowSize * (1 + lift * 0.4), T.shadowSize * 0.55 * (1 + lift * 0.4), 1);
+    T.shadow.material.opacity = 0.2 / (1 + lift * 2);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Dance: nine routines, each about 5.5 seconds, with a little beat.
+ *  Every press of Dance moves on to the next routine.
+ * ------------------------------------------------------------------ */
+let danceIdx = -1, danceClock = 0, danceOn = false, lastBeat = -1, danceMusic = null;
+const DANCE_LEN = 5.5, BPS = 2; // beats per second
+const DANCE_COUNT = 9;
+// The order the Dance button plays them in (numbers are the routines in danceMoves):
+// Bounce & Clap, Breakdance, Twirl, Splat, Booty Bounce, Side Booty Bounce, Hip Swirl, Tail Wag, Hands Up.
+const DANCE_ORDER = [0, 8, 2, 7, 1, 4, 5, 3, 6];
+let danceStep = -1;
+function playDanceMusic(idx) {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  if (danceMusic) {
+    const old = danceMusic;
+    old.gain.setTargetAtTime(0, a.currentTime, 0.03);
+    setTimeout(() => old.disconnect(), 400);
+  }
+  const out = a.createGain(); out.gain.value = 0.9; out.connect(master);
+  danceMusic = out;
+  const t0 = a.currentTime + 0.04, beat = 1 / BPS, beats = Math.round(DANCE_LEN * BPS);
+  const TUNES = [[0, 4, 7, 12, 7, 4, 9, 7], [0, 0, 3, 5, 7, 5, 3, 10], [0, 4, 7, 11, 12, 11, 7, 4], [0, 4, 7, 9, 12, 9, 7, 4], [0, 7, 0, 5, 0, 3, 5, 7], [0, 3, 7, 10, 12, 10, 7, 3], [0, 5, 9, 12, 9, 5, 0, 12], [12, 7, 4, 0, 12, 7, 4, 0], [0, 0, 7, 5, 3, 0, 10, 7]];
+  const ROOT = [262, 196, 330, 294, 175, 220, 294, 262, 147][idx];
+  for (let i = 0; i < beats; i++) {
+    const t = t0 + i * beat;
+    const k = a.createOscillator();
+    k.frequency.setValueAtTime(130, t); k.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+    const kg = a.createGain();
+    kg.gain.setValueAtTime(0.5, t); kg.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    k.connect(kg).connect(out); k.start(t); k.stop(t + 0.2);
+    const hs = a.createBufferSource(); hs.buffer = noiseBuf;
+    const hp = a.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000;
+    const hg = a.createGain();
+    hg.gain.setValueAtTime(0.08, t + beat / 2); hg.gain.exponentialRampToValueAtTime(0.0001, t + beat / 2 + 0.05);
+    hs.connect(hp).connect(hg).connect(out); hs.start(t + beat / 2); hs.stop(t + beat / 2 + 0.06);
+    for (let h = 0; h < 2; h++) {
+      const f = ROOT * Math.pow(2, TUNES[idx][(i * 2 + h) % 8] / 12);
+      const tt = t + h * beat / 2;
+      const o = a.createOscillator(); o.type = idx === 2 ? 'triangle' : 'square'; o.frequency.value = f;
+      const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
+      const og = a.createGain();
+      og.gain.setValueAtTime(0.0001, tt);
+      og.gain.exponentialRampToValueAtTime(0.06, tt + 0.01);
+      og.gain.exponentialRampToValueAtTime(0.0001, tt + beat / 2 * 0.9);
+      o.connect(lp).connect(og).connect(out); o.start(tt); o.stop(tt + beat / 2);
+    }
+  }
+}
+function startDance() {
+  firstTouch();
+  danceStep = (danceStep + 1) % DANCE_ORDER.length;
+  danceIdx = DANCE_ORDER[danceStep];
+  danceClock = 0; danceOn = true; lastBeat = -1;
+  for (const P of BUDDIES) {
+    if (P.grab && P.grab.active) continue;
+    setState(P, 'dance', DANCE_LEN);
+  }
+  playDanceMusic(danceIdx);
+}
+// The moves: each routine sets where the head, hips and hands want to be.
+// The two butt dances face away from you, so the hips' "back" (-z) points at the camera.
+function danceMoves(P) {
+  const t = danceClock, m = BUDDIES.indexOf(P) % 2 ? -1 : 1, ph = t * Math.PI * 2 * BPS, T = P.tgt;
+  if (danceIdx === 0) {        // Bounce & Clap
+    const c = Math.pow(Math.max(0, Math.cos(ph)), 3);
+    T[3].set(0.1 + 0.52 * c, 0.3 + 0.25 * c, 0.38 * c);
+    T[4].set(-0.1 - 0.52 * c, 0.3 + 0.25 * c, 0.38 * c);
+    T[0].z += 0.1 * c;
+  } else if (danceIdx === 1) { // Booty Bounce: bent over, hands on knees, butt bouncing up and down
+    const pop = Math.sin(ph * 2);          // four bounces a second
+    P.tiltGoalX = 0.3; P.tiltGoalZ = 0; P.tiltHold = 0.12; // bent over from the feet
+    T[0].set(0, -0.3, 0.28);               // head down and forward
+    T[1].set(0, -0.14, 0.16);
+    T[2].set(Math.sin(ph) * 0.05 * m, -0.1 + pop * 0.11, -0.16 + pop * 0.08);
+    T[3].set(0.22, -0.32, 0.22);           // hands on knees
+    T[4].set(-0.22, -0.32, 0.22);
+    T[5].x -= 0.1; T[6].x += 0.1;          // feet a little wider
+  } else if (danceIdx === 2) { // Twirl: arms out, spinning
+    T[3].set(-0.25, 0.38, 0);
+    T[4].set(0.25, 0.38, 0);
+    T[0].x += 0.12 * m;
+  } else if (danceIdx === 3) { // Tail Wag: standing tall, butt wagging side to side, arms up waving
+    const wag = Math.sin(ph);              // two wags a second
+    T[2].set(wag * 0.26 * m, 0, -0.1);
+    T[1].x -= wag * 0.09 * m;
+    T[0].x += Math.sin(ph - 0.9) * 0.08 * m;
+    T[3].set(0.05 + Math.sin(ph * 2) * 0.22, 1.35, 0);
+    T[4].set(-0.05 + Math.sin(ph * 2 + Math.PI) * 0.22, 1.35, 0);
+  } else if (danceIdx === 4) { // Side Booty Bounce: side-on to you, bent a bit, butt bouncing up and down
+    const sn = Math.sin(ph);
+    const pop = Math.sign(sn) * Math.pow(Math.abs(sn), 0.55); // snappy: a sharp pop up and down on every beat
+    P.tiltGoalX = 0.32 + pop * 0.1; P.tiltGoalZ = 0; P.tiltHold = 0.12; // bent forward, rocking hard with the bounce
+    T[0].set(0, -0.26, 0.32);
+    T[1].set(0, -0.1, 0.18);
+    T[2].set(0, -0.06 + pop * 0.26, -0.3 + Math.max(0, pop) * 0.14); // butt out and bouncing
+    T[3].set(0.14, -0.3, 0.24);            // hands down on the knees
+    T[4].set(-0.14, -0.3, 0.24);
+  } else if (danceIdx === 5) { // Hip Swirl: hands on hips, hips circling like a hula hoop
+    const a = ph / 2 * m;                  // one circle a second
+    T[2].set(Math.cos(a) * 0.22, -0.05, Math.sin(a) * 0.18);
+    T[1].set(-Math.cos(a) * 0.07, 0, -Math.sin(a) * 0.05);
+    T[0].set(Math.cos(a + 0.6) * 0.05, 0, 0);
+    T[3].set(0.34, -0.06, 0.08);           // hands on hips
+    T[4].set(-0.34, -0.06, 0.08);
+  } else if (danceIdx === 6) { // Hands Up: arms high, swaying together, pumping on the beat
+    const sway = Math.sin(ph / 2) * m, pump = Math.pow(Math.max(0, Math.cos(ph)), 2);
+    T[3].set(0.28 + sway * 0.3, 1.75 + pump * 0.35, 0.05);
+    T[4].set(-0.28 + sway * 0.3, 1.75 + pump * 0.35, 0.05);
+    T[1].x += sway * 0.08; T[0].x += sway * 0.12;
+    T[2].y -= pump * 0.05;
+  } else if (danceIdx === 7) { // Splat: jump, flatten onto the floor, wobble back up
+    const f = t % 1;                       // a jump at the start of every second
+    if (f > 0.5 && f < 0.82) {
+      T[0].set(0, -1.5, 0.15);             // head squashed right down
+      T[1].set(0, -1.0, 0.05);
+      T[2].set(0, -0.55, 0);
+      T[3].set(-0.45, -0.7, 0.1);          // arms flung out flat
+      T[4].set(0.45, -0.7, 0.1);
+      T[5].x -= 0.25; T[6].x += 0.25;      // legs splayed
+    }
+  } else {                     // Breakdance: side-step, flip onto the head, headspin, freeze
+    const flip = t < 0.9 ? 0 : t < 1.3 ? (t - 0.9) / 0.4 : t < 4.4 ? 1 : t < 4.8 ? 1 - (t - 4.4) / 0.4 : 0;
+    const e = flip * flip * (3 - 2 * flip);
+    P.breakSpin = e > 0.95;
+    // Turn the whole body over (pivoting at the feet) and lift it so the head rests on the floor.
+    P.tiltX = e * Math.PI; P.tiltVX = 0; P.tiltGoalX = P.tiltX; P.tiltZ = 0; P.tiltVZ = 0; P.tiltHold = 0.2;
+    if (t >= 0.9 && t < 4.8) { P.root.y = P.gy + e * 2.25; P.vel.y = 0; } // head (not feet) on the floor
+    if (t < 0.9) {                         // toprock: arms crossed, stepping side to side
+      T[3].set(0.42, 0.42, 0.26); T[4].set(-0.42, 0.34, 0.3);
+      T[2].x += Math.sin(ph) * 0.1 * m;
+    } else if (t < 4.8) {                  // upside down: legs splayed, arms out for balance
+      T[5].set(-0.55 + Math.sin(ph) * 0.12, 0.12, Math.sin(ph) * 0.25);  // legs wide, scissor-kicking
+      T[6].set(0.55 + Math.sin(ph) * 0.12, 0.12, -Math.sin(ph) * 0.25);
+      T[3].set(-0.25, -0.2, 0); T[4].set(0.25, -0.2, 0);
+    } else {                               // freeze: lean back, one arm up
+      P.tiltGoalX = -0.28; P.tiltHold = 0.2;
+      T[3].set(-0.2, 1.2, 0); T[4].set(0.35, 0.35, 0.25);
+    }
+  }
+}
+function danceBeat(P, n) {
+  if (P.root.y - P.gy > 0.02 || P.crouch > 0) return;
+  if (danceIdx === 0) P.vel.y = 2.8;
+  else if (danceIdx === 2) P.vel.y = 1.0;
+  else if (danceIdx === 3 && n % 2 === 0) P.vel.y = 1.4;
+  else if (danceIdx === 6) P.vel.y = 0.8;
+  else if (danceIdx === 7 && n % 2 === 0) P.vel.y = 4.4;   // up... and splat
+  else if (danceIdx === 8 && n < 2) P.vel.y = 1.1;         // breakdance toprock steps
+  // the booty bounces and the hip swirl keep their feet planted
+}
+
+/* ------------------------------------------------------------------ *
+ *  Actions
+ * ------------------------------------------------------------------ */
+function poke(P, local, normal, strength) {
+  for (let i = 0; i < REST.length; i++) {
+    const w = Math.exp(-local.distanceToSquared(REST[i]) * 4);
+    P.v[i].addScaledVector(normal, -strength * 4.2 * w * (i >= 5 ? 0.2 : 1));
+  }
+  const r = P.rip[P.ripNext];
+  P.ripNext = (P.ripNext + 1) % 4;
+  r.c.copy(local); r.age = 0; r.amp = strength;
+  blorp(strength, P.pitch * (1 + (local.y - 1.1) * 0.18));
+  reactToPoke(P);
+}
+
+function dye(P, hex, originLocal) {
+  const to = lin(hex);
+  P.U.uColA.value.copy(P.color);
+  P.U.uColB.value.copy(to);
+  P.U.uDyeO.value.copy(originLocal);
+  P.U.uDyeR.value = 0;
+  P.dye = { from: P.color.clone(), to, t: 0 };
+  const r = P.rip[P.ripNext];
+  P.ripNext = (P.ripNext + 1) % 4;
+  r.c.copy(originLocal); r.age = 0; r.amp = 0.55;
+  plip(P.pitch);
+  if (!busy(P)) setState(P, 'admire', 1.8); // looks down at its new color
+}
+
+function startJump(P, power = 1) {
+  if (P.grab && P.grab.active) return;
+  if (P.root.y - (P.gy || 0) > 0.05 || P.crouch > 0) return;
+  P.crouch = 0.13;
+  P.jumpPower = power;
+  boing(0.6, P.pitch * 1.3);
+}
+
+/* ------------------------------------------------------------------ *
+ *  The brain. Each buddy is always in one "state" (a mood with a
+ *  timer). When the timer runs out it picks something new to do.
+ * ------------------------------------------------------------------ */
+function setState(P, state, t, extra) {
+  const b = P.brain;
+  if (b.state === 'snack' && state !== 'snack' && CAKE.user === P) CAKE.user = null;
+  if (b.state === 'bounce' && state !== 'bounce' && TRAMP.user === P) TRAMP.user = null;
+  b.state = state; b.t = t; b.flag = 0;
+  if (extra) Object.assign(b, extra);
+}
+// states the brain shouldn't interrupt for small things
+const busy = P => ['held', 'hug', 'chase', 'flee', 'dizzy'].includes(P.brain.state);
+
+function decide(P) {
+  if (!BUDDIES.includes(P.other) || Math.random() < 0.5) P.other = pickPartner(P);
+  const O = P.other;
+  const r = Math.random();
+  const oFree = ['idle', 'wander', 'admire'].includes(O.brain.state);
+  // After a hug, bump or chase they both leave each other alone for a while.
+  const social = time > P.socialAfter && time > O.socialAfter && O.brain.state !== 'held';
+  if (social && r < 0.14) {
+    setState(P, 'visit', 6);
+    P.socialAfter = O.socialAfter = time + rand(14, 22);
+  } else if (social && r < 0.21 && oFree) {
+    setState(P, 'chase', rand(4, 6));
+    setState(O, 'flee', P.brain.t);
+    O.other = P;
+    P.socialAfter = O.socialAfter = time + rand(14, 22);
+    boing(0.4, P.pitch * 1.5);
+  } else if (r < 0.36 && !TRAMP.user) {
+    setState(P, 'bounce', 14, { n: 2 + Math.floor(Math.random() * 3), count: 0 });
+  } else if (r < 0.49 && !CAKE.gone && !CAKE.user) {
+    setState(P, 'snack', 12, { eat: 0, bites: 0 });
+  } else if (r < 0.57) {
+    setState(P, 'play', 9, { kicks: 0 });
+  } else if (r < 0.63 && oFree && !BALL.dragging) {
+    setState(P, 'bowl', 10, { charging: false, pushed: false });
+  } else if (r < 0.72) {
+    startJump(P, rand(0.7, 1.05));
+    setState(P, 'idle', rand(1, 2));
+  } else if (r < 0.9) {
+    setState(P, 'wander', rand(4, 7));
+    // pick a spot well away from the other buddy
+    for (let k = 0; k < 8; k++) {
+      randomSpot(P.brain.target);
+      if (Math.hypot(P.brain.target.x - O.root.x, P.brain.target.z - O.root.z) > 2.2) break;
+    }
+  } else {
+    setState(P, 'idle', rand(1.5, 3.5), { face: Math.random() < 0.5 ? 'cam' : 'other' });
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Toots. Four quick taps: a flappy jello fart and a few bubbles that
+ *  squeeze out, float up and pop.
+ * ------------------------------------------------------------------ */
+function fartSound(pitch = 1) {
+  if (!soundOn || !interacted) return 0;
+  const a = audio(); if (!a) return 0;
+  const t = a.currentTime, dur = rand(0.45, 0.9), base = rand(68, 108) * pitch;
+  const o = a.createOscillator(); o.type = 'sawtooth';
+  o.frequency.setValueAtTime(base * rand(1.1, 1.35), t);
+  o.frequency.linearRampToValueAtTime(base * 0.78, t + dur * 0.7);
+  o.frequency.linearRampToValueAtTime(base * rand(0.95, 1.3), t + dur);
+  // the flap: the loudness flutters fast, then slows down
+  const am = a.createGain(); am.gain.value = 0.5;
+  const lfo = a.createOscillator();
+  lfo.frequency.setValueAtTime(rand(18, 28), t); lfo.frequency.linearRampToValueAtTime(rand(9, 15), t + dur);
+  const depth = a.createGain(); depth.gain.value = 0.5;
+  lfo.connect(depth).connect(am.gain);
+  const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 5;
+  lp.frequency.setValueAtTime(760, t); lp.frequency.linearRampToValueAtTime(360, t + dur);
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.55, t + 0.03);
+  g.gain.setValueAtTime(0.55, t + dur * 0.75);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(am).connect(lp).connect(g).connect(master);
+  o.start(t); lfo.start(t); o.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+  wet(a, t, 0.07, 520, 160, dur * 0.8);
+  return dur;
+}
+function popSound() {
+  if (!soundOn || !interacted) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  const o = a.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(rand(1300, 1700), t); o.frequency.exponentialRampToValueAtTime(2600, t + 0.03);
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.003);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+  o.connect(g).connect(master); o.start(t); o.stop(t + 0.06);
+}
+
+const bubbleGeo = new THREE.SphereGeometry(1, 28, 18);
+const fartBubbles = [];
+const bw = new V3();
+function toot(P) {
+  const dur = fartSound(P.pitch) || 0.6;
+  // the butt jiggles back, a startled little hop
+  P.v[2].z -= 2.4; P.v[2].y += 0.6; P.v[0].z += 1.3; P.v[1].z += 0.6;
+  if (P.root.y - P.gy < 0.05 && !(P.grab && P.grab.active)) P.vel.y = Math.max(P.vel.y, 1.7);
+  const n = 1 + Math.floor(Math.random() * 3);
+  for (let k = 0; k < n; k++) {
+    const r = rand(0.13, 0.24);
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: P.color.clone().lerp(new THREE.Color(1, 1, 1), 0.2),
+      emissive: P.color.clone().multiplyScalar(0.18),
+      transparent: true, opacity: 0.62, roughness: 0, metalness: 0,
+      clearcoat: 1, clearcoatRoughness: 0, iridescence: 1, iridescenceIOR: 1.3,
+      iridescenceThicknessRange: [200, 500], envMapIntensity: 2.5, depthWrite: false,
+    });
+    const mesh = new THREE.Mesh(bubbleGeo, mat);
+    mesh.visible = false;
+    scene.add(mesh);
+    // starts just behind the hips, drifts back and up
+    toWorld(P, bw.set(P.d[2].x, 0.72 + P.d[2].y, -0.42 + P.d[2].z), bw).add(P.root);
+    // out the back, then off to one side so they peek out beside the body
+    const side = (k % 2 ? -1 : 1) * rand(0.6, 1.1);
+    const out = toWorld(P, new V3(side, 0, -1), new V3());
+    fartBubbles.push({
+      mesh, mat, r, pos: bw.clone(), vel: new V3(out.x * 0.55, 0.35, out.z * 0.55),
+      delay: k * rand(0.12, 0.22), age: 0, life: rand(2.8, 3.8), popT: -1, ph: Math.random() * 6,
+    });
+  }
+  // then an embarrassed giggle
+  setTimeout(() => { if (BUDDIES.includes(P)) { P.giggleT = 0; startGiggle(P); } }, dur * 1000 + 150);
+}
+function popBubble(b) { if (b.popT < 0) { b.popT = 0; popSound(); } }
+function updateFartBubbles(dt, t) {
+  for (let i = fartBubbles.length - 1; i >= 0; i--) {
+    const b = fartBubbles[i];
+    b.age += dt;
+    const a = b.age - b.delay;
+    if (a < 0) continue;
+    b.mesh.visible = true;
+    if (b.popT >= 0) {
+      // pop: swell and vanish
+      b.popT += dt;
+      const k = b.popT / 0.14;
+      b.mesh.scale.setScalar(b.r * (1 + k * 0.5));
+      b.mat.opacity = 0.62 * Math.max(0, 1 - k);
+      if (k >= 1) { scene.remove(b.mesh); b.mat.dispose(); fartBubbles.splice(i, 1); }
+      continue;
+    }
+    b.vel.y += (0.7 - b.vel.y) * Math.min(1, 1.5 * dt);    // floats up
+    b.vel.x *= Math.exp(-0.8 * dt); b.vel.z *= Math.exp(-0.8 * dt);
+    b.pos.addScaledVector(b.vel, dt);
+    b.mesh.position.set(b.pos.x + Math.sin(t * 2.2 + b.ph) * 0.06, b.pos.y, b.pos.z + Math.cos(t * 1.7 + b.ph) * 0.04);
+    const grow = Math.min(1, a / 0.3);                     // squeezes out, then wobbles
+    const wob = Math.sin(t * 9 + b.ph) * 0.06;
+    b.mesh.scale.set(b.r * grow * (1 + wob), b.r * grow * (1 - wob), b.r * grow * (1 + wob));
+    if (a > b.life || b.pos.y > 5.5) popBubble(b);
+  }
+}
+
+function startGiggle(P) {
+  if (P.giggleT > 0.5) return;           // already mid-giggle
+  P.giggleT = 1.3;
+  giggle(P.pitch * rand(0.95, 1.1), 5 + Math.floor(Math.random() * 3));
+  if (!['held', 'hug', 'dance', 'leaving'].includes(P.brain.state)) setState(P, 'giggle', 1.3);
+}
+function reactToPoke(P) {
+  const now = performance.now();
+  P.pokes = P.pokes.filter(t => now - t < 3000);
+  P.pokes.push(now);
+  const quick = P.pokes.filter(t => now - t < 1300).length;
+  const four = P.pokes.filter(t => now - t < 2000).length === 4;
+  if (four) { toot(P); return; }                                     // four quick taps: toot!
+  if (['hug', 'held', 'dance'].includes(P.brain.state)) { if (quick >= 3) startGiggle(P); return; }
+  if (quick >= 3 && P.pokes.length < 8) { startGiggle(P); return; } // ticklish: quick taps make it giggle
+  if (P.pokes.length >= 8) {
+    // too ticklish: after lots of taps it giggles and scoots off
+    P.pokes.length = 0;
+    P.giggleT = 0; startGiggle(P);
+    const towardMiddle = P.root.x > 0 ? -1 : 1;
+    setState(P, 'scoot', 1.4);
+    P.brain.target.set(P.root.x + towardMiddle * 1.8, 0, P.root.z + rand(-0.6, 0.6));
+    startJump(P, 0.55);
+    coo(P.pitch * 1.4);
+    return;
+  }
+  if (P.brain.state === 'flee' || P.brain.state === 'chase') return;
+  setState(P, 'look', 1.8);
+}
+
+function walkTo(P, target, speed, avoid = false) {
+  const dx = target.x - P.root.x, dz = target.z - P.root.z;
+  const dist = Math.hypot(dx, dz);
+  if (dist < 0.22) { P.want.set(0, 0, 0); return true; }
+  const s = speed * Math.min(1, dist / 0.6 + 0.3);
+  P.want.set(dx / dist * s, 0, dz / dist * s);
+  if (avoid) {
+    // step around the other buddies instead of walking into them
+    for (const Q of BUDDIES) {
+      if (Q === P) continue;
+      const ox = P.root.x - Q.root.x, oz = P.root.z - Q.root.z;
+      const od = Math.hypot(ox, oz);
+      if (od < 2.0 && od > 1e-3) {
+        const push = (2.0 - od) / 2.0 * speed * 1.6;
+        P.want.x += ox / od * push; P.want.z += oz / od * push;
+      }
+    }
+  }
+  return false;
+}
+
+function faceTowards(P, x, z) {
+  P.yawGoal = Math.atan2(x - P.root.x, z - P.root.z);
+}
+
+const tmpT = new V3();
+function think(P, dt) {
+  if (!BUDDIES.includes(P.other)) P.other = pickPartner(P);
+  const b = P.brain, O = P.other;
+  P.want.set(0, 0, 0);
+  P.yawGoal = null;
+  P.hugging = false;
+  P.dizzy = 0;
+  if (P.grab && P.grab.active) {
+    if (b.state !== 'held') setState(P, 'held', 0);
+    return;
+  }
+  if (b.state === 'held') {
+    // just let go: dizzy if flung, otherwise it gives you a look
+    if (P.onTramp) {
+      // landed on (or is over) the trampoline: time to bounce
+      P.tossedOnTramp = false;
+      setState(P, 'bounce', 12, { n: 3 + Math.floor(Math.random() * 3), count: 0 });
+      coo(P.pitch * 1.3);
+      return;
+    }
+    if (P.root.y - P.gy > 0.02) return; // still in the air
+    P.tossedOnTramp = false;
+    if (P.landedHard > 3.5) setState(P, 'dizzy', 1.6);
+    else setState(P, 'look', 1.2);
+    return;
+  }
+  b.t -= dt;
+  // Standing on the trampoline? Then bounce.
+  if (P.onTramp && !['bounce', 'dance'].includes(b.state)) setState(P, 'bounce', 12, { n: 2 + Math.floor(Math.random() * 2), count: 0 });
+  // Personal space: when just hanging around, don't stand pressed together.
+  if (['idle', 'look', 'admire'].includes(b.state)) {
+    for (const Q of BUDDIES) {
+      if (Q === P) continue;
+      const ox = P.root.x - Q.root.x, oz = P.root.z - Q.root.z;
+      const od = Math.hypot(ox, oz);
+      if (od < 2.0 && od > 1e-3) {
+        const s = Math.min(0.8, (2.0 - od) * 1.2);
+        P.want.x += ox / od * s; P.want.z += oz / od * s;
+      }
+    }
+  }
+  switch (b.state) {
+    case 'idle':
+      if (b.face === 'other') faceTowards(P, O.root.x, O.root.z);
+      else faceTowards(P, camera.position.x, camera.position.z);
+      if (b.t <= 0) decide(P);
+      break;
+    case 'wander':
+      if (walkTo(P, b.target, 0.95, true) || b.t <= 0) setState(P, 'idle', rand(1, 3), { face: 'cam' });
+      break;
+    case 'visit':
+      walkTo(P, O.root, 1.1);
+      if (P.touching && P.touchOther === O && !P.wasTouching) {
+        const oOk = !['held', 'chase', 'flee', 'dizzy', 'dance', 'bounce'].includes(O.brain.state);
+        if (oOk && Math.random() < 0.6) {
+          setState(P, 'hug', 2.4); setState(O, 'hug', 2.4);
+          O.other = P;
+          coo(P.pitch); setTimeout(() => coo(O.pitch), 180);
+        } else {
+          // boop: bounce back off each other
+          tmpT.set(P.root.x - O.root.x, 0, P.root.z - O.root.z).normalize();
+          P.vel.addScaledVector(tmpT, 2.4); P.vel.y = 2.4;
+          setState(P, 'idle', rand(1, 2), { face: 'other' });
+          if (!busy(O)) setState(O, 'idle', rand(1, 2), { face: 'other' });
+        }
+      } else if (b.t <= 0) setState(P, 'idle', 1.5, { face: 'other' });
+      break;
+    case 'hug':
+      P.hugging = true;
+      faceTowards(P, O.root.x, O.root.z);
+      walkTo(P, O.root, 0.45);
+      if (b.t <= 0) {
+        // part ways with a little hop
+        tmpT.set(P.root.x - O.root.x, 0, P.root.z - O.root.z).normalize();
+        P.vel.addScaledVector(tmpT, 2.2);
+        startJump(P, 0.5);
+        setState(P, 'wander', 5);
+        P.brain.target.copy(P.root).addScaledVector(tmpT, 2.8);
+      }
+      break;
+    case 'chase':
+      walkTo(P, O.root, 2.1);
+      if (P.touching && P.touchOther === O && !P.wasTouching) {
+        // tag! both celebrate
+        startJump(P, 0.9); startJump(O, 0.9);
+        coo(P.pitch * 1.3);
+        setState(P, 'idle', rand(1.5, 2.5), { face: 'other' });
+        setState(O, 'idle', rand(1.5, 2.5), { face: 'other' });
+      } else if (b.t <= 0) setState(P, 'idle', 1.5, { face: 'other' });
+      break;
+    case 'flee': {
+      if (O.brain.state !== 'chase') { setState(P, 'idle', 1, { face: 'other' }); break; }
+      tmpT.set(P.root.x - O.root.x, 0, P.root.z - O.root.z);
+      const l = tmpT.length() || 1;
+      tmpT.multiplyScalar(1 / l);
+      // near a wall, veer sideways instead of getting stuck
+      const tx = P.root.x + tmpT.x * 1.5, tz = P.root.z + tmpT.z * 1.5;
+      const xb = xBound(tz) - 0.3;
+      b.target.set(Math.max(-xb, Math.min(xb, tx)), 0, Math.max(ZMIN, Math.min(ZMAX, tz)));
+      if (Math.abs(tx) > xb) b.target.z += (P.root.z > (ZMIN + ZMAX) / 2 ? -1.2 : 1.2);
+      walkTo(P, b.target, 1.85);
+      if (b.t <= 0) setState(P, 'idle', 1, { face: 'other' });
+      break;
+    }
+    case 'scoot':
+      walkTo(P, b.target, 2.2);
+      if (b.t <= 0) setState(P, 'look', 1.2);
+      break;
+    case 'giggle':
+      faceTowards(P, camera.position.x, camera.position.z);
+      if (b.t <= 0) setState(P, 'idle', rand(0.8, 1.5), { face: 'cam' });
+      break;
+    case 'look':
+      faceTowards(P, camera.position.x, camera.position.z);
+      if (b.t <= 0) setState(P, 'idle', rand(0.5, 1.5), { face: 'cam' });
+      break;
+    case 'admire':
+      faceTowards(P, camera.position.x, camera.position.z);
+      if (b.t <= 0) setState(P, 'idle', rand(0.5, 1.5), { face: 'cam' });
+      break;
+    case 'bounce': {
+      if (TRAMP.user && TRAMP.user !== P) {
+        if (P.tossedAt && time - P.tossedAt < 3) kickOffTrampoline(TRAMP.user); // yours wins
+        else { setState(P, 'idle', 1); break; }
+      }
+      TRAMP.user = P;
+      const dx = TRAMP.pos.x - P.root.x, dz = TRAMP.pos.z - P.root.z, d = Math.hypot(dx, dz) || 1;
+      if (!P.onTramp) {
+        if (P.root.y < 0.05) {
+          // walk up to it, then jump on
+          if (d > T_R + 0.62) walkTo(P, TRAMP.pos, 1.1);
+          else if (P.crouch <= 0) {
+            faceTowards(P, TRAMP.pos.x, TRAMP.pos.z);
+            P.jumpDir = { x: dx / d * 2.2, z: dz / d * 2.2 };
+            startJump(P, 0.75);
+          }
+        }
+        if (b.t <= 0) setState(P, 'idle', 1);
+      } else {
+        faceTowards(P, camera.position.x, camera.position.z);
+        if (P.root.y - P.gy < 0.02 && P.crouch <= 0 && P.vel.y <= 0) startJump(P, 0.8);
+        if (b.t <= 0) b.n = 0; // next landing hops off
+      }
+      break;
+    }
+    case 'snack': {
+      if (CAKE.gone || (CAKE.user && CAKE.user !== P)) { setState(P, 'idle', 1); break; }
+      CAKE.user = P;
+      const dx = CAKE.pos.x - P.root.x, dz = CAKE.pos.z - P.root.z, d = Math.hypot(dx, dz);
+      if (d > CAKE.block + 0.52) { walkTo(P, CAKE.pos, 1.15); b.eat = 0; }
+      else {
+        faceTowards(P, CAKE.pos.x, CAKE.pos.z);
+        b.eat += dt;
+        const bite = Math.floor(b.eat / 0.7);
+        if (bite > b.bites && bite <= 3) {
+          // lean in for a bite
+          b.bites = bite;
+          P.v[0].z += 2.4; P.v[1].z += 0.9; P.v[0].y -= 0.8;
+          munch();
+          CAKE.bites = bite; CAKE.squish = 1;
+        }
+        if (b.eat > 2.6) {
+          const hex = CAKE.frost;
+          CAKE.gone = true; CAKE.user = null; CAKE.respawn = rand(9, 15);
+          setState(P, 'idle', rand(1.5, 2.5), { face: 'cam' });
+          startJump(P, 0.6);
+          coo(P.pitch * 1.2);
+          dye(P, hex, new V3(0, 1.3, 0.3)); // it turns the color of the frosting
+          break;
+        }
+      }
+      if (b.t <= 0) setState(P, 'idle', 1);
+      break;
+    }
+    case 'play':
+      walkTo(P, DUCK.pos, 1.6);
+      if (b.kicks >= 3 || b.t <= 0) setState(P, 'idle', rand(1, 2), { face: 'cam' });
+      break;
+    case 'dance':
+      if (danceIdx !== 2) faceTowards(P, camera.position.x, camera.position.z);
+      if (danceIdx === 4) P.yawGoal += Math.PI / 2; // side-on, so you see the bounce in profile
+      if (danceIdx === 1 || danceIdx === 3) {
+        // backs to the audience; Tail Wag also glances back over each shoulder
+        P.yawGoal += Math.PI + (danceIdx === 3 ? Math.sin(danceClock * Math.PI) * 0.45 : 0);
+      }
+      if (b.t <= 0) {
+        startJump(P, 0.7);
+        coo(P.pitch * 1.25);
+        setState(P, 'idle', rand(1.5, 2.5), { face: 'cam' });
+      }
+      break;
+    case 'bowl': {
+      const Bl = BALL;
+      if (Bl.dragging) { setState(P, 'idle', 1); break; }
+      let ax = O.root.x - Bl.pos.x, az = O.root.z - Bl.pos.z;
+      const al = Math.hypot(ax, az) || 1; ax /= al; az /= al;
+      faceTowards(P, Bl.pos.x, Bl.pos.z);
+      if (b.pushed) { setState(P, 'idle', 2.5, { face: 'other' }); break; }
+      if (!b.charging) {
+        // line up behind the ball, facing the other buddy
+        if (walkTo(P, tmpT.set(Bl.pos.x - ax * 0.95, 0, Bl.pos.z - az * 0.95), 1.2)) b.charging = true;
+      } else walkTo(P, tmpT.set(Bl.pos.x + ax * 1.5, 0, Bl.pos.z + az * 1.5), 2.4);
+      if (b.t <= 0) setState(P, 'idle', 1);
+      break;
+    }
+    case 'dizzy':
+      P.dizzy = Math.max(0, b.t) / 1.6;
+      if (b.t <= 0) setState(P, 'idle', 1, { face: 'cam' });
+      break;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Pointer: tap = poke, drag = stretch, drag far = carry and fling.
+ *  Works with several fingers at once, one per buddy.
+ * ------------------------------------------------------------------ */
+const ray = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+const lookPlane = new THREE.Plane(new V3(0, 0, 1), 0.4);
+let pointerWorld = new V3(), pointerSeen = -99;
+function aim(e) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+}
+function pick(e) {
+  aim(e);
+  let best = null;
+  for (const P of BUDDIES) {
+    P.mesh.updateMatrixWorld();
+    const h = ray.intersectObject(P.mesh, false)[0];
+    if (h && (!best || h.distance < best.h.distance)) best = { P, h };
+  }
+  return best;
+}
+function planeHit(e, plane) {
+  aim(e);
+  const p = new V3();
+  return ray.ray.intersectPlane(plane, p) ? p : null;
+}
+
+if (navigator.maxTouchPoints > 0 || 'ontouchstart' in window) document.documentElement.classList.add('touch');
+const hint = $('#hint');
+setTimeout(() => $('.brand').classList.add('gone'), 6000);
+function firstTouch() {
+  if (!interacted) {
+    interacted = true;
+    audio();
+    setTimeout(() => hint.classList.add('faded'), 5000);
+  }
+}
+
+window.addEventListener('pointermove', e => {
+  const p = planeHit(e, lookPlane);
+  if (p) { pointerWorld.copy(p); pointerSeen = time; }
+}, { passive: true });
+
+// Toys: tap to play with them, drag to move them.
+const toyGrabs = new Map();
+const groundPlane = new THREE.Plane(new V3(0, 1, 0), 0);
+function pickToy(e) {
+  aim(e);
+  const hits = ray.intersectObjects(TOYS.filter(T => T.group.visible).map(T => T.group), true);
+  if (!hits.length) return null;
+  let o = hits[0].object;
+  while (o && !TOYS.some(T => T.group === o)) o = o.parent;
+  return TOYS.find(T => T.group === o) || null;
+}
+// Is the pointer over the trampoline, or in the space above it on screen?
+// (You carry a buddy by its head, so the pointer sits above where the body will land.)
+const tp = new V3();
+function overTrampoline(e) {
+  const r = canvas.getBoundingClientRect();
+  let minX = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let k = 0; k < 8; k++) {
+    const a = k / 8 * Math.PI * 2;
+    tp.set(TRAMP.pos.x + Math.cos(a) * T_R, T_H, TRAMP.pos.z + Math.sin(a) * T_R).project(camera);
+    const sx = r.left + (tp.x + 1) / 2 * r.width, sy = r.top + (1 - tp.y) / 2 * r.height;
+    minX = Math.min(minX, sx); maxX = Math.max(maxX, sx); maxY = Math.max(maxY, sy);
+  }
+  tp.set(TRAMP.pos.x, 3.0, TRAMP.pos.z).project(camera);
+  const topY = r.top + (1 - tp.y) / 2 * r.height;
+  return e.clientX >= minX && e.clientX <= maxX && e.clientY >= topY && e.clientY <= maxY + 10;
+}
+function grabToy(e) {
+  const T = pickToy(e);
+  if (!T) return false;
+  if (T === DUCK) { squeak(1.1); DUCK.hopV = 3.2; DUCK.wobV += 10; }
+  if (T === TRAMP) { boing(0.5, 1.4); TRAMP.sagV += 2; }
+  if (T === CAKE) { CAKE.squish = 1; plip(1.2); }
+  if (T === BALL) thud(0.4);
+  if (T === PEEL) { PEEL.spinV = 8; plip(0.7); }
+  // the trampoline stays put while someone is bouncing on it
+  if (T === TRAMP && BUDDIES.some(P => P.onTramp)) return true;
+  const W = planeHit(e, groundPlane);
+  if (!W) return true;
+  toyGrabs.set(e.pointerId, { T, off: new V3(T.pos.x - W.x, 0, T.pos.z - W.z), last: new V3(T.pos.x, 0, T.pos.z), moved: false, t: performance.now() });
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  canvas.style.cursor = 'grabbing';
+  return true;
+}
+
+canvas.addEventListener('pointerdown', e => {
+  firstTouch();
+  if (fartBubbles.length) {
+    aim(e);
+    const bh = ray.intersectObjects(fartBubbles.filter(b => b.mesh.visible && b.popT < 0).map(b => b.mesh), false)[0];
+    if (bh) { popBubble(fartBubbles.find(b => b.mesh === bh.object)); return; }
+  }
+  const hit = pick(e);
+  if (!hit) { if (!grabToy(e)) startPull(e); return; }
+  const { P, h } = hit;
+  lastTouched = P;
+  const local = P.mesh.worldToLocal(h.point.clone());
+  poke(P, local, h.face.normal.clone(), e.pointerType === 'mouse' ? 0.9 : 1);
+  if (P.grab) return;
+  let g = 0, best = Infinity;
+  REST.forEach((r, i) => {
+    const d = r.distanceToSquared(local) / (i >= 5 ? 0.5 : 1);
+    if (d < best) { best = d; g = i; }
+  });
+  P.grab = {
+    id: e.pointerId, g, sx: e.clientX, sy: e.clientY, active: false,
+    off: new V3(), T: new V3(),
+    plane: new THREE.Plane(new V3(0, 0, 1), -P.root.z),
+  };
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  canvas.style.cursor = 'grabbing';
+});
+
+// Pull to refresh: drag down on empty space (not a buddy or toy) and let go.
+const ptrEl = $('#ptr');
+const PULL_NEEDED = 110;
+let pull = null;
+function startPull(e) {
+  if (e.pointerType === 'mouse' || e.clientY > window.innerHeight * 0.6) return;
+  pull = { id: e.pointerId, y0: e.clientY, dy: 0 };
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+}
+function movePull(e) {
+  pull.dy = Math.max(0, e.clientY - pull.y0);
+  const ready = pull.dy > PULL_NEEDED;
+  ptrEl.classList.remove('back');
+  ptrEl.classList.toggle('on', pull.dy > 12);
+  ptrEl.innerHTML = ready ? '&uarr; Release to refresh' : '&darr; Pull to refresh';
+  const y = Math.min(pull.dy, PULL_NEEDED * 1.3) * 0.55 - 40;
+  ptrEl.style.transform = `translate(-50%, calc(env(safe-area-inset-top, 0px) + ${y}px))`;
+}
+function endPull() {
+  const go = pull.dy > PULL_NEEDED;
+  pull = null;
+  if (go) { ptrEl.innerHTML = 'Refreshing&hellip;'; setTimeout(() => location.reload(), 120); return; }
+  ptrEl.classList.add('back'); ptrEl.classList.remove('on');
+  ptrEl.style.transform = 'translate(-50%, -60px)';
+}
+
+canvas.addEventListener('pointermove', e => {
+  if (pull && pull.id === e.pointerId) { movePull(e); return; }
+  const tg = toyGrabs.get(e.pointerId);
+  if (tg) {
+    const W = planeHit(e, groundPlane);
+    if (!W) return;
+    const T = tg.T;
+    const z = Math.max(ZMIN, Math.min(ZMAX + 0.2, W.z + tg.off.z));
+    const xb = xBound(z) + 0.3;
+    const x = Math.max(-xb, Math.min(xb, W.x + tg.off.x));
+    const now = performance.now(), dtm = Math.max(0.008, (now - tg.t) / 1000);
+    if (T.vel) {
+      T.dragging = true;
+      T.vel.set((x - T.pos.x) / dtm, 0, (z - T.pos.z) / dtm);
+      if (T === DUCK) T.pos.y = 0.25;
+    }
+    T.pos.x = x; T.pos.z = z;
+    tg.t = now; tg.moved = true;
+    return;
+  }
+  const P = BUDDIES.find(b => b.grab && b.grab.id === e.pointerId);
+  if (!P) {
+    if (e.pointerType === 'mouse') canvas.style.cursor = pick(e) || pickToy(e) ? 'grab' : 'default';
+    return;
+  }
+  const G = P.grab;
+  // Scratch or shake: count quick direction changes; three in under 0.7s is a tickle.
+  if (G.lastX === undefined) { G.lastX = e.clientX; G.dir = 0; G.revs = []; }
+  const sdx = e.clientX - G.lastX;
+  if (Math.abs(sdx) > 4) {
+    const dir = Math.sign(sdx), nowT = performance.now();
+    if (G.dir && dir !== G.dir) G.revs.push(nowT);
+    G.dir = dir; G.lastX = e.clientX;
+    G.revs = G.revs.filter(t => nowT - t < 700);
+    if (G.revs.length >= 3) { startGiggle(P); G.revs.length = 0; }
+  }
+  TRAMP.hover = G.active && overTrampoline(e);
+  const W = planeHit(e, G.plane);
+  if (!W) return;
+  if (!G.active) {
+    if (Math.hypot(e.clientX - G.sx, e.clientY - G.sy) < 6) return;
+    G.active = true;
+    toWorld(P, tmpT.copy(REST[G.g]).add(P.d[G.g]), G.off).add(P.root).sub(W);
+    G.off.z = 0;
+  }
+  G.T.copy(W).add(G.off);
+});
+
+function release(e) {
+  if (pull && pull.id === e.pointerId) { endPull(); return; }
+  const tg = toyGrabs.get(e.pointerId);
+  if (tg) {
+    toyGrabs.delete(e.pointerId);
+    if (tg.T.vel) {
+      tg.T.dragging = false;
+      const cap = { duck: 7, ball: 6.5, peel: 5 }[tg.T.kind] || 6;
+      if (tg.T.vel.length() > cap) tg.T.vel.setLength(cap);
+    }
+    if (tg.moved) noticeToy(tg.T); // someone comes to see where it went
+    canvas.style.cursor = e.pointerType === 'mouse' ? 'grab' : 'default';
+    return;
+  }
+  const P = BUDDIES.find(b => b.grab && b.grab.id === e.pointerId);
+  if (!P) return;
+  const G = P.grab;
+  const overTramp = G.active && overTrampoline(e);
+  TRAMP.hover = false;
+  if (overTramp) {
+    // whoever is on the trampoline hops off to make room
+    for (const Q of BUDDIES) if (Q !== P && (Q.onTramp || TRAMP.user === Q)) kickOffTrampoline(Q);
+    TRAMP.user = P;
+    P.tossedAt = time;
+    // an arc that lands in the middle of the mat
+    const tf = 0.75;
+    P.vel.set((TRAMP.pos.x - P.root.x) / tf, 0, (TRAMP.pos.z - P.root.z) / tf);
+    P.vel.y = (T_H - P.root.y) / tf + 0.5 * 17 * tf;
+    P.prevVel.copy(P.vel);
+    P.tossedOnTramp = true;
+    boing(0.8, P.pitch * 1.3);
+  }
+  if (G.active) {
+    const s = P.d[G.g].length();
+    if (s > 0.2) boing(s * 1.4, P.pitch * (G.g === 0 ? 1.1 : 1));
+    if (!overTramp && P.vel.length() > 12) P.vel.setLength(12);
+    P.landedHard = 0;
+  }
+  P.grab = null;
+  canvas.style.cursor = e.pointerType === 'mouse' ? 'grab' : 'default';
+}
+canvas.addEventListener('pointerup', release);
+canvas.addEventListener('pointercancel', release);
+
+/* ------------------------------------------------------------------ *
+ *  Color swatches: drag one onto a buddy, or tap to dye the last one
+ *  you touched.
+ * ------------------------------------------------------------------ */
+const swWrap = $('#sw');
+const drop = $('#drop');
+PALETTE.forEach(([name, hex]) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sw';
+  b.id = 'sw-' + name.toLowerCase();
+  b.style.setProperty('--c', hex);
+  b.setAttribute('aria-label', name);
+  b.title = name;
+  let start = null;
+  b.addEventListener('pointerdown', e => {
+    firstTouch();
+    start = { x: e.clientX, y: e.clientY, moved: false };
+    b.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  b.addEventListener('pointermove', e => {
+    if (!start) return;
+    if (!start.moved && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8) {
+      start.moved = true;
+      drop.style.setProperty('--c', hex);
+      drop.hidden = false;
+    }
+    if (start.moved) drop.style.transform = `translate(${e.clientX - 23}px, ${e.clientY - 34}px)`;
+  });
+  const end = e => {
+    if (!start) return;
+    const moved = start.moved;
+    start = null;
+    drop.hidden = true;
+    if (!moved) { dye(lastTouched, hex, new V3(0, 2.2, 0)); return; }
+    const hit = pick(e);
+    if (hit) {
+      lastTouched = hit.P;
+      dye(hit.P, hex, hit.P.mesh.worldToLocal(hit.h.point.clone()));
+    }
+  };
+  b.addEventListener('pointerup', end);
+  b.addEventListener('pointercancel', () => { start = null; drop.hidden = true; });
+  b.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      firstTouch();
+      dye(lastTouched, hex, new V3(0, 2.2, 0));
+    }
+  });
+  swWrap.appendChild(b);
+});
+
+// Tell keyboard use apart from mouse/touch, so focus rings only show for the keyboard.
+window.addEventListener('keydown', e => { if (e.key === 'Tab') document.body.classList.add('using-keys'); });
+window.addEventListener('pointerdown', () => document.body.classList.remove('using-keys'), true);
+
+const sndBtn = $('#snd');
+const soundTip = $('#soundTip');
+function setSound(on) {
+  soundOn = on;
+  sndBtn.textContent = soundOn ? 'Sound on' : 'Sound off';
+  sndBtn.setAttribute('aria-pressed', String(soundOn));
+  // Turning sound off keeps the silent track going: stopping and restarting it is what put
+  // iPhone sound to sleep for good. Off just means nothing plays.
+  if (soundOn) {
+    interacted = true;
+    if (actx && actx.state !== 'running') rebuildAudio();
+    unlockAudio(); plip(); soundTip.hidden = true;
+  }
+}
+sndBtn.addEventListener('click', () => setSound(!soundOn));
+soundTip.addEventListener('click', () => setSound(true));
+// Keep the bubble tucked under the Sound button, with its arrow pointing at the button.
+function placeSoundTip() {
+  if (soundTip.hidden) return;
+  const b = sndBtn.getBoundingClientRect(), t = soundTip.getBoundingClientRect();
+  const left = Math.max(12, Math.min(window.innerWidth - t.width - 12, b.right - t.width));
+  soundTip.style.left = left + 'px';
+  soundTip.style.top = (b.bottom + 12) + 'px';
+  const arrowFromRight = (left + t.width) - (b.left + b.width / 2) - 8;
+  soundTip.style.setProperty('--arrow-x', Math.max(10, Math.min(t.width - 26, arrowFromRight)) + 'px');
+}
+window.addEventListener('resize', placeSoundTip);
+placeSoundTip();
+if (document.fonts) document.fonts.ready.then(placeSoundTip);
+
+/* ------------------------------------------------------------------ *
+ *  Jump (spacebar or the Jump button): a quick crouch, then launch.
+ *  The second buddy goes a beat later so they don't move as one.
+ * ------------------------------------------------------------------ */
+function jump() {
+  firstTouch();
+  BUDDIES.forEach((P, n) => setTimeout(() => startJump(P, 1), n * 70 + Math.random() * 40));
+}
+window.addEventListener('keydown', e => {
+  if (e.code !== 'Space' && e.key !== ' ') return;
+  if (e.target && e.target.tagName === 'SELECT') return;
+  e.preventDefault();
+  if (!e.repeat) jump();
+});
+$('#jump').addEventListener('click', jump);
+$('#dance').addEventListener('click', startDance);
+const roomSel = $('#room');
+ROOMS.forEach((R, i) => {
+  const o = document.createElement('option');
+  o.value = String(i); o.textContent = R.name;
+  roomSel.appendChild(o);
+});
+roomSel.addEventListener('change', () => {
+  firstTouch();
+  applyRoom(Number(roomSel.value));
+  plip(0.9);
+  // everyone stops to look around at the new room
+  for (const P of BUDDIES) if (!busy(P) && !['dance', 'bounce', 'snack'].includes(P.brain.state)) setState(P, 'admire', 1.4);
+});
+applyRoom(0);
+
+/* ------------------------------------------------------------------ *
+ *  More buddies (up to six) or fewer (never below two).
+ * ------------------------------------------------------------------ */
+const MAX_BUDDIES = 6, MIN_BUDDIES = 2;
+const PITCHES = [1.0, 0.8, 1.2, 0.9, 1.1, 0.7];
+const leaving = [];
+const toastEl = $('#toast');
+let toastTimer = 0;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.hidden = false;
+  // restart the pop-in animation
+  toastEl.style.animation = 'none'; void toastEl.offsetWidth; toastEl.style.animation = '';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2800);
+}
+function updateCount() {
+  $('#count').textContent = BUDDIES.length;
+  $('#plus').setAttribute('aria-disabled', String(BUDDIES.length >= MAX_BUDDIES));
+  $('#minus').setAttribute('aria-disabled', String(BUDDIES.length <= MIN_BUDDIES));
+}
+function addBuddy() {
+  firstTouch();
+  if (BUDDIES.length >= MAX_BUDDIES) { toast('Six is a full house. That’s as many buddies as fit.'); return; }
+  const used = BUDDIES.map(P => P.color.getHex());
+  const open = PALETTE.filter(([, hex]) => !used.includes(lin(hex).getHex()));
+  const pool = open.length ? open : PALETTE;
+  const hex = pool[Math.floor(Math.random() * pool.length)][1];
+  const spot = freeSpot(new V3(), null);
+  const P = makeBuddy(spot.x, spot.z, hex, PITCHES[BUDDIES.length % PITCHES.length] * rand(0.95, 1.05), 'b' + nextId++);
+  P.root.y = 3.4; // drops in from above
+  P.yaw = rand(-0.4, 0.4);
+  P.other = BUDDIES[Math.floor(Math.random() * BUDDIES.length)];
+  P.socialAfter = time + rand(4, 8);
+  BUDDIES.push(P);
+  plip(1.4);
+  updateCount();
+}
+function removeBuddy() {
+  firstTouch();
+  if (BUDDIES.length <= MIN_BUDDIES) {
+    toast('Everyone needs a buddy! Two is the fewest you can have.');
+    // and the last two go give each other a hug
+    const [P, O] = BUDDIES;
+    if (!busy(P) && !busy(O) && P.brain.state !== 'dance') {
+      P.other = O; O.other = P;
+      setState(P, 'visit', 6);
+      P.socialAfter = O.socialAfter = time + 12;
+    }
+    return;
+  }
+  const P = BUDDIES.pop(); // the newest one waves goodbye
+  if (TRAMP.user === P) TRAMP.user = null;
+  if (CAKE.user === P) CAKE.user = null;
+  for (const O of BUDDIES) {
+    if (O.other === P) O.other = pickPartner(O);
+    if (O.stainOther === P) O.stainOther = null;
+  }
+  if (lastTouched === P) lastTouched = BUDDIES[0];
+  P.grab = null;
+  P.leaveT = 0;
+  P.leaving = true;
+  P.exitDir = P.root.x >= 0 ? 1 : -1; // leave by the nearest side
+  P.brain.state = 'leaving';
+  P.touching = false;
+  P.crouch = 0;
+  P.vel.x = P.exitDir * 2.2; // off it goes, no pause
+  leaving.push(P);
+  coo(P.pitch * 0.9);
+  updateCount();
+}
+// The goodbye: head straight for the nearest side of the screen at a run,
+// waving over its shoulder. Several removed at once all leave at once.
+function updateLeaving(dt) {
+  for (let i = leaving.length - 1; i >= 0; i--) {
+    const P = leaving[i];
+    P.leaveT += dt;
+    P.hugging = false; P.dizzy = 0;
+    P.yawGoal = null;
+    P.want.set(P.exitDir * 3.2, 0, 0);
+    stepBuddy(P, dt, time);
+    syncVisuals(P, dt);
+    const gone = Math.abs(P.root.x) > xBound(P.root.z) + 2.0 || P.leaveT > 8;
+    if (gone) {
+      scene.remove(P.mesh, P.shadow, P.glow);
+      P.mat.dispose();
+      P.shadow.material.dispose(); P.glow.material.dispose();
+      leaving.splice(i, 1);
+    }
+  }
+}
+$('#plus').addEventListener('click', addBuddy);
+$('#minus').addEventListener('click', removeBuddy);
+updateCount();
+
+/* ------------------------------------------------------------------ *
+ *  Physics
+ * ------------------------------------------------------------------ */
+const tmp = new V3(), tmp2 = new V3(), acc = new V3(), accL = new V3(), prevRoot = new V3(), inst = new V3();
+
+function clampToFloor(P) {
+  P.root.z = Math.max(ZMIN, Math.min(ZMAX, P.root.z));
+  const xb = xBound(P.root.z);
+  if (!P.leaving && Math.abs(P.root.x) > xb) {
+    const side = Math.sign(P.root.x);
+    P.root.x = side * xb;
+    if (P.vel.x * side > 0) {
+      if (P.vel.x * side > 1.5 && !(P.grab && P.grab.active)) blorp(Math.abs(P.vel.x) / 8, P.pitch * 0.85, true);
+      P.vel.x *= -0.4;
+    }
+  }
+  if (P.root.z <= ZMIN || P.root.z >= ZMAX) P.vel.z *= -0.3;
+}
+
+function stepBuddy(P, dt, time) {
+  const G = P.grab && P.grab.active ? P.grab : null;
+  prevRoot.copy(P.root);
+  const gy = P.gy = groundUnder(P);
+
+  if (G) {
+    // Carry: the grabbed spot stretches up to REACH, then pulls the whole body along.
+    const D = toLocal(P, tmp.copy(G.T).sub(P.root), tmp).sub(REST[G.g]);
+    const L = D.length(), reach = REACH[G.g];
+    if (L > reach) {
+      toWorld(P, D.multiplyScalar(1 - reach / L), tmp2).add(P.root);
+      P.root.lerp(tmp2, 1 - Math.exp(-16 * dt));
+    }
+    P.root.y = Math.max(0, P.root.y);
+    clampToFloor(P);
+    pushOutOfToys(P);
+    inst.copy(P.root).sub(prevRoot).divideScalar(dt);
+    P.vel.lerp(inst, 1 - Math.exp(-22 * dt));
+  } else {
+    if (P.crouch > 0) {
+      // load the spring: push the upper body down
+      for (let i = 0; i < 5; i++) P.v[i].y -= 34 * SWAY[i] * dt;
+      P.crouch -= dt;
+      if (P.crouch <= 0) {
+        P.crouch = 0;
+        P.vel.y = (7.2 + Math.random() * 0.8) * (P.jumpPower || 1);
+        if (P.jumpDir) { P.vel.x = P.jumpDir.x; P.vel.z = P.jumpDir.z; P.jumpDir = null; }
+        else P.vel.x += (Math.random() - 0.5) * 0.6;
+      }
+    }
+    const airborne = P.root.y > gy + 0.0005 || P.vel.y > 0;
+    if (airborne) P.vel.y -= 17 * dt;
+    else {
+      const walking = P.want.lengthSq() > 0.01;
+      if (walking) {
+        // legs push toward the speed the brain wants
+        const k = 1 - Math.exp(-5 * dt);
+        P.vel.x += (P.want.x - P.vel.x) * k;
+        P.vel.z += (P.want.z - P.vel.z) * k;
+      } else {
+        // floor friction: a gentle grip, so a pushed buddy slides and stops
+        const sp = Math.hypot(P.vel.x, P.vel.z);
+        if (sp > 0) {
+          const ns = Math.max(0, sp - 7 * dt) * Math.exp(-1.2 * dt);
+          P.vel.x *= ns / sp; P.vel.z *= ns / sp;
+        }
+      }
+    }
+    P.root.addScaledVector(P.vel, dt);
+    if (P.root.y < gy) {
+      const impact = -P.vel.y;
+      P.root.y = gy;
+      P.landedHard = Math.max(P.landedHard, impact);
+      // the landing slams the soft parts down: head and hips sink, legs bulge
+      if (impact > 0.8) for (let i = 0; i < 5; i++) P.v[i].y -= impact * SWAY[i] * 0.45;
+      if (P.onTramp) trampLand(P, impact);
+      else {
+        P.spin = 0;
+        if (P.onDuck) stompDuck(impact);
+        if (impact > 1.5) { P.vel.y = impact * 0.16; blorp(impact / 7, P.pitch * 0.7, true); }
+        else P.vel.y = 0;
+      }
+    }
+    clampToFloor(P);
+    pushOutOfToys(P);
+  }
+
+  // Tipping over (slipping, getting bowled): lean hard, then spring back upright.
+  P.tiltHold = Math.max(0, P.tiltHold - dt);
+  if (G) P.tiltHold = 0;
+  const tgx = P.tiltHold > 0 ? P.tiltGoalX : 0, tgz = P.tiltHold > 0 ? P.tiltGoalZ : 0;
+  P.tiltVX += ((tgx - P.tiltX) * 70 - P.tiltVX * 7) * dt; P.tiltX += P.tiltVX * dt;
+  P.tiltVZ += ((tgz - P.tiltZ) * 70 - P.tiltVZ * 7) * dt; P.tiltZ += P.tiltVZ * dt;
+
+  // Walk cycle: a bouncy waddle with a tiny hop on every step.
+  const speed = Math.hypot(P.vel.x, P.vel.z);
+  const onGround = P.root.y - gy < 0.02;
+  P.walkAmt += ((onGround && P.want.lengthSq() > 0.01 ? Math.min(1.3, speed) : 0) - P.walkAmt) * (1 - Math.exp(-8 * dt));
+  P.gait += speed * dt * 5.2;
+  const step = Math.floor(P.gait / Math.PI);
+  if (step !== P.gaitStep) {
+    P.gaitStep = step;
+    if (onGround && P.walkAmt > 0.25 && !G && P.crouch <= 0) {
+      P.vel.y = 1.0 + P.walkAmt * 0.7;
+      pat(P.pitch * (step % 2 ? 1 : 1.12));
+    }
+  }
+
+  // Turning: face where you're walking, or where the brain says to look.
+  if (!G && P.spin && P.root.y - gy > 0.02) {
+    P.yaw += P.spin * dt; // twirling in the air
+    P.yawRate = 0;
+  } else if (!G && P.brain.state === 'dance' && danceIdx === 8 && P.breakSpin) {
+    P.yaw += Math.PI * 3 * (BUDDIES.indexOf(P) % 2 ? -1 : 1) * dt; // headspin
+    P.yawRate = 0;
+  } else if (!G && P.brain.state === 'dance' && danceIdx === 2) {
+    P.yawRate = Math.PI * 2 * (BUDDIES.indexOf(P) % 2 ? -1 : 1);
+    P.yaw += P.yawRate * dt;
+    P.yawRate *= 0.15; // keep the fling-out gentle
+  } else if (!G) {
+    let goal = P.yawGoal;
+    if (speed > 0.35 && P.want.lengthSq() > 0.01 && !P.hugging) goal = Math.atan2(P.vel.x, P.vel.z);
+    if (goal != null) {
+      const dy = wrapAngle(goal - P.yaw);
+      const turn = dy * Math.min(1, 6 * dt);
+      P.yawRate = turn / dt;
+      P.yaw += turn;
+    } else P.yawRate = 0;
+  } else P.yawRate = 0;
+
+  // Target spots for the skeleton this frame (all in the buddy's own frame).
+  const w = P.walkAmt, s = Math.sin(P.gait);
+  for (const t of P.tgt) t.set(0, 0, 0);
+  P.tgt[5].set(0, Math.max(0, s) * 0.13 * w, s * 0.15 * w);
+  P.tgt[6].set(0, Math.max(0, -s) * 0.13 * w, -s * 0.15 * w);
+  P.tgt[0].set(Math.sin(P.gait) * 0.07 * w, 0, 0.07 * w);
+  P.tgt[1].set(Math.sin(P.gait) * 0.04 * w, 0, 0.04 * w);
+  P.tgt[3].set(0, 0, -s * 0.12 * w);
+  P.tgt[4].set(0, 0, s * 0.12 * w);
+  if (P.hugging) {
+    // arms wrap forward and in; a happy wiggle
+    P.tgt[3].set(0.3, 0.22, 0.36);
+    P.tgt[4].set(-0.3, 0.22, 0.36);
+    P.tgt[1].x += Math.sin(time * 11) * 0.05;
+    P.tgt[0].x += Math.sin(time * 11 - 0.6) * 0.08;
+    P.tgt[0].z += 0.1;
+  }
+  if (P.brain.state === 'dance') danceMoves(P);
+  if (P.giggleT > 0) {
+    P.giggleT -= dt;
+    const k = Math.min(1, P.giggleT / 0.4), sh = time * 42;
+    P.tgt[1].x += Math.sin(sh) * 0.05 * k;
+    P.tgt[0].x += Math.sin(sh + 1.1) * 0.07 * k;
+    P.tgt[0].y -= 0.05 * k;
+    P.tgt[2].y += Math.abs(Math.sin(sh * 0.5)) * 0.05 * k;
+    if (!P.grab || !P.grab.active) {       // hands on the belly
+      P.tgt[3].set(0.36, -0.12, 0.26);
+      P.tgt[4].set(-0.36, -0.12, 0.26);
+    }
+  }
+  if (P.leaving) {
+    // a goodbye wave with the hand nearest the exit
+    const h = P.exitDir > 0 ? 4 : 3, side = P.exitDir > 0 ? 1 : -1;
+    P.tgt[h].set(side * 0.1 + Math.sin(time * 14) * 0.18, 1.0, 0.1);
+  }
+  if (P.dizzy > 0) {
+    // head wobbles in circles
+    const a = time * 10;
+    P.tgt[0].x += Math.cos(a) * 0.2 * P.dizzy;
+    P.tgt[0].z += Math.sin(a) * 0.2 * P.dizzy;
+    P.tgt[1].x += Math.cos(a - 0.8) * 0.07 * P.dizzy;
+  }
+  // hips sinking pushes the feet outward
+  const legLoad = Math.max(0, -P.d[2].y);
+  P.tgt[5].x -= legLoad * 0.6;
+  P.tgt[6].x += legLoad * 0.6;
+
+  // The body's inertia: when the buddy speeds up, stops, turns or lands,
+  // the soft parts keep going for a moment. That lag is the jiggle.
+  acc.copy(P.vel).sub(P.prevVel).divideScalar(dt);
+  P.prevVel.copy(P.vel);
+  if (acc.length() > 140) acc.setLength(140);
+  toLocal(P, acc, accL);
+
+  const n = 4, hs = dt / n;
+  const g = G ? G.g : -1;
+  const breath = Math.sin(time * 1.7 + P.phase);
+  for (let sub = 0; sub < n; sub++) {
+    for (let i = 0; i < REST.length; i++) {
+      if (i === g) continue;
+      const F = tmp.copy(P.d[i]).sub(P.tgt[i]);
+      if (i >= 5) F.set(F.x * FOOT_SLIDE, F.y * HOME[i], F.z * FOOT_SLIDE).negate();
+      else F.multiplyScalar(-HOME[i]);
+      if (i === 1) F.y += breath * 3;
+      F.addScaledVector(accL, -SWAY[i] * 0.4);
+      // turning flings the top of the body outward
+      F.x += P.yawRate * SWAY[i] * (REST[i].y * 0.9) * -1.1 * speed * 0.6;
+      for (const [a, b] of LINKS) {
+        if (a === i) F.addScaledVector(tmp2.copy(P.d[b]).sub(P.d[i]), LINK_K);
+        else if (b === i) F.addScaledVector(tmp2.copy(P.d[a]).sub(P.d[i]), LINK_K);
+      }
+      // parts pressed against the other buddy get shoved back toward the body
+      if (P.touching) {
+        const over = (REST[i].x + P.d[i].x) * P.cDir.x + (REST[i].z + P.d[i].z) * P.cDir.z + RADIUS[i] * 0.6 - P.cPlane;
+        if (over > 0) { F.x -= P.cDir.x * over * 260; F.z -= P.cDir.z * over * 260; }
+      }
+      P.v[i].addScaledVector(F, hs).multiplyScalar(Math.exp(-DAMP * hs));
+    }
+    for (let i = 0; i < REST.length; i++) {
+      if (i === g) continue;
+      P.d[i].addScaledVector(P.v[i], hs);
+      if (P.d[i].length() > 1.3) P.d[i].setLength(1.3);
+      const floorD = RADIUS[i] * 0.3 - (P.root.y - gy) - REST[i].y;
+      if (P.d[i].y < floorD) { P.d[i].y = floorD; if (P.v[i].y < 0) P.v[i].y *= -0.2; }
+    }
+  }
+  if (G) {
+    const D = toLocal(P, tmp.copy(G.T).sub(P.root), tmp).sub(REST[g]);
+    const cap = REACH[g] * 1.2;
+    if (D.length() > cap) D.setLength(cap);
+    const floorD = RADIUS[g] * 0.3 - (P.root.y - gy) - REST[g].y;
+    if (D.y < floorD) D.y = floorD;
+    P.v[g].lerp(tmp2.copy(D).sub(P.d[g]).divideScalar(dt), 0.5);
+    P.d[g].copy(D);
+  }
+  if (onGround && P.brain.state !== 'held') P.landedHard = Math.max(0, P.landedHard - dt * 2);
+
+  for (const r of P.rip) r.age += dt;
+}
+
+// How far the body reaches in a given direction: wide across the arms, thin front to back.
+function reachAlong(P, nx, nz) {
+  toLocal(P, tmp.set(nx, 0, nz), tmp);
+  return Math.hypot(0.82 * tmp.x, 0.4 * tmp.z);
+}
+
+const touchingPairs = new Set();
+function collideAll(dt) {
+  for (const P of BUDDIES) { P.wasTouching = P.touching; P.touching = false; P.bestPen = 0; P.touchOther = null; }
+  for (let i = 0; i < BUDDIES.length; i++)
+    for (let j = i + 1; j < BUDDIES.length; j++) collide(BUDDIES[i], BUDDIES[j], dt);
+  for (const P of BUDDIES) if (!P.touching) P.stain.amt = Math.max(0, P.stain.amt - dt * 0.3);
+}
+function collide(A, B, dt) {
+  const key = A.id + '|' + B.id;
+  let nx = B.root.x - A.root.x, nz = B.root.z - A.root.z;
+  let dist = Math.hypot(nx, nz);
+  if (dist < 1e-4) { nx = 1; nz = 0; dist = 1e-4; } else { nx /= dist; nz /= dist; }
+  const eA = reachAlong(A, nx, nz), eB = reachAlong(B, -nx, -nz);
+  const R = eA + eB;
+  const touching = dist < R && Math.abs(B.root.y - A.root.y) < 1.9;
+  if (touching) {
+    const pen = R - dist;
+    // squish resistance: soft at first, then firm
+    const push = 26 * pen * pen + 900 * Math.max(0, pen - R * 0.45) ** 2;
+    const aFree = !(A.grab && A.grab.active), bFree = !(B.grab && B.grab.active);
+    const share = aFree && bFree ? 0.5 : 1;
+    if (aFree) { A.vel.x -= nx * push * share * dt; A.vel.z -= nz * push * share * dt; }
+    if (bFree) { B.vel.x += nx * push * share * dt; B.vel.z += nz * push * share * dt; }
+    // keep them from passing through each other
+    const minD = R * 0.48;
+    if (dist < minD) {
+      const fix = minD - dist;
+      const fa = aFree && bFree ? 0.5 : aFree ? 1 : 0, fb = aFree && bFree ? 0.5 : bFree ? 1 : 0;
+      A.root.x -= nx * fix * fa; A.root.z -= nz * fix * fa;
+      B.root.x += nx * fix * fb; B.root.z += nz * fix * fb;
+    }
+    const was = touchingPairs.has(key);
+    touchingPairs.add(key);
+    if (!was) {
+      const closing = (A.vel.x - B.vel.x) * nx + (A.vel.z - B.vel.z) * nz;
+      if (closing > 0.4) {
+        const la = toLocal(A, tmp.set(nx, 0, nz), new V3());
+        const lb = toLocal(B, tmp.set(-nx, 0, -nz), new V3());
+        for (let i = 0; i < REST.length; i++) {
+          A.v[i].addScaledVector(la, -closing * 0.55 * SWAY[i]);
+          B.v[i].addScaledVector(lb, -closing * 0.55 * SWAY[i]);
+        }
+        blorp(closing / 5, (A.pitch + B.pitch) * 0.45, true);
+      }
+    }
+    for (const [P, sx, sz, e, Q] of [[A, nx, nz, eA, B], [B, -nx, -nz, eB, A]]) {
+      if (P.touching && P.bestPen >= pen) continue; // keep the deepest contact
+      toLocal(P, tmp.set(sx, 0, sz), tmp);
+      P.touching = true; P.bestPen = pen; P.touchOther = Q; P.stainOther = Q;
+      P.cDir.x = tmp.x; P.cDir.z = tmp.z;
+      P.cPlane = e * dist / R;
+      P.stain.dx = tmp.x; P.stain.dz = tmp.z; P.stain.plane = P.cPlane;
+      P.stain.amt = Math.min(1, P.stain.amt + dt * 1.6);
+    }
+  } else touchingPairs.delete(key);
+}
+
+// Where a spot inside the body ends up after the skeleton bends it
+// (the same math the shader does, minus ripples). Used for the eyes.
+function bendPoint(P, p, out) {
+  let ws = 0;
+  out.set(0, 0, 0);
+  for (let i = 0; i < REST.length; i++) {
+    const w = Math.exp(-p.distanceToSquared(REST[i]) * 7);
+    out.addScaledVector(P.d[i], w); ws += w;
+  }
+  out.multiplyScalar(1 / ws).add(p);
+  const sq = P.U.uSquash.value * 0.6;
+  out.x += p.x * sq; out.z += p.z * sq;
+  return out;
+}
+
+const lookL = new V3();
+function syncVisuals(P, dt) {
+  const other = BUDDIES.includes(P.other) ? P.other : P;
+  P.mesh.position.copy(P.root);
+  P.mesh.rotation.set(P.tiltX, P.yaw, P.tiltZ);
+  const U = P.U;
+  for (let i = 0; i < REST.length; i++) U.uOff.value[i].copy(P.d[i]);
+  U.uSquash.value = Math.max(-0.25, Math.min(0.45, -(P.d[0].y * 0.6 + P.d[1].y * 0.4) * 0.9));
+  U.uLeg.value = Math.max(0, Math.min(0.4, -P.d[2].y * 1.4));
+  U.uRootY.value = P.root.y - P.gy;
+  P.rip.forEach((r, k) => {
+    U.uRip.value[k].set(r.c.x, r.c.y, r.c.z, r.age);
+    U.uRipAmp.value.setComponent(k, r.age < 4 ? r.amp : 0);
+  });
+  if (P.touching) U.uContact.value.set(P.cDir.x, P.cDir.z, P.cPlane, 1);
+  else U.uContact.value.set(1, 0, 99, 0);
+  U.uStain.value.set(P.stain.dx, P.stain.dz, P.stain.plane, P.stain.amt);
+  if (P.stainOther) U.uOther.value.copy(P.stainOther.color);
+
+  if (P.dye) {
+    P.dye.t += dt;
+    const k = Math.min(1, P.dye.t / 1.8);
+    const e = 1 - Math.pow(1 - k, 3);
+    U.uDyeR.value = e * 3.2;
+    P.color.copy(P.dye.from).lerp(P.dye.to, e);
+    if (k >= 1) { U.uColA.value.copy(P.dye.to); U.uDyeR.value = 9; P.dye = null; }
+  }
+  // Depth tint. Light gets absorbed again for every bit of thickness, so the raw
+  // color would crush yellow to red and lime to black. Normalize it and soften it
+  // so the thick middle reads deeper but keeps its hue.
+  const peak = Math.max(P.color.r, P.color.g, P.color.b, 1e-3);
+  P.mat.attenuationColor.setRGB(
+    Math.pow(P.color.r / peak, 0.06), Math.pow(P.color.g / peak, 0.06), Math.pow(P.color.b / peak, 0.06));
+  P.glow.material.color.copy(P.color);
+  P.mat.envMapIntensity = roomLook.env;
+  P.U.uInner.value = roomLook.inner;
+  P.U.uSat.value = roomLook.sat;
+  if ((P.mat.iridescence > 0) !== (roomLook.irid > 0)) P.mat.needsUpdate = true; // turning the rainbow film on/off rebuilds the shader
+  P.mat.iridescence = roomLook.irid;
+  P.mat.emissive.copy(P.color).multiplyScalar(roomLook.glow);
+
+  // Eyes: ride along with the head, glance at what the buddy cares about, blink.
+  const b = P.brain.state;
+  if (b === 'snack') P.look.set(CAKE.pos.x, 0.4, CAKE.pos.z);
+  else if (b === 'play') P.look.set(DUCK.pos.x, DUCK.pos.y + 0.3, DUCK.pos.z);
+  else if (b === 'bounce' && !P.onTramp) P.look.set(TRAMP.pos.x, T_H, TRAMP.pos.z);
+  else if (time - pointerSeen < 2 && b !== 'hug' && b !== 'chase' && b !== 'flee') P.look.copy(pointerWorld);
+  else if (['hug', 'chase', 'flee', 'visit'].includes(b) || P.brain.face === 'other')
+    P.look.set(other.root.x, other.root.y + 1.9, other.root.z);
+  else if (b === 'admire') P.look.set(P.root.x, 0.3, P.root.z + 0.6);
+  else {
+    P.lookT -= dt;
+    if (P.lookT <= 0) {
+      P.lookT = rand(1.2, 3);
+      P.look.set(P.root.x + rand(-3, 3), rand(0.5, 3), P.root.z + rand(0.5, 5));
+    }
+  }
+  toLocal(P, lookL.copy(P.look).sub(P.root), lookL);
+  lookL.y -= 1.94;
+  lookL.normalize();
+  P.blink -= dt;
+  if (P.blink <= 0) { P.blinkOn = 0.12; P.blink = rand(2, 5.5); }
+  P.blinkOn = Math.max(0, P.blinkOn - dt);
+  const dizzySpin = P.dizzy > 0 ? time * 14 : 0;
+  P.eyes.forEach((e, k) => {
+    bendPoint(P, EYE_REST[k], e.position);
+    const lx = lookL.z > 0 ? lookL.x : Math.sign(lookL.x);
+    e.position.x += Math.max(-1, Math.min(1, lx)) * 0.045 + (P.dizzy > 0 ? Math.cos(dizzySpin + k * 3) * 0.03 : 0);
+    e.position.y += Math.max(-1, Math.min(1, lookL.y)) * 0.035 + (P.dizzy > 0 ? Math.sin(dizzySpin + k * 3) * 0.03 : 0);
+    e.scale.set(1, P.blinkOn > 0 ? 0.15 : (P.giggleT > 0 ? 0.25 : 1), 0.55); // eyes squeezed shut while giggling
+  });
+
+  const lift = P.root.y - P.gy;
+  toWorld(P, P.d[1], tmp);
+  P.shadow.position.set(P.root.x + tmp.x * 0.3, (P.onTramp ? P.gy : 0) + 0.004, P.root.z + 0.05 + tmp.z * 0.3);
+  P.shadow.scale.set(1.5 + lift * 0.4, 0.7 + lift * 0.2, 1);
+  P.shadow.material.opacity = 0.28 / (1 + lift * 1.4);
+  P.glow.position.set(P.root.x + tmp.x * 0.5, (P.onTramp ? P.gy : 0) + 0.006, P.root.z + 0.45 + tmp.z * 0.5);
+  P.glow.scale.set(2.3 + lift * 0.5, 1.3 + lift * 0.3, 1);
+  P.glow.material.opacity = 0.5 / (1 + lift * 1.1);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Loop
+ * ------------------------------------------------------------------ */
+let last = performance.now(), time = 0;
+function frame(now) {
+  const dt = Math.min(1 / 30, Math.max(1 / 240, (now - last) / 1000));
+  last = now;
+  time += dt;
+  updateRoomFx(dt, time);
+  if (danceOn) {
+    danceClock += dt;
+    const n = Math.floor(danceClock * BPS);
+    if (n !== lastBeat) {
+      lastBeat = n;
+      for (const P of BUDDIES) if (P.brain.state === 'dance') danceBeat(P, n);
+    }
+    if (danceClock > DANCE_LEN + 0.2) danceOn = false;
+  }
+  if (window.innerWidth !== laidOutW || window.innerHeight !== laidOutH) resize();
+  // Safety net: anything that ended up at an impossible position goes back on the floor.
+  for (const P of BUDDIES) {
+    if (!Number.isFinite(P.root.x + P.root.y + P.root.z + P.vel.x + P.vel.y + P.vel.z)) {
+      freeSpot(P.root, null); P.root.y = 1.5;
+      P.vel.set(0, 0, 0); P.prevVel.set(0, 0, 0);
+      for (let i = 0; i < REST.length; i++) { P.d[i].set(0, 0, 0); P.v[i].set(0, 0, 0); }
+      setState(P, 'idle', 1);
+    }
+  }
+  if (TOYS.some(T => !Number.isFinite(T.pos.x + T.pos.z)) || !Number.isFinite(DUCK.vel.x + DUCK.vel.z)) {
+    placeToys(); DUCK.vel.set(0, 0, 0);
+  }
+  for (const P of BUDDIES) think(P, dt);
+  for (const P of BUDDIES) stepBuddy(P, dt, time);
+  updateToys(dt);
+  updateFartBubbles(dt, time);
+  collideAll(dt);
+  for (const P of BUDDIES) syncVisuals(P, dt);
+  updateLeaving(dt);
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

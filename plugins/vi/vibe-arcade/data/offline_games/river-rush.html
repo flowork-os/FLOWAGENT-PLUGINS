@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://www.aikids.guru/boatrace/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#071012">
+<link rel="manifest" href="manifest.webmanifest">
+<title>River Rush | Big Friendly AI</title>
+<meta name="description" content="A free speedboat racing game on crystal clear rivers, from Big Friendly AI: friendly AI lessons for ages 8 to grandpa.">
+<meta property="og:title" content="River Rush | Big Friendly AI">
+<meta property="og:description" content="Race speedboats over colourful fish on crystal clear rivers. Free to play in your browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -4 120 124'%3E%3Cg fill='none' stroke='%23212124' stroke-width='7' stroke-linecap='round'%3E%3Cpath d='M40 30 C 34 22, 30 16, 24 12'/%3E%3Cpath d='M60 24 L 60 8'/%3E%3Cpath d='M80 30 C 86 22, 90 16, 96 12'/%3E%3C/g%3E%3Ccircle cx='24' cy='12' r='7' fill='%23F44B2D'/%3E%3Ccircle cx='60' cy='8' r='7' fill='%23F44B2D'/%3E%3Ccircle cx='96' cy='12' r='7' fill='%23F44B2D'/%3E%3Ccircle cx='60' cy='68' r='40' fill='%23F5F2EC' stroke='%23212124' stroke-width='7'/%3E%3Ccircle cx='48' cy='64' r='6.5' fill='%23212124'/%3E%3Ccircle cx='72' cy='64' r='6.5' fill='%23212124'/%3E%3Cpath d='M46 80 Q60 92 74 80' fill='none' stroke='%23212124' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="vignette"></div>
+
+<!-- Big Friendly AI badge: always visible outside the race, links back to the course -->
+<a id="bfai" class="bfai" href="https://www.aikids.guru/?utm_source=boatrace&amp;utm_medium=game&amp;utm_campaign=river_rush" title="Back to Big Friendly AI">
+  <svg class="bfai-mark" viewBox="0 -4 120 124" aria-hidden="true"><g class="ant" fill="none" stroke="#212124" stroke-width="7" stroke-linecap="round"><path class="a1" d="M40 30 C 34 22, 30 16, 24 12"/><path class="a2" d="M60 24 L 60 8"/><path class="a3" d="M80 30 C 86 22, 90 16, 96 12"/></g><circle class="d1" cx="24" cy="12" r="7" fill="#F44B2D"/><circle class="d2" cx="60" cy="8" r="7" fill="#F44B2D"/><circle class="d3" cx="96" cy="12" r="7" fill="#F44B2D"/><circle cx="60" cy="68" r="40" fill="#F5F2EC" stroke="#212124" stroke-width="7"/><g class="eyes"><circle cx="48" cy="64" r="6.5" fill="#212124"/><circle cx="72" cy="64" r="6.5" fill="#212124"/></g><path d="M46 80 Q60 92 74 80" fill="none" stroke="#212124" stroke-width="6" stroke-linecap="round"/></svg>
+  <span class="bfai-text"><b>Big Friendly <em>AI</em></b><small>aikids.guru</small></span>
+</a>
+
+<!-- Main menu -->
+<section id="menu" class="screen">
+  <header class="brand">
+    <h1>RIVER <span>RUSH</span></h1>
+    <p>Speedboat racing on crystal clear rivers</p>
+    <p id="visitors" class="visitors hidden"></p>
+  </header>
+  <div id="tracks" class="tracks"></div>
+  <div class="options">
+    <div class="opt"><label>Season</label><div class="seg" data-opt="season"><button data-v="summer">Summer</button><button data-v="autumn">Autumn</button><button data-v="winter">Winter</button><button data-v="rain">Rain</button></div></div>
+    <div class="opt"><label>Laps</label><div class="seg" data-opt="laps"><button data-v="1">1</button><button data-v="3">3</button><button data-v="5">5</button></div></div>
+    <div class="opt"><label>Rivals</label><div class="seg" data-opt="rivals"><button data-v="0">0</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button></div></div>
+    <div class="opt"><label>Difficulty</label><div class="seg" data-opt="difficulty"><button data-v="easy">Easy</button><button data-v="normal">Normal</button><button data-v="hard">Hard</button></div></div>
+    <div class="opt touch-only"><label>Steering</label><div class="seg" data-opt="steer"><button data-v="tilt">Tilt</button><button data-v="buttons">Buttons</button></div></div>
+    <div class="opt"><label>Graphics</label><div class="seg" data-opt="quality"><button data-v="auto">Auto</button><button data-v="high">High</button><button data-v="low">Low</button></div></div>
+  </div>
+  <div class="menu-actions">
+    <button id="start" class="cta">Start race <kbd>Enter</kbd></button>
+    <a class="bfai-cta" href="https://www.aikids.guru/?utm_source=boatrace&amp;utm_medium=game&amp;utm_campaign=river_rush"><svg class="bfai-mark" viewBox="0 -4 120 124" aria-hidden="true"><g class="ant" fill="none" stroke="#212124" stroke-width="7" stroke-linecap="round"><path class="a1" d="M40 30 C 34 22, 30 16, 24 12"/><path class="a2" d="M60 24 L 60 8"/><path class="a3" d="M80 30 C 86 22, 90 16, 96 12"/></g><circle class="d1" cx="24" cy="12" r="7" fill="#F44B2D"/><circle class="d2" cx="60" cy="8" r="7" fill="#F44B2D"/><circle class="d3" cx="96" cy="12" r="7" fill="#F44B2D"/><circle cx="60" cy="68" r="40" fill="#F5F2EC" stroke="#212124" stroke-width="7"/><g class="eyes"><circle cx="48" cy="64" r="6.5" fill="#212124"/><circle cx="72" cy="64" r="6.5" fill="#212124"/></g><path d="M46 80 Q60 92 74 80" fill="none" stroke="#212124" stroke-width="6" stroke-linecap="round"/></svg><span><b>Learn how AI works</b><small>Friendly lessons for ages 8 to grandpa at aikids.guru</small></span></a>
+  </div>
+  <div class="help touch-help">Tilt the screen to steer, or pick Buttons. The boat speeds up by itself. Hold Brake to slow down, Nitro for a burst.</div>
+  <div class="help keys-help">
+    <span><kbd>W</kbd><kbd>S</kbd> throttle / brake</span>
+    <span><kbd>A</kbd><kbd>D</kbd> steer</span>
+    <span><kbd>Shift</kbd> or <kbd>Space</kbd> nitro</span>
+    <span><kbd>C</kbd> camera</span>
+    <span><kbd>R</kbd> reset boat</span>
+    <span><kbd>Esc</kbd> pause</span>
+    <span><kbd>M</kbd> mute</span>
+    <span>Gamepad supported</span>
+  </div>
+</section>
+
+<!-- In-race HUD -->
+<section id="hud" class="hidden">
+  <div class="panel tl">
+    <div class="pos"><b id="hudPos">4</b><sup id="hudPosSuf">th</sup><small id="hudPosOf">/ 4</small></div>
+    <div class="row"><span>Lap</span><b id="hudLap">1 / 3</b></div>
+    <div class="row"><span>Time</span><b id="hudTime">0:00.00</b></div>
+    <div class="row"><span>Best lap</span><b id="hudBest">-</b></div>
+    <ol id="hudBoard" class="board"></ol>
+  </div>
+  <canvas id="minimap" class="panel tr" width="220" height="220"></canvas>
+  <div class="speedo">
+    <canvas id="speedo" width="240" height="240"></canvas>
+    <div class="nitro"><i id="nitroBar"></i><span>Nitro</span></div>
+  </div>
+  <div id="msg" class="msg"></div>
+  <div id="fishCount" class="fishcount"></div>
+  <div id="touchPad" class="touchpad">
+    <div class="tp-top">
+      <button id="tpPause" class="tp-mini" aria-label="Pause"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg></button>
+      <button id="tpCam" class="tp-mini" aria-label="Change camera"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" fill="currentColor"/></svg></button>
+    </div>
+    <div class="tp-left">
+      <button class="tp tp-steer" data-touch="left" aria-label="Steer left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4.5 8 12l7.5 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="tp tp-steer" data-touch="right" aria-label="Steer right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 4.5 16 12l-7.5 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="tp tp-brake tilt-only" data-touch="brake">Brake</button>
+    </div>
+    <div class="tp-right">
+      <button class="tp tp-brake arrows-only" data-touch="brake">Brake</button>
+      <button class="tp tp-nitro" data-touch="nitro">Nitro</button>
+    </div>
+  </div>
+</section>
+
+<section id="pause" class="screen dim hidden">
+  <h2>Paused</h2>
+  <div class="stack">
+    <button class="cta" data-act="resume">Resume</button>
+    <button data-act="restart">Restart race</button>
+    <button data-act="menu">Change track</button>
+    <a class="bfai-cta small" href="https://www.aikids.guru/?utm_source=boatrace&amp;utm_medium=game&amp;utm_campaign=river_rush"><svg class="bfai-mark" viewBox="0 -4 120 124" aria-hidden="true"><g class="ant" fill="none" stroke="#212124" stroke-width="7" stroke-linecap="round"><path class="a1" d="M40 30 C 34 22, 30 16, 24 12"/><path class="a2" d="M60 24 L 60 8"/><path class="a3" d="M80 30 C 86 22, 90 16, 96 12"/></g><circle class="d1" cx="24" cy="12" r="7" fill="#F44B2D"/><circle class="d2" cx="60" cy="8" r="7" fill="#F44B2D"/><circle class="d3" cx="96" cy="12" r="7" fill="#F44B2D"/><circle cx="60" cy="68" r="40" fill="#F5F2EC" stroke="#212124" stroke-width="7"/><g class="eyes"><circle cx="48" cy="64" r="6.5" fill="#212124"/><circle cx="72" cy="64" r="6.5" fill="#212124"/></g><path d="M46 80 Q60 92 74 80" fill="none" stroke="#212124" stroke-width="6" stroke-linecap="round"/></svg><span><b>Back to Big Friendly AI</b></span></a>
+  </div>
+</section>
+
+<section id="results" class="screen dim hidden">
+  <h2 id="resTitle">Finished</h2>
+  <p id="resSub" class="sub"></p>
+  <div class="res-row">
+    <table id="resTable"></table>
+    <div id="lb" class="lb hidden"></div>
+  </div>
+  <div class="stack row">
+    <button class="cta" data-act="restart">Race again <kbd>Enter</kbd></button>
+    <button data-act="menu">Change track <kbd>Esc</kbd></button>
+  </div>
+  <a class="bfai-promo" href="https://www.aikids.guru/?utm_source=boatrace&amp;utm_medium=game&amp;utm_campaign=river_rush">
+    <svg class="bfai-mark" viewBox="0 -4 120 124" aria-hidden="true"><g class="ant" fill="none" stroke="#212124" stroke-width="7" stroke-linecap="round"><path class="a1" d="M40 30 C 34 22, 30 16, 24 12"/><path class="a2" d="M60 24 L 60 8"/><path class="a3" d="M80 30 C 86 22, 90 16, 96 12"/></g><circle class="d1" cx="24" cy="12" r="7" fill="#F44B2D"/><circle class="d2" cx="60" cy="8" r="7" fill="#F44B2D"/><circle class="d3" cx="96" cy="12" r="7" fill="#F44B2D"/><circle cx="60" cy="68" r="40" fill="#F5F2EC" stroke="#212124" stroke-width="7"/><g class="eyes"><circle cx="48" cy="64" r="6.5" fill="#212124"/><circle cx="72" cy="64" r="6.5" fill="#212124"/></g><path d="M46 80 Q60 92 74 80" fill="none" stroke="#212124" stroke-width="6" stroke-linecap="round"/></svg>
+    <span><b>Your rival boats were driven by a tiny AI.</b>
+    <small>Want to know how it thinks? Learn AI from scratch with friendly video lessons, games and comics. No scary math.</small></span>
+    <i>Start learning</i>
+  </a>
+</section>
+
+<div class="rotate" aria-live="polite">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="18.6" r=".9" fill="currentColor"/></svg>
+  <b>Turn your phone sideways</b>
+  <span>River Rush plays in landscape, so you get a wide view of the river.</span>
+</div>
+
+<div id="loading" class="loading"><div class="spinner"></div><span id="loadingText">Filling the river...</span></div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

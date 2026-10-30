@@ -1,0 +1,3571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://deadbaron.com/neon-asteroids/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05010f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Neon Asteroids">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="description" content="Neon 1v1 Asteroids dogfights, free in your browser. Phone vs. desktop cross-play, best of 3, one-minute rounds. Quick Play, private matches or practice vs. a bot.">
+<meta property="og:site_name" content="Dead Baron">
+<meta property="og:title" content="Neon Asteroids: 1v1 multiplayer, free in your browser">
+<meta property="og:description" content="Neon dogfights on phone or desktop. Quick Play with anyone online, challenge a friend, or practice vs. a bot. No download.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://deadbaron.com/neon-asteroids/">
+<meta property="og:image" content="https://deadbaron.com/neon-asteroids/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta property="og:image:alt" content="Neon Asteroids: two neon ships dogfighting among asteroids with a UFO">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://deadbaron.com/neon-asteroids/og-image.jpg">
+<title>Neon Asteroids</title>
+<!--
+  NEON ASTEROIDS — PvP duel edition (portrait, tuned for Pixel 7 Pro)
+  Canvas 2D + vanilla JS. No frameworks, no external assets.
+
+  Rules: best of 3 rounds, 30 s each. A ship takes 3 hits and explodes.
+  A round goes to the last ship flying, or, at the buzzer, to whoever
+  scored more by blasting rocks and UFOs. Round 1 is a light field,
+  round 2 a heavier one, round 3 the heaviest plus UFOs that shoot back.
+
+  Script sections:
+    1.  Config, tiers & palette
+    2.  Canvas setup
+    3.  Math helpers
+    4.  Particle system
+    5.  Neon vector drawing (ships with damage states, UFOs)
+    6.  World entities: ship, bullets, asteroids, UFOs
+    7.  Controls: floating joystick + FIRE button
+    8.  Networking: RoomAdapter (live), NullAdapter
+    9.  Opponents: RemotePlayer (online), BotShip (local AI)
+    10. Match flow: rounds, scoring, hits, wins
+    11. Fixed-timestep update + render
+    12. Menu wiring
+-->
+<style>
+  /* One deliberate look: a dark neon arcade screen in every theme. */
+  :root { color-scheme: dark; --bg: #05010f; --ink: #ffffff; --muted: #8b80c4; --line: #5a4aa8; --cyan: #00f0ff; }
+
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg); color: var(--ink);
+    overflow: hidden; overscroll-behavior: none; touch-action: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+    font-family: "Courier New", ui-monospace, monospace;
+  }
+  canvas#game { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block; image-rendering: pixelated; }
+  canvas#game.desk { cursor: crosshair; }
+
+  .overlay {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px;
+    padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px calc(env(safe-area-inset-bottom, 0px) + 18px);
+    box-sizing: border-box;
+    background: radial-gradient(ellipse at center, rgba(20,6,50,.72) 0%, rgba(5,1,15,.92) 75%);
+    z-index: 10; text-align: center; overflow-y: auto; touch-action: pan-y;
+  }
+  .overlay.hidden { display: none; }
+
+  h1 {
+    margin: 0; font-size: clamp(32px, 10.5vw, 52px); letter-spacing: 4px; line-height: 1;
+    color: var(--ink); text-wrap: balance;
+    text-shadow: 0 0 6px #00f0ff, 0 0 18px #00f0ff, 0 0 36px #e100ff;
+  }
+  h1 small { display: block; font-size: .36em; letter-spacing: 9px; margin-top: 10px; color: #ff3f8e; text-shadow: 0 0 8px #ff3f8e; }
+  .label { font-size: 12px; letter-spacing: 3px; color: #9a8fd6; margin-bottom: -6px; }
+
+  /* Color grid: 16 neon hulls, 8 per row (two rows keep the menu short on phones) */
+  .dots { display: grid; grid-template-columns: repeat(8, 32px); gap: 14px 10px; }
+  .dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 3px solid transparent; padding: 0; cursor: pointer;
+    background: var(--c); box-shadow: 0 0 8px var(--c), 0 0 18px var(--c);
+    transition: transform .12s, border-color .12s;
+  }
+  .dot.sel { border-color: #fff; transform: scale(1.18); box-shadow: 0 0 12px var(--c), 0 0 30px var(--c), inset 0 0 6px #fff; }
+  .dot:focus-visible, .btn:focus-visible, #roomCode:focus-visible { outline: 2px dashed #fff; outline-offset: 4px; }
+  .dot-name { height: 16px; font-size: 13px; letter-spacing: 3px; color: var(--c, #fff); text-shadow: 0 0 8px var(--c, #fff); }
+
+  .modes { display: flex; gap: 8px; width: 100%; max-width: 360px; }
+  .modes .btn { flex: 1; min-width: 0; padding: 12px 4px; font-size: 14px; letter-spacing: 2px; }
+  .btn {
+    font: inherit; font-weight: bold; letter-spacing: 3px; font-size: 15px;
+    color: #fff; background: transparent; cursor: pointer;
+    border: 2px solid var(--line); border-radius: 6px; padding: 12px 16px; min-width: 120px;
+  }
+  .btn.sel { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px var(--cyan), inset 0 0 10px rgba(0,240,255,.35); }
+  #quickBtn small { display: block; margin-top: 5px; font-size: 10px; letter-spacing: 2px; font-weight: normal; text-transform: uppercase; opacity: .8; text-shadow: none; }
+  .btn.go {
+    font-size: 22px; padding: 15px 44px; border-color: var(--accent, #00f0ff); color: var(--accent, #00f0ff);
+    box-shadow: 0 0 14px var(--accent, #00f0ff), inset 0 0 14px var(--accent, #00f0ff);
+    text-shadow: 0 0 8px var(--accent, #00f0ff);
+  }
+  .btn.small { min-width: 0; font-size: 13px; padding: 10px 12px; }
+  .btn:active { transform: scale(.96); }
+
+  .room { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .room.hidden { display: none; }
+  .code-row { display: flex; gap: 8px; align-items: stretch; }
+  #roomCode {
+    width: 7ch; font: inherit; font-weight: bold; font-size: 24px; letter-spacing: 8px; text-align: center;
+    text-transform: uppercase; color: var(--cyan); background: rgba(0,240,255,.06);
+    border: 2px solid var(--cyan); border-radius: 6px; padding: 6px 4px 6px 12px;
+    box-shadow: 0 0 10px rgba(0,240,255,.5);
+  }
+  .note { font-size: 12px; color: var(--muted); letter-spacing: 1px; line-height: 1.6; max-width: 330px; }
+  .note.warn { color: #ff9f1c; }
+
+  .hint { font-size: 12px; color: var(--muted); letter-spacing: 1px; line-height: 1.7; max-width: 340px; }
+  .hint b { color: #fff; }
+  #finalScore { font-size: 44px; color: #ffe600; text-shadow: 0 0 10px #ffe600, 0 0 30px #ff9f1c; font-variant-numeric: tabular-nums; }
+
+  /* Host code display */
+  .code-show {
+    min-width: 6ch; font-weight: bold; font-size: 28px; letter-spacing: 8px; text-align: center;
+    color: var(--cyan); border: 2px solid var(--cyan); border-radius: 6px; padding: 6px 4px 6px 12px;
+    box-shadow: 0 0 10px rgba(0,240,255,.5); text-shadow: 0 0 8px var(--cyan);
+    -webkit-user-select: text; user-select: text;
+  }
+  #roleRow { max-width: 360px; }
+  #roleRow .btn { font-size: 12px; letter-spacing: 1px; }
+  #modeRow, #practiceRow { max-width: 300px; }
+  #practiceRow .btn { font-size: 12px; padding: 9px 4px; }
+  #practiceRow.hidden { display: none; }
+  #startBtn.hidden, #quickBtn.hidden, #orChoose.hidden { display: none; }
+  #randomRole[hidden] { display: none; }
+  #roleRow .btn { padding: 10px 4px; }
+
+  /* In-game menu button: top center, above the round clock */
+  #pauseBtn {
+    position: fixed; z-index: 5; left: 50%; transform: translateX(-50%);
+    top: calc(env(safe-area-inset-top, 0px) + 6px);
+    font: inherit; font-weight: bold; font-size: 11px; letter-spacing: 2px;
+    color: #cfc6ff; background: rgba(5,1,15,.6); border: 1px solid var(--line); border-radius: 14px;
+    padding: 5px 12px; cursor: pointer;
+  }
+  #pauseBtn.hidden, #waitShare.hidden, #waitBot.hidden { display: none; }
+  /* Waiting in Quick Play: small top-right pill, out of the way of the warm-up field */
+  #waitBot {
+    position: fixed; z-index: 5; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 6px);
+    font: inherit; font-weight: bold; font-size: 11px; letter-spacing: 2px; color: #fff; cursor: pointer;
+    background: rgba(5, 2, 15, .6); border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 12px;
+  }
+  #waitBot:active { transform: scale(.96); }
+  /* Glow pulse (in your hull color) when it first appears, then again every 10–20 s */
+  #waitBot.pulse { animation: botPulse 1.4s ease-in-out 2; }
+  @keyframes botPulse {
+    0%, 100% { box-shadow: 0 0 0 transparent; border-color: var(--line); color: #fff; }
+    50% { box-shadow: 0 0 10px var(--c, #1DE9FF), 0 0 24px var(--c, #1DE9FF), inset 0 0 8px var(--c, #1DE9FF);
+          border-color: var(--c, #1DE9FF); color: var(--c, #1DE9FF); text-shadow: 0 0 8px var(--c, #1DE9FF); }
+  }
+  @media (prefers-reduced-motion: reduce) { #waitBot.pulse { animation-iteration-count: 1; } }
+  #waitShare { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); top: 30%; white-space: nowrap; }
+  #pauseMenu { background: rgba(5,1,15,.86); }
+  #updateBtn {
+    position: fixed; z-index: 20; left: 50%; transform: translateX(-50%);
+    top: calc(env(safe-area-inset-top, 0px) + 8px); white-space: nowrap;
+    font: inherit; font-weight: bold; font-size: 12px; letter-spacing: 2px;
+    color: #05010f; background: #ffe600; border: 0; border-radius: 16px; padding: 9px 16px;
+    box-shadow: 0 0 16px #ffe600; cursor: pointer;
+  }
+  #updateBtn.hidden { display: none; }
+  .small-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+  /* Network test */
+  #netTest { z-index: 30; justify-content: flex-start; background: rgba(5,1,15,.95); gap: 14px; }
+  .nt-title { font-size: clamp(26px, 8vw, 40px); }
+  .nt-rows { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+  .nt-row { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: rgba(20,6,50,.5); }
+  .nt-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .nt-label { font-weight: bold; font-size: 13px; letter-spacing: 2px; color: #fff; }
+  .nt-detail { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; overflow-wrap: anywhere; }
+  .nt-pill { font-weight: bold; font-size: 11px; letter-spacing: 2px; padding: 3px 8px; border-radius: 10px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .nt-pill.run { color: #9a8fd6; }
+  .nt-pill.ok { color: #05010f; background: #39ff14; border-color: #39ff14; }
+  .nt-pill.warn { color: #05010f; background: #ffe600; border-color: #ffe600; }
+  .nt-pill.fail { color: #fff; background: #ff2d4b; border-color: #ff2d4b; }
+  .nt-verdict { width: 100%; max-width: 380px; box-sizing: border-box; font-size: 13px; line-height: 1.5; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line); color: #fff; }
+  .nt-verdict.good { border-color: #39ff14; box-shadow: 0 0 12px rgba(57,255,20,.4); }
+  .nt-verdict.ok { border-color: #ffe600; box-shadow: 0 0 12px rgba(255,230,0,.35); }
+  .nt-verdict.bad { border-color: #ff2d4b; box-shadow: 0 0 12px rgba(255,45,75,.4); }
+  #buildTag { font-size: 10px; opacity: .6; }
+
+  #rmStatus.hidden, #rmRow.hidden, #rmHelp.hidden { display: none; }
+  .rm-status { max-width: 320px; font-size: 13px; letter-spacing: 1px; line-height: 1.5; color: #fff; text-align: center;
+    padding: 10px 14px; border-radius: 8px; border: 1.5px solid var(--line); background: rgba(5,2,15,.6); }
+  .rm-status.ask { border-color: #FFAA2B; color: #FFE9B0; box-shadow: 0 0 14px rgba(255,170,43,.45); }
+  .rm-status.bad { border-color: #ff2d4b; color: #ffd0d6; }
+  #againBtn.pulse { animation: botPulse 1.2s ease-in-out infinite; }
+  #againBtn.waiting { opacity: .65; }
+  #rmHelp { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    width: min(360px, calc(100vw - 32px)); padding: 14px 16px; border-radius: 12px; background: rgba(5,2,15,.92);
+    border: 1.5px solid #FFAA2B; box-shadow: 0 0 20px rgba(255,170,43,.35); color: #fff; font: 12px/1.6 "Courier New", monospace; letter-spacing: .5px; }
+  .rm-help-title { font-weight: bold; letter-spacing: 2px; color: #FFAA2B; margin-bottom: 6px; text-align: center; }
+  #rmHelpText { margin-bottom: 10px; }
+  #fsBtn.hidden, #fsBtn2.hidden, #installBtn.hidden, #installNote.hidden, #padToast.hidden { display: none; }
+  /* Controller: highlight the focused button */
+  .pad-focus { outline: 2px solid #fff !important; outline-offset: 4px; box-shadow: 0 0 16px rgba(255,255,255,.55) !important; }
+  #padToast { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    max-width: calc(100vw - 32px); padding: 10px 16px; border-radius: 10px; background: rgba(5,2,15,.88); border: 1.5px solid var(--line);
+    color: #fff; font: bold 11px/1.6 "Courier New", monospace; letter-spacing: 1.5px; text-align: center; box-shadow: 0 0 18px rgba(0,0,0,.6); }
+  #rotate { display: none; }
+  @media (orientation: landscape) and (max-height: 520px) {
+    #rotate { display: flex; z-index: 50; font-size: 20px; letter-spacing: 3px; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+  }
+  @media (prefers-reduced-motion: reduce) { .dot, .btn { transition: none; } }
+  #safeProbe { position: fixed; top: 0; left: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); visibility: hidden; pointer-events: none; }
+</style>
+</head>
+<body>
+
+
+<canvas id="game"></canvas>
+<div id="safeProbe"></div>
+
+<!-- ================= START MENU ================= -->
+<div id="menu" class="overlay">
+  <h1>NEON<br>ASTEROIDS<small>DUEL·DRIFT</small></h1>
+
+  <div class="label">SELECT HULL</div>
+  <div class="dots" id="dots"></div>
+  <div class="dot-name" id="dotName">NEON PINK</div>
+
+  <!-- QUICK PLAY: one tap into an online match with whoever else is searching -->
+  <button class="btn go" id="quickBtn" style="--accent:#00f0ff">QUICK PLAY<small id="quickSub">instant 1v1 vs. anyone online</small></button>
+
+  <div class="label" id="orChoose">OR CHOOSE</div>
+  <div class="modes" id="modeRow">
+    <button class="btn" data-mode="online">ONLINE</button>
+    <button class="btn" data-mode="practice">PRACTICE</button>
+  </div>
+
+  <!-- Practice: with or without the bot rival (starts right away) -->
+  <div class="modes hidden" id="practiceRow">
+    <button class="btn" data-practice="bot">WITH BOT</button>
+    <button class="btn" data-practice="solo">SOLO</button>
+  </div>
+
+  <div class="room hidden" id="roomBox">
+    <div class="modes" id="roleRow">
+      <button class="btn sel" data-role="host">HOST</button>
+      <button class="btn"     data-role="join">JOIN</button>
+      <button class="btn"     data-role="random" id="randomRole">QUICK PLAY</button>
+    </div>
+    <!-- Host: you get a code to share -->
+    <div class="room" id="hostPanel">
+      <div class="label">YOUR ROOM CODE</div>
+      <div class="code-row">
+        <div id="hostCode" class="code-show">XKP2</div>
+        <button class="btn small" id="newCode">NEW CODE</button>
+      </div>
+      <button class="btn small" id="shareBtn" hidden>SHARE INVITE LINK</button>
+    </div>
+    <!-- Join: type your friend's code -->
+    <div class="room hidden" id="joinPanel">
+      <div class="label">ENTER YOUR FRIEND'S CODE</div>
+      <input id="roomCode" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code" placeholder="····">
+    </div>
+    <div class="note" id="roomNote"></div>
+    <div class="note" id="liveNote">LIVE LINK: CHECKING…</div>
+  </div>
+
+  <button class="btn go hidden" id="startBtn">HOST GAME</button>
+  <div class="small-row">
+    <button class="btn small" id="soundBtn">SOUND: ON</button>
+    <button class="btn small" id="ntBtn">NETWORK TEST</button>
+    <button class="btn small hidden" id="fsBtn">FULLSCREEN</button>
+    <button class="btn small hidden" id="installBtn">INSTALL APP</button>
+  </div>
+  <div class="note hidden" id="installNote"></div>
+  <div class="note" id="buildTag"></div>
+</div>
+
+<button id="updateBtn" class="hidden">NEW VERSION READY · TAP TO UPDATE</button>
+
+<!-- ================= IN-GAME MENU ================= -->
+<button id="pauseBtn" class="hidden" aria-label="Game menu">☰ MENU</button>
+<button id="waitShare" class="btn small hidden">SHARE INVITE LINK</button>
+<button id="waitBot" class="hidden" aria-label="Play a bot while you wait">+ ADD BOT</button>
+<div id="pauseMenu" class="overlay hidden">
+  <h1 id="pauseTitle">PAUSED</h1>
+  <div class="hint" id="pauseInfo"></div>
+  <button class="btn go" id="resumeBtn">KEEP PLAYING</button>
+  <button class="btn" id="surrenderBtn">SURRENDER</button>
+  <button class="btn" id="quitBtn">QUIT TO MENU</button>
+  <button class="btn small" id="ntBtn2">NETWORK TEST</button>
+  <button class="btn small" id="soundBtn2">SOUND: ON</button>
+  <button class="btn small hidden" id="fsBtn2">FULLSCREEN</button>
+</div>
+<div id="padToast" class="hidden" role="status"></div>
+
+<!-- ================= MATCH OVER ================= -->
+<div id="over" class="overlay hidden">
+  <h1 id="overTitle">VICTORY</h1>
+  <div id="finalScore">2 – 1</div>
+  <div class="hint" id="overInfo"></div>
+  <div class="rm-status hidden" id="rmStatus" role="status"></div>
+  <button class="btn go" id="againBtn">REMATCH</button>
+  <div class="small-row hidden" id="rmRow">
+    <button class="btn small" id="rmCancel">CANCEL REMATCH</button>
+    <button class="btn small" id="rmQuick">QUICK PLAY INSTEAD</button>
+  </div>
+  <button class="btn" id="menuBtn">MENU</button>
+</div>
+
+<!-- Rematch accepted but the game hasn't started after 30 s: what's going on + choices -->
+<div id="rmHelp" class="hidden" role="dialog" aria-label="Rematch status">
+  <div class="rm-help-title">REMATCH IS TAKING A WHILE</div>
+  <div id="rmHelpText"></div>
+  <div class="small-row">
+    <button class="btn small" id="rmWait">KEEP WAITING</button>
+    <button class="btn small" id="rmHelpQuick">QUICK PLAY</button>
+    <button class="btn small" id="rmHelpMenu">MENU</button>
+  </div>
+</div>
+
+<!-- ================= NETWORK TEST ================= -->
+<div id="netTest" class="overlay hidden">
+  <h1 class="nt-title">NETWORK<br>TEST</h1>
+  <div id="ntRows" class="nt-rows"></div>
+  <div id="ntVerdict" class="nt-verdict"></div>
+  <div class="small-row">
+    <button class="btn small" id="ntRun">RUN AGAIN</button>
+    <button class="btn small" id="ntCopy">COPY REPORT</button>
+  </div>
+  <button class="btn" id="ntClose">CLOSE</button>
+</div>
+
+<div id="rotate" class="overlay">ROTATE TO PORTRAIT ⟲</div>
+
+<!-- Trystero (Nostr relays): the main matchmaker for direct phone-to-phone links on the open web.
+     Loaded as an ES module; a second CDN is tried if the first fails. -->
+<script type="module">
+  const sources = ['https://cdn.jsdelivr.net/npm/trystero@0.25.4/nostr/+esm', 'https://esm.run/trystero@0.25.4'];
+  (async () => {
+    for (const url of sources) {
+      try { const m = await import(url); if (m && m.joinRoom) { window.Trystero = m; return; } } catch (e) { window.TrysteroError = String(e); }
+    }
+    window.TrysteroFailed = true;
+  })();
+</script>
+<!-- PeerJS: direct phone-to-phone links (used when the page is hosted on the open web,
+     e.g. GitHub Pages). Falls back to a second CDN if the first is blocked. -->
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"
+        onerror="var s=document.createElement('script');s.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';document.head.appendChild(s);"></script>
+<script>
+'use strict';
+
+/** Build id. The site build stamps a timestamp here; phones compare it to spot a stale copy. */
+const BUILD = '20261002-224602';
+
+/* =====================================================================
+   1. CONFIG, TIERS & PALETTE  (physics values are per 60 Hz tick)
+   ===================================================================== */
+const CFG = {
+  TICK_MS: 1000 / 60,
+  DRAG: 0.985,               // permanent linear drag
+  THRUST: 0.2,
+  MAX_SPEED: 7.5,
+  TURN_LERP: 0.28,
+  KEY_TURN: 0.085,           // radians per tick when turning with keys
+  AIM_DEADZONE: 0.12,
+  THRUST_START: 0.4,         // below: aim only; above: aim + thrust
+
+  FIRE_COOLDOWN_MS: 140,     // fastest tapping rate
+  FIRE_REPEAT_MS: 260,       // steady rate while FIRE is held
+  BULLET_SPEED: 10.5,
+  BULLET_LIFE: 58,
+  BULLET_INHERIT: 0.5,
+  MAX_BULLETS: 140,
+
+  HULL: 3,                   // hits a ship can take
+  HIT_INVULN: 36,            // ticks of protection after a hit
+  SPAWN_SHIELD: 100,         // ~1.7 s shield when a round goes live, to get your bearings
+  SPAWN_CLEAR: 190,          // rocks spawn at least this far from either ship
+  ROCK_INVULN: 80,           // after bouncing off a rock
+  SHIP_R: 12,
+  SHIP_HIT_R: 13,
+
+  ROUND_MS: 60000,           // 1-minute rounds
+  INTRO_MS: 3000,
+  RESULT_MS: 3400,
+  WINS_NEEDED: 2,
+
+  UFO_SCORE: 150,
+  UFO_BULLET_SPEED: 4.6,
+  UFO_BULLET_LIFE: 120,
+  UFO_SHOTS: 4,
+
+  JOY_RADIUS: 64,
+  CONTROL_TOP: 0.4,          // controls live in the bottom 60%
+  FIRE_R: 44,
+
+  MAX_PARTICLES: 1800,
+  NET_SEND_HZ: 15,
+  INTERP_DELAY_MS: 130,
+  MAX_SYNC_ASTEROIDS: 80,
+};
+
+/** Round tiers. Round 4+ (after draws) reuses tier 3. */
+const TIERS = {
+  1: { large: 3, medium: 0, ufos: [],                  tag: 'LIGHT FIELD' },
+  2: { large: 4, medium: 0, ufos: [],                  tag: 'DENSER FIELD' },
+  3: { large: 4, medium: 1, ufos: [5000, 22000, 40000], tag: 'UFOs INBOUND' },
+};
+const tierFor = rn => TIERS[Math.min(Math.max(rn, 1), 3)];
+
+const SHIP_COLORS = [          // 16 hues spread evenly round the wheel, so no two hulls look alike
+  ['pink',    '#FF3D91', 'HOT PINK'],     ['red',     '#FF3555', 'SIGNAL RED'],
+  ['orange',  '#FF6536', 'LAVA ORANGE'],  ['amber',   '#FFAA2B', 'ELECTRIC AMBER'],
+  ['yellow',  '#FFE94A', 'SOLAR YELLOW'], ['lime',    '#C9F43A', 'ACID LIME'],
+  ['green',   '#5CF56A', 'LASER GREEN'],  ['mint',    '#6BF0BB', 'MINT'],
+  ['teal',    '#00BDAF', 'TEAL'],         ['cyan',    '#1DE9FF', 'ELECTRIC CYAN'],
+  ['sky',     '#4AA9FF', 'SKY BLUE'],     ['cobalt',  '#4776FF', 'COBALT'],
+  ['indigo',  '#725BFF', 'INDIGO'],       ['violet',  '#AA5CFF', 'ULTRAVIOLET'],
+  ['magenta', '#F04BEB', 'MAGENTA'],      ['white',   '#EAF6FF', 'ICE WHITE'],
+];
+const AST_COLORS = [null, '#b388ff', '#ff9f1c', '#39ff14'];
+const AST_RADIUS = [0, 14, 27, 44];
+const AST_SCORE  = [0, 100, 50, 20];
+/* UFOs cycle through the rainbow so they never blend in with any hull color.
+   48 precomputed hues (no string building every frame); ufoHue(offset) picks the current one. */
+const UFO_HUES = Array.from({ length: 48 }, (_, i) => `hsl(${i * 7.5}, 100%, 62%)`);
+const ufoOff = u => ((u.id | 0) * 17) % 48;   // same on every screen (ids are synced)
+const ufoHue = (offset = 0) => UFO_HUES[(((Math.floor(performance.now() / 40) + offset) % 48) + 48) % 48];   // full cycle ≈ 2 s
+
+/* =====================================================================
+   2. CANVAS SETUP (DPR capped at 2 to keep glow cheap on a 3.5x screen)
+   ===================================================================== */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d', { alpha: false });
+const bg = document.createElement('canvas');
+let W = 0, H = 0, DPR = 1, SAFE_TOP = 0, SAFE_BOTTOM = 0;
+/* PLAYFIELD UNITS. Everything moves in a shared field that is REF_W x REF_H units on
+   every device (a phone-shaped reference). SX/SY map field units to this screen's pixels
+   along each axis. Speeds, headings and network data all live in field units, so every
+   device plays the same game: a ship at full speed crosses the field's width (or height)
+   in exactly the same time on a phone, a tablet or a full-screen monitor. Shapes are
+   still drawn in plain pixels, so nothing looks stretched. */
+const REF_W = 412, REF_H = 860;
+let SX = 1, SY = 1;
+/** Heading in field units → direction on this screen (for drawing and spawn offsets). */
+const toScreenAngle = a => Math.atan2(Math.sin(a) * SY, Math.cos(a) * SX);
+/** Direction on this screen (stick, mouse) → heading in field units. */
+const toFieldAngle = sa => Math.atan2(Math.sin(sa) / SY, Math.cos(sa) / SX);
+/** Pixel offset on this screen → heading in field units. */
+const fieldAngleTo = (dx, dy) => Math.atan2(dy / SY, dx / SX);
+
+/** Screen size changed (fullscreen, rotation, window resize): keep every object at the
+ *  same spot in the playfield instead of leaving it at its old pixel position. */
+function rescaleWorld(kx, ky) {
+  const sc = o => { if (!o) return; if (o.x !== undefined) o.x *= kx; if (o.y !== undefined) o.y *= ky;
+    if (o.tx !== undefined) o.tx *= kx; if (o.ty !== undefined) o.ty *= ky; if (o.base !== undefined) o.base *= ky; };
+  try {
+    for (const list of [world.asteroids, world.ufos, world.bullets, world.rings]) list.forEach(sc);
+    for (let i = 0; i < Particles.count; i++) sc(Particles.pool[i]);
+    sc(ship); if (opp) sc(opp);
+  } catch (_) {}
+}
+function resize() {
+  // Crisp but affordable: cap the canvas at ~3.5 million pixels so full-screen desktops keep 60 fps
+  DPR = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(3.5e6 / Math.max(1, window.innerWidth * window.innerHeight)));
+  // Full window on every device. Online positions travel as fractions of the screen,
+  // so a phone and a wide monitor still share one playfield.
+  const ow = W, oh = H;
+  W = window.innerWidth; H = window.innerHeight;
+  SX = W / REF_W; SY = H / REF_H;
+  if (ow && oh && (ow !== W || oh !== H) && typeof rescaleWorld === 'function') rescaleWorld(W / ow, H / oh);
+  canvas.classList.toggle('desk', DESKTOP);
+  canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  const cs = getComputedStyle(document.getElementById('safeProbe'));
+  SAFE_TOP = parseFloat(cs.paddingTop) || 0;
+  SAFE_BOTTOM = parseFloat(cs.paddingBottom) || 0;
+  buildBackground();
+}
+function buildBackground() {
+  bg.width = canvas.width; bg.height = canvas.height;
+  const g = bg.getContext('2d');
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  g.imageSmoothingEnabled = false;
+  g.fillStyle = '#05010f'; g.fillRect(0, 0, W, H);
+  const step = 32;
+  for (let i = 0, x = 0; x <= W; x += step, i++) { g.fillStyle = i % 4 === 0 ? 'rgba(110,60,255,0.22)' : 'rgba(80,40,190,0.10)'; g.fillRect(Math.round(x), 0, 1, H); }
+  for (let i = 0, y = 0; y <= H; y += step, i++) { g.fillStyle = i % 4 === 0 ? 'rgba(110,60,255,0.22)' : 'rgba(80,40,190,0.10)'; g.fillRect(0, Math.round(y), W, 1); }
+  for (let i = 0; i < 90; i++) {
+    g.fillStyle = `rgba(255,255,255,${(0.2 + Math.random() * 0.6).toFixed(2)})`;
+    const s = Math.random() < 0.15 ? 2 : 1;
+    g.fillRect(Math.floor(Math.random() * W), Math.floor(Math.random() * H), s, s);
+  }
+  const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.75);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.65)');
+  g.fillStyle = v; g.fillRect(0, 0, W, H);
+}
+
+/* =====================================================================
+   3. MATH HELPERS
+   ===================================================================== */
+const TAU = Math.PI * 2;
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const snap = v => Math.round(v) + 0.5;
+function angDiff(a, b) { let d = (a - b) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; }
+function wrapDelta(d, size) { if (d > size / 2) d -= size; else if (d < -size / 2) d += size; return d; }
+function wrap(o) { if (o.x < 0) o.x += W; else if (o.x >= W) o.x -= W; if (o.y < 0) o.y += H; else if (o.y >= H) o.y -= H; }
+function wrapDist2(a, b) { const dx = wrapDelta(a.x - b.x, W), dy = wrapDelta(a.y - b.y, H); return dx * dx + dy * dy; }
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const buzz = ms => {
+  try { navigator.vibrate && navigator.vibrate(ms); } catch (_) {}
+  try { if (typeof padRumble === 'function') padRumble(ms); } catch (_) {}
+};
+
+/* =====================================================================
+   4. PARTICLE SYSTEM — pooled, adapts to frame rate
+   ===================================================================== */
+const Particles = {
+  pool: [], count: 0, quality: 1,
+  init() { for (let i = 0; i < CFG.MAX_PARTICLES; i++) this.pool.push({ x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1, color: '#fff', size: 2, drag: 0.96 }); },
+  emit(x, y, vx, vy, life, color, size, drag = 0.96) {
+    if (this.count >= CFG.MAX_PARTICLES) return;
+    const p = this.pool[this.count++];
+    p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.life = p.max = life; p.color = color; p.size = size; p.drag = drag;
+  },
+  burst(x, y, color, amount, speed, lifeBase = 40) {
+    const n = Math.max(4, Math.round(amount * this.quality));
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * TAU, s = rand(0.3, 1) * speed;
+      this.emit(x, y, Math.cos(a) * s, Math.sin(a) * s, Math.round(rand(0.5, 1) * lifeBase),
+        Math.random() < 0.18 ? '#ffffff' : color, Math.random() < 0.3 ? 3 : 2, 0.955);
+    }
+  },
+  update() {
+    const pool = this.pool;
+    for (let i = 0; i < this.count;) {
+      const p = pool[i];
+      p.x += p.vx; p.y += p.vy; p.vx *= p.drag; p.vy *= p.drag; wrap(p);
+      if (--p.life <= 0) { this.count--; pool[i] = pool[this.count]; pool[this.count] = p; } else i++;
+    }
+  },
+  draw() {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < this.count; i++) {
+      const p = this.pool[i], t = p.life / p.max;
+      ctx.globalAlpha = t; ctx.fillStyle = p.color;
+      const s = Math.max(1, Math.round(p.size * (0.4 + t * 0.6)));
+      ctx.fillRect(Math.round(p.x - s / 2), Math.round(p.y - s / 2), s, s);
+    }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  },
+  clear() { this.count = 0; }
+};
+
+/* =====================================================================
+   5. NEON VECTOR DRAWING
+   ===================================================================== */
+function neonPoly(pts, color, width = 2, glow = 16, closed = true) {
+  ctx.beginPath();
+  ctx.moveTo(snap(pts[0][0]), snap(pts[0][1]));
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(snap(pts[i][0]), snap(pts[i][1]));
+  if (closed) ctx.closePath();
+  ctx.lineJoin = 'miter';
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.shadowColor = color; ctx.shadowBlur = glow;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = Math.max(1, width * 0.4);
+  ctx.stroke();
+}
+function drawWrapped(x, y, r, fn) {
+  fn(x, y);
+  const ox = x < r ? W : x > W - r ? -W : 0, oy = y < r ? H : y > H - r ? -H : 0;
+  if (ox) fn(x + ox, y);
+  if (oy) fn(x, y + oy);
+  if (ox && oy) fn(x + ox, y + oy);
+}
+
+/** Hull outlines by remaining hull. Each hit bends, tears and cracks it further. */
+const SHIP_SHAPES = {
+  3: [[16, 0], [-10, -10], [-5, 0], [-10, 10]],
+  2: [[16, 0], [-10, -10], [-5, 0], [-8, 5], [-10, 10]],            // dented flank
+  1: [[14, 1], [-3, -6], [-7, -3], [-5, 0], [-7, 4], [-10, 10]],     // left wing torn off
+};
+const SHIP_CRACKS = {
+  3: [],
+  2: [[[4, -3], [-1, 1], [-5, -2]]],
+  1: [[[6, 2], [0, -1], [-3, 3]], [[-2, 5], [-6, 7]]],
+};
+function drawShip(x, y, a, color, thrust, tick, hp = CFG.HULL) {
+  hp = clamp(hp, 1, 3);
+  const c = Math.cos(a), s = Math.sin(a);
+  const T = ([px, py]) => [x + px * c - py * s, y + px * s + py * c];
+  // Badly damaged hulls flicker like a failing tube light
+  const col = hp === 1 && (tick % 9 < 2) ? '#ffffff' : color;
+  if (hp === 1) ctx.globalAlpha = 0.75 + 0.25 * Math.sin(tick * 0.9);
+  neonPoly(SHIP_SHAPES[hp].map(T), col, 2.2, hp === 3 ? 18 : 12);
+  for (const crack of SHIP_CRACKS[hp]) neonPoly(crack.map(T), '#ffffff', 1, 6, false);
+  ctx.globalAlpha = 1;
+  if (thrust > 0.05) {
+    const len = 8 + thrust * 14 * (0.7 + ((tick * 7) % 5) / 10);
+    neonPoly([[-7, -5], [-7 - len, 0], [-7, 5]].map(T), '#ffffff', 1.5, 14, false);
+  }
+}
+/** Sparks and smoke from damaged hulls. */
+function damageFx(o) {
+  if (!o.alive || o.hp >= 3) return;
+  const q = Particles.quality;
+  if (Math.random() < (o.hp === 2 ? 0.07 : 0.16) * q)
+    Particles.emit(o.x + rand(-6, 6), o.y + rand(-6, 6), rand(-1.6, 1.6), rand(-1.6, 1.6), 12, Math.random() < 0.5 ? '#ffe600' : '#ffffff', 2, 0.9);
+  if (o.hp === 1 && Math.random() < 0.4 * q)
+    { const sa = toScreenAngle(o.a);
+      Particles.emit(o.x - Math.cos(sa) * 6 + rand(-3, 3), o.y - Math.sin(sa) * 6 + rand(-3, 3),
+        o.vx * SX * 0.3 + rand(-0.3, 0.3), o.vy * SY * 0.3 + rand(-0.3, 0.3), 34, '#5b5470', 3, 0.97); }
+}
+function explodeShip(x, y, color) {
+  Sound.play('boom');
+  Particles.burst(x, y, color, 110, 6.5, 65);
+  Particles.burst(x, y, '#ffffff', 40, 3.5, 45);
+  Particles.burst(x, y, '#ff9f1c', 30, 2.5, 50);
+  addRing(x, y, color, 130); addRing(x, y, '#ffffff', 70);
+  world.shake = 16;
+}
+function drawUfo(u, tick) {
+  const P = pts => pts.map(([px, py]) => [u.x + px, u.y + py]);
+  const o = ufoOff(u);                                                // each saucer starts on its own hue
+  neonPoly(P([[-17, 0], [-8, -6], [8, -6], [17, 0], [8, 6], [-8, 6]]), ufoHue(o), 2, 14);
+  neonPoly(P([[-6, -6], [-4, -11], [4, -11], [6, -6]]), ufoHue(o + 12), 1.5, 10, false);   // dome a quarter-turn ahead
+  neonPoly(P([[-17, 0], [17, 0]]), ufoHue(o + 24), 1, 6, false);
+  [-9, 0, 9].forEach((lx, i) => {                                     // chasing rainbow belly lights
+    ctx.fillStyle = (tick >> 3) % 3 === i ? '#ffffff' : ufoHue(o + 16 * i);
+    ctx.fillRect(Math.round(u.x + lx - 1), Math.round(u.y + 2), 2, 2);
+  });
+}
+
+/* =====================================================================
+   6. WORLD ENTITIES
+   ===================================================================== */
+const world = { asteroids: [], bullets: [], ufos: [], rings: [], shake: 0 };
+
+const ship = {
+  x: 0, y: 0, vx: 0, vy: 0, a: -Math.PI / 2, thrust: 0,
+  hp: CFG.HULL, alive: false, invuln: 0,
+  shots: 0,        // total shots fired; peers replay new ones
+  dealt: 0,        // hits I landed on my rival this round (online: rival applies them)
+  applied: 0,      // rival's hits on me already applied this round
+  lastDealt: -999,
+  color: '#ff3f8e', colorName: 'NEON PINK',
+};
+
+let nextAstId = Math.floor(Math.random() * 1e5);
+function makeAsteroid(x, y, size, speedMul = 1, id = nextAstId++ % 1e6) {
+  const r = mulberry32(id * 2654435761);                 // same outline on every client
+  const n = 7 + Math.floor(r() * 5), pts = [];
+  for (let i = 0; i < n; i++) pts.push({ a: (i / n) * TAU + (r() - 0.5) * 0.3, d: 0.7 + r() * 0.35 });
+  const dir = Math.random() * TAU, sp = rand(0.5, 1.2) * (1 + (3 - size) * 0.4) * speedMul;
+  return { id, x, y, vx: Math.cos(dir) * sp, vy: Math.sin(dir) * sp, r: AST_RADIUS[size], size,
+           rot: r() * TAU, spin: (r() - 0.5) * 0.05, pts, color: AST_COLORS[size], tx: undefined, ty: undefined };
+}
+function drawAsteroid(a) {
+  drawWrapped(a.x, a.y, a.r + 4, (x, y) =>
+    neonPoly(a.pts.map(p => [x + Math.cos(p.a + a.rot) * a.r * p.d, y + Math.sin(p.a + a.rot) * a.r * p.d]), a.color, 2, 12));
+}
+function explodeAsteroid(a) {
+  Sound.play('rock', a.size);
+  Particles.burst(a.x, a.y, a.color, 10 + a.size * 16, 2 + a.size * 1.3, 30 + a.size * 10);
+  addRing(a.x, a.y, a.color, a.r * 2.2);
+  world.shake = Math.max(world.shake, a.size * 2.5);
+}
+function explodeUfo(u) {
+  Sound.play('boom');
+  for (let k = 0; k < 5; k++) Particles.burst(u.x, u.y, UFO_HUES[k * 9 + (ufoOff(u) % 9)], 12, 4.5, 45);   // rainbow confetti
+  Particles.burst(u.x, u.y, '#ffffff', 20, 2.5, 30);
+  addRing(u.x, u.y, ufoHue(ufoOff(u)), 60); addRing(u.x, u.y, ufoHue(ufoOff(u) + 24), 40);
+  world.shake = Math.max(world.shake, 6);
+}
+
+function spawnBullet(x, y, vx, vy, color, owner, life = CFG.BULLET_LIFE) {
+  if (world.bullets.length >= CFG.MAX_BULLETS) world.bullets.shift();
+  world.bullets.push({ x, y, vx, vy, life, color, owner });
+}
+function shootFrom(o, color, owner) {
+  const c = Math.cos(o.a), s = Math.sin(o.a), sa = toScreenAngle(o.a);
+  spawnBullet(o.x + Math.cos(sa) * 16, o.y + Math.sin(sa) * 16, c * CFG.BULLET_SPEED + o.vx * CFG.BULLET_INHERIT,
+    s * CFG.BULLET_SPEED + o.vy * CFG.BULLET_INHERIT, color, owner);
+}
+function fireLocal() { shootFrom(ship, ship.color, 'local'); ship.shots++; Sound.play('shoot'); }
+
+function drawBullets() {
+  ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'square';
+  for (const b of world.bullets) {
+    const px = b.vx * SX, py = b.vy * SY, sp = Math.hypot(px, py) || 1, len = b.owner === 'ufo' ? 4 : 7;
+    const tx = b.x - (px / sp) * len, ty = b.y - (py / sp) * len;
+    ctx.strokeStyle = b.color; ctx.globalAlpha = 0.45; ctx.lineWidth = b.owner === 'ufo' ? 8 : 6;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(tx, ty); ctx.stroke();
+    ctx.strokeStyle = '#ffffff'; ctx.globalAlpha = 1; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(tx, ty); ctx.stroke();
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+}
+function addRing(x, y, color, max) { world.rings.push({ x, y, r: 4, max, color, life: 1 }); }
+const spark = (x, y) => Particles.burst(x, y, '#ffffff', 5, 2, 14);
+
+/* =====================================================================
+   7. CONTROLS
+   Bottom 60% of the screen is split in two:
+     left half  = FLY: a floating stick appears under your thumb. Small
+                  push aims, big push aims + thrusts.
+     right half = FIRE: tap to shoot, hold for steady fire.
+   Labeled FLY / FIRE guides show at the bottom corners until the player
+   has flown and fired enough to get it; then they fade away for good
+   (remembered on this device). The zones keep working either way.
+   Desktop: drag with the mouse on the left, click right or Space to fire.
+   ===================================================================== */
+/** Control scheme: touch (phones/tablets) or desktop (keyboard + mouse). */
+const forcedControls = new URLSearchParams(location.search).get('controls');
+let DESKTOP = forcedControls ? forcedControls === 'desktop'
+  : !(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+
+const joy = { active: false, id: null, bx: 0, by: 0, kx: 0, ky: 0, mag: 0, angle: 0 };
+const fire = { held: false, id: null, lastShot: -1e9, repeatAcc: 0, pulse: 0, tapX: 0, tapY: 0 };
+let now = 0;
+
+/** Tutorial guides: fade out after ~2 s of thrust and 8 shots. */
+const learn = { thrustTicks: 0, shots: 0, done: false, alpha: 1 };
+const learnKey = () => DESKTOP ? 'neonAsteroids.learnedDesktop' : 'neonAsteroids.learned';
+try { learn.done = localStorage.getItem(learnKey()) === '1'; } catch (_) {}
+if (learn.done) learn.alpha = 0;
+function noteLearning() {
+  if (learn.done) return;
+  if (learn.thrustTicks >= 120 && learn.shots >= 8) {
+    learn.done = true;
+    try { localStorage.setItem(learnKey(), '1'); } catch (_) {}
+  }
+}
+
+const zoneTop = () => H * CFG.CONTROL_TOP;
+const flyPad = () => ({ x: 26 + CFG.JOY_RADIUS, y: H - CFG.JOY_RADIUS - 34 - SAFE_BOTTOM });
+const fireBtn = () => ({ x: W - CFG.FIRE_R - 26, y: H - CFG.FIRE_R - 44 - SAFE_BOTTOM });
+const inFireZone = (x, y) => y >= zoneTop() && x >= W * 0.5;
+const inFlyZone = (x, y) => y >= zoneTop() && x < W * 0.5;
+
+function canFly() { return state === 'play' && !menuOpen && ship.alive && (match.ph === 'play' || match.ph === 'wait'); }
+function tryFire() {
+  if (!canFly()) return;
+  if (now - fire.lastShot < CFG.FIRE_COOLDOWN_MS) return;
+  fire.lastShot = now; fire.repeatAcc = 0; fire.pulse = 1;
+  fireLocal();
+  learn.shots++; noteLearning();
+}
+function firePress(id, x, y) {
+  if (state !== 'play' || menuOpen) return;
+  fire.held = true; fire.id = id;
+  if (x !== undefined) { fire.tapX = x; fire.tapY = y; }
+  tryFire();
+}
+function fireRelease(id) { if (fire.id === id) { fire.held = false; fire.id = null; } }
+
+function joyStart(id, x, y) {
+  if (state !== 'play' || menuOpen || joy.active) return;
+  joy.active = true; joy.id = id; joy.bx = joy.kx = x; joy.by = joy.ky = y; joy.mag = 0;
+}
+function joyMove(id, x, y) {
+  if (!joy.active || joy.id !== id) return;
+  const dx = x - joy.bx, dy = y - joy.by, d = Math.hypot(dx, dy);
+  const k = d > CFG.JOY_RADIUS ? CFG.JOY_RADIUS / d : 1;
+  joy.kx = joy.bx + dx * k; joy.ky = joy.by + dy * k;
+  joy.mag = Math.min(d / CFG.JOY_RADIUS, 1);
+  if (d > 2) joy.angle = Math.atan2(dy, dx);
+}
+function joyEnd(id) { if (joy.id === id) { joy.active = false; joy.id = null; joy.mag = 0; } }
+
+function pointerDown(id, x, y) {
+  Sound.unlock();
+  if (inFireZone(x, y)) firePress(id, x, y);
+  else if (inFlyZone(x, y)) joyStart(id, x, y);
+}
+function pointerUp(id) { fireRelease(id); joyEnd(id); }
+
+canvas.addEventListener('touchstart', e => { e.preventDefault(); useTouch(); for (const t of e.changedTouches) { const p = toLocal(t.clientX, t.clientY); pointerDown(t.identifier, p.x, p.y); } }, { passive: false });
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); for (const t of e.changedTouches) { const p = toLocal(t.clientX, t.clientY); joyMove(t.identifier, p.x, p.y); } }, { passive: false });
+const touchEnd = e => { e.preventDefault(); for (const t of e.changedTouches) pointerUp(t.identifier); };
+canvas.addEventListener('touchend', touchEnd, { passive: false });
+canvas.addEventListener('touchcancel', touchEnd, { passive: false });
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('dblclick', e => e.preventDefault());
+/* ---------------------------------------------------------------------
+   DESKTOP CONTROLS (auto-detected: no touch-first pointer)
+     Keyboard: W/↑ thrust · A D/← → turn · S/↓ brake · Space fire
+     Mouse:    ship turns to face the cursor · right-click (hold) thrust ·
+               left-click (hold) fire
+   Keys and mouse mix freely: turning keys take over aim until the mouse
+   moves again. Esc or P opens the menu. `?controls=touch|desktop` forces
+   a scheme. A touch on the screen switches to touch controls.
+   --------------------------------------------------------------------- */
+const keys = { up: false, down: false, left: false, right: false, lastTurn: 0 };
+const mouse = { x: 0, y: 0, inside: false, thrust: false, lastMove: -1 };
+const KEYMAP = { KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down', KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right' };
+function toLocal(cx, cy) { const r = canvas.getBoundingClientRect(); return { x: cx - r.left, y: cy - r.top }; }
+const typing = e => e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+function clearDesktopInput() { keys.up = keys.down = keys.left = keys.right = false; mouse.thrust = false; fireRelease('key'); fireRelease('mouseL'); }
+function useTouch() { if (!DESKTOP) return; DESKTOP = false; clearDesktopInput(); applyControlScheme(); resize(); }
+
+/** Desktop steering, called from update() while the ship can fly. */
+function desktopSteer() {
+  const turn = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+  if (turn) { ship.a += turn * CFG.KEY_TURN; keys.lastTurn = performance.now(); }
+  else if (mouse.inside && mouse.lastMove > keys.lastTurn) {
+    const dx = mouse.x - ship.x, dy = mouse.y - ship.y;
+    if (dx * dx + dy * dy > 14 * 14) ship.a += angDiff(fieldAngleTo(dx, dy), ship.a) * CFG.TURN_LERP;
+  }
+  if (keys.up || mouse.thrust) ship.thrust = 1;
+  if (keys.down) { ship.vx *= 0.95; ship.vy *= 0.95; }
+}
+
+window.addEventListener('keydown', e => {
+  if (typing(e)) return;
+  if ((e.code === 'Escape' || e.code === 'KeyP') && state === 'play') { e.preventDefault(); menuOpen ? closeMenu() : openMenu(); return; }
+  if (state !== 'play' || menuOpen) return;
+  const k = KEYMAP[e.code];
+  if (k) { e.preventDefault(); keys[k] = true; Sound.unlock(); return; }
+  if (e.code === 'Space') { e.preventDefault(); if (!e.repeat) { Sound.unlock(); firePress('key'); } }
+});
+window.addEventListener('keyup', e => {
+  const k = KEYMAP[e.code];
+  if (k) keys[k] = false;
+  if (e.code === 'Space') fireRelease('key');
+});
+window.addEventListener('blur', clearDesktopInput);
+canvas.addEventListener('mousemove', e => {
+  if (!DESKTOP) return;
+  const p = toLocal(e.clientX, e.clientY);
+  mouse.x = p.x; mouse.y = p.y; mouse.inside = true; mouse.lastMove = performance.now();
+});
+canvas.addEventListener('mouseleave', () => { mouse.inside = false; });
+canvas.addEventListener('mousedown', e => {
+  if (!DESKTOP || state !== 'play' || menuOpen) return;
+  e.preventDefault(); Sound.unlock();
+  const p = toLocal(e.clientX, e.clientY);
+  mouse.x = p.x; mouse.y = p.y; mouse.inside = true; mouse.lastMove = performance.now();
+  if (e.button === 0) firePress('mouseL', p.x, p.y);
+  if (e.button === 2) mouse.thrust = true;
+});
+window.addEventListener('mouseup', e => {
+  if (e.button === 0) fireRelease('mouseL');
+  if (e.button === 2) mouse.thrust = false;
+});
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+/** Keyboard + mouse guide panels at the bottom; they fade once learned, like the touch guides. */
+function drawDesktopGuides(a, col) {
+  if (a <= 0.01) return;
+  const gap = 10, pw = Math.min(280, (W - 28 - gap) / 2), ph = 92, y0 = H - ph - 16 - SAFE_BOTTOM;
+  const pad = (W - (pw * 2 + gap)) / 2;                 // centered pair, capped width on wide screens
+  const panel = (x, title, rows) => {
+    ctx.globalAlpha = a * 0.85; ctx.fillStyle = 'rgba(5,1,15,0.7)'; ctx.fillRect(x, y0, pw, ph);
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.shadowColor = col; ctx.shadowBlur = 10;
+    ctx.strokeRect(Math.round(x) + 0.5, Math.round(y0) + 0.5, Math.round(pw), ph); ctx.shadowBlur = 0;
+    ctx.globalAlpha = a; ctx.textAlign = 'left'; ctx.fillStyle = col; ctx.font = 'bold 11px "Courier New", monospace';
+    ctx.fillText(title, x + 10, y0 + 17);
+    rows.forEach(([key, what, on], i) => {
+      const yy = y0 + 36 + i * 17;
+      ctx.globalAlpha = a * (on ? 1 : 0.8);
+      ctx.fillStyle = on ? col : '#ffffff'; ctx.font = 'bold 11px "Courier New", monospace'; ctx.fillText(key, x + 10, yy);
+      ctx.fillStyle = on ? col : '#9a8fd6'; ctx.font = '11px "Courier New", monospace'; ctx.textAlign = 'right'; ctx.fillText(what, x + pw - 10, yy); ctx.textAlign = 'left';
+    });
+    ctx.globalAlpha = 1;
+  };
+  panel(pad, 'KEYBOARD', [
+    ['W / ↑', 'THRUST', keys.up], ['A D / ← →', 'TURN', keys.left || keys.right], ['S / ↓', 'BRAKE', keys.down], ['SPACE', 'FIRE', fire.id === 'key' && fire.held],
+  ]);
+  panel(pad + pw + gap, 'MOUSE', [
+    ['MOVE', 'AIM', mouse.inside && mouse.lastMove > keys.lastTurn], ['RIGHT CLICK', 'THRUST', mouse.thrust], ['LEFT CLICK', 'FIRE', fire.id === 'mouseL' && fire.held], ['ESC', 'MENU', false],
+  ]);
+}
+
+/** Menu help text for the active control scheme. */
+function applyControlScheme() {
+  const how = document.getElementById('howTo');
+  if (!how) return;
+  how.innerHTML = DESKTOP
+    ? '<b>KEYBOARD:</b> W/↑ thrust · A D/← → turn · S/↓ brake · SPACE fire<br><b>MOUSE:</b> aim with the cursor · RIGHT CLICK thrust · LEFT CLICK fire<br>ESC opens the menu.<br>Best of 3 · 1-minute rounds · 3 hits and you\'re scrap.'
+    : '<b>FLY</b> (left thumb): drag to steer. Push far to thrust.<br><b>FIRE</b> (right thumb): tap to shoot. Hold for steady fire.<br>Best of 3 · 1-minute rounds · 3 hits and you\'re scrap.<br>Last ship flying or most points wins the round.';
+}
+
+
+/** A labeled round control guide (FLY / FIRE). */
+function drawGuide(x, y, r, label, sub, col, alpha, pressed) {
+  if (alpha <= 0.01) return;
+  ctx.globalAlpha = alpha * (pressed ? 0.95 : 0.6);
+  ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.shadowColor = col; ctx.shadowBlur = 16 + (pressed ? 14 : 0);
+  ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke();
+  if (pressed) { ctx.globalAlpha = alpha * 0.22; ctx.fillStyle = col; ctx.fill(); }
+  ctx.shadowBlur = 0; ctx.globalAlpha = alpha;
+  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = 'bold 16px "Courier New", monospace'; ctx.fillText(label, x, y - 4);
+  ctx.font = 'bold 9px "Courier New", monospace'; ctx.fillStyle = col; ctx.fillText(sub, x, y + 12);
+  ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1;
+}
+
+function drawControls() {
+  const col = ship.color;
+  learn.alpha = learn.done ? Math.max(0, learn.alpha - 0.02) : Math.min(1, learn.alpha + 0.05);
+  const a = learn.alpha;
+
+  if (DESKTOP) { drawDesktopGuides(a, col); return; }
+  // Tutorial guides at the bottom corners
+  const fp = flyPad(), fb = fireBtn();
+  if (a > 0) {
+    // soft divider between the two halves
+    ctx.globalAlpha = 0.18 * a; ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.setLineDash([5, 9]);
+    ctx.beginPath(); ctx.moveTo(Math.round(W / 2) + 0.5, zoneTop()); ctx.lineTo(Math.round(W / 2) + 0.5, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, Math.round(zoneTop()) + 0.5); ctx.lineTo(W, Math.round(zoneTop()) + 0.5); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+    if (!joy.active) drawGuide(fp.x, fp.y, CFG.JOY_RADIUS, 'FLY', 'DRAG TO STEER', col, a, false);
+    drawGuide(fb.x, fb.y, CFG.FIRE_R, 'FIRE', 'TAP · HOLD', col, a, fire.held);
+  }
+  // After the guides are gone, a quick ripple where FIRE was tapped
+  if (fire.pulse > 0.05 && a < 0.5 && fire.id !== 'key') {
+    ctx.globalAlpha = fire.pulse * 0.6; ctx.strokeStyle = col; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(fire.tapX, fire.tapY, 18 + (1 - fire.pulse) * 26, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  if (!joy.active) return;
+  // Floating stick under the thumb
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.shadowColor = col; ctx.shadowBlur = 12;
+  ctx.beginPath(); ctx.arc(joy.bx, joy.by, CFG.JOY_RADIUS, 0, TAU); ctx.stroke();
+  ctx.shadowBlur = 0; ctx.globalAlpha = 0.2; ctx.setLineDash([4, 6]);
+  ctx.beginPath(); ctx.arc(joy.bx, joy.by, CFG.JOY_RADIUS * CFG.THRUST_START, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+  ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.moveTo(joy.bx, joy.by); ctx.lineTo(joy.kx, joy.ky); ctx.stroke();
+  ctx.globalAlpha = 0.9; ctx.fillStyle = col; ctx.shadowBlur = 20;
+  ctx.beginPath(); ctx.arc(joy.kx, joy.ky, 20, 0, TAU); ctx.fill();
+  ctx.shadowBlur = 0; ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(joy.kx, joy.ky, 7, 0, TAU); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+/* ---------------------------------------------------------------------
+   8-BIT SOUND — tiny WebAudio synth: square/triangle blips and filtered
+   noise bursts. No audio files. Starts on the first tap (browsers
+   require a gesture). Mute choice is remembered on this device.
+   --------------------------------------------------------------------- */
+const Sound = {
+  ctx: null, master: null, noiseBuf: null, on: true, last: {},
+  unlock() {
+    if (!this.on) return;
+    try {
+      if (!this.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        this.ctx = new AC();
+        this.master = this.ctx.createGain(); this.master.gain.value = 0.32; this.master.connect(this.ctx.destination);
+        const len = this.ctx.sampleRate * 1, buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        this.noiseBuf = buf;
+      }
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+    } catch (_) { this.ctx = null; }
+  },
+  ok(name, gapMs) {                       // rate-limit busy sounds so they don't pile up
+    if (!this.on || !this.ctx || this.ctx.state !== 'running') return false;
+    const t = performance.now();
+    if (gapMs && this.last[name] && t - this.last[name] < gapMs) return false;
+    this.last[name] = t; return true;
+  },
+  tone(f0, f1, dur, type = 'square', vol = 0.2, delay = 0) {
+    const c = this.ctx, t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t);
+    if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.02);
+  },
+  noise(dur, f0, f1, vol = 0.25, delay = 0) {
+    const c = this.ctx, t = c.currentTime + delay, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.noiseBuf; f.type = 'lowpass';
+    f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    s.connect(f); f.connect(g); g.connect(this.master); s.start(t); s.stop(t + dur + 0.02);
+  },
+  seq(notes, step, type = 'square', vol = 0.16) { notes.forEach((n, i) => this.tone(n, n, step * 0.95, type, vol, i * step)); },
+  play(name, arg) {
+    switch (name) {
+      case 'shoot':    if (this.ok(name, 40))  this.tone(1320, 440, 0.07, 'square', 0.09); break;
+      case 'rival':    if (this.ok(name, 60))  this.tone(880, 330, 0.07, 'square', 0.05); break;
+      case 'rock':     if (this.ok(name, 45))  { const s = arg || 2; this.noise(0.1 + s * 0.08, 2600 - s * 500, 180, 0.22 + s * 0.05); } break;
+      case 'hit':      if (this.ok(name, 80))  { this.tone(220, 55, 0.22, 'square', 0.22); this.noise(0.14, 1800, 200, 0.2); } break;
+      case 'thud':     if (this.ok(name, 80))  this.tone(160, 60, 0.15, 'triangle', 0.18); break;
+      case 'boom':     if (this.ok(name, 120)) { this.noise(0.8, 1600, 60, 0.45); this.tone(130, 30, 0.6, 'triangle', 0.3); } break;
+      case 'ufo':      if (this.ok(name, 400)) this.seq([660, 990, 660, 990, 660, 990], 0.07, 'square', 0.06); break;
+      case 'ufoShot':  if (this.ok(name, 60))  this.tone(260, 900, 0.12, 'sawtooth', 0.07); break;
+      case 'tick':     if (this.ok(name, 200)) this.tone(440, 440, 0.09, 'square', 0.12); break;
+      case 'go':       if (this.ok(name, 500)) this.seq([523, 659, 784, 1047], 0.07, 'square', 0.13); break;
+      case 'roundWin': if (this.ok(name, 800)) this.seq([659, 784, 1047, 1319], 0.09, 'square', 0.13); break;
+      case 'roundLose':if (this.ok(name, 800)) this.seq([392, 330, 262, 196], 0.11, 'triangle', 0.18); break;
+      case 'draw':     if (this.ok(name, 800)) this.seq([523, 523, 392], 0.1, 'square', 0.1); break;
+      case 'win':      if (this.ok(name, 1500)) this.seq([523, 659, 784, 1047, 784, 1047, 1319, 1568], 0.1, 'square', 0.13); break;
+      case 'lose':     if (this.ok(name, 1500)) this.seq([440, 415, 392, 370, 349, 262], 0.14, 'triangle', 0.18); break;
+      case 'click':    if (this.ok(name, 60))  this.tone(990, 990, 0.035, 'square', 0.07); break;
+      case 'thrust':   if (this.ok(name, 90))  this.noise(0.08, 500, 200, 0.05 + 0.06 * (arg || 0)); break;
+    }
+  },
+};
+try { Sound.on = localStorage.getItem('neonAsteroids.sound') !== 'off'; } catch (_) {}
+function setSound(on) {
+  Sound.on = on;
+  try { if (Ads.push) Ads.push({ sound: on ? 'on' : 'off' }); } catch (_) {}   // (Ads is defined later in the file)
+  try { localStorage.setItem('neonAsteroids.sound', on ? 'on' : 'off'); } catch (_) {}
+  for (const id of ['soundBtn', 'soundBtn2']) { const b = document.getElementById(id); if (b) b.textContent = on ? 'SOUND: ON' : 'SOUND: OFF'; }
+  if (on) { Sound.unlock(); Sound.play('click'); }
+}
+
+/* =====================================================================
+   8. NETWORKING
+   ---------------------------------------------------------------------
+   Every player shares one presence object (~15x/s):
+     { v, on, col, x, y, vx, vy, a, t, al, hp, sh, dmg, dr, hs,
+       [host only] ast, ufo, m }
+   - sh:  shot counter. Peers replay new shots from that ship's nose.
+   - dmg: hits this player landed on their rival in round `dr`. The
+          SHOOTER decides hits (what you see is what you hit); the victim
+          applies new ones to their own hull.
+   - hp/al: the victim owns their hull and reports it.
+   - ast/ufo/m: the host owns rocks, UFOs, the clock, scores and wins.
+   Coordinates travel as 0..10000 of the screen so different phones
+   share one playfield.
+   ===================================================================== */
+class NetAdapter {
+  constructor() { this.handlers = {}; this.connected = false; this.isHost = true; this.myId = 'me'; this.status = ''; this.lastShots = new Map(); }
+  on(type, fn) { (this.handlers[type] ||= []).push(fn); return this; }
+  emit(type, msg) { (this.handlers[type] || []).forEach(fn => fn(msg)); }
+  connect() {} publish() {} close() { this.connected = false; }
+
+  /** Turn one rival presence object into game events. Input is untrusted: shape-check everything. */
+  _ingest(peerId, s) {
+    // Rival is on the result screen ("on: 0" heartbeat, maybe with a rematch request): still here, not leaving.
+    if (s && typeof s === 'object' && s.v === 1 && !s.on && !s.bye) { this.emit('idle', { id: peerId, rm: +s.rm ? 1 : 0 }); return false; }
+    if (!s || typeof s !== 'object' || s.v !== 1 || !s.on) { this.lastShots.delete(peerId); this.emit('leave', { id: peerId, bye: !!(s && s.bye) }); return false; }
+    const m = {
+      id: peerId, col: typeof s.col === 'string' && /^#[0-9a-f]{6}$/i.test(s.col) ? s.col : '#ffffff',
+      x: dx_(+s.x || 0), y: dy_(+s.y || 0), vx: dvx(+s.vx || 0), vy: dvy(+s.vy || 0),
+      a: (+s.a || 0) / 1000, thr: clamp((+s.t || 0) / 100, 0, 1), alive: !!s.al,
+      hp: clamp(+s.hp || 0, 0, CFG.HULL), dmg: Math.max(0, +s.dmg || 0), dr: +s.dr || 0,
+    };
+    this.emit('state', m);
+    const sh = +s.sh || 0, prev = this.lastShots.get(peerId);
+    if (prev !== undefined && sh > prev && m.alive) {
+      const c = Math.cos(m.a), sn = Math.sin(m.a), sa = toScreenAngle(m.a);
+      for (let i = 0; i < Math.min(3, sh - prev); i++) this.emit('fire', {
+        id: peerId, x: m.x + Math.cos(sa) * 16, y: m.y + Math.sin(sa) * 16,
+        vx: c * CFG.BULLET_SPEED + m.vx * CFG.BULLET_INHERIT, vy: sn * CFG.BULLET_SPEED + m.vy * CFG.BULLET_INHERIT,
+      });
+    }
+    this.lastShots.set(peerId, sh);
+    return true;
+  }
+  /** Guests: pass the host's rocks, UFOs and match state to the game. */
+  _hostSnapshot(s) {
+    this.emit('snapshot', { ast: Array.isArray(s.ast) ? s.ast : [], ufo: Array.isArray(s.ufo) ? s.ufo : [], m: s.m && typeof s.m === 'object' ? s.m : null });
+  }
+}
+class NullAdapter extends NetAdapter {}
+
+const nx = x => Math.round(x / W * 1e4), ny = y => Math.round(y / H * 1e4);
+const nvx = v => Math.round(v / REF_W * 1e5), nvy = v => Math.round(v / REF_H * 1e5);   // field units → wire
+const dx_ = x => x / 1e4 * W, dy_ = y => y / 1e4 * H;
+const dvx = v => v / 1e5 * REF_W, dvy = v => v / 1e5 * REF_H;                             // wire → field units
+
+/** The page's live room channel; null when not opened inside Claude. */
+const roomApiPromise = (window.claude && typeof window.claude.use === 'function')
+  ? window.claude.use('room').catch(() => null) : Promise.resolve(null);
+
+/**
+ * Shared-channel fallback: when a private per-code room can't be opened,
+ * everyone meets in the page's shared channel and only pilots whose
+ * presence carries the same room code (`rc`) count.
+ */
+function lobbyRoom(api, code) {
+  const mine = p => p.sameTab || (p.presence && p.presence.rc === code);
+  // Anyone who drops the code (or switches codes) counts as having left
+  const filt = ch => ({ peers: ch.peers.filter(mine), joined: ch.joined.filter(mine), updated: ch.updated.filter(mine),
+                        left: ch.left.concat(ch.updated.filter(p => !mine(p))) });
+  return {
+    shared: true,
+    onPeers: (h, err) => api.onPeers(ch => h(filt(ch)), err),
+    onConnection: (h, err) => api.onConnection(h, err),
+    connected: () => api.connected(),
+    peers: () => api.peers().filter(mine),
+    presence: obj => api.presence({ ...obj, rc: code }),
+    leave: () => api.presence({ v: 1, on: 0, bye: 1, rc: null }),
+  };
+}
+
+class RoomAdapter extends NetAdapter {
+  async connect(code, role = 'host') {
+    this.role = role;
+    this.closed = false; this.status = 'CONNECTING…';
+    this.lastShots = new Map(); this.lastHostPresence = null; this.hostId = null;
+    this.settled = false; this.claiming = false;
+    this.diag = { link: 'waiting', room: '-', err: '' };
+    const api = await roomApiPromise;
+    if (this.closed) return;
+    if (!api) {
+      this.diag.link = 'none';
+      this.status = 'NO LIVE LINK IN THIS VIEWER · OPEN THE LINK IN CHROME OR SAFARI, SIGNED IN TO CLAUDE.AI';
+      return;
+    }
+    this.diag.link = 'yes';
+    // Everyone meets in the page's one shared channel; the room code filters who counts.
+    // (Private per-code rooms left some devices unable to see each other.)
+    this.api = api; this.code = code;
+    this.room = lobbyRoom(api, code); this.diag.room = 'shared';
+    if (this.closed) { this.room.leave().catch(() => {}); return; }
+    this.status = ''; this.connected = this.room.connected();
+    const onErr = e => {
+      this.diag.err = 'peers:' + ((e && e.code) || 'error'); this.connected = false;
+      this.status = e && (e.code === 'not_granted' || e.code === 'revoked')
+        ? 'THIS VIEW CAN\'T GO ONLINE · SIGN IN TO CLAUDE AND OPEN THE PAGE THERE' : 'CONNECTION LOST';
+    };
+    this.unsubs = [
+      this.room.onPeers(ch => this._onPeers(ch), onErr),
+      this.room.onConnection(c => { this.connected = c; }, onErr),
+    ];
+    setTimeout(() => {
+      if (this.closed || !this.room) return;
+      const others = this.room.peers().filter(p => !p.sameTab && p.presence && p.presence.v === 1 && p.presence.on);
+      if (others.length >= 2) { this.emit('full', {}); return; }         // duels are 1v1
+      this.settled = true; this._elect(this.room.peers());
+    }, 1500);
+  }
+  _onPeers(ch) {
+    for (const p of ch.left) { this.lastShots.delete(p.peer); this.emit('leave', { id: p.peer }); }
+    for (const p of [...ch.joined, ...ch.updated]) {
+      if (p.sameTab) { this.myId = p.peer; continue; }
+      this._ingest(p.peer, p.presence);
+    }
+    this._elect(ch.peers);
+  }
+  /** Host election, identical everywhere: a player already hosting keeps it;
+   *  otherwise the lowest peer id. Newcomers can't claim for 1.5 s. */
+  _elect(peers) {
+    const inGame = p => p.sameTab || (p.presence && p.presence.v === 1 && p.presence.on);
+    const claims = p => p.sameTab ? this.claiming : !!p.presence.hs;
+    const players = peers.filter(inGame);
+    const pool = players.some(claims) ? players.filter(claims) : players;
+    let host = null;
+    for (const p of pool) if (!host || p.peer < host.peer) host = p;
+    this.hostId = host ? host.peer : null;
+    this.isHost = !host || host.sameTab;
+    this.claiming = this.isHost && this.settled;
+    if (!this.isHost && host.presence !== this.lastHostPresence) {
+      this.lastHostPresence = host.presence;
+      this._hostSnapshot(host.presence);
+    }
+  }
+  publish(obj) {
+    if (!this.room || this.closed) return;
+    this.room.presence(obj).then(() => { if (this.diag.err.startsWith('send:')) this.diag.err = ''; })
+      .catch(e => { this.diag.err = 'send:' + ((e && e.code) || 'error'); });
+  }
+  /** One-line connection report shown while waiting, so problems are visible. */
+  report() {
+    const d = this.diag || {};
+    if (!this.api || !this.room) return `LINK ${d.link}` + (d.err ? ` · ${d.err}` : '');
+    const all = this.api.peers();
+    const onCode = this.room.peers().length;
+    const others = [...new Set(all.filter(p => !p.sameTab && p.presence && p.presence.on && typeof p.presence.rc === 'string' && p.presence.rc !== this.code).map(p => p.presence.rc.slice(0, 4)))];
+    return `LINK yes · ${this.connected ? 'CONNECTED' : 'NOT CONNECTED'} · SCREENS ON PAGE ${all.length} · ON YOUR CODE ${onCode}`
+      + (others.length ? ` · OTHER CODES IN USE: ${others.join(' ')}` : '') + (d.err ? ` · ${d.err}` : '');
+  }
+  close() {
+    super.close(); this.closed = true;
+    (this.unsubs || []).forEach(u => u());
+    if (this.room) this.room.leave().catch(() => {});
+    this.room = null;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   PeerAdapter — direct phone-to-phone play over WebRTC via PeerJS.
+   Used when the page runs on the open web (GitHub Pages). No accounts.
+
+   Room code → a well-known host id ("neon-asteroids-duel-v1-abcd").
+   The first phone to claim that id on the free PeerJS matchmaking server
+   hosts; the next phone finds it taken and connects to it instead.
+   After that the two phones talk directly (the server only introduces
+   them). Each side sends the same presence object the Claude version
+   uses, ~15x/s, so all game logic is shared.
+   --------------------------------------------------------------------- */
+const PEER_PREFIX = 'neon-asteroids-duel-v1-';
+const PeerCtor = () => window.Peer || (window.peerjs && window.peerjs.Peer) || null;
+/** Matchmaking options. `?peerhost=host:port` points at a self-hosted PeerJS server. */
+function peerOptions() {
+  const opts = { debug: 0, config: { iceServers: iceCache || STUN_SERVERS } };
+  const custom = new URLSearchParams(location.search).get('peerhost');
+  if (custom) {
+    const [h, p] = custom.split(':');
+    Object.assign(opts, { host: h, port: +p || 9000, path: '/', secure: location.protocol === 'https:' && h !== 'localhost' });
+  }
+  return opts;
+}
+
+class PeerAdapter extends NetAdapter {
+  constructor() {
+    super();
+    this.keepAlive = true;      // the phone-to-phone link survives between matches, so rematches skip matchmaking
+  }
+  /** role 'host': claim this room code. role 'join': connect to whoever holds it. */
+  connect(code, role = 'host') {
+    this.closed = false; this.role = role; this._setCode(code);
+    this.conn = null; this.remoteId = null; this.lastHeard = 0; this.attempt = 0; this.fails = 0;
+    this.status = role === 'host' ? 'OPENING ROOM…' : 'CONNECTING…';
+    this.diag = { role: role === 'host' ? 'opening room' : 'joining', err: '' };
+    this.isHost = role === 'host';
+    this._whenLib(() => role === 'host' ? this._tryHost() : this._tryJoin());
+  }
+  _setCode(code) { this.code = code; this.hostId = PEER_PREFIX + code.toLowerCase(); }
+  _whenLib(fn) {
+    if (this.closed) return;
+    if (PeerCtor()) { fn(); return; }
+    if (++this.attempt > 20) { this.status = 'COULD NOT LOAD THE MULTIPLAYER LIBRARY · CHECK YOUR CONNECTION'; return; }
+    setTimeout(() => this._whenLib(fn), 500);
+  }
+  /** True while the direct link to the rival is up. Matchmaking trouble doesn't matter then. */
+  linked() { return !!(this.conn && this.conn.open); }
+
+  _newPeer(id) {
+    const P = PeerCtor();
+    const peer = new P(id, peerOptions()); this.peer = peer;
+    // Losing the matchmaking server is harmless once linked: quietly reconnect in the background.
+    peer.on('disconnected', () => {
+      if (this.closed || peer !== this.peer) return;
+      setTimeout(() => { try { if (!peer.destroyed && peer.disconnected) peer.reconnect(); } catch (_) {} }, this.linked() ? 5000 : 1500);
+    });
+    return peer;
+  }
+
+  // ---- HOST ----
+  _tryHost() {
+    if (this.closed) return;
+    const peer = this._newPeer(this.hostId);
+    peer.on('open', () => {
+      if (this.closed || peer !== this.peer) { peer.destroy(); return; }
+      this.isHost = true; this.myId = peer.id; this.connected = true; this.fails = 0;
+      this.status = ''; this.diag.role = 'host'; this.diag.err = '';
+    });
+    peer.on('connection', c => this._onIncoming(c));
+    peer.on('error', e => {
+      if (this.closed || peer !== this.peer) return;
+      if (e.type === 'unavailable-id') {                 // code already in use: pick a fresh one
+        peer.destroy();
+        this._setCode(generateRoomCode());
+        this.emit('code', { code: this.code });
+        setTimeout(() => this._tryHost(), 300);
+      } else if (e.type !== 'peer-unavailable') this._fail(e);
+    });
+  }
+
+  // ---- JOIN ----
+  _tryJoin() {
+    if (this.closed) return;
+    this.isHost = false; this.diag.role = 'joining';
+    const peer = this._newPeer(undefined);
+    peer.on('open', id => {
+      if (this.closed || peer !== this.peer) { peer.destroy(); return; }
+      this.myId = id; this.fails = 0; this._dial();
+    });
+    peer.on('error', e => {
+      if (this.closed || peer !== this.peer) return;
+      if (e.type === 'peer-unavailable') {               // nobody is hosting this code (yet)
+        this.status = `STILL SEARCHING FOR ROOM ${this.code} · MAKE SURE THE CODE MATCHES AND THE HOST IS WAITING`;
+        this._redial(3000);
+      } else this._fail(e);
+    });
+  }
+  _dial() {
+    const peer = this.peer;
+    if (this.closed || this.linked()) return;
+    if (!peer || peer.destroyed) { this._tryJoin(); return; }
+    if (peer.disconnected) { try { peer.reconnect(); } catch (_) {} this._redial(2000); return; }
+    const c = peer.connect(this.hostId, { reliable: false, serialization: 'json' });
+    const timer = setTimeout(() => { if (!this.linked() && !this.closed && peer === this.peer) { this.diag.err = 'host not answering'; this._dial(); } }, 8000);
+    c.on('open', () => {
+      clearTimeout(timer); if (this.closed) return;
+      this._attach(c); this.connected = true; this.status = ''; this.diag.role = 'guest'; this.diag.err = '';
+    });
+  }
+  _redial(ms) { clearTimeout(this.redialT); this.redialT = setTimeout(() => this._dial(), ms); }
+
+  /** Wait a little longer after each failure so a busy matchmaking server isn't hammered. */
+  _backoff() { return Math.min(15000, 1500 * Math.pow(2, this.fails)) + Math.random() * 800; }
+  _fail(e) {
+    this.diag.err = e.type || 'error';
+    if (e.type === 'browser-incompatible') { this.status = 'THIS BROWSER CAN\'T DO DIRECT LINKS · TRY CHROME OR SAFARI'; return; }
+    if (this.linked()) return;                            // game link still up: ignore matchmaking trouble
+    this.connected = false; this.fails++;
+    const wait = this._backoff();
+    this.status = ['network', 'server-error', 'socket-error', 'socket-closed'].includes(e.type)
+      ? `MATCHMAKING SERVER BUSY · RETRYING IN ${Math.ceil(wait / 1000)}s` : `CONNECTION PROBLEM (${e.type || 'error'}) · RETRYING`;
+    setTimeout(() => {
+      if (this.closed || this.linked()) return;
+      try { this.peer && this.peer.destroy(); } catch (_) {}
+      this.role === 'host' ? this._tryHost() : this._tryJoin();
+    }, wait);
+  }
+  _onIncoming(c) {
+    if (this.linked()) {                                  // duels are 1v1
+      c.on('open', () => { try { c.send({ full: 1 }); } catch (_) {} setTimeout(() => c.close(), 400); });
+      return;
+    }
+    c.on('open', () => this._attach(c));
+  }
+  _attach(c) {
+    this.conn = c; this.remoteId = c.peer; this.lastHeard = performance.now(); this.status = '';
+    c.on('data', d => {
+      if (c !== this.conn) return;
+      this.lastHeard = performance.now();
+      if (d && d.full) { this.emit('full', {}); return; }
+      if (this._ingest(this.remoteId, d) && !this.isHost) this._hostSnapshot(d);
+    });
+    c.on('close', () => this._lost(c));
+    c.on('error', () => this._lost(c));
+  }
+  _lost(c) {
+    if (c !== this.conn) return;
+    const id = this.remoteId; this.conn = null;
+    this.lastShots.delete(id); this.emit('leave', { id, bye: true });
+    if (this.role === 'join' && !this.closed) { this.status = 'HOST LEFT · WAITING FOR THEM TO COME BACK…'; this._redial(3000); }
+  }
+  publish(obj) {
+    const c = this.conn;
+    if (!c || !c.open || this.closed) return;
+    if (performance.now() - this.lastHeard > 6000) { try { c.close(); } catch (_) {} this._lost(c); return; }  // rival went silent
+    try { c.send(obj); } catch (_) {}
+  }
+  report() {
+    const d = this.diag || {};
+    const sig = this.peer && this.peer.disconnected && this.linked() ? ' · MATCHMAKING OFFLINE (GAME UNAFFECTED)' : '';
+    return `DIRECT LINK · ${d.role.toUpperCase()} · ${this.linked() ? 'RIVAL LINKED' : 'NO RIVAL YET'}` + sig + (d.err && !this.linked() ? ` · ${d.err}` : '');
+  }
+  close() {
+    super.close(); this.closed = true; clearTimeout(this.redialT);
+    if (this.conn) { try { this.conn.send({ v: 1, on: 0, bye: 1 }); } catch (_) {} }
+    const p = this.peer, c = this.conn;
+    this.conn = null;
+    setTimeout(() => { try { c && c.close(); } catch (_) {} try { p && p.destroy(); } catch (_) {} }, 150);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   TrysteroAdapter — direct phone-to-phone play over WebRTC, introduced
+   through Trystero's Nostr strategy: several public relays are used at
+   once, so one slow or dead relay doesn't stop a match. No accounts,
+   no server of our own. (PeerJS stays as a fallback below.)
+
+   Room code → Trystero room "room-<code>". Everyone in the room says
+   hello with their role. The host accepts the first joiner and turns
+   away anyone else; the joiner links once the host says ok. After that
+   both sides stream the same presence object as every other transport.
+   --------------------------------------------------------------------- */
+const TRYSTERO_APP = 'neon-asteroids-duel-v1';
+const trysteroLib = () => (window.Trystero && typeof window.Trystero.joinRoom === 'function') ? window.Trystero : null;
+
+class TrysteroAdapter extends NetAdapter {
+  constructor() { super(); this.keepAlive = true; }
+  connect(code, role = 'host') {
+    this.closed = false; this.role = role; this.code = code; this.startedAt = performance.now();
+    this.partner = null; this.hostPid = null; this.lastHeard = 0; this.attempt = 0;
+    this.isHost = role === 'host';
+    this.status = role === 'host' ? 'OPENING ROOM…' : 'CONNECTING…';
+    this.diag = { role: role === 'host' ? 'opening room' : 'joining', err: '' };
+    this._whenLib(() => this._join());
+  }
+  _whenLib(fn) {
+    if (this.closed) return;
+    if (trysteroLib()) { fn(); return; }
+    if (++this.attempt > 30) { this.status = 'COULD NOT LOAD THE MULTIPLAYER LIBRARY · CHECK YOUR CONNECTION'; return; }
+    setTimeout(() => this._whenLib(fn), 500);
+  }
+  linked() { return !!this.partner; }
+  async _join() {
+    if (this.closed) return;
+    const T = trysteroLib();
+    const attempt = (this.joinAttempt || 0) + 1;
+    const rtc = await rtcFor(attempt);
+    if (this.closed) return;
+    this.joinAttempt = attempt;
+    this.diag.turn = rtc.turn; this.diag.relay = rtc.relay;
+    let room;
+    try {
+      room = T.joinRoom(
+        { appId: TRYSTERO_APP, rtcConfig: rtc.rtcConfig },
+        'room-' + this.code.toLowerCase(),
+        { onJoinError: e => { this.diag.err = String((e && (e.error || e.message)) || 'join error').slice(0, 60); } },
+      );
+    } catch (e) { this.status = 'CONNECTION PROBLEM · ' + String(e && e.message || e).slice(0, 60); return; }
+    this.room = room; this.myId = T.selfId || 'me';
+    if (this.role === 'host') { this.connected = true; this.status = ''; this.diag.role = 'host'; }
+
+    this.aHi = room.makeAction('hi');
+    this.aOk = room.makeAction('ok');
+    this.aFull = room.makeAction('full');
+    this.aP = room.makeAction('p');
+    const send = (a, data, pid) => { try { a.send(data, { target: pid }).catch(() => {}); } catch (_) {} };
+    this._send = send;
+
+    this.aHi.onMessage = (d, ctx) => this._onHi(d, ctx && ctx.peerId);
+    this.aOk.onMessage = (d, ctx) => { if (this.role === 'join' && !this.partner && ctx && ctx.peerId === this.hostPid) this._link(ctx.peerId); };
+    this.aFull.onMessage = (d, ctx) => { if (this.role === 'join' && !this.partner) this.emit('full', {}); };
+    this.aP.onMessage = (d, ctx) => {
+      if (!ctx || ctx.peerId !== this.partner) return;
+      this.lastHeard = performance.now();
+      if (this._ingest(this.partner, d) && !this.isHost) this._hostSnapshot(d);
+    };
+    room.onPeerJoin = pid => send(this.aHi, { v: 1, role: this.role }, pid);
+    room.onPeerLeave = pid => {
+      if (pid === this.partner) this._lost();
+      else if (pid === this.hostPid) this.hostPid = null;
+    };
+    clearTimeout(this.noHostT);
+    if (this.role === 'join' && this.joinAttempt >= 3) {
+      this.status = `STILL SEARCHING FOR ROOM ${this.code} · MAKE SURE THE CODE MATCHES AND THE HOST IS WAITING`;
+    }
+    this._armWatchdog();
+  }
+  /** Not linked in time? Throw the attempt away and start completely fresh. */
+  _armWatchdog() {
+    clearTimeout(this.watchT);
+    // Relay links take longer to set up (up to ~15 s just gathering routes on slow Wi-Fi)
+    const ms = this.role === 'join' ? (this.diag.relay ? 50000 : 35000) : 60000;
+    this.watchT = setTimeout(() => { if (!this.closed && !this.partner) this._fresh(); }, ms);
+  }
+  /** Leave the current room entirely (relays + half-open links) and join again from scratch. */
+  _fresh() {
+    if (!this.partner && this.role === 'join') track('connect_retry', { mode: this.fromRandom ? 'quick' : 'join',
+      attempt: this.joinAttempt || 1, relay: this.diag && this.diag.relay ? 1 : 0, strict: strictNet === true ? 1 : 0 });
+    clearTimeout(this.watchT); clearTimeout(this.noHostT);
+    const old = this.room; this.room = null; this.hostPid = null; this.aP = null;
+    try { old && old.leave(); } catch (_) {}
+    if (this.closed) return;
+    setTimeout(() => this._join(), 1200);
+  }
+  _onHi(d, pid) {
+    if (!pid || !d || typeof d !== 'object') return;
+    if (this.role === 'host') {
+      if (d.role === 'join') {
+        if (!this.partner || this.partner === pid) { this._send(this.aOk, { v: 1 }, pid); if (!this.partner) this._link(pid); }
+        else this._send(this.aFull, { v: 1 }, pid);        // duels are 1v1
+      } else if (d.role === 'host' && !this.partner && this.myId > pid) {
+        this._rehost();                                      // two hosts on one code: the other keeps it
+      }
+    } else if (d.role === 'host') {
+      this.hostPid = pid;
+      this._send(this.aHi, { v: 1, role: 'join' }, pid);     // make sure the host has our hello
+    }
+  }
+  _link(pid) {
+    track('match_found', { mode: this.fromRandom ? 'quick' : this.role, relay: this.diag && this.diag.relay ? 1 : 0,
+      strict: strictNet === true ? 1 : 0, attempts: this.joinAttempt || 1,
+      secs: Math.round((performance.now() - (this.startedAt || performance.now())) / 1000) });
+    this.partner = pid; this.lastHeard = performance.now();
+    this.connected = true; this.status = ''; this.diag.role = this.isHost ? 'host' : 'guest'; this.diag.err = '';
+    clearTimeout(this.noHostT); clearTimeout(this.watchT); this.joinAttempt = 0;
+  }
+  /** Rival gone (left, quit, surrendered or went silent): reset so the next match starts clean. */
+  _lost() {
+    const id = this.partner; this.partner = null;
+    this.lastShots.delete(id); this.emit('leave', { id, bye: true });
+    if (this.closed) return;
+    if (this.role === 'host') this._fresh();          // host: reopen a clean room, ready for the next player
+    else if (this.rejoin) { this.status = 'RECONNECTING…'; this._fresh(); }   // rematch in progress: find the host again
+    else { this.status = 'HOST LEFT'; this.close(); } // joiner: done; Rematch will join from scratch
+  }
+  _rehost() {
+    try { this.room && this.room.leave(); } catch (_) {}
+    this.code = generateRoomCode();
+    this.emit('code', { code: this.code });
+    setTimeout(() => this._join(), 300);
+  }
+  publish(obj) {
+    if (!this.partner || this.closed || !this.aP) return;
+    if (performance.now() - this.lastHeard > 6000) { this._lost(); return; }   // rival went silent
+    this._send(this.aP, obj, this.partner);
+  }
+  report() {
+    const d = this.diag || {};
+    return `DIRECT LINK · ${d.role.toUpperCase()} · ${this.partner ? 'RIVAL LINKED' : 'NO RIVAL YET'}` + (d.relay ? ' · RELAY MODE' : d.turn ? ' · RELAY READY' : '')
+      + (!this.partner && this.joinAttempt > 1 ? ` · ATTEMPT ${this.joinAttempt}` : '') + (d.err && !this.partner ? ` · ${d.err}` : '');
+  }
+  close() {
+    super.close(); this.closed = true; clearTimeout(this.noHostT); clearTimeout(this.watchT);
+    if (this.partner && this.aP) this._send(this.aP, { v: 1, on: 0, bye: 1 }, this.partner);
+    const room = this.room; this.partner = null;
+    setTimeout(() => { try { room && room.leave(); } catch (_) {} }, 200);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   QuickMatchAdapter — "RANDOM": join a shared waiting pool and get paired
+   with the next pilot who is also searching.
+   Pool = a Trystero room everyone searching joins. Each pilot announces
+   when they started waiting. To avoid two pilots grabbing each other at
+   once, only the pilot with the LOWER id proposes, to the longest-waiting
+   higher-id pilot, with a fresh room code. The other accepts if still free.
+   The proposer becomes host of that code, the accepter joins it, both
+   leave the pool, and the normal host/join flow takes over.
+   --------------------------------------------------------------------- */
+const QUICK_POOL = 'quick-match-pool-v1';
+
+class QuickMatchAdapter extends TrysteroAdapter {
+  connect() {
+    this.closed = false; this.fromRandom = true; this.searching = true; this.matched = false;
+    this.role = 'random'; this.code = ''; this.isHost = true; this.partner = null; this.attempt = 0;
+    this.startedAt = performance.now(); this.status = ''; this.diag = { role: 'matchmaking', err: '' };
+    this.seekers = new Map(); this.pending = null; this.cool = new Map();
+    this._whenLib(() => this._enterPool());
+  }
+  poolSize() { return this.seekers.size + 1; }
+  async _enterPool() {
+    if (this.closed || this.matched || this.entering) return;
+    this.entering = true;
+    try { await this._enterPoolOnce(); }
+    catch (e) {                                   // never leave a waiting pilot stranded: try again shortly
+      this.diag.err = String(e && e.message || e).slice(0, 60);
+      this._leavePool(); setTimeout(() => this._enterPool(), 3000);
+    } finally { this.entering = false; }
+  }
+  async _enterPoolOnce() {
+    const T = trysteroLib();
+    this.poolAttempt = (this.poolAttempt || 0) + 1;
+    const rtc = await rtcFor(1);                  // the pool never forces relay-only (only strict networks use it)
+    if (this.closed || this.matched) return;
+    this.myId = T.selfId || String(Math.random());
+    if (!this.poolT0) this.poolT0 = Date.now();
+    this.seekers = new Map(); this.pending = null; this.cool = new Map(); this.seenSince = new Map();
+    this.enteredAt = Date.now();
+    const lobby = T.joinRoom({ appId: TRYSTERO_APP, rtcConfig: rtc.rtcConfig }, QUICK_POOL);
+    this.lobby = lobby;
+    const aSeek = lobby.makeAction('seek'), aProp = lobby.makeAction('prop'), aAcc = lobby.makeAction('acc'), aRej = lobby.makeAction('rej');
+    const send = (a, d, pid) => { try { a.send(d, pid ? { target: pid } : undefined).catch(() => {}); } catch (_) {} };
+    this.aSeek = aSeek; this.aProp = aProp; this._psend = send;
+
+    lobby.onPeerJoin = pid => send(aSeek, { v: 1, t: this.poolT0 }, pid);
+    lobby.onPeerLeave = pid => {
+      this.seekers.delete(pid);
+      if (this.pending && this.pending.pid === pid) { clearTimeout(this.pending.timer); this.pending = null; this._propose(); }
+    };
+    aSeek.onMessage = (d, ctx) => {
+      if (!d || d.v !== 1 || !ctx || this.matched) return;
+      if (d.done) { this.seekers.delete(ctx.peerId); return; }
+      this.seekers.set(ctx.peerId, +d.t || 0);
+      if (!this.seenSince.has(ctx.peerId)) this.seenSince.set(ctx.peerId, Date.now());
+      this._propose();
+    };
+    aProp.onMessage = (d, ctx) => {
+      if (!ctx) return;
+      const pid = ctx.peerId, code = sanitizeCode(d && d.code);
+      // Both proposed to each other at once: the lower id's proposal wins
+      if (this.pending && this.pending.pid === pid && this.myId > pid) { clearTimeout(this.pending.timer); this.pending = null; }
+      if (this.matched || this.pending || code.length !== 4) { send(aRej, { v: 1 }, pid); return; }
+      send(aAcc, { v: 1, code }, pid);
+      this._matched('join', code);
+    };
+    aAcc.onMessage = (d, ctx) => {
+      if (!ctx || !this.pending || ctx.peerId !== this.pending.pid || !d || d.code !== this.pending.code) return;
+      clearTimeout(this.pending.timer);
+      this._matched('host', this.pending.code);
+    };
+    aRej.onMessage = (d, ctx) => {
+      if (!ctx || !this.pending || ctx.peerId !== this.pending.pid) return;
+      clearTimeout(this.pending.timer); this.cool.set(ctx.peerId, Date.now()); this.pending = null;
+      setTimeout(() => this._propose(), 600 + Math.random() * 900);
+    };
+    // Keep the pool fresh: re-announce every 5 s. A lobby that has sat for a while can go
+    // deaf (relay sockets dropped, a half-open link), which is why backing out and pressing
+    // LAUNCH again used to fix it. Do that automatically:
+    //  · alone for 20 s              → leave and re-enter the pool from scratch
+    //  · someone seen but no match in 15 s → same (the pairing got stuck)
+    clearInterval(this.poolTick);
+    this.poolTick = setInterval(() => {
+      if (this.matched || this.closed) return;
+      send(aSeek, { v: 1, t: this.poolT0 }); this._propose();
+      const now = Date.now(), inPool = now - this.enteredAt;
+      const stuck = [...this.seenSince.values()].some(t => now - t > 15000);
+      if ((!this.seekers.size && inPool > 20000) || stuck) this._restartPool();
+    }, 5000);
+  }
+  /** Exactly what "quit + LAUNCH" did by hand: leave the pool, forget stale state, re-enter. */
+  _restartPool() {
+    if (this.closed || this.matched || this.restarting) return;
+    this.restarting = true; this.poolRestarts = (this.poolRestarts || 0) + 1;
+    const l = this._leavePool();
+    Promise.race([Promise.resolve(l), new Promise(r => setTimeout(r, 1500))])
+      .then(() => new Promise(r => setTimeout(r, 700 + Math.random() * 800)))
+      .then(() => { this.restarting = false; this._enterPool(); });
+  }
+  _propose() {
+    if (this.matched || this.pending || this.closed || !this.aProp) return;
+    const now = Date.now();
+    // Normally only the lower id proposes (so two pilots don't grab each other at once). If the
+    // lower one has stayed silent for 8 s it may not see us — then the higher one proposes too.
+    const cands = [...this.seekers]
+      .filter(([pid]) => (pid > this.myId || now - (this.seenSince.get(pid) || now) > 8000)
+        && !((this.cool.get(pid) || 0) > now - 4000))
+      .sort((a, b) => a[1] - b[1]);
+    if (!cands.length) return;
+    const pid = cands[0][0], code = generateRoomCode();
+    this.pending = { pid, code, timer: setTimeout(() => {
+      if (this.pending && this.pending.pid === pid) { this.cool.set(pid, Date.now()); this.pending = null; this._propose(); }
+    }, 5000) };
+    this._psend(this.aProp, { v: 1, code }, pid);
+  }
+  _matched(role, code) {
+    if (this.matched) return;
+    this.matched = true; this.searching = false; this.pending = null;
+    this._psend(this.aSeek, { v: 1, done: 1 });
+    setTimeout(() => this._leavePool(), 400);
+    this.role = role; this.isHost = role === 'host'; this.code = code; this.startedAt = performance.now();
+    this.diag.role = role === 'host' ? 'opening room' : 'joining';
+    this.status = role === 'host' ? '' : 'CONNECTING…';
+    Sound.play('go');
+    this.emit('code', { code });
+    setTimeout(() => this._join(), role === 'host' ? 0 : 1500);   // give the host a head start
+  }
+  _leavePool() {
+    clearInterval(this.poolTick); clearTimeout(this.poolRefresh);
+    if (this.pending) { clearTimeout(this.pending.timer); this.pending = null; }
+    const l = this.lobby; this.lobby = null; this.aProp = null;
+    try { return l && l.leave(); } catch (_) { return null; }
+  }
+  /** A random rival left: nothing to reopen. Close; the next Quick Match searches fresh. */
+  _lost() {
+    const id = this.partner; this.partner = null;
+    this.lastShots.delete(id); this.emit('leave', { id, bye: true });
+    if (this.closed) return;
+    if (this.rejoin) {                                 // rematch in progress: both sides re-meet on the same code
+      this.status = 'RECONNECTING…';
+      this._fresh();
+      return;
+    }
+    this.close();
+  }
+  report() {
+    if (this.searching) { const n = this.poolSize(); return `QUICK MATCH · ${n} PILOT${n === 1 ? '' : 'S'} SEARCHING` + (this.poolRestarts ? ` · REFRESHED ×${this.poolRestarts}` : ''); }
+    return super.report();
+  }
+  close() { this._leavePool(); super.close(); }
+}
+
+/** Open-web transport: Trystero (many relays); PeerJS if Trystero can't load or `?net=peerjs`. */
+function webAdapter() {
+  const forced = new URLSearchParams(location.search).get('net');
+  if (forced === 'peerjs') return new PeerAdapter();
+  if (!trysteroLib() && window.TrysteroFailed && PeerCtor()) return new PeerAdapter();
+  return new TrysteroAdapter();
+}
+
+/** Direct links when on the open web; Claude's live channel inside Claude. */
+// Only Claude's artifact viewer counts — never the game's own website, even if a Claude
+// browser extension or Claude's built-in browser adds a window.claude object to every page.
+const OWN_HOST = /(^|\.)deadbaron\.com$|\.github\.io$|^localhost$|^127\./.test(location.hostname);
+const inClaude = () => !OWN_HOST && !!(window.claude && typeof window.claude.use === 'function');
+
+/* ---------------------------------------------------------------------
+   ICE servers (how two phones find a path to each other).
+   - STUN lets phones discover their public address; enough on many networks.
+   - TURN relays the game traffic when a direct link is blocked (common on
+     mobile data and some routers). Without it, some pairs never connect.
+   Default TURN: the Open Relay Project's public "static auth" service —
+   short-lived logins are made here from its published shared secret
+   (TURN REST API: username = expiry time, password = HMAC-SHA1).
+   Optional: paste your own free Metered credentials URL into TURN_API_URL
+   (https://<app>.metered.live/api/v1/turn/credentials?apiKey=...) for a
+   dedicated 20 GB/month relay.
+   --------------------------------------------------------------------- */
+const TURN_API_URL = '';
+const STUN_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun.relay.metered.ca:80' },   // two is enough; more slows setup
+];
+/** The game's own backup relay (Metered, dead-baron's free account). Tried first when a
+ *  direct link is blocked. UDP 80, TCP 80, UDP 443 and TLS 443 cover strict networks. */
+const METERED_TURN = {
+  urls: [
+    'turn:global.relay.metered.ca:80',
+    'turn:global.relay.metered.ca:80?transport=tcp',
+    'turn:global.relay.metered.ca:443',
+    'turns:global.relay.metered.ca:443?transport=tcp',
+  ],
+  username: 'c9c0aac7648fe5536290ed7c',
+  credential: 'ycotpF9yAbeN2DrD',
+};
+/** True for a TURN entry (turn: or turns:). */
+const isTurn = s => [].concat(s.urls).some(u => /^turns?:/.test(String(u)));
+let iceCache = null, iceCacheAt = 0;
+async function openRelayTurn() {
+  const username = `${Math.floor(Date.now() / 1000) + 12 * 3600}:neonasteroids`;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode('openrelayprojectsecret'), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(username)));
+  let bin = ''; for (const b of sig) bin += String.fromCharCode(b);
+  return {
+    urls: [
+      'turn:staticauth.openrelay.metered.ca:80', 'turn:staticauth.openrelay.metered.ca:80?transport=tcp',
+      'turn:staticauth.openrelay.metered.ca:443', 'turn:staticauth.openrelay.metered.ca:443?transport=tcp',
+    ],
+    username, credential: btoa(bin),
+  };
+}
+/** STUN + TURN, cached for an hour. Never takes more than ~3 s; falls back to STUN only. */
+async function iceServers() {
+  if (iceCache && Date.now() - iceCacheAt < 3600e3) return iceCache;
+  const turn = (async () => {
+    if (TURN_API_URL) {
+      try { const r = await fetch(TURN_API_URL); const list = await r.json(); if (Array.isArray(list) && list.length) return list; } catch (_) {}
+    }
+    return [METERED_TURN];
+  })();
+  const timeout = new Promise(res => setTimeout(() => res([]), 3000));
+  const extra = await Promise.race([turn, timeout]);
+  iceCache = [...STUN_SERVERS, ...extra]; iceCacheAt = Date.now();
+  return iceCache;
+}
+if (!inClaude()) iceServers();   // warm the cache at load
+
+/** Symmetric NAT = the SAME local socket shows up with different public ports for different
+ *  STUN servers. Safari/iOS hides which local socket an answer came from (raddr 0.0.0.0), so
+ *  there we can only decide when the device has a single socket; otherwise "can't tell"
+ *  (null) — never a false "strict", which would force slow relay-only links. */
+function natVerdict(g) {
+  if (!g || !g.srflx.length) return null;
+  const known = g.srflx.filter(c => c.raddr && !/^0\.0\.0\.0:|^:|^[^:]*:0?$/.test(c.raddr));
+  if (known.length === g.srflx.length) {
+    const bySock = new Map();
+    for (const c of known) { if (!bySock.has(c.raddr)) bySock.set(c.raddr, new Set()); bySock.get(c.raddr).add(c.port); }
+    return [...bySock.values()].some(ports => ports.size > 1);
+  }
+  const ports = new Set(g.srflx.map(c => c.ip + ':' + c.port));
+  if (ports.size <= 1) return false;
+  return g.hosts === 1 ? true : null;
+}
+
+/* Strict networks (symmetric NAT: many phones on office/school/some home Wi-Fi) can never
+   link directly — only through the relay. Trying direct routes first wastes the whole
+   attempt, so we check the network at load and go relay-only straight away when it's strict. */
+let strictNet = null;            // null = unknown, true = strict, false = normal
+const strictReady = (async () => {
+  if (inClaude() || typeof RTCPeerConnection === 'undefined') return;
+  await new Promise(r => setTimeout(r, 0));   // let iceGather (defined further down) exist
+  const g = await iceGather(STUN_SERVERS, 'all', 3500);
+  strictNet = natVerdict(g);
+})();
+/** WebRTC settings for one connection attempt. Relay-only on strict networks, and on every
+ *  second retry anywhere (covers networks the check can't spot). */
+async function rtcFor(attempt) {
+  await Promise.race([strictReady, new Promise(r => setTimeout(r, 4000))]);
+  const ice = await iceServers(), turn = ice.filter(isTurn);
+  const relay = turn.length > 0 && (strictNet === true || attempt % 2 === 0);
+  return { relay, turn: turn.length > 0,
+    rtcConfig: relay ? { iceServers: turn, iceTransportPolicy: 'relay' } : { iceServers: ice } };
+}
+
+
+function generateRoomCode() {
+  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = ''; for (let i = 0; i < 4; i++) s += A[Math.floor(Math.random() * A.length)];
+  return s;
+}
+
+/* =====================================================================
+   9. OPPONENTS
+   ===================================================================== */
+/** Online rival: snapshot interpolation of their presence. */
+class RemotePlayer {
+  constructor(id, color) {
+    this.id = id; this.color = color; this.snaps = [];
+    this.x = W / 2; this.y = H / 2; this.vx = 0; this.vy = 0; this.a = 0; this.thr = 0;
+    this.hp = CFG.HULL; this.alive = true; this.visible = false; this.label = 'RIVAL'; this.owner = 'r:' + id;
+  }
+  push(m) {
+    this.snaps.push({ t: performance.now(), x: m.x, y: m.y, vx: m.vx, vy: m.vy, a: m.a, thr: m.thr });
+    if (this.snaps.length > 32) this.snaps.shift();
+    this.color = m.col;
+    if (this.visible && m.hp < this.hp && m.hp > 0) { Sound.play('thud'); Particles.burst(this.x, this.y, this.color, 18, 3, 25); world.shake = Math.max(world.shake, 5); }
+    if (this.visible && this.alive && !m.alive) explodeShip(this.x, this.y, this.color);
+    this.hp = m.hp; this.alive = m.alive; this.visible = true;
+  }
+  sample(t) {
+    const n = this.snaps.length; if (!n) return;
+    const rt = t - CFG.INTERP_DELAY_MS;
+    for (let i = n - 1; i > 0; i--) {
+      const a = this.snaps[i - 1], b = this.snaps[i];
+      if (a.t <= rt && rt <= b.t) {
+        const k = (rt - a.t) / (b.t - a.t || 1);
+        this.x = a.x + wrapDelta(b.x - a.x, W) * k; this.y = a.y + wrapDelta(b.y - a.y, H) * k;
+        this.a = a.a + angDiff(b.a, a.a) * k; this.vx = b.vx; this.vy = b.vy; this.thr = b.thr;
+        wrap(this); return;
+      }
+    }
+    const last = this.snaps[n - 1], ticks = clamp(rt - last.t, 0, 250) / CFG.TICK_MS;
+    this.x = last.x + last.vx * SX * ticks; this.y = last.y + last.vy * SY * ticks;
+    this.a = last.a; this.vx = last.vx; this.vy = last.vy; this.thr = last.thr; wrap(this);
+  }
+  update() {
+    if (!this.visible || !this.alive) return;
+    this.sample(performance.now());
+    emitExhaust(this.x, this.y, this.vx * SX, this.vy * SY, toScreenAngle(this.a), this.thr, this.color);
+    damageFx(this);
+  }
+  draw(tick) {
+    if (!this.visible || !this.alive || this.goneAt) return;
+    this.sample(performance.now());
+    drawWrapped(this.x, this.y, 20, (x, y) => drawShip(x, y, toScreenAngle(this.a), this.color, this.thr, tick, this.hp));
+    if (match.ph === 'play' && rivalShielded()) drawShield(this.x, this.y, this.color, CFG.SPAWN_SHIELD - (tickCount - playStartTick));
+  }
+}
+
+/** Local AI rival: hunts you, farms rocks, dodges, and misses a little. */
+class BotShip {
+  constructor(color) { this.isBot = true; this.color = color; this.label = 'BOT'; this.owner = 'bot'; this.reset(); }
+  reset() {
+    this.x = W / 2; this.y = H * 0.2; this.vx = this.vy = 0; this.a = Math.PI / 2; this.thr = 0;
+    this.hp = CFG.HULL; this.alive = true; this.invuln = 0; this.shield = 0; this.cd = 600; this.retarget = 0; this.aimErr = 0; this.hunt = true;
+  }
+  damage() {
+    if (!this.alive || this.invuln > 0 || match.ph !== 'play') return;
+    this.hp--; this.invuln = CFG.HIT_INVULN; this.shield = 0;
+    Sound.play('thud');
+    Particles.burst(this.x, this.y, this.color, 18, 3, 25); world.shake = Math.max(world.shake, 5);
+    if (this.hp <= 0) { this.alive = false; explodeShip(this.x, this.y, this.color); }
+  }
+  update() {
+    if (!this.alive || match.ph === 'intro') return;
+    if (this.invuln > 0) this.invuln--;
+    if (this.shield > 0) this.shield--;
+    const live = match.ph === 'play';
+    if (--this.retarget <= 0) { this.retarget = rand(80, 150); this.hunt = ship.alive && Math.random() < 0.55; }
+    let tx, ty;
+    if (this.hunt && ship.alive) { tx = ship.x + ship.vx * SX * 12; ty = ship.y + ship.vy * SY * 12; }
+    else {
+      let bd = Infinity;
+      for (const t of [...world.asteroids, ...world.ufos]) { const d = wrapDist2(t, this); if (d < bd) { bd = d; tx = t.x; ty = t.y; } }
+    }
+    let avoid = null;
+    for (const a of world.asteroids) if (Math.sqrt(wrapDist2(a, this)) - a.r < 42) { avoid = a; break; }
+    let want;
+    if (avoid) { want = fieldAngleTo(wrapDelta(this.x - avoid.x, W), wrapDelta(this.y - avoid.y, H)); this.thr = 0.9; }
+    else if (tx !== undefined) {
+      const ddx = wrapDelta(tx - this.x, W), ddy = wrapDelta(ty - this.y, H), dist = Math.hypot(ddx, ddy);
+      want = fieldAngleTo(ddx, ddy); this.thr = dist > 240 ? 0.6 : dist < 110 ? 0 : 0.12;
+    } else this.thr = 0;
+    if (!live) this.thr = 0;
+    if (want !== undefined) this.a += angDiff(want + (avoid ? 0 : this.aimErr), this.a) * 0.1;
+    this.vx += Math.cos(this.a) * CFG.THRUST * this.thr; this.vy += Math.sin(this.a) * CFG.THRUST * this.thr;
+    this.vx *= CFG.DRAG; this.vy *= CFG.DRAG;
+    const sp = Math.hypot(this.vx, this.vy);
+    if (sp > CFG.MAX_SPEED) { this.vx *= CFG.MAX_SPEED / sp; this.vy *= CFG.MAX_SPEED / sp; }
+    this.x += this.vx * SX; this.y += this.vy * SY; wrap(this);
+    this.cd -= CFG.TICK_MS;
+    if (live && !avoid && want !== undefined && Math.abs(angDiff(want, this.a)) < 0.22 && this.cd <= 0) {
+      shootFrom(this, this.color, 'bot'); Sound.play('rival');
+      this.cd = rand(320, 560); this.aimErr = rand(-0.13, 0.13);
+    }
+    emitExhaust(this.x, this.y, this.vx * SX, this.vy * SY, toScreenAngle(this.a), this.thr, this.color);
+    damageFx(this);
+  }
+  draw(tick) {
+    if (!this.alive || (this.invuln > 0 && !this.shield && (tick >> 3) % 2 === 0)) return;
+    drawWrapped(this.x, this.y, 20, (x, y) => drawShip(x, y, toScreenAngle(this.a), this.color, this.thr, tick, this.hp));
+    if (this.shield > 0) drawShield(this.x, this.y, this.color, this.shield);
+  }
+}
+
+function emitExhaust(x, y, vx, vy, angle, thrust, color) {
+  if (thrust <= 0.05) return;
+  const c = Math.cos(angle), s = Math.sin(angle), n = Math.ceil(thrust * 4 * Particles.quality);
+  for (let i = 0; i < n; i++) {
+    const spread = rand(-0.35, 0.35), sp = 1.5 + Math.random() * 3.5 * thrust;
+    Particles.emit(x - c * 8 + rand(-2, 2), y - s * 8 + rand(-2, 2),
+      vx * 0.6 + Math.cos(angle + Math.PI + spread) * sp, vy * 0.6 + Math.sin(angle + Math.PI + spread) * sp,
+      Math.round(rand(14, 26) * (0.5 + thrust * 0.5)), Math.random() < 0.3 ? '#ffffff' : color, Math.random() < 0.5 ? 2 : 3, 0.93);
+  }
+}
+
+/* =====================================================================
+   10. MATCH FLOW
+   match.ph: 'wait' (online, no rival yet) → 'intro' (3-2-1) → 'play'
+   (30 s) → 'result' → next round … → 'final'. The host (or this phone,
+   vs the bot / in practice) runs it; online guests mirror it.
+   From each player's own view: wins[0]/sc[0] = me, [1] = rival.
+   ===================================================================== */
+let state = 'menu';                // 'menu' | 'play' | 'over'
+let mode = 'bot';                  // 'bot' | 'online' | 'practice'
+let paused = false, tickCount = 0, netAcc = 0, leaveTimer = 0, flashTimer = 0, overTicks = 0;
+let net = new NullAdapter();
+let opp = null;                    // BotShip | RemotePlayer | null
+const remotes = new Map();
+let roomCode = '', wasHost = true, awaitingFirstSnap = false, practiceTotal = 0;
+const match = { rn: 0, ph: 'wait', t: 0, wins: [0, 0], sc: [0, 0], res: '', why: '', elapsed: 0, ufoIdx: 0, refill: 0, forfeit: false };
+
+const isAuthority = () => mode !== 'online' || net.isHost;
+
+function spawnPoint() {
+  const top = mode === 'online' && !net.isHost;
+  return top ? { x: W * 0.5, y: H * 0.2, a: Math.PI / 2 } : { x: W * 0.5, y: H * 0.56, a: -Math.PI / 2 };
+}
+function resetShipForRound() {
+  const p = spawnPoint();
+  Object.assign(ship, { x: p.x, y: p.y, a: p.a, vx: 0, vy: 0, thrust: 0, hp: CFG.HULL, alive: true, invuln: 0, shield: 0, dealt: 0, applied: 0, lastDealt: -999 });
+}
+
+function spawnTier(tier) {
+  const place = size => {
+    let x, y, tries = 0;
+    const R = CFG.SPAWN_CLEAR * CFG.SPAWN_CLEAR;
+    do { x = Math.random() * W; y = Math.random() * H; tries++; }
+    while (tries < 60 && (wrapDist2({ x, y }, { x: W / 2, y: H * 0.56 }) < R || wrapDist2({ x, y }, { x: W / 2, y: H * 0.2 }) < R));
+    world.asteroids.push(makeAsteroid(x, y, size, 1 + (match.rn - 1) * 0.12));
+  };
+  for (let i = 0; i < tier.large; i++) place(3);
+  for (let i = 0; i < tier.medium; i++) place(2);
+}
+
+let nextUfoId = 1;
+function spawnUfo(quiet = false) {
+  const left = Math.random() < 0.5, y = H * rand(0.12, 0.7);
+  if (!quiet) Sound.play('ufo');
+  world.ufos.push({ id: nextUfoId++, x: left ? -20 : W + 20, y, base: y, vx: (left ? 1 : -1) * rand(1.2, 1.7), vy: 0,
+                    age: 0, fireT: 70, shots: CFG.UFO_SHOTS, sh: 0, aim: 0 });
+}
+function ufoFire(u, ang) {
+  u.sh++; u.aim = ang; Sound.play('ufoShot');
+  const c = Math.cos(ang), s = Math.sin(ang), sa = toScreenAngle(ang);
+  spawnBullet(u.x + Math.cos(sa) * 16, u.y + Math.sin(sa) * 16, c * CFG.UFO_BULLET_SPEED, s * CFG.UFO_BULLET_SPEED, ufoHue(ufoOff(u)), 'ufo', CFG.UFO_BULLET_LIFE);
+}
+
+/** Host: UFOs cruise across, bob, and take a few aimed-ish shots at pilots. */
+function updateUfosAuthority() {
+  for (let i = world.ufos.length - 1; i >= 0; i--) {
+    const u = world.ufos[i];
+    u.age++; u.x += u.vx * SX;
+    u.y = u.base + Math.sin(u.age * 0.04) * 30 * SY; u.vy = Math.cos(u.age * 0.04) * 1.2;
+    if (u.shots > 0 && --u.fireT <= 0 && match.ph === 'play') {
+      const targets = [ship, opp].filter(o => o && o.alive);
+      if (targets.length) {
+        const t = targets[Math.floor(Math.random() * targets.length)];
+        ufoFire(u, fieldAngleTo(wrapDelta(t.x - u.x, W), wrapDelta(t.y - u.y, H)) + rand(-0.16, 0.16));
+      }
+      u.shots--; u.fireT = 85;
+    }
+    if (u.x < -40 || u.x > W + 40) world.ufos.splice(i, 1);
+  }
+}
+
+function startGame(adopt = null) {
+  FS.auto();
+  // Rematch on a live direct link: keep it (no trip back through matchmaking)
+  const code = currentCode();
+  const reuse = !adopt && mode === 'online' && net.keepAlive && !net.closed && (
+    (onlineRole === 'random' ? (net.fromRandom && net.linked && net.linked()) : (net.code === code && net.role === onlineRole)));
+  if (!reuse) net.close();
+  track('game_start', { mode: modeLabel(), rematch: reuse ? 1 : 0, from_bot: adopt ? 1 : 0 });
+  world.asteroids.length = world.bullets.length = world.rings.length = world.ufos.length = 0;
+  Particles.clear(); remotes.clear(); opp = null;
+  Object.assign(match, { rn: 0, ph: 'wait', t: 0, wins: [0, 0], sc: [0, 0], res: '', why: '', elapsed: 0, ufoIdx: 0, refill: 0, forfeit: false, surrendered: false, ufoT: undefined });
+  tickCount = 0; leaveTimer = 0; overTicks = 0; practiceTotal = 0; lastBeat = -1; lastPh = '';
+  joy.active = false; fire.held = false; ship.shots = 0;
+  roomCode = '';
+  if (mode === 'online') {
+    roomCode = onlineRole === 'random' ? (reuse ? net.code : '') : (code || generateRoomCode());
+    if (onlineRole !== 'random') showCode(roomCode);
+    if (reuse) {
+      wasHost = net.isHost; awaitingFirstSnap = !net.isHost;
+      resetShipForRound();
+      spawnTier(TIERS[1]);
+    } else if (adopt) {                              // a Quick Play match found while fighting the bot
+      net = adopt; roomCode = adopt.code || '';
+      awaitingFirstSnap = true; wasHost = true;
+      resetShipForRound();
+      spawnTier(TIERS[1]);
+    } else {
+      net = inClaude() ? new RoomAdapter() : onlineRole === 'random' ? new QuickMatchAdapter() : webAdapter(); wireNetHandlers(net);
+      awaitingFirstSnap = true; wasHost = true;
+      resetShipForRound();
+      spawnTier(TIERS[1]);                          // warm-up field while waiting
+      net.connect(roomCode, onlineRole);
+    }
+  } else {
+    net = new NullAdapter();
+    if (mode === 'bot') {
+      const others = SHIP_COLORS.filter(c => c[1] !== ship.color);
+      opp = new BotShip(others[Math.floor(Math.random() * others.length)][1]);
+    }
+    startRound(1);
+  }
+  state = 'play';
+}
+
+function startRound(n) {
+  Object.assign(match, { rn: n, ph: 'intro', t: CFG.INTRO_MS, sc: [0, 0], res: '', why: '', elapsed: 0, ufoIdx: 0, refill: 0 });
+  world.asteroids.length = world.ufos.length = world.bullets.length = 0;
+  resetShipForRound();
+  if (opp && opp.isBot) opp.reset();
+  spawnTier(tierFor(n));
+}
+
+function endRound(res, why) {
+  match.ph = 'result'; match.t = CFG.RESULT_MS; match.res = res; match.why = why;
+  if (res === 'me') match.wins[0]++;
+  if (res === 'opp') match.wins[1]++;
+  if (mode === 'practice') practiceTotal += match.sc[0];
+}
+
+/* Warm-up while waiting for a rival: an endless field. When the rocks are all
+   gone a fresh batch drifts in (never on top of you), and every 15–30 s a UFO
+   cruises through as target practice. Nothing counts and nothing can hurt you. */
+const WARMUP = { large: 4, medium: 1 };
+function warmupTick() {
+  if (world.asteroids.length === 0) {
+    if (++match.refill > 60) {
+      match.refill = 0;
+      const R = 190 * 190;
+      const place = size => {
+        let x, y, tries = 0;
+        do { x = Math.random() * W; y = Math.random() * H; tries++; } while (tries < 60 && wrapDist2({ x, y }, ship) < R);
+        world.asteroids.push(makeAsteroid(x, y, size, 0.9));
+      };
+      for (let i = 0; i < WARMUP.large; i++) place(3);
+      for (let i = 0; i < WARMUP.medium; i++) place(2);
+    }
+  } else match.refill = 0;
+  if (match.ufoT === undefined) match.ufoT = rand(8000, 14000);
+  match.ufoT -= CFG.TICK_MS;
+  if (match.ufoT <= 0) { if (!world.ufos.length) spawnUfo(true); match.ufoT = rand(15000, 30000); }
+}
+
+/** Host / local: advance the round clock and decide rounds. */
+function matchTick() {
+  const dt = CFG.TICK_MS;
+  if (match.ph === 'wait') { if (opp) startRound(1); else if (mode === 'online') warmupTick(); return; }
+  if (match.ph === 'intro') { match.t -= dt; if (match.t <= 0) { match.ph = 'play'; match.t = CFG.ROUND_MS; flashTimer = 45; } return; }
+  if (match.ph === 'play') {
+    match.t -= dt; match.elapsed += dt;
+    const tier = tierFor(match.rn);
+    while (match.ufoIdx < tier.ufos.length && match.elapsed >= tier.ufos[match.ufoIdx]) { spawnUfo(); match.ufoIdx++; }
+    if (world.asteroids.length === 0) { if (++match.refill > 60) { match.refill = 0; spawnTier(tier); } }   // keep the field stocked
+    const meDead = !ship.alive, oppDead = !!opp && !opp.alive;
+    if (mode === 'practice') {
+      if (meDead) endRound('', 'k'); else if (match.t <= 0) endRound('', 't');
+      return;
+    }
+    if (meDead || oppDead || match.t <= 0) {
+      if (meDead !== oppDead) endRound(oppDead ? 'me' : 'opp', 'k');
+      else if (match.sc[0] !== match.sc[1]) endRound(match.sc[0] > match.sc[1] ? 'me' : 'opp', 'p');
+      else endRound('draw', 'd');
+    }
+    return;
+  }
+  if (match.ph === 'result') {
+    match.t -= dt;
+    if (match.t <= 0) {
+      const done = mode === 'practice' ? match.rn >= 3 : (match.wins[0] >= CFG.WINS_NEEDED || match.wins[1] >= CFG.WINS_NEEDED);
+      if (done) { match.ph = 'final'; showFinal(); } else startRound(match.rn + 1);
+    }
+  }
+}
+
+function credit(owner, pts) {
+  if (match.ph !== 'play') return;
+  if (owner === 'local') match.sc[0] += pts;
+  else if (owner === 'bot' || owner.startsWith('r:')) match.sc[1] += pts;
+}
+
+/** Host: split a rock and credit the shooter. */
+function splitAsteroid(idx, owner) {
+  const a = world.asteroids[idx];
+  world.asteroids.splice(idx, 1);
+  explodeAsteroid(a);
+  credit(owner, AST_SCORE[a.size]);
+  if (a.size > 1) for (let k = 0; k < 2; k++) {
+    const c = makeAsteroid(a.x, a.y, a.size - 1, 1 + (match.rn - 1) * 0.12);
+    c.vx += a.vx * 0.5; c.vy += a.vy * 0.5; world.asteroids.push(c);
+  }
+}
+
+/** My hull takes a hit. `force` = a rival's confirmed hit (online). */
+function takeHit(force = false) {
+  if (!ship.alive) return false;
+  if (!force && (ship.invuln > 0 || match.ph !== 'play')) return false;
+  ship.hp--; ship.invuln = CFG.HIT_INVULN; ship.shield = 0;
+  Sound.play('hit');
+  Particles.burst(ship.x, ship.y, ship.color, 18, 3, 25);
+  world.shake = Math.max(world.shake, 8); buzz(60);
+  if (ship.hp <= 0) { ship.alive = false; explodeShip(ship.x, ship.y, ship.color); buzz(220); }
+  return true;
+}
+
+function bounceOff(o, a) {
+  let ddx = wrapDelta(o.x - a.x, W), ddy = wrapDelta(o.y - a.y, H);
+  const d = Math.hypot(ddx, ddy) || 1; ddx /= d; ddy /= d;
+  o.vx = ddx * 3 + a.vx; o.vy = ddy * 3 + a.vy;
+  o.x = a.x + ddx * (a.r + CFG.SHIP_R + 1); o.y = a.y + ddy * (a.r + CFG.SHIP_R + 1); wrap(o);
+}
+
+function wireNetHandlers(n) {
+  n.on('state', m => {
+    if (state === 'over') { if (RM.mine && m.dr === 0) startRematch('rival-started'); return; }   // rival loaded the rematch first
+    let r = remotes.get(m.id);
+    if (!r) { r = new RemotePlayer(m.id, m.col); remotes.set(m.id, r); }
+    r.goneAt = 0;                                     // heard from them: not gone
+    r.push(m);
+    if (!opp && state === 'play') opp = r;            // first other pilot is the rival
+    // Apply the rival's confirmed hits on me for this round
+    if (opp === r && match.rn > 0 && m.dr === match.rn)
+      while (ship.applied < m.dmg && ship.alive) { ship.applied++; takeHit(true); }
+  });
+  n.on('fire', m => { const r = remotes.get(m.id); if (r && r.alive) { spawnBullet(m.x, m.y, m.vx, m.vy, r.color, 'r:' + m.id); Sound.play('rival'); } });
+  // A rival only counts as gone after 3 s of silence, so a reconnect or restart
+  // (whose "left" can arrive just after its "back") never hands out a false forfeit.
+  n.on('leave', m => {
+    const r = remotes.get(m.id);
+    if (!r) return;
+    if (r === opp) { if (m.bye) r.goneAt = performance.now() - 3000; else if (!r.goneAt) r.goneAt = performance.now(); }
+    else remotes.delete(m.id);
+  });
+  n.on('snapshot', applySnapshot);
+  n.on('idle', m => { if (state === 'over') rivalRematch(!!m.rm); });
+  n.on('code', m => {                                 // code picked (taken code / quick match)
+    if (n === bgNet) { adoptQuickMatch(); return; }   // found a pilot while fighting the bot
+    roomCode = m.code; if (onlineRole !== 'random') showCode(m.code);
+  });
+  n.on('full', () => {
+    net.close(); state = 'menu'; opp = null;
+    menuEl.classList.remove('hidden'); seedAmbient();
+    setNote(`Room ${roomCode} already has two pilots. Ask your friend for their code, or HOST your own.`, true);
+  });
+}
+
+/** Guests: mirror the host's match state, rocks and UFOs. */
+function applySnapshot(s) {
+  if (state !== 'play' || isAuthority()) return;
+  const m = s.m;
+  if (m && Number.isFinite(+m.rn)) {
+    const rn = +m.rn;
+    if (rn !== match.rn && rn > 0) {                  // new round: reset my hull and spawn
+      match.rn = rn; resetShipForRound(); world.bullets.length = 0; awaitingFirstSnap = true;
+    }
+    const prevPh = match.ph;
+    const w = Array.isArray(m.w) ? m.w : [0, 0], sc = Array.isArray(m.sc) ? m.sc : [0, 0];
+    match.ph = ['wait', 'intro', 'play', 'result', 'final'].includes(m.ph) ? m.ph : match.ph;
+    match.t = +m.t || 0;
+    match.wins = [+w[1] || 0, +w[0] || 0];            // host's view → mine
+    match.sc = [+sc[1] || 0, +sc[0] || 0];
+    match.res = m.res === 'h' ? 'opp' : m.res === 'g' ? 'me' : m.res === 'draw' ? 'draw' : '';
+    match.why = typeof m.why === 'string' ? m.why.slice(0, 2) : '';
+    if (prevPh === 'intro' && match.ph === 'play') flashTimer = 45;
+    if (match.ph === 'final' && prevPh !== 'final') { showFinal(); return; }
+  }
+  // Rocks
+  const byId = new Map(world.asteroids.map(a => [a.id, a])), seen = new Set();
+  for (const e of s.ast) {
+    if (!Array.isArray(e) || e.length < 6) continue;
+    const [id, x, y, vx, vy, size] = e.map(Number);
+    if (!(size >= 1 && size <= 3)) continue;
+    seen.add(id);
+    let a = byId.get(id);
+    if (!a) { a = makeAsteroid(dx_(x), dy_(y), size, 1, id); world.asteroids.push(a); }
+    a.tx = dx_(x); a.ty = dy_(y); a.vx = dvx(vx); a.vy = dvy(vy);
+  }
+  for (let i = world.asteroids.length - 1; i >= 0; i--) {
+    const a = world.asteroids[i];
+    if (seen.has(a.id)) continue;
+    world.asteroids.splice(i, 1);
+    if (!awaitingFirstSnap) explodeAsteroid(a);
+  }
+  // UFOs (+ replay their shots, which can hit me)
+  const ufoById = new Map(world.ufos.map(u => [u.id, u])), seenU = new Set();
+  for (const e of s.ufo) {
+    if (!Array.isArray(e) || e.length < 7) continue;
+    const [id, x, y, vx, vy, sh, aim] = e.map(Number);
+    seenU.add(id);
+    let u = ufoById.get(id);
+    if (!u) { u = { id, x: dx_(x), y: dy_(y), vx: 0, vy: 0, sh }; world.ufos.push(u); if (!awaitingFirstSnap) Sound.play('ufo'); }
+    u.tx = dx_(x); u.ty = dy_(y); u.vx = dvx(vx); u.vy = dvy(vy);
+    if (sh > u.sh) { for (let k = 0; k < Math.min(2, sh - u.sh); k++) ufoFire(u, aim / 1000); u.sh = sh; }
+  }
+  for (let i = world.ufos.length - 1; i >= 0; i--) {
+    const u = world.ufos[i];
+    if (seenU.has(u.id)) continue;
+    world.ufos.splice(i, 1);
+    if (!awaitingFirstSnap && u.x > 0 && u.x < W) explodeUfo(u);   // off-screen = flew away
+  }
+  awaitingFirstSnap = false;
+}
+
+function buildPresence() {
+  const p = {
+    v: 1, on: 1, col: ship.color,
+    x: nx(ship.x), y: ny(ship.y), vx: nvx(ship.vx), vy: nvy(ship.vy),
+    a: Math.round(ship.a * 1000), t: Math.round(ship.thrust * 100),
+    al: ship.alive ? 1 : 0, hp: ship.hp, sh: ship.shots, dmg: ship.dealt, dr: match.rn, hs: net.claiming ? 1 : 0,
+  };
+  if (isAuthority()) {
+    p.ast = world.asteroids.slice(0, CFG.MAX_SYNC_ASTEROIDS).map(a => [a.id, nx(a.x), ny(a.y), nvx(a.vx), nvy(a.vy), a.size]);
+    p.ufo = world.ufos.map(u => [u.id, nx(u.x), ny(u.y), nvx(u.vx), nvy(u.vy), u.sh, Math.round(u.aim * 1000)]);
+    p.m = { rn: match.rn, ph: match.ph, t: Math.round(match.t), w: match.wins, sc: match.sc,
+            res: match.res === 'me' ? 'h' : match.res === 'opp' ? 'g' : match.res, why: match.why };
+  }
+  return p;
+}
+
+function showFinal() {
+  state = 'over'; joy.active = false; fire.held = false;
+  if (mode === 'online') leaveTimer = 90;            // keep broadcasting briefly so the rival sees the result
+  RM.mine = false; RM.theirs = false; RM.expired = false; RM.at = 0; RM.cancelled = false;
+  rematchWait = null; if (net) net.rejoin = false;
+  const title = document.getElementById('overTitle'), big = document.getElementById('finalScore'), info = document.getElementById('overInfo');
+  const oppName = mode === 'bot' ? 'THE BOT' : 'YOUR RIVAL';
+  closeMenu(true);
+  track('match_end', { mode: modeLabel(), rounds: match.rn,
+    result: match.surrendered ? 'surrender' : match.forfeit ? 'rival_left' : mode === 'practice' ? 'score'
+      : match.wins[0] > match.wins[1] ? 'win' : 'loss',
+    score: mode === 'practice' ? practiceTotal : match.wins[0] });
+  if (match.surrendered) {
+    title.textContent = 'SURRENDERED';
+    big.textContent = `${match.wins[0]} – ${match.wins[1]}`;
+    info.textContent = `You waved the white flag. ${oppName[0] + oppName.slice(1).toLowerCase()} takes the match.`;
+    Sound.play('lose');
+    overEl.classList.remove('hidden');
+    return;
+  }
+  const won = match.forfeit || match.wins[0] > match.wins[1];
+  Sound.play(mode === 'practice' || won ? 'win' : 'lose');
+  if (mode === 'practice') {
+    title.textContent = 'RUN COMPLETE';
+    big.textContent = practiceTotal.toLocaleString();
+    info.textContent = 'Total points across 3 rounds.';
+  } else if (match.forfeit) {
+    title.textContent = 'VICTORY';
+    big.textContent = `${match.wins[0]} – ${match.wins[1]}`;
+    info.textContent = `${oppName[0] + oppName.slice(1).toLowerCase()} left the match. The win is yours.`;
+  } else {
+    title.textContent = won ? 'VICTORY' : 'DEFEAT';
+    big.textContent = `${match.wins[0]} – ${match.wins[1]}`;
+    info.textContent = won ? `You beat ${oppName.toLowerCase()} in the best of 3.` : `${oppName[0] + oppName.slice(1).toLowerCase()} takes the best of 3.`;
+  }
+  overEl.classList.remove('hidden');
+}
+
+function seedAmbient() {
+  world.asteroids.length = world.ufos.length = world.bullets.length = 0;
+  for (let i = 0; i < 6; i++) world.asteroids.push(makeAsteroid(Math.random() * W, Math.random() * H, 1 + (i % 3), 0.6));
+}
+
+/* =====================================================================
+   11. UPDATE + RENDER (fixed 60 Hz simulation)
+   ===================================================================== */
+/* Round-phase feedback: countdown beeps, GO, round results, and the spawn shield. */
+let lastBeat = -1, lastPh = '', playStartTick = -1e9;
+function phaseFx() {
+  if (match.ph === 'intro') {
+    const n = Math.ceil(match.t / 1000);
+    if (n !== lastBeat && n > 0 && n <= 3) { lastBeat = n; Sound.play('tick'); }
+  }
+  if (match.ph === lastPh) return;
+  if (match.ph === 'play' && lastPh === 'intro') { Sound.play('go'); giveSpawnShield(); }
+  if (match.ph === 'result') track('round_end', { mode: modeLabel(), round: match.rn,
+    result: mode === 'practice' ? 'score' : match.res === 'me' ? 'win' : match.res === 'opp' ? 'loss' : 'draw',
+    how: match.why === 'k' ? 'kill' : 'time', score: match.sc[0] });
+  if (match.ph === 'result') Sound.play(mode === 'practice' ? 'draw' : match.res === 'me' ? 'roundWin' : match.res === 'opp' ? 'roundLose' : 'draw');
+  if (match.ph === 'intro') lastBeat = -1;
+  lastPh = match.ph;
+}
+/** Everyone gets a short shield when the round goes live, and rocks near a ship are steered away. */
+function giveSpawnShield() {
+  playStartTick = tickCount;
+  ship.shield = CFG.SPAWN_SHIELD; ship.invuln = Math.max(ship.invuln, CFG.SPAWN_SHIELD);
+  if (opp && opp.isBot) { opp.shield = CFG.SPAWN_SHIELD; opp.invuln = Math.max(opp.invuln, CFG.SPAWN_SHIELD); }
+  if (!isAuthority()) return;
+  for (const o of [ship, opp]) {
+    if (!o || !o.alive) continue;
+    for (const a of world.asteroids) {
+      const ddx = wrapDelta(a.x - o.x, W), ddy = wrapDelta(a.y - o.y, H), d = Math.hypot(ddx, ddy) || 1;
+      if (d < a.r + 110) { const sp = Math.max(1, Math.hypot(a.vx, a.vy)); a.vx = ddx / d * sp; a.vy = ddy / d * sp; }
+    }
+  }
+}
+/** Is the rival still inside their spawn shield? (Online: shooter-side check.) */
+const rivalShielded = () => tickCount - playStartTick < CFG.SPAWN_SHIELD;
+function drawShield(x, y, color, ticksLeft) {
+  const k = clamp(ticksLeft / CFG.SPAWN_SHIELD, 0, 1);
+  ctx.globalAlpha = 0.25 + 0.35 * k * (0.7 + 0.3 * Math.sin(tickCount * 0.3));
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.shadowColor = color; ctx.shadowBlur = 14;
+  ctx.beginPath(); ctx.arc(x, y, 22, 0, TAU); ctx.stroke();
+  ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+}
+
+/** Resolve one bullet against the world. Returns true if it's used up. */
+function bulletStep(b, auth) {
+  const playerShot = b.owner !== 'ufo';
+  for (let j = world.asteroids.length - 1; j >= 0; j--) {
+    const a = world.asteroids[j];
+    if (wrapDist2(a, b) < a.r * a.r) { spark(b.x, b.y); if (auth && playerShot) splitAsteroid(j, b.owner); return true; }
+  }
+  if (playerShot) for (let j = world.ufos.length - 1; j >= 0; j--) {
+    const u = world.ufos[j];
+    if (wrapDist2(u, b) < 18 * 18) {
+      spark(b.x, b.y);
+      if (auth) { world.ufos.splice(j, 1); explodeUfo(u); credit(b.owner, CFG.UFO_SCORE); }
+      return true;
+    }
+  }
+  const R2 = CFG.SHIP_HIT_R * CFG.SHIP_HIT_R;
+  // My ship: bot and UFO shots are decided here; an online rival's shots are decided by the rival
+  if (ship.alive && b.owner !== 'local' && wrapDist2(ship, b) < R2) {
+    if (b.owner === 'bot' || b.owner === 'ufo') takeHit();
+    spark(b.x, b.y); return true;
+  }
+  if (opp && opp.alive && b.owner !== opp.owner && wrapDist2(opp, b) < R2) {
+    if (opp.isBot) { if (b.owner === 'local' || b.owner === 'ufo') opp.damage(); }
+    else if (b.owner === 'local' && match.ph === 'play' && !rivalShielded() && tickCount - ship.lastDealt >= CFG.HIT_INVULN) {
+      ship.dealt++; ship.lastDealt = tickCount;       // my hit on the rival; they apply it
+    }
+    spark(b.x, b.y); return true;
+  }
+  return false;
+}
+
+function update() {
+  tickCount++; now += CFG.TICK_MS;
+  const playing = state === 'play';
+  const auth = isAuthority();
+
+  if (playing && mode === 'online' && net.isHost !== wasHost) {           // host hand-over
+    wasHost = net.isHost;
+    if (wasHost) { for (const a of world.asteroids) a.tx = a.ty = undefined; for (const u of world.ufos) u.tx = undefined; }
+    else awaitingFirstSnap = true;
+  }
+
+  if (playing && auth) matchTick();
+  else if (playing && match.ph !== 'wait' && match.ph !== 'final') match.t = Math.max(0, match.t - CFG.TICK_MS);
+  if (playing) phaseFx();
+
+  // ---- My ship ----
+  if (playing && ship.alive) {
+    const live = canFly();
+    ship.thrust = 0;
+    if (live && padSteer()) { /* controller steered this tick */ }
+    else if (live && !DESKTOP && joy.active && joy.mag > CFG.AIM_DEADZONE) {
+      ship.a += angDiff(toFieldAngle(joy.angle), ship.a) * CFG.TURN_LERP;  // facing ≠ travel direction
+      ship.thrust = clamp((joy.mag - CFG.THRUST_START) / (1 - CFG.THRUST_START), 0, 1);
+    } else if (live && DESKTOP) desktopSteer();
+    if (match.ph !== 'intro') {
+      ship.vx += Math.cos(ship.a) * CFG.THRUST * ship.thrust; ship.vy += Math.sin(ship.a) * CFG.THRUST * ship.thrust;
+      ship.vx *= CFG.DRAG; ship.vy *= CFG.DRAG;                             // permanent drag
+      const sp = Math.hypot(ship.vx, ship.vy);
+      if (sp > CFG.MAX_SPEED) { ship.vx *= CFG.MAX_SPEED / sp; ship.vy *= CFG.MAX_SPEED / sp; }
+      ship.x += ship.vx * SX; ship.y += ship.vy * SY; wrap(ship);
+    }
+    if (ship.invuln > 0) ship.invuln--;
+    if (ship.shield > 0) ship.shield--;
+    if (ship.thrust > 0.3) { learn.thrustTicks++; noteLearning(); }
+    if (ship.thrust > 0.1) Sound.play('thrust', ship.thrust);
+    emitExhaust(ship.x, ship.y, ship.vx * SX, ship.vy * SY, toScreenAngle(ship.a), ship.thrust, ship.color);
+    damageFx(ship);
+    if (fire.held) { fire.repeatAcc += CFG.TICK_MS; if (fire.repeatAcc >= CFG.FIRE_REPEAT_MS) tryFire(); }
+  }
+  fire.pulse *= 0.85;
+
+  // ---- Rival ----
+  if (opp && opp.goneAt && performance.now() - opp.goneAt > 3000) {           // rival really left
+    remotes.delete(opp.id); opp = null;
+    if (playing && match.rn > 0 && match.ph !== 'final') { match.forfeit = true; match.ph = 'final'; showFinal(); }
+  }
+  if (playing && opp) opp.update();
+
+  // ---- Network ----
+  if (mode === 'online' && (playing || leaveTimer > 0)) {
+    netAcc += CFG.TICK_MS;
+    if (netAcc >= 1000 / CFG.NET_SEND_HZ) { netAcc = 0; net.publish(buildPresence()); }
+    if (leaveTimer > 0 && --leaveTimer === 0 && !net.keepAlive) net.close();
+    if (rematchWait) rematchTick();
+  } else if (mode === 'online' && state === 'over' && net.keepAlive && !net.closed) {
+    // On the result screen: a light "still here, not playing" beat keeps the direct link warm for a rematch.
+    // After a minute with no rematch, close it so the next game starts from a clean connection.
+    netAcc += CFG.TICK_MS;
+    if (netAcc >= 500) { netAcc = 0; net.publish({ v: 1, on: 0, rm: RM.mine ? 1 : 0 }); }
+    if (++overTicks > (RM.mine || RM.theirs ? 90 : 60) * 60) { net.close(); RM.expired = true; }
+  }
+
+  // ---- Rocks (guests glide mirrored rocks toward the host's positions) ----
+  for (const a of world.asteroids) {
+    if (a.tx !== undefined) {
+      a.tx += a.vx * SX; a.ty += a.vy * SY;
+      if (a.tx < 0) a.tx += W; else if (a.tx >= W) a.tx -= W;
+      if (a.ty < 0) a.ty += H; else if (a.ty >= H) a.ty -= H;
+      a.x += a.vx * SX + wrapDelta(a.tx - a.x, W) * 0.15; a.y += a.vy * SY + wrapDelta(a.ty - a.y, H) * 0.15;
+    } else { a.x += a.vx * SX; a.y += a.vy * SY; }
+    a.rot += a.spin; wrap(a);
+  }
+
+  // ---- UFOs ----
+  if (auth) updateUfosAuthority();
+  else for (const u of world.ufos) {
+    u.tx += u.vx * SX; u.ty += u.vy * SY;
+    u.x += u.vx * SX + (u.tx - u.x) * 0.15; u.y += u.vy * SY + (u.ty - u.y) * 0.15;
+  }
+
+  // ---- Bullets ----
+  for (let i = world.bullets.length - 1; i >= 0; i--) {
+    const b = world.bullets[i];
+    b.x += b.vx * SX; b.y += b.vy * SY; wrap(b);
+    if (--b.life <= 0 || bulletStep(b, auth)) world.bullets.splice(i, 1);
+  }
+
+  // ---- Ships vs rocks and UFO hulls ----
+  if (playing && ship.alive && match.ph !== 'intro') {
+    for (const a of world.asteroids) {
+      const rr = a.r + CFG.SHIP_R * 0.7;
+      if (wrapDist2(a, ship) < rr * rr) {
+        if (ship.invuln <= 0) takeHit();
+        bounceOff(ship, a); ship.invuln = Math.max(ship.invuln, CFG.ROCK_INVULN);
+        break;
+      }
+    }
+    for (const u of world.ufos) if (wrapDist2(u, ship) < 20 * 20) takeHit();
+  }
+  if (playing && opp && opp.isBot && opp.alive && match.ph !== 'intro') {
+    for (const a of world.asteroids) {
+      const rr = a.r + CFG.SHIP_R * 0.7;
+      if (wrapDist2(a, opp) < rr * rr) { opp.damage(); bounceOff(opp, a); opp.invuln = Math.max(opp.invuln, CFG.ROCK_INVULN); break; }
+    }
+  }
+
+  // ---- Effects ----
+  for (let i = world.rings.length - 1; i >= 0; i--) {
+    const r = world.rings[i];
+    r.r += (r.max - r.r) * 0.12; r.life -= 0.035;
+    if (r.life <= 0) world.rings.splice(i, 1);
+  }
+  Particles.update();
+  world.shake *= 0.86;
+  if (flashTimer > 0) flashTimer--;
+}
+
+function render() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.drawImage(bg, 0, 0, W, H);
+  ctx.save();
+  if (world.shake > 0.3) ctx.translate(Math.round(rand(-1, 1) * world.shake), Math.round(rand(-1, 1) * world.shake));
+  for (const a of world.asteroids) drawAsteroid(a);
+  for (const u of world.ufos) drawUfo(u, tickCount);
+  drawBullets();
+  Particles.draw();
+  for (const r of world.rings) {
+    ctx.globalAlpha = Math.max(0, r.life);
+    ctx.strokeStyle = r.color; ctx.lineWidth = 2; ctx.shadowColor = r.color; ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, TAU); ctx.stroke();
+  }
+  ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  if (state === 'play') {
+    if (opp) opp.draw(tickCount);
+    if (ship.alive && !(ship.invuln > 0 && !ship.shield && (tickCount >> 3) % 2 === 0))
+      drawWrapped(ship.x, ship.y, 20, (x, y) => drawShip(x, y, toScreenAngle(ship.a), ship.color, ship.thrust, tickCount, ship.hp));
+    if (ship.alive && ship.shield > 0) drawShield(ship.x, ship.y, ship.color, ship.shield);
+  }
+  ctx.restore();
+  if (state === 'play') { drawHUD(); drawBanners(); drawControls(); }
+}
+
+function glowText(txt, x, y, color, size, align = 'left', blur = 10) {
+  ctx.font = `bold ${size}px "Courier New", monospace`;
+  ctx.textAlign = align; ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = blur;
+  ctx.fillText(txt, x, y); ctx.shadowBlur = 0;
+}
+/** Centered text that wraps to fit maxW (for long status messages). */
+function wrapText(txt, x, y, maxW, lineH, color, size) {
+  ctx.font = `bold ${size}px "Courier New", monospace`;
+  const words = txt.split(' '); let line = '', yy = y;
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) { glowText(line, x, yy, color, size, 'center', 0); line = w; yy += lineH; }
+    else line = test;
+  }
+  if (line) glowText(line, x, yy, color, size, 'center', 0);
+}
+
+/** Hull pips then round-win diamonds, laid out from x toward `dir`. */
+function drawStatus(x, y, hp, wins, color, dir) {
+  for (let i = 0; i < CFG.HULL; i++) {
+    const px = dir > 0 ? x + i * 14 : x - 10 - i * 14;
+    ctx.globalAlpha = i < hp ? 1 : 0.25; ctx.fillStyle = i < hp ? color : '#5a4aa8';
+    ctx.fillRect(Math.round(px), Math.round(y), 10, 6);
+  }
+  ctx.globalAlpha = 1;
+  if (mode === 'practice') return;
+  for (let i = 0; i < CFG.WINS_NEEDED; i++) {
+    const cx = dir > 0 ? x + 50 + i * 14 : x - 55 - i * 14, cy = y + 3;
+    ctx.beginPath(); ctx.moveTo(cx, cy - 5); ctx.lineTo(cx + 5, cy); ctx.lineTo(cx, cy + 5); ctx.lineTo(cx - 5, cy); ctx.closePath();
+    if (i < wins) { ctx.fillStyle = '#ffe600'; ctx.shadowColor = '#ffe600'; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0; }
+    else { ctx.strokeStyle = '#5a4aa8'; ctx.lineWidth = 1; ctx.stroke(); }
+  }
+}
+
+function drawHUD() {
+  const top = SAFE_TOP + 20;
+  // Me (left)
+  glowText('YOU', 14, top, '#9a8fd6', 10, 'left', 0);
+  glowText(String(match.sc[0]).padStart(4, '0'), 14, top + 20, ship.color, 20);
+  drawStatus(14, top + 28, ship.alive ? ship.hp : 0, match.wins[0], ship.color, 1);
+  // Rival (right)
+  if (opp) {
+    glowText(opp.label, W - 14, top, '#9a8fd6', 10, 'right', 0);
+    glowText(String(match.sc[1]).padStart(4, '0'), W - 14, top + 20, opp.color, 20, 'right');
+    drawStatus(W - 14, top + 28, opp.alive ? opp.hp : 0, match.wins[1], opp.color, -1);
+  }
+  // Round + clock (center)
+  if (match.rn > 0) {
+    glowText(mode === 'practice' ? `ROUND ${match.rn}/3` : `ROUND ${match.rn}`, W / 2, top + 26, '#9a8fd6', 11, 'center', 0);
+    const full = Math.round(CFG.ROUND_MS / 1000);
+    const secs = clamp(match.ph === 'play' ? Math.ceil(match.t / 1000) : match.ph === 'intro' ? full : 0, 0, full);
+    glowText(`${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`, W / 2, top + 49, match.ph === 'play' && secs <= 10 ? '#ff2d4b' : '#ffffff', 22, 'center');
+  }
+  if (bgNet && bgNet.searching) {
+    const n = bgNet.poolSize();
+    glowText(`SEARCHING FOR A PILOT · ${n} IN POOL`, W / 2, top + 66, '#8b80c4', 10, 'center', 0);
+  }
+  if (mode === 'online') {
+    const searching = !net.status || net.status === 'CONNECTING…' || net.status.startsWith('STILL SEARCHING') || net.status === 'OPENING ROOM…';
+    const line = net.searching ? 'QUICK MATCH' : net.status ? (searching ? 'CONNECTING…' : 'NOT ONLINE') : (opp ? `ROOM ${roomCode} · ${net.isHost ? 'HOST' : 'GUEST'}` : `ROOM ${roomCode}`);
+    glowText(line, W / 2, top + 66, net.status ? '#ff9f1c' : '#8b80c4', 10, 'center', 0);
+  }
+}
+
+function drawBanners() {
+  const cy = H * 0.3;
+  const oppName = mode === 'bot' ? 'BOT' : 'RIVAL';
+  if (match.ph === 'wait') {
+    const cy = H * 0.17;
+    const joining = net.role === 'join';
+    if (rematchWait) {
+      const secs = Math.floor((performance.now() - rematchWait.at) / 1000);
+      const stage = /RECONNECT/.test(net.status || '') || !(net.linked && net.linked()) ? 'RECONNECTING TO YOUR RIVAL…'
+        : secs >= 15 ? 'RIVAL ACCEPTED · CHECKING THE CONNECTION…' : 'WAITING FOR YOUR RIVAL TO LOAD IN…';
+      glowText('REMATCH', W / 2, cy, '#ffffff', 22, 'center');
+      glowText(`${stage} ${secs}s`, W / 2, cy + 30, ship.color, 12, 'center');
+      glowText('Warm up: nothing counts yet', W / 2, cy + 54, '#8b80c4', 11, 'center', 0);
+      return;
+    }
+    if (net.searching) {
+      const secs = Math.floor((performance.now() - (net.startedAt || performance.now())) / 1000);
+      glowText('FINDING AN OPPONENT', W / 2, cy, '#ffffff', 22, 'center');
+      glowText(`${net.poolSize()} PILOT${net.poolSize() === 1 ? '' : 'S'} SEARCHING · ${secs}s`, W / 2, cy + 30, ship.color, 14, 'center');
+    } else {
+      glowText(joining ? 'JOINING ROOM' : net.fromRandom ? 'OPPONENT FOUND' : 'WAITING FOR RIVAL', W / 2, cy, '#ffffff', 22, 'center');
+      glowText(joining ? roomCode : net.fromRandom ? 'CONNECTING…' : `YOUR CODE ${roomCode}`, W / 2, cy + 30, ship.color, joining ? 22 : 16, 'center');
+    }
+    glowText('Warm up: nothing counts yet', W / 2, cy + 54, '#8b80c4', 11, 'center', 0);
+    let yy = cy + 80;
+    if (net.role === 'join' && !(net.linked && net.linked()) && (net.status === 'CONNECTING…' || !net.status)) {
+      const secs = Math.floor((performance.now() - (net.startedAt || performance.now())) / 1000);
+      wrapText(`FINDING THE HOST… ${secs}s · USUALLY 5–20s`, W / 2, yy, W - 40, 16, '#9a8fd6', 12); yy += 24;
+    } else if (net.status && net.status !== 'CONNECTING…' && net.status !== 'OPENING ROOM…') {
+      const soft = net.status.startsWith('STILL SEARCHING');
+      wrapText(net.status, W / 2, yy, W - 40, 16, soft ? '#ff9f1c' : '#ff2d4b', 12); yy += 40;
+    }
+    if (net.report) wrapText(net.report().toUpperCase(), W / 2, yy, W - 40, 13, '#8b80c4', 10);
+  } else if (match.ph === 'intro') {
+    glowText(`ROUND ${match.rn}`, W / 2, cy, '#ffffff', 34, 'center');
+    glowText(tierFor(match.rn).tag, W / 2, cy + 28, match.rn >= 3 ? ufoHue() : '#9a8fd6', 14, 'center');
+    glowText(String(Math.max(1, Math.ceil(match.t / 1000))), W / 2, cy + 86, ship.color, 56, 'center', 20);
+  } else if (match.ph === 'play' && flashTimer > 0) {
+    ctx.globalAlpha = flashTimer / 45;
+    glowText(mode === 'practice' ? 'GO!' : 'FIGHT!', W / 2, cy + 20, '#ffffff', 44, 'center', 24);
+    ctx.globalAlpha = 1;
+  } else if (match.ph === 'result') {
+    let head, col;
+    if (mode === 'practice') { head = `ROUND ${match.rn}: ${match.sc[0]} PTS`; col = ship.color; }
+    else if (match.res === 'me') { head = 'YOU TAKE THE ROUND'; col = ship.color; }
+    else if (match.res === 'opp') { head = `${oppName} TAKES THE ROUND`; col = opp ? opp.color : '#ffffff'; }
+    else { head = 'DRAW · ROUND REPLAYS'; col = '#ffffff'; }
+    let why = '';
+    if (match.why === 'k') why = mode === 'practice' ? 'SHIP DESTROYED' : match.res === 'me' ? `${oppName} DESTROYED` : 'YOU WERE DESTROYED';
+    else if (match.why === 'p') why = `TIME · ${match.sc[0]} – ${match.sc[1]} PTS`;
+    else if (match.why === 'd') why = `TIME · TIED ${match.sc[0]} – ${match.sc[1]}`;
+    else if (match.why === 't') why = 'TIME';
+    glowText(head, W / 2, cy, col, 22, 'center', 16);
+    glowText(why, W / 2, cy + 28, '#ffffff', 13, 'center', 0);
+  }
+}
+
+/* High-refresh screens (Pixel 7 Pro and others at 120 Hz) call us twice per 60 Hz game tick.
+   Drawing every call doubles the glow work for identical pictures and makes ticks land
+   unevenly (0,1,0,2,…), which reads as stutter. So we measure the screen's refresh rate and
+   draw on every Nth refresh — steady 60 fps on 120 Hz, native on 60/90 Hz — and let the tick
+   clock run a few ms early/late so each drawn frame gets exactly one tick. */
+let last = performance.now(), acc = 0, fpsAvg = 60, vsync = 1000 / 60, vsyncN = 0, lastDraw = last;
+function frame(t) {
+  requestAnimationFrame(frame);
+  const raw = t - last; last = t;
+  if (raw > 0 && raw < 50) vsync = vsync * 0.9 + raw * 0.1;
+  const every = Math.max(1, Math.floor(CFG.TICK_MS / vsync + 0.25));
+  if (++vsyncN % every) return;                     // skip this refresh: nothing new to show
+  let dt = t - lastDraw; lastDraw = t;
+  if (dt > 250) dt = 250;
+  if (dt > 0) fpsAvg = fpsAvg * 0.95 + (1000 / dt) * 0.05;
+  Particles.quality = fpsAvg < 40 ? 0.4 : fpsAvg < 52 ? 0.7 : 1;
+  padPoll();
+  if (!paused && !(menuOpen && mode !== 'online')) {
+    acc += dt; let steps = 0;
+    const slack = CFG.TICK_MS * 0.25;               // absorb frame-timing jitter
+    while (acc >= CFG.TICK_MS - slack && steps < 8) { update(); acc -= CFG.TICK_MS; steps++; }
+    if (steps === 8) acc = 0;
+  }
+  render();
+  syncHudButtons();
+}
+document.addEventListener('visibilitychange', () => {
+  paused = document.hidden && mode !== 'online';     // online keeps running so the duel stays in sync
+  if (!document.hidden) { last = lastDraw = performance.now(); acc = 0; }
+  else { joy.active = false; fire.held = false; }
+});
+
+/* =====================================================================
+   12. MENU WIRING
+   ===================================================================== */
+const menuEl = document.getElementById('menu');
+const overEl = document.getElementById('over');
+const startBtn = document.getElementById('startBtn');
+const codeInput = document.getElementById('roomCode');
+const hostCodeEl = document.getElementById('hostCode');
+const roomBox = document.getElementById('roomBox');
+const roomNote = document.getElementById('roomNote');
+const liveNote = document.getElementById('liveNote');
+const shareBtn = document.getElementById('shareBtn');
+const dotsEl = document.getElementById('dots');
+const pauseBtn = document.getElementById('pauseBtn');
+const pauseMenu = document.getElementById('pauseMenu');
+const waitShare = document.getElementById('waitShare');
+
+const sanitizeCode = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+let onlineRole = null;                           // 'host' | 'join' | 'random'
+let menuOpen = false;
+
+/** The room code for the chosen role: the one you host, or the one you typed. */
+function currentCode() { return onlineRole === 'host' ? hostCodeEl.textContent.trim() : onlineRole === 'join' ? sanitizeCode(codeInput.value) : ''; }
+function showCode(code) { if (onlineRole === 'host') hostCodeEl.textContent = code; else codeInput.value = code; }
+
+const HOST_NOTE = inClaude()
+  ? 'Tell your rival this code. They tap ONLINE → JOIN and type it in.'
+  : 'Tap SHARE INVITE LINK and send it, or tell your rival the code. They tap ONLINE → JOIN.';
+const JOIN_NOTE = 'Type the 4-letter code your friend is hosting.';
+
+/** Which menu section is open: null (just LAUNCH + choices), 'online' or 'practice'. */
+let menuSection = null;
+/** Menu sections, buttons and notes follow the chosen section and role. */
+function refreshMenu() {
+  const online = menuSection === 'online', manual = online && (onlineRole === 'host' || onlineRole === 'join');
+  document.querySelectorAll('[data-mode]').forEach(x => x.classList.toggle('sel', x.dataset.mode === menuSection));
+  roomBox.classList.toggle('hidden', !online);
+  // Online open (Host / Join / Quick Play live there): hide the big QUICK PLAY button to avoid a duplicate
+  document.getElementById('quickBtn').classList.toggle('hidden', online);
+  document.getElementById('orChoose').classList.toggle('hidden', online);
+  document.getElementById('practiceRow').classList.toggle('hidden', menuSection !== 'practice');
+  document.getElementById('hostPanel').classList.toggle('hidden', !(online && onlineRole === 'host'));
+  document.getElementById('joinPanel').classList.toggle('hidden', !(online && onlineRole === 'join'));
+  document.querySelectorAll('[data-role]').forEach(b => b.classList.toggle('sel', manual && b.dataset.role === onlineRole));
+  startBtn.classList.toggle('hidden', !manual);
+  startBtn.textContent = onlineRole === 'join' ? 'JOIN GAME' : 'HOST GAME';
+  if (!roomNote.dataset.custom) {
+    roomNote.textContent = !manual ? 'QUICK PLAY pairs you with the next pilot who is searching.' : onlineRole === 'host' ? HOST_NOTE : JOIN_NOTE;
+    roomNote.classList.remove('warn');
+  }
+}
+function setNote(text, warn = false) { roomNote.textContent = text; roomNote.dataset.custom = '1'; roomNote.classList.toggle('warn', warn); }
+function clearNote() { delete roomNote.dataset.custom; refreshMenu(); }
+
+hostCodeEl.textContent = generateRoomCode();
+if (inClaude()) document.getElementById('randomRole').hidden = true;   // quick play needs the open-web matchmaker
+codeInput.addEventListener('input', () => { codeInput.value = sanitizeCode(codeInput.value); clearNote(); });
+document.getElementById('newCode').addEventListener('click', () => { Sound.play('click'); hostCodeEl.textContent = generateRoomCode(); clearNote(); });
+document.querySelectorAll('[data-role]').forEach(b => b.addEventListener('click', () => {
+  Sound.unlock(); Sound.play('click');
+  if (b.dataset.role === 'random') { quickPlay(); return; }          // QUICK PLAY starts right away
+  onlineRole = b.dataset.role; clearNote();
+  if (onlineRole === 'join') setTimeout(() => codeInput.focus(), 50);
+}));
+
+for (const [key, hex, name] of SHIP_COLORS) {
+  const b = document.createElement('button');
+  b.className = 'dot'; b.dataset.color = key; b.style.setProperty('--c', hex); b.setAttribute('aria-label', name);
+  b.addEventListener('click', () => { Sound.unlock(); Sound.play('click'); selectColor(key); });
+  dotsEl.appendChild(b);
+}
+function selectColor(key) {
+  const [, hex, name] = SHIP_COLORS.find(c => c[0] === key);
+  ship.color = hex; ship.colorName = name;
+  document.querySelectorAll('.dot').forEach(d => d.classList.toggle('sel', d.dataset.color === key));
+  const label = document.getElementById('dotName');
+  label.textContent = name; label.style.setProperty('--c', hex);
+  startBtn.style.setProperty('--accent', hex);
+  document.getElementById('againBtn').style.setProperty('--accent', hex);
+  document.getElementById('quickBtn').style.setProperty('--accent', hex);
+}
+/* ONLINE / PRACTICE open their section; tapping the open one again closes it. */
+document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+  Sound.unlock(); Sound.play('click');
+  menuSection = menuSection === b.dataset.mode ? null : b.dataset.mode;
+  if (menuSection === 'online' && onlineRole === 'random') onlineRole = null;
+  clearNote();
+}));
+/* PRACTICE → WITH BOT / SOLO start right away. */
+document.querySelectorAll('[data-practice]').forEach(b => b.addEventListener('click', () => {
+  Sound.unlock(); Sound.play('click');
+  mode = b.dataset.practice === 'bot' ? 'bot' : 'practice';
+  menuEl.classList.add('hidden'); startGame();
+}));
+
+/* LAUNCH / QUICK PLAY: straight into online matchmaking.
+   Inside Claude (no open-web matchmaker) LAUNCH starts a game against the bot instead. */
+function quickPlay() {
+  Sound.unlock(); Sound.play('click');
+  if (inClaude()) mode = 'bot';
+  else { mode = 'online'; onlineRole = 'random'; }
+  clearNote();
+  menuEl.classList.add('hidden'); startGame();
+}
+const quickBtn = document.getElementById('quickBtn');
+if (inClaude()) document.getElementById('quickSub').textContent = 'instant match vs. the bot';   // no open-web matchmaker inside Claude
+quickBtn.addEventListener('click', quickPlay);
+
+/* Invite links (?room=CODE) open straight into ONLINE → JOIN with the code filled in. */
+const inviteUrl = code => `${location.origin}${location.pathname}?room=${code}`;
+(() => {
+  const invited = sanitizeCode(new URLSearchParams(location.search).get('room'));
+  if (invited.length !== 4) return;
+  codeInput.value = invited; onlineRole = 'join'; menuSection = 'online'; mode = 'online';
+  setNote(`You're invited to room ${invited}. Pick a hull and tap JOIN GAME.`);
+})();
+
+/** Share the host's invite link (phone share sheet, else copy). */
+async function shareInvite(code, noteEl) {
+  const url = inviteUrl(code);
+  try {
+    if (navigator.share) { await navigator.share({ title: 'Neon Asteroids duel', text: `Duel me in Neon Asteroids! Room ${code}`, url }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(url); if (noteEl) setNote(`Invite link copied. Paste it to your rival: ${url}`); else net.status = ''; }
+  catch (_) { if (noteEl) setNote(`Send your rival this link: ${url}`); }
+}
+
+if (!inClaude()) {
+  // Open web: direct links via PeerJS. Share buttons + library status.
+  shareBtn.hidden = false;
+  shareBtn.addEventListener('click', () => { Sound.play('click'); shareInvite(currentCode(), roomNote); });
+  waitShare.addEventListener('click', () => { Sound.play('click'); shareInvite(roomCode, null); waitShare.textContent = 'LINK READY · SEND IT'; });
+  let tries = 0;
+  const checkLib = () => {
+    if (trysteroLib() || (window.TrysteroFailed && PeerCtor())) { liveNote.textContent = 'DIRECT LINK: READY'; liveNote.classList.remove('warn'); return; }
+    if (++tries > 30) { liveNote.textContent = 'DIRECT LINK: LIBRARY BLOCKED · CHECK YOUR CONNECTION'; liveNote.classList.add('warn'); return; }
+    liveNote.textContent = 'DIRECT LINK: LOADING…'; setTimeout(checkLib, 500);
+  };
+  checkLib();
+}
+
+/* Inside Claude: live pre-flight check of the page's live channel. */
+if (inClaude()) roomApiPromise.then(api => {
+  if (!api) {
+    setNote('This viewer can\'t go online. Tap the open-in-browser button, or open the link in Chrome or Safari while signed in to claude.ai.', true);
+    liveNote.textContent = 'LIVE LINK: NOT AVAILABLE IN THIS VIEWER'; liveNote.classList.add('warn');
+    return;
+  }
+  const show = () => {
+    const n = api.peers().length, on = api.connected();
+    liveNote.textContent = !on ? 'LIVE LINK: CONNECTING…' : `LIVE LINK: ON · ${n} SCREEN${n === 1 ? '' : 'S'} HAVE THIS PAGE OPEN`;
+    liveNote.classList.toggle('warn', !on);
+  };
+  const fail = e => { liveNote.textContent = `LIVE LINK: UNAVAILABLE (${(e && e.code) || 'error'})`; liveNote.classList.add('warn'); };
+  api.onPeers(show, fail);
+  api.onConnection(show, fail);
+});
+
+/* ---------- Stale-copy check (open web only) ----------
+   Phones can keep an old saved copy of the page for a while. Compare this
+   copy's BUILD with the live one; if they differ, offer a one-tap update.
+   (An old and a new copy may not be able to find each other online.) */
+const updateBtn = document.getElementById('updateBtn');
+document.getElementById('buildTag').textContent = 'BUILD ' + BUILD;
+let newBuild = null;
+function checkForUpdate() {
+  if (inClaude() || BUILD === 'dev' || newBuild) return;
+  fetch(location.pathname + '?build-check=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.text() : '')
+    .then(t => {
+      const m = t.match(/const BUILD = '([^']+)'/);
+      if (m && m[1] !== BUILD) { newBuild = m[1]; updateBtn.classList.remove('hidden'); }
+    }).catch(() => {});
+}
+updateBtn.addEventListener('click', () => {
+  const q = new URLSearchParams(location.search);
+  q.set('v', newBuild || Date.now());
+  if (state === 'play' && mode === 'online' && roomCode) q.set('room', roomCode);
+  location.replace(location.pathname + '?' + q.toString());
+});
+checkForUpdate();
+setInterval(() => { if (state !== 'play') checkForUpdate(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdate(); });
+
+/* ---------------------------------------------------------------------
+   NETWORK TEST — a step-by-step check of everything online play needs,
+   with a plain-English verdict and a report testers can copy and send.
+     1 Browser     WebRTC + secure page (what direct links need)
+     2 Online code the matchmaking library loaded in this browser
+     3 Internet    this page's server answers
+     4 Relays      public matchmaking relays accept a connection
+     5 Direct      this network allows direct phone-to-phone links (STUN)
+     6 Backup      the TURN backup relay works (needed on strict networks)
+     7 Relay link  a real test message travels through the backup relay and back
+     8 Network     strict-network check (symmetric NAT → needs the backup)
+   --------------------------------------------------------------------- */
+const NT_RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.snort.social', 'wss://nostr.mom'];
+const ntEl = document.getElementById('netTest');
+const ntRows = document.getElementById('ntRows');
+const ntVerdict = document.getElementById('ntVerdict');
+let ntRunning = false, ntReport = '';
+const NT_STEPS = [
+  ['browser', 'Browser'], ['code', 'Online code'], ['internet', 'Internet'],
+  ['relays', 'Matchmaking relays'], ['direct', 'Direct links'], ['turn', 'Backup relay'], ['rlink', 'Relay link'], ['nat', 'Network type'],
+];
+const ntState = {};
+
+function ntSet(key, status, detail) {
+  ntState[key] = { status, detail };
+  const row = document.getElementById('nt-' + key);
+  if (!row) return;
+  row.querySelector('.nt-pill').textContent = status === 'run' ? 'TESTING…' : status === 'ok' ? 'OK' : status === 'warn' ? 'CHECK' : status === 'fail' ? 'FAIL' : '—';
+  row.querySelector('.nt-pill').className = 'nt-pill ' + status;
+  row.querySelector('.nt-detail').textContent = detail || '';
+}
+function ntBuildRows() {
+  ntRows.innerHTML = '';
+  for (const [key, label] of NT_STEPS) {
+    const r = document.createElement('div');
+    r.className = 'nt-row'; r.id = 'nt-' + key;
+    r.innerHTML = '<div class="nt-top"><span class="nt-label"></span><span class="nt-pill wait">—</span></div><div class="nt-detail"></div>';
+    r.querySelector('.nt-label').textContent = label;
+    ntRows.appendChild(r);
+  }
+}
+function deviceSummary() {
+  const ua = navigator.userAgent;
+  const os = /iPhone|iPad|iPod/.test(ua) ? 'iOS ' + ((ua.match(/OS (\d+)[_.](\d+)/) || []).slice(1).join('.') || '?')
+    : /Android/.test(ua) ? 'Android ' + ((ua.match(/Android ([\d.]+)/) || [])[1] || '?')
+    : /Mac OS X/.test(ua) ? 'macOS' : /Windows/.test(ua) ? 'Windows' : /Linux/.test(ua) ? 'Linux' : 'Unknown OS';
+  const inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|Snapchat|TikTok|MicroMessenger/.test(ua) ? ' (in-app browser)' : '';
+  const br = /CriOS|Chrome\//.test(ua) && !/Edg/.test(ua) ? 'Chrome' : /Edg/.test(ua) ? 'Edge' : /FxiOS|Firefox/.test(ua) ? 'Firefox'
+    : /Safari/.test(ua) ? 'Safari' : 'Browser';
+  return `${os} · ${br}${inApp}`;
+}
+/** Try a WebSocket; resolve true on open within ms. */
+function wsProbe(url, ms = 5000) {
+  return new Promise(res => {
+    let ws, done = false;
+    const end = ok => { if (done) return; done = true; try { ws && ws.close(); } catch (_) {} res(ok); };
+    try { ws = new WebSocket(url); } catch (_) { end(false); return; }
+    ws.onopen = () => end(true); ws.onerror = () => end(false);
+    setTimeout(() => end(false), ms);
+  });
+}
+/** Gather ICE candidates; returns { types:Set, srflx:[{base,port}] } or null. */
+async function iceGather(servers, policy, ms = 6000) {
+  let pc;
+  try {
+    pc = new RTCPeerConnection({ iceServers: servers, iceTransportPolicy: policy });
+    pc.createDataChannel('probe');
+    const types = new Set(), srflx = [], hosts = new Set();
+    pc.onicecandidate = e => {
+      const c = e.candidate && e.candidate.candidate; if (!c) return;
+      const t = / typ (\w+)/.exec(c); if (t) types.add(t[1]);
+      const p = c.split(' '), udp = String(p[2]).toLowerCase() === 'udp';
+      if (!udp || !t) return;
+      if (t[1] === 'host') hosts.add(p[4] + ':' + p[5]);
+      if (t[1] === 'srflx') {
+        const ri = p.indexOf('raddr'), rp = p.indexOf('rport');
+        srflx.push({ ip: p[4], port: p[5], raddr: ri > 0 ? p[ri + 1] + ':' + (rp > 0 ? p[rp + 1] : '') : '' });
+      }
+    };
+    await pc.setLocalDescription(await pc.createOffer());
+    await new Promise(res => { const tm = setTimeout(res, ms); pc.onicegatheringstatechange = () => { if (pc.iceGatheringState === 'complete') { clearTimeout(tm); res(); } }; });
+    return { types, srflx, hosts: hosts.size };
+  } catch (_) { return null; }
+  finally { try { pc && pc.close(); } catch (_) {} }
+}
+
+/** Two relay-only connections inside this page send a message to each other — the
+ *  same path a real game takes on a strict network, end to end. */
+async function relayLoopback(servers, ms) {
+  const t0 = performance.now();
+  let a, b, timer;
+  try {
+    const cfg = { iceServers: servers, iceTransportPolicy: 'relay' };
+    a = new RTCPeerConnection(cfg); b = new RTCPeerConnection(cfg);
+    a.onicecandidate = e => { if (e.candidate) b.addIceCandidate(e.candidate).catch(() => {}); };
+    b.onicecandidate = e => { if (e.candidate) a.addIceCandidate(e.candidate).catch(() => {}); };
+    const ch = a.createDataChannel('nt');
+    const got = new Promise((res, rej) => {
+      b.ondatachannel = e => { e.channel.onmessage = m => res(m.data); };
+      timer = setTimeout(() => rej(new Error(`no reply in ${ms / 1000}s · ${a.iceConnectionState}`)), ms);
+    });
+    ch.onopen = () => ch.send('ping');
+    await a.setLocalDescription(await a.createOffer());
+    await b.setRemoteDescription(a.localDescription);
+    await b.setLocalDescription(await b.createAnswer());
+    await a.setRemoteDescription(b.localDescription);
+    await got;
+    return { ok: true, ms: Math.round(performance.now() - t0) };
+  } catch (e) { return { ok: false, why: String(e && e.message || e).slice(0, 60) }; }
+  finally { clearTimeout(timer); try { a && a.close(); b && b.close(); } catch (_) {} }
+}
+
+async function runNetworkTest() {
+  if (ntRunning) return;
+  ntRunning = true; ntBuildRows(); ntVerdict.className = 'nt-verdict'; ntVerdict.textContent = 'Running the test… this takes about 15 seconds.';
+  for (const [k] of NT_STEPS) ntSet(k, 'run');
+
+  // 1 Browser
+  const hasRTC = typeof RTCPeerConnection !== 'undefined', secure = window.isSecureContext;
+  ntSet('browser', hasRTC && secure ? 'ok' : 'fail', `${deviceSummary()}${hasRTC ? '' : ' · no WebRTC'}${secure ? '' : ' · page not secure (needs https)'}`);
+
+  if (inClaude()) {
+    // Inside Claude the game uses Claude's live channel instead of WebRTC
+    const api = await roomApiPromise;
+    ntSet('code', api ? 'ok' : 'fail', api ? 'Claude live channel available' : 'Not available in this viewer');
+    for (const k of ['internet', 'relays', 'direct', 'turn', 'rlink', 'nat']) ntSet(k, 'skip', 'Not used inside Claude');
+    return ntFinish();
+  }
+
+  // 2 Online code
+  for (let i = 0; i < 40 && !trysteroLib() && !window.TrysteroFailed; i++) await new Promise(r => setTimeout(r, 200));
+  ntSet('code', trysteroLib() ? 'ok' : 'fail', trysteroLib() ? 'Matchmaking library loaded' : 'Could not load the matchmaking library in this browser');
+
+  // 3–6 in parallel
+  const internet = (async () => {
+    const t0 = performance.now();
+    try { const r = await fetch(location.pathname + '?nettest=' + Date.now(), { cache: 'no-store' }); const ms = Math.round(performance.now() - t0);
+      ntSet('internet', r.ok ? (ms > 1500 ? 'warn' : 'ok') : 'fail', r.ok ? `Page server answered in ${ms} ms${ms > 1500 ? ' (slow connection)' : ''}` : `Server answered ${r.status}`);
+    } catch (_) { ntSet('internet', 'fail', 'No internet connection'); }
+  })();
+  const relays = (async () => {
+    const res = await Promise.all(NT_RELAYS.map(u => wsProbe(u)));
+    const n = res.filter(Boolean).length;
+    ntSet('relays', n >= 2 ? 'ok' : n === 1 ? 'warn' : 'fail', `${n} of ${NT_RELAYS.length} public relays reachable${n ? '' : ' (network may block them)'}`);
+  })();
+  const ice = hasRTC ? await iceServers() : [];
+  const stun = ice.filter(x => !isTurn(x)), turn = ice.filter(x => isTurn(x));
+  const direct = (async () => {
+    if (!hasRTC) { ntSet('direct', 'fail', 'Browser has no WebRTC'); ntSet('nat', 'skip', ''); return; }
+    const g = await iceGather(stun, 'all');
+    if (!g) { ntSet('direct', 'fail', 'Could not start a connection test'); ntSet('nat', 'skip', ''); return; }
+    const ok = g.types.has('srflx');
+    ntSet('direct', ok ? 'ok' : 'warn', ok ? 'Found a public address (direct links possible)' : 'No public address found (direct links likely blocked)');
+    // Symmetric NAT: the same local socket shows up with different public ports for different STUN servers
+    const v = natVerdict(g), seen = `${new Set(g.srflx.map(c => c.ip + ':' + c.port)).size} public port(s), ${g.hosts} local socket(s)`;
+    strictNet = v;
+    if (!g.srflx.length) ntSet('nat', 'warn', 'Unknown (no public address seen)');
+    else if (v === true) ntSet('nat', 'warn', `Strict network (symmetric NAT) — games will use the backup relay · ${seen}`);
+    else if (v === false) ntSet('nat', 'ok', 'Normal network');
+    else ntSet('nat', 'ok', `Probably normal (this browser hides some details) — games try a direct link first · ${seen}`);
+  })();
+  const turnT = (async () => {
+    if (!hasRTC) { ntSet('turn', 'fail', 'Browser has no WebRTC'); return; }
+    if (!turn.length) { ntSet('turn', 'warn', 'No backup relay configured'); return; }
+    const g = await iceGather(turn, 'relay', 8000);
+    const ok = g && g.types.has('relay');
+    ntSet('turn', ok ? 'ok' : 'fail', ok ? 'Backup relay reachable' : 'Backup relay unreachable (blocked or busy)');
+    if (!ok) { ntSet('rlink', 'skip', 'Skipped (relay not reachable)'); return; }
+    const r = await relayLoopback(turn, 15000);
+    ntSet('rlink', r.ok ? 'ok' : 'fail', r.ok ? `Test message went through the relay in ${r.ms} ms` : `Relay answered but game data didn't get through (${r.why})`);
+  })();
+  await Promise.all([internet, relays, direct, turnT]);
+  ntFinish();
+}
+
+function ntFinish() {
+  const st = k => (ntState[k] || {}).status;
+  let verdict, cls;
+  if (st('browser') === 'fail' || st('code') === 'fail') {
+    verdict = 'This browser can\'t play online. Open the link in Safari (iPhone) or Chrome (Android/computer) — not inside another app — and update the phone if it\'s old.'; cls = 'bad';
+  } else if (inClaude()) {
+    verdict = 'Inside Claude, online play uses Claude\'s live channel. For Quick Play and the most reliable connections, use the game\'s web address.'; cls = st('code') === 'ok' ? 'good' : 'bad';
+  } else if (st('internet') === 'fail') {
+    verdict = 'No internet connection. Check Wi-Fi or cellular data and run the test again.'; cls = 'bad';
+  } else if (st('relays') === 'fail') {
+    verdict = 'This network blocks the matchmaking relays, so phones can\'t find each other. Switch between Wi-Fi and cellular, or turn off any VPN, ad blocker, Screen Time or school/work filter.'; cls = 'bad';
+  } else if (st('direct') === 'ok' && st('nat') === 'ok') {
+    verdict = 'GOOD TO CONNECT. Everything online play needs is working on this network.'; cls = 'good';
+  } else if (st('turn') === 'ok' && st('rlink') === 'fail') {
+    verdict = 'MAY NOT CONNECT. The backup relay answers but this network stops game data going through it. Use cellular data on this network, or try another Wi-Fi.'; cls = 'bad';
+  } else if (st('turn') === 'ok') {
+    verdict = 'SHOULD CONNECT. This network limits direct links, so games will use the backup relay (it may take a little longer to join).'; cls = 'ok';
+  } else {
+    verdict = 'MAY NOT CONNECT. This network blocks direct links and the backup relay. Try the other network (Wi-Fi ↔ cellular), or turn off iCloud Private Relay / VPN, then run the test again.'; cls = 'bad';
+  }
+  ntVerdict.textContent = verdict; ntVerdict.className = 'nt-verdict ' + cls;
+  track('net_test', { verdict: cls, nat: (ntState.nat || {}).status || '-', relay: (ntState.turn || {}).status || '-',
+    rlink: (ntState.rlink || {}).status || '-', relays: (ntState.relays || {}).status || '-' });
+  ntReport = [`Neon Asteroids network test · build ${BUILD} · ${new Date().toLocaleString()}`,
+    ...NT_STEPS.map(([k, label]) => `${label}: ${(ntState[k] || {}).status || '-'} — ${(ntState[k] || {}).detail || ''}`),
+    `Verdict: ${verdict}`].join('\n');
+  ntRunning = false;
+}
+function openNetworkTest() {
+  Sound.unlock(); Sound.play('click');
+  ntEl.classList.remove('hidden');
+  document.getElementById('ntCopy').textContent = 'COPY REPORT';
+  runNetworkTest();
+}
+document.getElementById('ntBtn').addEventListener('click', openNetworkTest);
+document.getElementById('ntBtn2').addEventListener('click', openNetworkTest);
+document.getElementById('ntRun').addEventListener('click', () => { Sound.play('click'); runNetworkTest(); });
+document.getElementById('ntClose').addEventListener('click', () => { Sound.play('click'); ntEl.classList.add('hidden'); });
+document.getElementById('ntCopy').addEventListener('click', async () => {
+  const b = document.getElementById('ntCopy');
+  try { await navigator.clipboard.writeText(ntReport); b.textContent = 'COPIED'; }
+  catch (_) {
+    try { if (navigator.share) { await navigator.share({ title: 'Network test', text: ntReport }); return; } } catch (_) {}
+    b.textContent = 'COPY NOT ALLOWED';
+  }
+});
+
+/* ---------- Sound toggle ---------- */
+for (const id of ['soundBtn', 'soundBtn2']) document.getElementById(id).addEventListener('click', () => setSound(!Sound.on));
+setSound(Sound.on);
+
+/* ---------- Launch ---------- */
+startBtn.addEventListener('click', () => {
+  Sound.unlock();
+  mode = 'online';
+  if (mode === 'online' && onlineRole === 'join' && currentCode().length !== 4) {
+    setNote('Enter the 4-letter code your friend is hosting.', true); codeInput.focus(); return;
+  }
+  Sound.play('click');
+  menuEl.classList.add('hidden'); startGame();
+});
+/* ---------------------------------------------------------------------
+   ANALYTICS — Google Analytics 4, visible only to the site owner.
+   Never runs inside Claude. No personal data: only game facts (mode, rounds,
+   results, network type). Country, device and browser come from GA itself.
+   Visitors in the EEA/UK/Switzerland are "denied" until they consent through
+   the site's consent message (Consent Mode v2).
+   Events:  game_start · match_found · connect_retry · connect_abandon ·
+            round_end · match_end · net_test · lib_fail
+   --------------------------------------------------------------------- */
+const GA_ID = 'G-GM3S9WFT1C';
+const CONSENT_REGIONS = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];
+function track(name, params = {}) {
+  try { if (window.gtag && GA_ID) window.gtag('event', name, Object.assign({ build: BUILD }, params)); } catch (_) {}
+}
+(function initAnalytics() {
+  if (!GA_ID || inClaude() || /^(localhost|127\.)/.test(location.hostname)) return;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { window.dataLayer.push(arguments); };
+  gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', region: CONSENT_REGIONS, wait_for_update: 500 });
+  gtag('consent', 'default', { ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted' });
+  gtag('js', new Date());
+  gtag('config', GA_ID, { page_title: 'Neon Asteroids' });
+  const sc = document.createElement('script'); sc.async = true;
+  sc.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+  document.head.appendChild(sc);
+  if (window.TrysteroFailed) track('lib_fail', { lib: 'trystero' });
+})();
+const modeLabel = () => mode === 'online' ? (onlineRole === 'random' ? 'quick' : onlineRole || 'online') : mode === 'practice' ? 'solo' : 'bot';
+
+/* ---------------------------------------------------------------------
+   ADS — Google AdSense H5 Games Ads (Ad Placement API).
+   Off until ADSENSE_CLIENT holds your publisher ID ("ca-pub-…"). Never runs inside Claude.
+   Placement follows Google's games policy: full-screen ads only at natural breaks —
+   here, after a finished match when you leave the result screen. Never during play, never
+   in the lobby, and never on an ONLINE rematch (your rival would be left waiting).
+   Google also rate-limits ads itself (see data-ad-frequency-hint).
+   Test mode: add ?adtest=1 to the address to see Google's test ads (no earnings).
+   --------------------------------------------------------------------- */
+const ADSENSE_CLIENT = '';                 // e.g. 'ca-pub-1234567890123456'
+const Ads = {
+  ready: false,
+  init() {
+    if (!ADSENSE_CLIENT || inClaude()) return;
+    const sc = document.createElement('script');
+    sc.async = true; sc.crossOrigin = 'anonymous';
+    sc.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_CLIENT;
+    sc.setAttribute('data-ad-frequency-hint', '180s');          // at most one ad every 3 minutes
+    if (new URLSearchParams(location.search).get('adtest') === '1') sc.setAttribute('data-adbreak-test', 'on');
+    document.head.appendChild(sc);
+    window.adsbygoogle = window.adsbygoogle || [];
+    this.push = o => window.adsbygoogle.push(o);
+    this.push({ preloadAdBreaks: 'on', sound: Sound.on ? 'on' : 'off', onReady: () => { this.ready = true; } });
+    // ready only once Google's library has really loaded — with an ad blocker it never does,
+    // and the game simply carries on with no ads and no waiting.
+  },
+  /** Maybe show an ad, then always call next() (straight away if no ad is shown). */
+  between(name, next) {
+    if (!this.ready) { next(); return; }
+    let done = false;
+    const finish = () => { if (done) return; done = true; if (Sound.master) Sound.master.gain.value = 0.32; next(); };
+    const guard = setTimeout(finish, 60000);                     // never strand the player if the ad library hangs
+    try {
+      this.push({
+        type: 'next', name,
+        beforeAd: () => { if (Sound.master) Sound.master.gain.value = 0; },
+        adBreakDone: () => { clearTimeout(guard); finish(); },
+      });
+    } catch (_) { clearTimeout(guard); finish(); }
+  },
+};
+Ads.init();
+
+document.getElementById('againBtn').addEventListener('click', () => {
+  Sound.unlock(); Sound.play('click');
+  if (mode === 'online' && rematchLive()) { requestRematch(); return; }       // ask the rival; start when both agree
+  const go = () => { overEl.classList.add('hidden'); startGame(); };
+  if (mode === 'online' || bgNet) go(); else Ads.between('rematch', go);   // online rivals are waiting: no ad here
+});
+
+/* ---------------------------------------------------------------------
+   REMATCH HANDSHAKE (online). Tapping REMATCH asks the rival; the new game
+   only starts when BOTH have asked. The request rides on the result-screen
+   heartbeat ({on:0, rm:1}) twice a second, so it survives a dropped message.
+   Once both agree: at 15 s without the rival loading in we check the link and
+   reconnect if it's down; at 30 s we explain what's happening and offer
+   KEEP WAITING / QUICK PLAY / MENU.
+   --------------------------------------------------------------------- */
+const RM = { mine: false, theirs: false, at: 0, expired: false, cancelled: false };
+let rematchWait = null;            // { at, checked, helpAt } while a mutually-accepted rematch is connecting
+const rmStatus = document.getElementById('rmStatus'), rmRow = document.getElementById('rmRow');
+const rematchLive = () => !!(net && net.keepAlive && !net.closed && net.linked && net.linked());
+function requestRematch() {
+  if (RM.mine) return;
+  RM.mine = true; RM.at = performance.now(); RM.cancelled = false;
+  net.publish({ v: 1, on: 0, rm: 1 }); netAcc = 0;
+  track('rematch', { step: RM.theirs ? 'accepted' : 'requested' });
+  if (RM.theirs) startRematch('both');
+}
+function rivalRematch(wants) {
+  if (wants && !RM.theirs) { RM.theirs = true; RM.cancelled = false; if (!RM.mine) Sound.play('go'); }
+  else if (!wants && RM.theirs) { RM.theirs = false; RM.cancelled = true; }
+  if (RM.mine && RM.theirs) startRematch('both');
+}
+function startRematch(why) {
+  if (state !== 'over') return;
+  // tell the rival once more, then load in (they start the moment they see it)
+  net.publish({ v: 1, on: 0, rm: 1 });
+  net.rejoin = true;
+  rematchWait = { at: performance.now(), checked: false, helpAt: performance.now() + 30000 };
+  overEl.classList.add('hidden'); rmRow.classList.add('hidden');
+  startGame();
+}
+/** While a rematch both players accepted is connecting (game shows the warm-up field). */
+function rematchTick() {
+  if (state !== 'play' || match.ph !== 'wait') {
+    if (rematchWait) track('rematch', { step: 'started', secs: Math.round((performance.now() - rematchWait.at) / 1000) });
+    rematchWait = null; net.rejoin = false; document.getElementById('rmHelp').classList.add('hidden'); return;
+  }
+  const t = performance.now() - rematchWait.at;
+  if (t > 15000 && !rematchWait.checked) {
+    rematchWait.checked = true;
+    const quiet = performance.now() - (net.lastHeard || 0);
+    if (!net.linked() || quiet > 4000) { if (net.partner) net._lost(); else if (net._fresh) net._fresh(); }   // link looks dead: re-meet on the same code
+  }
+  if (performance.now() >= rematchWait.helpAt) showRematchHelp();
+}
+function rematchDiag() {
+  const linked = net.linked && net.linked(), quiet = Math.round((performance.now() - (net.lastHeard || 0)) / 1000);
+  const relay = net.diag && net.diag.relay, attempt = net.joinAttempt || 1, reconnecting = /RECONNECT/.test(net.status || '');
+  let verdict;
+  if (linked && quiet <= 3) verdict = '✅ Still connected to your rival — the rematch is processing. Their game is probably still loading (slow phone or a menu open).';
+  else if (reconnecting || !linked) verdict = `🔄 The connection dropped and the game is reconnecting you (attempt ${attempt}${relay ? ', via backup relay' : ''}). This can take up to a minute on strict Wi-Fi.`;
+  else verdict = `⚠️ No word from your rival for ${quiet}s — the rematch has probably failed (they may have closed the game or lost signal).`;
+  return `${verdict}<br><span style="opacity:.7">Link: ${linked ? 'up' : 'down'} · last heard ${quiet}s ago · ${relay ? 'relay' : 'direct'} · attempt ${attempt}</span>`;
+}
+function showRematchHelp() {
+  const box = document.getElementById('rmHelp');
+  document.getElementById('rmHelpText').innerHTML = rematchDiag();
+  if (box.classList.contains('hidden')) { box.classList.remove('hidden'); track('rematch', { step: 'slow', linked: net.linked() ? 1 : 0 }); }
+}
+document.getElementById('rmWait').addEventListener('click', () => {
+  Sound.play('click'); document.getElementById('rmHelp').classList.add('hidden');
+  if (rematchWait) rematchWait.helpAt = performance.now() + 30000;
+});
+function leaveForQuickPlay() {
+  try { if (net) { net.keepAlive = false; net.close(); } } catch (_) {}
+  rematchWait = null; RM.mine = false;
+  document.getElementById('rmHelp').classList.add('hidden'); overEl.classList.add('hidden'); rmRow.classList.add('hidden');
+  closeMenu(true);
+  quickPlay();
+}
+document.getElementById('rmHelpQuick').addEventListener('click', () => { track('rematch', { step: 'gave_up_quickplay' }); leaveForQuickPlay(); });
+document.getElementById('rmHelpMenu').addEventListener('click', () => { Sound.play('click'); track('rematch', { step: 'gave_up_menu' }); document.getElementById('rmHelp').classList.add('hidden'); backToMenu(); });
+document.getElementById('rmQuick').addEventListener('click', () => { track('rematch', { step: 'quickplay_instead' }); leaveForQuickPlay(); });
+document.getElementById('rmCancel').addEventListener('click', () => {
+  Sound.play('click'); RM.mine = false; net.publish({ v: 1, on: 0, rm: 0 }); track('rematch', { step: 'cancelled' });
+});
+/** Keep the result screen's rematch button + message in sync (called every frame). */
+function syncRematchUI() {
+  const again = document.getElementById('againBtn');
+  if (state !== 'over' || mode !== 'online') {
+    rmStatus.classList.add('hidden'); rmRow.classList.add('hidden'); again.classList.remove('pulse', 'waiting');
+    if (state === 'over' && again.textContent !== 'REMATCH') again.textContent = 'REMATCH';
+    return;
+  }
+  const live = rematchLive();
+  let msg = '', cls = '';
+  if (!live) {
+    msg = RM.expired && RM.mine ? 'No reply from your rival, so the rematch was closed. Try QUICK PLAY for a new opponent.'
+        : 'Your rival has left. Tap below to find a new match.';
+    cls = 'bad';
+    again.textContent = net.fromRandom ? 'QUICK PLAY' : 'PLAY AGAIN';
+  } else if (RM.mine && !RM.theirs) {
+    const secs = Math.floor((performance.now() - RM.at) / 1000);
+    msg = `Rematch requested — waiting for your rival to accept… ${secs}s`;
+    if (secs >= 15) msg += '<br><span style="opacity:.75">Still connected; they haven\'t tapped REMATCH yet.</span>';
+    again.textContent = 'WAITING FOR RIVAL…';
+  } else if (RM.theirs && !RM.mine) {
+    msg = '🔁 YOUR RIVAL WANTS A REMATCH!'; cls = 'ask'; again.textContent = 'ACCEPT REMATCH';
+  } else {
+    msg = RM.cancelled ? 'Your rival cancelled their rematch request.' : '';
+    again.textContent = 'REMATCH';
+  }
+  rmStatus.innerHTML = msg; rmStatus.className = 'rm-status' + (cls ? ' ' + cls : '') + (msg ? '' : ' hidden');
+  again.classList.toggle('pulse', live && RM.theirs && !RM.mine);
+  again.classList.toggle('waiting', live && RM.mine && !RM.theirs);
+  rmRow.classList.toggle('hidden', !(live && RM.mine && !RM.theirs));
+}
+function backToMenu() {
+  if (state === 'play' && mode === 'online' && net.linked && !net.linked()) track('connect_abandon', {
+    mode: modeLabel(), secs: Math.round((performance.now() - (net.startedAt || performance.now())) / 1000),
+    relay: net.diag && net.diag.relay ? 1 : 0, strict: strictNet === true ? 1 : 0, attempts: net.joinAttempt || net.poolAttempt || 1 });
+  net.close(); leaveTimer = 0;
+  if (bgNet) { bgNet.close(); bgNet = null; }
+  closeMenu(true);
+  overEl.classList.add('hidden'); menuEl.classList.remove('hidden');
+  state = 'menu'; opp = null; joy.active = false; fire.held = false; seedAmbient();
+  clearNote();
+}
+document.getElementById('menuBtn').addEventListener('click', () => { Sound.play('click'); Ads.between('to-menu', backToMenu); });
+
+/* ---------- In-game menu: keep playing / surrender / quit ---------- */
+function openMenu() {
+  if (state !== 'play') return;
+  menuOpen = true; joy.active = false; fire.held = false; clearDesktopInput();
+  const vs = mode !== 'practice' && match.rn > 0;
+  document.getElementById('pauseTitle').textContent = mode === 'online' ? 'MENU' : 'PAUSED';
+  document.getElementById('pauseInfo').textContent = mode === 'online'
+    ? 'The duel keeps running while this is open.'
+    : 'Game paused.';
+  document.getElementById('surrenderBtn').hidden = !vs;
+  document.getElementById('quitBtn').textContent = mode === 'practice' ? 'QUIT RUN' : 'QUIT TO MENU';
+  pauseMenu.classList.remove('hidden');
+}
+function closeMenu(silent) {
+  menuOpen = false; pauseMenu.classList.add('hidden');
+  if (!silent) { last = performance.now(); acc = 0; }
+}
+pauseBtn.addEventListener('click', () => { Sound.unlock(); Sound.play('click'); openMenu(); });
+document.getElementById('resumeBtn').addEventListener('click', () => { Sound.play('click'); closeMenu(); });
+document.getElementById('surrenderBtn').addEventListener('click', () => {
+  // Hand the match to the rival: online they get the win at once (the "bye" message)
+  match.surrendered = true; match.ph = 'final';
+  if (mode === 'online') { net.keepAlive = false; net.close(); }
+  showFinal();
+});
+document.getElementById('quitBtn').addEventListener('click', () => { Sound.play('click'); backToMenu(); });
+
+/* ---------------------------------------------------------------------
+   QUICK PLAY → BOT WHILE YOU WAIT
+   After BOT_OFFER_MS alone in the Quick Play pool, offer a bot match. The pool
+   search keeps running in the background (bgNet); the moment it pairs us with a
+   real pilot, the bot game is dropped and the online match takes over.
+   --------------------------------------------------------------------- */
+const BOT_OFFER_MS = 20000;
+let bgNet = null;                                     // Quick Play search running under a bot game
+const waitBot = document.getElementById('waitBot');
+let botPulseAt = 0;
+function pulseWaitBot() {
+  waitBot.style.setProperty('--c', ship.color);
+  waitBot.classList.remove('pulse'); void waitBot.offsetWidth; waitBot.classList.add('pulse');   // restart the animation
+}
+waitBot.addEventListener('click', () => {
+  if (!net.searching) return;
+  Sound.unlock(); Sound.play('click');
+  track('bot_while_waiting', { secs: Math.round((performance.now() - (net.startedAt || performance.now())) / 1000) });
+  bgNet = net; net = new NullAdapter();               // keep searching; startGame won't close it
+  mode = 'bot';
+  startGame();
+});
+function adoptQuickMatch() {
+  const found = bgNet; bgNet = null;
+  if (!found || found.closed) return;
+  closeMenu(true); overEl.classList.add('hidden');
+  opp = null; remotes.clear();
+  mode = 'online'; onlineRole = 'random';
+  startGame(found);
+}
+
+/* =====================================================================
+   FULLSCREEN · INSTALLABLE APP · CONTROLLERS
+   ===================================================================== */
+
+/* ---- Fullscreen. Phones go fullscreen automatically when a game starts (a tap is
+   required by browsers, so it happens on the button press). The FULLSCREEN button
+   toggles it and the choice is remembered. iPhone Safari has no fullscreen API —
+   there, installing to the Home Screen gives the full-screen app instead. ---- */
+const FS = {
+  key: 'neonAsteroids.fullscreen',
+  supported: !!(document.fullscreenEnabled || document.webkitFullscreenEnabled),
+  isOn: () => !!(document.fullscreenElement || document.webkitFullscreenElement),
+  installed: () => {
+    try { return matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+    catch (_) { return false; }
+  },
+  wanted() { let v = null; try { v = localStorage.getItem(this.key); } catch (_) {} return v ? v === 'on' : !DESKTOP; },
+  remember(on) { try { localStorage.setItem(this.key, on ? 'on' : 'off'); } catch (_) {} },
+  enter() {
+    if (!this.supported || this.isOn() || inClaude()) return;
+    const el = document.documentElement;
+    try {
+      const r = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen();
+      Promise.resolve(r).then(() => {
+        try { if (!DESKTOP && screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(() => {}); } catch (_) {}
+      }).catch(() => {});
+    } catch (_) {}
+  },
+  exit() { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (_) {} },
+  auto() { if (this.wanted() && !this.installed()) this.enter(); },
+  toggle() { if (this.isOn()) { this.remember(false); this.exit(); } else { this.remember(true); this.enter(); } },
+  label() {
+    const show = this.supported && !this.installed() && !inClaude();
+    for (const id of ['fsBtn', 'fsBtn2']) {
+      const b = document.getElementById(id); if (!b) continue;
+      b.classList.toggle('hidden', !show); b.textContent = this.isOn() ? 'EXIT FULLSCREEN' : 'FULLSCREEN';
+    }
+  },
+};
+for (const id of ['fsBtn', 'fsBtn2']) document.getElementById(id).addEventListener('click', () => { Sound.unlock(); Sound.play('click'); FS.toggle(); });
+document.addEventListener('fullscreenchange', () => { FS.label(); setTimeout(resize, 60); });
+document.addEventListener('webkitfullscreenchange', () => { FS.label(); setTimeout(resize, 60); });
+FS.label();
+
+/* ---- Installable app (PWA): manifest + service worker make Chrome offer
+   "Install app"; our INSTALL APP button triggers it directly. iPhone/iPad use
+   Share → Add to Home Screen (we show how). Installed, it runs full screen. ---- */
+let installPrompt = null;
+const installBtn = document.getElementById('installBtn'), installNote = document.getElementById('installNote');
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function refreshInstall() {
+  const canShow = !inClaude() && !FS.installed() && (installPrompt || isIOS);
+  installBtn.classList.toggle('hidden', !canShow);
+  installBtn.textContent = isIOS && !installPrompt ? 'ADD TO HOME SCREEN' : 'INSTALL APP';
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; refreshInstall(); });
+window.addEventListener('appinstalled', () => { installPrompt = null; refreshInstall(); installNote.classList.add('hidden'); track('app_installed'); });
+installBtn.addEventListener('click', async () => {
+  Sound.unlock(); Sound.play('click');
+  if (installPrompt) {
+    installPrompt.prompt();
+    try { const r = await installPrompt.userChoice; track('install_prompt', { outcome: r && r.outcome }); } catch (_) {}
+    installPrompt = null; refreshInstall();
+  } else if (isIOS) {
+    installNote.textContent = 'In Safari: tap the Share button (square with ↑), then "Add to Home Screen".';
+    installNote.classList.toggle('hidden');
+  }
+});
+refreshInstall();
+if ('serviceWorker' in navigator && !inClaude() && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
+/* ---- Controllers (Xbox, PlayStation, Switch Pro, most Bluetooth/USB pads via the
+   browser Gamepad API, "standard" mapping):
+     In game:  LEFT STICK steer (push far = thrust) · D-PAD ←/→ turn, ↑ thrust, ↓ brake
+               A / RB / RT fire (hold for steady fire) · B / LT brake
+               Y = ADD BOT while waiting · START / VIEW = menu
+     Menus:    STICK or D-PAD move · A select · B back
+   Browsers only reveal a controller after its first button press. ---- */
+const Pad = { on: false, prev: [], focus: null, navAt: 0, navDir: '', toastT: null, steer: null, used: false, lastG: null };
+const PAD_DEAD = 0.18;
+function padGet() {
+  if (!navigator.getGamepads) return null;
+  let gps; try { gps = navigator.getGamepads(); } catch (_) { return null; }
+  for (const g of gps || []) if (g && g.connected && g.buttons && g.buttons.length) return g;
+  return null;
+}
+const padBtn = (g, i) => { const b = g.buttons[i]; return !!(b && (b.pressed || b.value > 0.45)); };
+function padToast(msg, ms = 6000) {
+  const t = document.getElementById('padToast');
+  t.innerHTML = msg; t.classList.remove('hidden');
+  clearTimeout(Pad.toastT); Pad.toastT = setTimeout(() => t.classList.add('hidden'), ms);
+}
+window.addEventListener('gamepadconnected', e => {
+  Pad.on = true;
+  padToast('🎮 CONTROLLER CONNECTED<br>STICK steer · push far to thrust · A / RT fire<br>B / LT brake · START menu');
+  track('controller', { id: String(e.gamepad && e.gamepad.id || '').slice(0, 60) });
+});
+window.addEventListener('gamepaddisconnected', () => { Pad.on = !!padGet(); if (fire.id === 'pad') fireRelease('pad'); padToast('🎮 CONTROLLER DISCONNECTED', 2500); });
+function padRumble(ms) {
+  const g = Pad.lastG, a = g && g.vibrationActuator;
+  if (!a || !a.playEffect) return;
+  try { a.playEffect('dual-rumble', { duration: Math.min(ms * 1.5, 400), strongMagnitude: ms > 100 ? 1 : 0.6, weakMagnitude: 0.5 }).catch(() => {}); } catch (_) {}
+}
+
+/** Called every frame: reads the controller, handles firing and menu navigation. */
+function padPoll() {
+  const g = padGet(); Pad.lastG = g;
+  if (!g) { Pad.steer = null; if (fire.id === 'pad') fireRelease('pad'); return; }
+  const pressed = i => padBtn(g, i), tap = i => pressed(i) && !Pad.prev[i];
+  const ax = g.axes[0] || 0, ay = g.axes[1] || 0, mag = Math.hypot(ax, ay);
+  const inGame = state === 'play' && !menuOpen;
+
+  if (inGame) {
+    // steering (applied in update via padSteer)
+    const stick = mag > PAD_DEAD ? { angle: Math.atan2(ay, ax), mag: Math.min(1, (mag - PAD_DEAD) / (1 - PAD_DEAD)) } : null;
+    const turn = (pressed(15) ? 1 : 0) - (pressed(14) ? 1 : 0);
+    Pad.steer = { stick, turn, up: pressed(12), brake: pressed(13) || pressed(1) || pressed(6) };
+    if (stick || turn || Pad.steer.up) Pad.used = true;
+    // fire: A, RB or RT
+    const fireNow = pressed(0) || pressed(5) || pressed(7);
+    if (fireNow && !(fire.held && fire.id === 'pad')) { Sound.unlock(); firePress('pad'); }
+    else if (!fireNow && fire.id === 'pad') fireRelease('pad');
+    // Y: ADD BOT while waiting · START / VIEW: menu
+    if (tap(3) && !waitBot.classList.contains('hidden')) waitBot.click();
+    if (tap(9) || tap(8)) { Sound.play('click'); openMenu(); }
+    padFocus(null);
+  } else {
+    Pad.steer = null;
+    if (fire.id === 'pad') fireRelease('pad');
+    padNavigate(g, pressed, tap, ax, ay);
+  }
+  Pad.prev = g.buttons.map((b, i) => pressed(i));
+}
+
+/** Apply controller steering to the ship. Returns true if the controller moved it. */
+function padSteer() {
+  const s = Pad.steer; if (!s) return false;
+  let used = false;
+  if (s.stick) {
+    ship.a += angDiff(toFieldAngle(s.stick.angle), ship.a) * CFG.TURN_LERP;
+    ship.thrust = clamp((s.stick.mag - CFG.THRUST_START) / (1 - CFG.THRUST_START), 0, 1);
+    used = true;
+  }
+  if (s.turn) { ship.a += s.turn * CFG.KEY_TURN; used = true; }
+  if (s.up) { ship.thrust = 1; used = true; }
+  if (s.brake) { ship.vx *= 0.95; ship.vy *= 0.95; used = true; }
+  return used;
+}
+
+/* ---- Menu navigation with the controller ---- */
+function padScreen() {
+  for (const id of ['netTest', 'pauseMenu', 'over', 'menu']) {
+    const el = document.getElementById(id);
+    if (el && !el.classList.contains('hidden')) return el;
+  }
+  return null;
+}
+function padTargets(root) {
+  return [...root.querySelectorAll('button, input, .dot')].filter(el =>
+    !el.hidden && !el.disabled && el.offsetParent !== null && !el.classList.contains('hidden'));
+}
+function padFocus(el) {
+  if (Pad.focus && Pad.focus !== el) Pad.focus.classList.remove('pad-focus');
+  Pad.focus = el;
+  if (el) { el.classList.add('pad-focus'); try { el.focus({ preventScroll: false }); } catch (_) {} el.scrollIntoView({ block: 'nearest' }); }
+}
+function padNavigate(g, pressed, tap, ax, ay) {
+  const root = padScreen(); if (!root) { padFocus(null); return; }
+  // B = back, START/VIEW closes the in-game menu — these work even before anything is highlighted
+  if (tap(1)) {
+    if (root.id === 'pauseMenu') { Sound.play('click'); closeMenu(); return; }
+    if (root.id === 'netTest') { document.getElementById('ntClose').click(); return; }
+  }
+  if ((tap(9) || tap(8)) && root.id === 'pauseMenu') { Sound.play('click'); closeMenu(); return; }
+  const list = padTargets(root); if (!list.length) return;
+  if (!Pad.focus || !list.includes(Pad.focus)) {
+    if (!(tap(0) || tap(12) || tap(13) || tap(14) || tap(15) || Math.hypot(ax, ay) > 0.6)) return;   // wake on first input
+    Pad.navDir = pressed(12) ? 'up' : pressed(13) ? 'down' : pressed(14) ? 'left' : pressed(15) ? 'right' : 'stick';
+    Pad.navAt = performance.now() + 400;                            // the waking press only shows the focus
+    padFocus(root.querySelector('.btn.go:not(.hidden)') && list.includes(root.querySelector('.btn.go:not(.hidden)'))
+      ? root.querySelector('.btn.go:not(.hidden)') : list[0]);
+    return;
+  }
+  // direction from d-pad or stick (with key-repeat style timing)
+  let dir = pressed(12) ? 'up' : pressed(13) ? 'down' : pressed(14) ? 'left' : pressed(15) ? 'right' : '';
+  if (!dir && Math.hypot(ax, ay) > 0.6) dir = Math.abs(ax) > Math.abs(ay) ? (ax > 0 ? 'right' : 'left') : (ay > 0 ? 'down' : 'up');
+  const t = performance.now();
+  if (dir && Pad.navDir === 'stick' && Math.hypot(ax, ay) > 0.6) dir = '';   // stick still held from the wake
+  if (dir && (dir !== Pad.navDir || t >= Pad.navAt)) {
+    Pad.navAt = t + (dir !== Pad.navDir ? 320 : 150); Pad.navDir = dir;
+    const next = padNeighbor(Pad.focus, list, dir);
+    if (next) { padFocus(next); Sound.play('click'); }
+  } else if (!dir) Pad.navDir = '';
+  if (tap(0)) { Sound.unlock(); Pad.focus.click(); }
+}
+function padNeighbor(from, list, dir) {
+  // Edge-based: a target must lie beyond the current button's edge in that direction;
+  // closest gap wins, staying in the same row/column is preferred.
+  const r = from.getBoundingClientRect();
+  let best = null, bestScore = Infinity;
+  for (const el of list) {
+    if (el === from) continue;
+    const q = el.getBoundingClientRect();
+    const gap = dir === 'right' ? q.left - r.right : dir === 'left' ? r.left - q.right
+              : dir === 'down' ? q.top - r.bottom : r.top - q.bottom;
+    if (gap < -10) continue;
+    const horiz = dir === 'left' || dir === 'right';
+    const side = horiz ? Math.max(0, q.top - r.bottom, r.top - q.bottom) : Math.max(0, q.left - r.right, r.left - q.right);
+    const centre = horiz ? Math.abs((q.top + q.bottom) - (r.top + r.bottom)) / 2 : Math.abs((q.left + q.right) - (r.left + r.right)) / 2;
+    const score = Math.max(0, gap) + side * 2 + centre * 0.15;
+    if (score < bestScore) { bestScore = score; best = el; }
+  }
+  return best;
+}
+
+/** HUD buttons live in the page, not the canvas: show them only when they apply. */
+function syncHudButtons() {
+  syncRematchUI();
+  pauseBtn.classList.toggle('hidden', state !== 'play' || menuOpen);
+  const waiting = state === 'play' && !menuOpen && mode === 'online' && net.searching && match.ph === 'wait';
+  const showBot = waiting && performance.now() - (net.startedAt || performance.now()) > BOT_OFFER_MS;
+  if (showBot && waitBot.classList.contains('hidden')) { pulseWaitBot(); botPulseAt = performance.now() + rand(10000, 20000); }
+  else if (showBot && performance.now() >= botPulseAt) { pulseWaitBot(); botPulseAt = performance.now() + rand(10000, 20000); }
+  waitBot.classList.toggle('hidden', !showBot);
+  const showShare = state === 'play' && !menuOpen && mode === 'online' && !inClaude() && net.role === 'host' && !net.fromRandom && match.ph === 'wait' && !net.linked?.();
+  waitShare.classList.toggle('hidden', !showShare);
+  if (showShare) waitShare.style.top = Math.round(H * 0.17 + 104) + 'px';
+  else if (waitShare.textContent !== 'SHARE INVITE LINK') waitShare.textContent = 'SHARE INVITE LINK';
+}
+
+refreshMenu();
+applyControlScheme();
+
+// Tell the rival we're gone as soon as the page closes
+window.addEventListener('pagehide', () => { try { net.close(); } catch (_) {} });
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 150));
+resize();
+Particles.init();
+selectColor(SHIP_COLORS[Math.floor(Math.random() * SHIP_COLORS.length)][0]);   // random hull each visit; tap to change
+seedAmbient();
+requestAnimationFrame(frame);
+</script>
+
+</body>
+</html>

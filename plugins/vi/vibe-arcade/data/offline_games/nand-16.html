@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://somethingbig.ai/computer/">
+    <base href="/computer/" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NAND-16: a computer built from 277,248 NAND gates</title>
+    <meta name="description" content="A 16-bit computer built from 277,248 NAND gates. CPU, memory, OS and Tetris, all running on the gates in your browser. Zoom in and watch the signals flow." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://somethingbig.ai/computer" />
+    <meta property="og:title" content="NAND-16: a computer built from 277,248 NAND gates" />
+    <meta property="og:description" content="CPU, memory, OS and Tetris, all running on the gates. Zoom in and watch the signals flow." />
+    <meta property="og:image" content="https://somethingbig.ai/computer/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="NAND-16: a retro CRT running NANDTRIS, zooming into the glowing NAND gates of one full adder in its ALU." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NAND-16: a computer built from 277,248 NAND gates" />
+    <meta name="twitter:description" content="CPU, memory, OS and Tetris, all running on the gates. Zoom in and watch the signals flow." />
+    <meta name="twitter:image" content="https://somethingbig.ai/computer/og.png" />
+    <meta name="twitter:image:alt" content="NAND-16: a retro CRT running NANDTRIS, zooming into the glowing NAND gates of one full adder in its ALU." />
+    <link rel="icon" href="data:," />
+    <style>html,body{background:#05070a;height:100%;margin:0;overflow:hidden}#scene{touch-action:none;width:100%;height:100%;display:block;position:fixed;inset:0}#status{color:#8a96a3;pointer-events:none;text-shadow:0 1px 2px #000;margin:0;font:11.5px/1.5 ui-monospace,Menlo,monospace;position:fixed;bottom:10px;left:12px;right:12px}#status b{color:#d8e2ec;font-weight:600}#status .bad,#tip .bad{color:#ff5a4f}#tip{z-index:10;pointer-events:none;color:#b9c9d6;background:#060c12e6;border:1px solid #2d4a5c;border-radius:6px;max-width:420px;padding:8px 10px;font:11.5px/1.45 ui-monospace,Menlo,monospace;display:none;position:fixed;box-shadow:0 4px 18px #00000080}#tip b{color:#e8f6ff;word-break:break-all;font-weight:600}#tip .sub{color:#6f8595}#tip i{font-style:normal;font-weight:700}#tip i.v1{color:#5ff6ff}#tip i.v0{color:#6b7c8c}#tip table{border-collapse:collapse;margin-top:5px}#tip td,#tip th{text-align:center;color:#6f8595;padding:0 8px}#tip th{color:#8aa0b0;font-weight:500}#tip tr.on td{color:#05070a;background:#5ff6ff}</style>
+    <script type="module" crossorigin src="/computer/assets/index-ajEvLAbf.js"></script>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <p id="status"></p>
+    <script>
+      // Static hosts without COOP/COEP headers: install the in-repo isolation shim, wait until it controls
+      // this page, then load again. An isolated load clears the retry count, so a later load that comes up
+      // unisolated (e.g. a hard reload, which bypasses the service worker) tries again; two failed tries
+      // in a row stop, so a host where the shim cannot work never loops.
+      // window.__coiGate resolves when the app may boot: at once when isolated (or when the shim cannot help:
+      // insecure context, no service workers, retries used up, registration failed), and never when this page
+      // is about to be replaced by the isolated load, so a phone does not build the 277k-gate machine twice.
+      // If the re-navigation has not happened 4 s later, or the shim has not got that far within 8 s (a
+      // registration that never settles), the app boots unisolated (the §13.2 fallback path) and stays: the
+      // worker, once active, isolates the next visit instead of interrupting this one.
+      window.__coiGate = new Promise((resolve) => {
+        let booted = false;
+        const boot = (why) => { if (!booted) { booted = true; resolve(why); } };
+        if (window.crossOriginIsolated) { sessionStorage.removeItem('coi-reloaded'); return boot('isolated'); }
+        if (!window.isSecureContext || !('serviceWorker' in navigator)) return boot('no-sw');
+        const tries = Number(sessionStorage.getItem('coi-reloaded') || 0);
+        if (tries >= 2) return boot('gave-up');
+        const controlled = () => new Promise((res) => {
+          if (navigator.serviceWorker.controller) return res();
+          navigator.serviceWorker.addEventListener('controllerchange', res, { once: true });
+          setTimeout(res, 2500);
+        });
+        document.getElementById('status').textContent = 'enabling cross-origin isolation (shared memory)…';
+        setTimeout(() => boot('timeout'), 8000);
+        navigator.serviceWorker.register(new URL('coi-sw.js', document.baseURI))
+          .then(() => navigator.serviceWorker.ready).then(controlled)
+          // (a fresh navigation, not location.reload(): a reload of a hard-reloaded page bypasses the worker again)
+          .then(() => {
+            if (booted) return;
+            sessionStorage.setItem('coi-reloaded', String(tries + 1));
+            location.replace(location.href);
+            setTimeout(() => boot('stuck'), 4000);
+          })
+          .catch(() => boot('sw-failed'));
+      });
+    </script>
+  </body>
+</html>

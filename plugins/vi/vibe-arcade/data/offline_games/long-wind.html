@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <base href="https://jbang2004.github.io/long-wind/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>长风 · Long Wind</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="A lone swordsman on a golden-hour grassland. Real-time three.js.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>:root{--bg:#0c0d0b;--ink:#e8d3ad;--vermilion:#b8322a;--lightningcss-light: ;--lightningcss-dark:initial;color-scheme:dark}html,body{background:var(--bg);height:100%;margin:0;overflow:hidden}canvas#c{touch-action:none;outline:none;width:100vw;height:100vh;display:block;position:fixed;inset:0}#hud{pointer-events:none;z-index:1;color:var(--ink);font-family:Noto Serif SC,serif;position:fixed;inset:0}#load{z-index:5;pointer-events:none;background:radial-gradient(ellipse at 50% 48%, #1b1a15 0%, var(--bg) 70%);place-items:center;transition:opacity 1.3s;display:grid;position:fixed;inset:0}#load.done{opacity:0}#load .wrap{justify-items:center;gap:22px;display:grid;transform:translateY(-2vh)}#load .title{color:var(--ink);letter-spacing:.08em;text-shadow:0 0 24px #e8d3ad2e;opacity:.92;font-family:Ma Shan Zheng,Noto Serif SC,serif;font-size:min(92px,18vw);line-height:1}#load .sub{letter-spacing:.32em;color:#e8d3ad8c;text-transform:uppercase;font-family:Cormorant Garamond,serif;font-size:15px;font-style:italic}#load svg{width:min(360px,70vw);height:24px;overflow:visible}#load .stroke{fill:none;stroke:var(--ink);stroke-width:5px;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:.985px;filter:url(#brush);opacity:.85;transition:stroke-dashoffset .5s cubic-bezier(.3,.7,.2,1)}#load .track{fill:none;stroke:#e8d3ad12;stroke-width:2px}#load .seal{border:2px solid var(--vermilion);width:26px;height:26px;color:var(--vermilion);opacity:.8;border-radius:3px;place-items:center;font-family:Ma Shan Zheng,serif;font-size:15px;display:grid}#load .label{letter-spacing:.3em;color:#e8d3ad61;min-height:1em;font-size:12px}@media (prefers-reduced-motion:reduce){#load .stroke{transition:none}}</style>
+  <script type="module" crossorigin src="./assets/index-DUwsWGRs.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three.core-DtjtRha-.js">
+  <link rel="modulepreload" crossorigin href="./assets/three.module-YNTH5p0u.js">
+  <link rel="modulepreload" crossorigin href="./assets/globals-29H6lCK0.js">
+  <link rel="modulepreload" crossorigin href="./assets/glsl-BgzraZja.js">
+  <link rel="modulepreload" crossorigin href="./assets/noise-D9IUCAHK.js">
+  <link rel="modulepreload" crossorigin href="./assets/atmosphere-BNENFJca.js">
+  <link rel="modulepreload" crossorigin href="./assets/wind-BKJvbr9K.js">
+  <link rel="modulepreload" crossorigin href="./assets/chunks-6pQwEQwq.js">
+  <link rel="modulepreload" crossorigin href="./assets/lamps-BoRlsdIe.js">
+  <link rel="modulepreload" crossorigin href="./assets/bus-B6XsRwpa.js">
+  <link rel="modulepreload" crossorigin href="./assets/quality-CtuRFTEn.js">
+  <link rel="modulepreload" crossorigin href="./assets/BufferGeometryUtils-WOx_-h3q.js">
+  <link rel="modulepreload" crossorigin href="./assets/GLTFLoader-ClMm1rNm.js">
+  <link rel="modulepreload" crossorigin href="./assets/assets-Ch6kO2eH.js">
+  <link rel="modulepreload" crossorigin href="./assets/preload-helper-uBIymjUX.js">
+</head>
+<body>
+<canvas id="c" tabindex="0"></canvas>
+<div id="hud"></div>
+<div id="load" aria-hidden="true"><div class="wrap">
+  <div class="title">长风</div>
+  <div class="sub">天苍苍 · 野茫茫</div>
+  <svg viewBox="0 0 360 24">
+    <defs><filter id="brush" x="-5%" y="-80%" width="110%" height="260%"><feTurbulence type="fractalNoise" baseFrequency="0.9 0.25" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3.2"/></filter></defs>
+    <path class="track" d="M6 12 C 90 9, 250 15, 354 11"/>
+    <path id="stroke" class="stroke" pathLength="1" d="M6 12 C 90 9, 250 15, 354 11"/>
+  </svg>
+  <div class="label" id="loadLabel"></div>
+  <div class="seal">剑</div>
+</div></div>
+<script>
+  window.__load = function (p, label) {
+    var e = document.getElementById('stroke'); if (!e) return;
+    e.style.strokeDashoffset = String(1 - Math.max(0.015, Math.min(1, p)));
+    if (label !== undefined) { var l = document.getElementById('loadLabel'); if (l) l.textContent = label; }
+  };
+</script>
+</body>
+</html>

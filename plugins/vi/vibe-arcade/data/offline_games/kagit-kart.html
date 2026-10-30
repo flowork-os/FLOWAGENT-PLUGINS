@@ -1,0 +1,50 @@
+<!doctype html><html><head>
+  <base href="https://burakerdemci.github.io/kagit-kart/"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui;background:#fafaf7}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Kâğıt Kart</title>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+} }
+</script>
+<style>
+  html, body { height: 100%; }
+  body { background: #efe6cf; overflow: hidden; }
+  #kk-root { position: fixed; inset: 0; overflow: hidden; background: #efe6cf; }
+  #kk-root canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+  #kk-boot { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-1.5deg); z-index: 20;
+    padding: 22px 34px; background: #fbf6e9; color: #2d2a32; border: 2px solid #2d2a32;
+    box-shadow: 6px 6px 0 #2d2a32; font: 800 28px system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; text-align: center; }
+  #kk-boot small { display: block; font: 700 14px system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; opacity: .7; margin-top: 4px; }
+</style>
+<div id="kk-root"><div id="kk-boot">Kâğıt Kart<small></small></div></div>
+<script>
+  // Boot-card language, resolved like src/i18n/i18n.js (?lang= > stored setting > browser language), because
+  // this runs before any module loads. Keep both in step. The Turkish wording is \u-escaped: this script
+  // sits in the page body, and its source must not read as Turkish text on an English page.
+  var kkLang = (function () {
+    try { var q = new URLSearchParams(location.search).get('lang'); if (q === 'tr' || q === 'en') return q; } catch (e) { /* ignore */ }
+    try {
+      var s = JSON.parse(localStorage.getItem('kk1:settings') || 'null');
+      if (s && (s.lang === 'tr' || s.lang === 'en')) return s.lang;
+    } catch (e) { /* ignore */ }
+    try {
+      var l = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+      return /^tr\b/i.test(String(l[0] || '')) ? 'tr' : 'en';
+    } catch (e) { return 'tr'; }
+  })();
+  var kkText = kkLang === 'tr'
+    ? { loading: 'sayfalar a\u00e7\u0131l\u0131yor\u2026', fail: 'Oyun y\u00fcklenemedi. Ba\u011flant\u0131n\u0131 kontrol edip sayfay\u0131 yenile.' }
+    : { loading: 'turning the pages\u2026', fail: 'Could not load the game. Check your connection and reload the page.' };
+  document.documentElement.lang = kkLang;
+  document.getElementById('kk-boot').lastChild.textContent = kkText.loading;
+  // A module graph that fails to load (CDN unreachable) or to link (no import maps) never runs main.js.
+  addEventListener('error', function (e) {
+    var card = document.getElementById('kk-boot');
+    if (!card || card.dataset.failed || (window.__kk && window.__kk.ready)) return;
+    if (e.target && e.target.tagName !== 'SCRIPT' && e.target !== window) return;
+    card.dataset.failed = 'load';
+    card.lastChild.textContent = kkText.fail;
+  }, true);
+</script>
+<script type="module" src="./src/main.js"></script>
+</body></html>

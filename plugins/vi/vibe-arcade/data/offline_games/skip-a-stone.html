@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://skip-a-stone.chipchaunceytheonlyone.chatgpt.site/">
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#153e3b" />
+    <title>Skip a stone.</title>
+    <meta
+      name="description"
+      content="Pick a stone. Find your release. Skip across a beautiful alpine lake and challenge a friend's best throw."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23153e3b'/%3E%3Cellipse cx='16' cy='23' rx='12' ry='4' fill='none' stroke='%23dce4cf'/%3E%3Cellipse cx='17' cy='13' rx='9' ry='4' transform='rotate(-20 17 13)' fill='%23dce4cf'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      { "imports": { "three": "./vendor/three.module.js" } }
+    </script>
+  </head>
+  <body>
+    <main id="game" aria-label="Stone skipping game">
+      <div id="view" aria-hidden="true"></div>
+      <div class="shade"></div>
+      <header>
+        <div class="brand">
+          <h1>Skip a stone.</h1>
+          <p>One more throw.</p>
+        </div>
+        <div class="scoreboard">
+          <span>YOU <b id="score">0</b></span
+          ><i>·</i><span id="ghostScore">YOUR BEST <b>—</b></span>
+        </div>
+        <div class="utilities">
+          <span class="conditions">≋ &nbsp; CALM WATER</span
+          ><button
+            id="music" class="icon" aria-label="Turn Yoga Sounds radio off" aria-pressed="true" title="Yoga Sounds by FluxFM">♪</button><button
+            id="sound"
+            class="icon"
+            aria-label="Turn sound off"
+            title="Sound"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></svg><span class="off" hidden>/</span></button
+          ><button
+            id="settings"
+            class="icon"
+            aria-label="Settings and how to play"
+          >
+            ☷</button
+          ><button id="reset" class="icon" aria-label="Start another throw">
+            ↻
+          </button>
+        </div>
+      </header>
+      <div id="challengeBar" hidden>
+        <span></span><button id="leave">Leave challenge</button>
+      </div>
+      <div id="floating" aria-hidden="true"></div>
+      <div id="ghostLabel" aria-hidden="true"></div>
+      <button
+        id="launch"
+        aria-label="Drag this rock to aim and set power. Release when angle and body align."
+      >
+        <svg class="launch-ring" viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true">
+          <ellipse cx="100" cy="50" rx="94" ry="43" pathLength="240" />
+        </svg><span class="launch-label"
+          >Pick your moment.<small
+            >Drag to aim · pull back for power</small
+          ></span
+        >
+      </button>
+      <div id="feedback" role="status" aria-live="polite"></div>
+      <span id="pullStrengthDescription" hidden>Balanced pull. Use up and down arrows to change power, left and right to aim.</span>
+      <div id="pullPower" aria-label="Pull strength">
+        <div class="pull-levels"><span data-pull-level="gentle">Gentle</span><span data-pull-level="balanced">Balanced</span><span data-pull-level="powerful">Powerful</span></div>
+        <small id="pullTradeoff">Steady distance · forgiving timing</small>
+      </div>
+      <div id="calmAim" aria-label="Throw power and alignment">
+        <div class="calm-aim-heading"><span>PULL <b id="calmPower">Balanced</b></span><span id="calmAlignment">Time ● + ◆</span></div>
+        <div class="calm-aim-track" aria-hidden="true"><span class="calm-sweet"></span><i id="calmAngleMarker"></i><i id="calmBodyMarker"></i></div>
+        <div class="calm-aim-legend"><span>● ANGLE</span><span>◆ BODY</span></div>
+        <div class="calm-power-fill" aria-hidden="true"></div>
+      </div>
+      <section class="stones" aria-label="Choose your stone"><div class="stone-list" aria-label="Scroll to explore seven stones">
+<button data-stone="flat" aria-pressed="true" aria-haspopup="dialog"><span class="stone-art"><img alt="flat stone" /></span><strong>FLAT</strong><small>Forgiving</small></button>
+<button data-stone="thin" aria-pressed="false" aria-haspopup="dialog"><span class="stone-art"><img alt="thin stone" /></span><strong>THIN</strong><small>More skips</small></button>
+<button data-stone="heavy" aria-pressed="false" aria-haspopup="dialog"><span class="stone-art"><img alt="heavy stone" /></span><strong>HEAVY</strong><small>More distance</small></button>
+<button data-stone="jade" aria-pressed="false" aria-haspopup="dialog"><span class="stone-art"><img alt="jade stone" /></span><strong>JADE</strong><small>Easy control</small></button>
+<button data-stone="quartz" aria-pressed="false" aria-haspopup="dialog"><span class="stone-art"><img alt="quartz stone" /></span><strong>QUARTZ</strong><small>Higher bounces</small></button>
+<button data-stone="obsidian" aria-pressed="false" aria-haspopup="dialog"><span class="stone-art"><img alt="obsidian stone" /></span><strong>OBSIDIAN</strong><small>Precision skips</small></button>
+<button data-stone="granite" aria-pressed="false" aria-haspopup="dialog"><span class="stone-art"><img alt="granite stone" /></span><strong>GRANITE</strong><small>Steady pace</small></button>
+</div><span class="stone-scroll-hint">Scroll to explore · 7 stones ↔</span></section>
+      <section id="throwPanel" aria-label="Throw controls">
+        <div class="glass control-deck">
+          <div class="timing-controls" role="group" aria-labelledby="timingControlTitle">
+          <p class="control-group-title" id="timingControlTitle">TIME YOUR RELEASE</p>
+          <div class="timing-meters">
+          <div class="meter">
+            <div class="meter-label">ANGLE <b id="angleValue">18°</b></div>
+            <div
+              class="track"
+              role="meter"
+              aria-label="Automatic angle timing. Release when centered in green."
+              aria-valuemin="-100"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              id="angleMeter"
+            >
+              <span id="sweet"></span><span id="needle"></span>
+            </div>
+          </div>
+          <div class="meter">
+            <div class="meter-label">BODY <b id="bodyValue">Centered</b></div>
+            <div
+              class="track"
+              role="meter"
+              aria-label="Automatic body timing. Release when centered in green."
+              aria-valuemin="-100"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              id="bodyMeter"
+            >
+              <span class="body-sweet"></span><span id="bodyNeedle"></span>
+            </div>
+          </div>
+          </div>
+          <p class="timing-control-hint">Auto-moving · release when both are green</p>
+          </div>
+          <p id="instruction">
+            You set the power. Angle + body move automatically. Release when both are green.
+          </p>
+        </div>
+      </section>
+      <aside id="targetHint">
+        <b>Make a little splash.</b
+        ><span>Hit moving toy boats for bonus points.</span
+        ><small>100 · 150 · 200 · 300 points</small>
+      </aside>
+      <div id="pointsBadge">
+        <strong id="points">0</strong><span>BOAT POINTS</span>
+      </div>
+      <div id="flightHUD">
+        <div><span>SPEED</span><b id="speedValue">0 mph</b></div>
+        <div><span>RELEASE</span><b id="flightAngle">18°</b></div>
+        <div><span>SKIPS</span><b id="flightSkips">0</b></div>
+      </div>
+      <div id="aimReadout" aria-hidden="true"></div>
+      <div id="actions">
+        <button id="throw" class="primary">Prepare throw <span>↗</span></button
+        ><button class="share link" disabled>Challenge a friend</button>
+      </div>
+      <section id="result" hidden aria-label="Throw result">
+        <p id="resultEyebrow" class="eyebrow">YOUR THROW</p>
+        <h2 id="resultCount" tabindex="-1">0 skips</h2>
+        <p id="resultMessage"></p>
+        <hr />
+        <p id="resultDetail"></p>
+        <button id="again" class="primary dark">Throw again</button
+        ><button class="share link">Challenge a friend</button>
+      </section>
+      <div id="loading">
+        <span class="loading-ripple"></span>
+        <p>Finding a quiet spot…</p>
+      </div>
+      <div id="toast" role="status" aria-live="polite" hidden></div>
+      <audio id="radio" preload="none"></audio>
+      <dialog id="rockDialog" aria-labelledby="rockName">
+        <button class="close" aria-label="Close stone preview">×</button>
+        <div class="rock-heading"><p class="eyebrow">FROM THE SHORE</p><h2 id="rockName">Flat slate</h2><span id="rockTrait">Forgiving</span></div>
+        <div id="rockViewport" tabindex="0" role="img" aria-label="3D stone preview. Drag to rotate, or use arrow keys. Home resets the view."></div>
+        <div class="rock-footer"><div><p class="rotate-hint">Drag to turn it over <span>· arrow keys also work</span></p><p id="rockDescription"></p></div><button id="useRock" class="primary">Use this stone ↗</button></div>
+      </dialog>
+      <dialog id="settingsDialog" aria-labelledby="settingsTitle">
+        <div class="settings-top">
+          <div><p class="settings-kicker">MAKE YOURSELF AT HOME</p><h2 id="settingsTitle">Your lake.</h2></div>
+          <button class="close" aria-label="Close settings">×</button>
+        </div>
+        <nav class="settings-nav" aria-label="Settings pages">
+          <button type="button" data-settings-page="playSettings" aria-controls="playSettings" aria-pressed="true">Play your way</button>
+          <button type="button" data-settings-page="playHelp" aria-controls="playHelp" aria-pressed="false">How to play</button>
+        </nav>
+        <section id="playSettings" aria-label="Play your way">
+          <div class="settings-grid">
+            <label class="lake-option option-mint">
+              <input id="calmMode" type="checkbox" aria-describedby="calmDescription" />
+              <span class="option-icon" aria-hidden="true">≋</span>
+              <strong>Calm mode</strong>
+              <span id="calmDescription" class="option-description">Less on screen. A fresh stone after every throw.</span>
+              <span class="option-state" aria-hidden="true"><span class="state-on">On</span><span class="state-off">Off</span></span>
+            </label>
+            <label class="lake-option option-blue">
+              <input id="flightTrajectory" type="checkbox" checked aria-describedby="trajectoryDescription" />
+              <span class="option-icon" aria-hidden="true">↗</span>
+              <strong>Flight path</strong>
+              <span id="trajectoryDescription" class="option-description">See the dotted guide while your stone flies.</span>
+              <span class="option-state" aria-hidden="true"><span class="state-on">On</span><span class="state-off">Off</span></span>
+            </label>
+            <label class="lake-option option-peach">
+              <input id="still" type="checkbox" aria-describedby="cameraDescription" />
+              <span class="option-icon" aria-hidden="true">◎</span>
+              <strong>Stay on shore</strong>
+              <span id="cameraDescription" class="option-description">Keep the camera still instead of riding the stone.</span>
+              <span class="option-state" aria-hidden="true"><span class="state-on">On</span><span class="state-off">Off</span></span>
+            </label>
+            <div class="lake-option option-yellow">
+              <span class="option-icon" aria-hidden="true">◷</span>
+              <label for="timing"><strong>Your pace</strong></label>
+              <span class="option-description">Choose how quickly the alignment markers move.</span>
+              <select id="timing" aria-label="Throw timing"><option value="standard">Standard</option><option value="relaxed">Relaxed · slower</option></select>
+            </div>
+          </div>
+          <p class="settings-note">Calm mode keeps a small aiming guide while you pull back.</p>
+          <div class="effects-volume-card">
+            <label for="effectsVolume">Master volume <output id="effectsVolumeValue" for="effectsVolume">100%</output></label>
+            <input id="effectsVolume" type="range" min="0" max="100" step="1" value="100" aria-describedby="effectsVolumeHelp" />
+            <p id="effectsVolumeHelp">Music, wind, splashes & boat hits.</p>
+          </div>
+        </section>
+        <section id="playHelp" aria-label="How to play" hidden>
+          <ol class="lake-steps">
+            <li><span>1</span><div><strong>Pick & pull</strong><p>Choose a stone. Pull back gently for control, or farther for distance.</p></div></li>
+            <li><span>2</span><div><strong>Find your line</strong><p>Move sideways to aim in the opposite direction, like a slingshot.</p></div></li>
+            <li><span>3</span><div><strong>Meet in the green</strong><p>Hold your pull and release when both markers reach green. Stronger pulls shrink the green windows.</p></div></li>
+          </ol>
+          <details class="settings-details"><summary>Keyboard shortcuts</summary><p>1–7 choose a stone · ← → aim · ↑ ↓ power<br />Space prepares, then throws · Esc cancels or pauses.</p></details>
+          <details class="settings-details"><summary>Scores, challenges & music</summary><p>Hit boats for bonus points. Each stone and timing mode has its own best, saved on this device. Friend challenges use matching conditions.</p><p>Music plays <a href="https://filtermusic.net/yoga-sounds-by-fluxfm" target="_blank" rel="noopener noreferrer">Yoga Sounds by FluxFM</a>. Music and sound effects have separate buttons at the lake.</p></details>
+        </section>
+        <div class="settings-footer"><button class="primary dark close-settings">Back to the lake <span aria-hidden="true">↗</span></button></div>
+      </dialog>
+      <dialog id="shareDialog">
+        <button class="close" aria-label="Close challenge">×</button>
+        <p class="eyebrow">YOUR BEST THROW, THEIR NEXT CHALLENGE</p>
+        <h2>Beat this skip.</h2>
+        <p id="shareSummary"></p>
+        <label
+          >Your name
+          <input
+            id="playerName"
+            maxlength="24"
+            placeholder="Friend"
+            autocomplete="nickname" /></label
+        ><button id="copy" class="primary dark">Copy challenge link</button
+        ><button id="nativeShare" class="link">Share…</button
+        ><label id="linkFallback" hidden
+          >Challenge link<input id="challengeLink" readonly
+        /></label>
+        <p class="fine">
+          Your friend sees your actual throw beside theirs. No account needed.
+        </p>
+      </dialog>
+    </main>
+    <script type="module" src="main.js"></script>
+  <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a527843f6862959b',t:'MTc5MzMzMjg2Mw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a527843f6862959b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

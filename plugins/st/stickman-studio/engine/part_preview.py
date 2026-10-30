@@ -33,6 +33,16 @@ def render_part_preview_frame(part_config, output_png_path, width=720, height=12
 
     # 1. Base Image
     img = Image.new("RGB", (width, height), bg_rgb)
+    custom_bg = part_config.get('background_image') or part_config.get('background_path')
+    if custom_bg and os.path.exists(custom_bg):
+        try:
+            bg_raw = Image.open(custom_bg).convert("RGB")
+            bg_resized = bg_raw.resize((width, height), Image.Resampling.LANCZOS)
+            tint = Image.new("RGB", (width, height), (10, 15, 25))
+            blended = Image.blend(bg_resized, tint, 0.35)
+            img.paste(blended, (0, 0))
+        except Exception:
+            pass
     g = stickman.G(img)
 
     # Floor glow

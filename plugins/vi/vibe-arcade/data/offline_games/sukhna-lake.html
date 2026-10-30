@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://sukhna-lake.trymurmur.studio/">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sukhna Lake 3D: a morning jog in Chandigarh, in your browser</title>
+<meta name="description" content="Jog the dam at Sukhna Lake, Chandigarh, in 3D at its real size: the real winter sunrise, boating, rain and fog, the laughter club. Free, in your browser." />
+<link rel="canonical" href="https://sukhna-lake.trymurmur.studio/" />
+<meta name="theme-color" content="#6fa3f5" />
+<link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48" />
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+<!-- link previews (X, WhatsApp, Slack…): absolute URLs, since X won't resolve relative ones -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Sukhna Lake 3D" />
+<meta property="og:title" content="Sukhna Lake 3D: a morning jog in Chandigarh, in your browser" />
+<meta property="og:description" content="Jog the dam at Sukhna Lake, Chandigarh, at its real shape and scale, as the real winter sun comes up. Free, in your browser." />
+<meta property="og:url" content="https://sukhna-lake.trymurmur.studio/" />
+<meta property="og:image" content="https://sukhna-lake.trymurmur.studio/og-image.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="A jogger on the dam promenade at Sukhna Lake at golden hour, the low sun over the water and palms along the walk, in a cel-shaded style." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Sukhna Lake 3D: a morning jog in Chandigarh, in your browser" />
+<meta name="twitter:description" content="Jog the dam at Sukhna Lake, Chandigarh, at its real shape and scale, as the real winter sun comes up. Free, in your browser." />
+<meta name="twitter:image" content="https://sukhna-lake.trymurmur.studio/og-image.jpg" />
+<meta name="twitter:image:alt" content="A jogger on the dam promenade at Sukhna Lake at golden hour, the low sun over the water and palms along the walk, in a cel-shaded style." />
+<!-- structured data: the game, the lake it is about, its author and its trailer
+     (the FAQ's FAQPage is generated from the FAQ below by vite.config.js, so the two can't drift) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://sukhna-lake.trymurmur.studio/#website",
+      "url": "https://sukhna-lake.trymurmur.studio/",
+      "name": "Sukhna Lake 3D",
+      "alternateName": "Sukhna",
+      "inLanguage": "en"
+    },
+    {
+      "@type": ["VideoGame", "WebApplication"],
+      "@id": "https://sukhna-lake.trymurmur.studio/#game",
+      "name": "Sukhna Lake 3D",
+      "alternateName": ["Sukhna Lake 3D: a morning jog in Chandigarh, in your browser", "Sukhna"],
+      "url": "https://sukhna-lake.trymurmur.studio/",
+      "description": "A free 3D game in the browser: a winter-morning jog along the dam at Sukhna Lake, Chandigarh, at the lake's real shape and scale, with the real sunrise, boating, rain and fog, and the laughter club.",
+      "image": "https://sukhna-lake.trymurmur.studio/og-image.jpg",
+      "inLanguage": "en",
+      "genre": ["Simulation", "Exploration", "Casual"],
+      "gamePlatform": "Web browser",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any (runs in a web browser)",
+      "browserRequirements": "Requires WebGL 2",
+      "playMode": "SinglePlayer",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://sukhna-lake.trymurmur.studio/" },
+      "license": "https://opensource.org/licenses/MIT",
+      "author": { "@id": "https://sukhna-lake.trymurmur.studio/#author" },
+      "about": { "@id": "https://sukhna-lake.trymurmur.studio/#sukhna-lake" },
+      "gameLocation": { "@id": "https://sukhna-lake.trymurmur.studio/#sukhna-lake" },
+      "trailer": { "@id": "https://sukhna-lake.trymurmur.studio/#trailer" },
+      "isPartOf": { "@id": "https://sukhna-lake.trymurmur.studio/#website" }
+    },
+    {
+      "@type": "LakeBodyOfWater",
+      "@id": "https://sukhna-lake.trymurmur.studio/#sukhna-lake",
+      "name": "Sukhna Lake",
+      "alternateName": ["सुखना झील", "ਸੁਖਨਾ ਝੀਲ"],
+      "description": "A reservoir at the foot of the Shivalik hills in Chandigarh, India, with a 2.5 km promenade along its dam.",
+      "geo": { "@type": "GeoCoordinates", "latitude": 30.7414, "longitude": 76.8199 },
+      "address": { "@type": "PostalAddress", "addressLocality": "Chandigarh", "addressRegion": "Chandigarh", "addressCountry": "IN" },
+      "hasMap": "https://www.openstreetmap.org/relation/8421510",
+      "sameAs": ["https://en.wikipedia.org/wiki/Sukhna_Lake", "https://www.openstreetmap.org/relation/8421510"]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://sukhna-lake.trymurmur.studio/#author",
+      "name": "Vikrant Negi",
+      "url": "https://github.com/Vikraantnegi",
+      "sameAs": ["https://github.com/Vikraantnegi", "https://kick.com/asumagg"]
+    },
+    {
+      "@type": "VideoObject",
+      "@id": "https://sukhna-lake.trymurmur.studio/#trailer",
+      "name": "Sukhna Lake, Chandigarh in 3D: a morning jog, built in the browser",
+      "description": "A 30-second trailer for Sukhna: the real winter sunrise over the lake, the crowd on the dam, the rowing eight, a swan boat and rain on the water steps, all running live in the browser.",
+      "thumbnailUrl": ["https://i.ytimg.com/vi/h8QdG8cU2Go/maxresdefault.jpg", "https://i.ytimg.com/vi/h8QdG8cU2Go/hqdefault.jpg"],
+      "uploadDate": "2026-09-27T02:55:47-07:00",
+      "duration": "PT30S",
+      "embedUrl": "https://www.youtube.com/embed/h8QdG8cU2Go",
+      "url": "https://www.youtube.com/watch?v=h8QdG8cU2Go",
+      "author": { "@id": "https://sukhna-lake.trymurmur.studio/#author" }
+    }
+  ]
+}
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    background: #c9dcee;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, 'Noto Sans Devanagari', 'Nirmala UI', 'Noto Sans Gurmukhi', sans-serif;
+    color: #2a2d38;
+  }
+  #view { display: block; width: 100vw; height: 100vh; touch-action: none; }
+  .hud { position: fixed; inset: 0; pointer-events: none; }
+
+  /* ---------- the hint bar (plan §6): dark translucent strip, thin top line, grey text ---------- */
+  .hintbar {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 7px 12px calc(7px + env(safe-area-inset-bottom));
+    background: rgba(14,16,22,.58);
+    border-top: 1px solid rgba(255,255,255,.16);
+    color: #b9bdc7; font-size: 12.5px; letter-spacing: .01em; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: opacity .4s ease;
+  }
+  .hintbar.off, .jog.off, .cond.off, .todo.off { opacity: 0; }
+  .todo.off { pointer-events: none; }
+
+  /* ---------- things to do (core/checklist.js): under the jog card, open at Start, then a pill ---------- */
+  .todo { pointer-events: auto; transition: opacity .4s ease; font-size: 12px; color: #e8eaf0; -webkit-tap-highlight-color: transparent; }
+  .todo.waiting { display: none; }
+  .todo-pill {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 5px 12px;
+    background: rgba(14,16,22,.5); border: 1px solid rgba(255,255,255,.12); border-radius: 999px;
+    color: #e8eaf0; font: inherit; font-weight: 600; cursor: pointer; touch-action: manipulation;
+  }
+  .todo-pill b, .todo-head b { color: #f2c230; font: 600 12px/1 ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+  .todo-card {
+    min-width: 214px; padding: 9px 12px 10px; cursor: pointer;
+    background: rgba(14,16,22,.5); border: 1px solid rgba(255,255,255,.12); border-radius: 8px;
+  }
+  .todo-card, .todo.open .todo-pill { display: none; }
+  .todo.open .todo-card { display: block; }
+  .todo-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 5px; }
+  .todo-head i { font-style: normal; color: #9aa0ad; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+  .todo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .todo li { display: flex; align-items: center; gap: 8px; line-height: 1.35; }
+  .todo-box { flex: none; width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.45); display: grid; place-items: center; }
+  .todo li.done { color: #9aa0ad; }
+  .todo li.done .todo-box { background: #f2c230; border-color: #f2c230; }
+  .todo li.done .todo-box::after { content: ''; width: 5px; height: 3px; border: solid #2a2d38; border-width: 0 0 1.6px 1.6px; transform: translateY(-1px) rotate(-45deg); }
+  .todo.ticked .todo-pill, .todo.ticked .todo-card { border-color: rgba(242,194,48,.8); }
+
+  /* ---------- jog HUD (top left) ---------- */
+  .corner {
+    position: absolute; left: 14px; top: 12px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  }
+  .jog {
+    position: relative;
+    min-width: 214px; padding: 9px 12px 10px;
+    background: rgba(14,16,22,.5); border: 1px solid rgba(255,255,255,.12); border-radius: 8px;
+    color: #e8eaf0; font-size: 12px; transition: opacity .4s ease;
+  }
+  .jog i { display: block; font-style: normal; color: #9aa0ad; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+  .jog b { font: 600 17px/1.2 ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+  .jog small { color: #9aa0ad; margin-left: 2px; }
+  .jog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+  .stamina { margin-top: 8px; }
+  .stamina span { display: block; height: 6px; margin-top: 3px; background: rgba(255,255,255,.14); border-radius: 3px; overflow: hidden; }
+  .stamina em { display: block; height: 100%; width: 100%; background: #7fd18a; transition: width .25s linear, background .3s; }
+  .stamina em.low { background: #f08a4e; }
+  .jog-mode { margin-top: 6px; color: #f2c230; font-size: 11px; min-height: 13px; }
+  .jog-grid > .off { display: none; }
+  .ticket { display: none; margin-top: 6px; padding: 3px 8px; border: 1px dashed rgba(242,194,48,.8); border-radius: 6px; color: #f2c230; font-size: 11px; font-weight: 600; width: max-content; }
+  .ticket.on { display: block; }
+
+  /* ---------- conditions (top right): T time, K weather, M sound ---------- */
+  .cond {
+    position: absolute; right: 14px; top: 12px;
+    padding: 9px 12px 9px; display: grid; gap: 5px;
+    background: rgba(14,16,22,.5); border: 1px solid rgba(255,255,255,.12); border-radius: 8px;
+    color: #e8eaf0; font-size: 12px; transition: opacity .4s ease;
+  }
+  .cond-row { display: flex; align-items: baseline; gap: 8px; }
+  .cond kbd {
+    display: inline-block; min-width: 18px; padding: 0 4px; text-align: center;
+    border: 1px solid rgba(255,255,255,.28); border-radius: 4px; color: #9aa0ad;
+    font: 600 10px/16px ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+  .cond b { font: 600 15px/1.2 ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+  .cond span { color: #c9ccd6; font-size: 11.5px; }
+  .cond.muted [data-c="sound"] { color: #8a8e9a; }
+
+  /* ---------- the next-morning fade ---------- */
+  .fade { position: fixed; inset: 0; background: #07080c; opacity: 0; pointer-events: none; transition: opacity 1.2s ease; z-index: 20; display: grid; place-items: center; }
+  .fade.on { opacity: 1; }
+  .fade-card { text-align: center; color: #e8eaf0; opacity: 0; transform: translateY(6px); transition: opacity .6s ease, transform .6s ease; }
+  .fade.card .fade-card { opacity: 1; transform: none; }
+  .fade-card i { display: block; font-style: normal; color: #9aa0ad; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+  .fade-card b { display: block; margin: 6px 0 4px; font: 600 34px/1.1 ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+  .fade-card span { color: #c9ccd6; font-size: 13px; }
+
+  /* ---------- prompt, toast, speech bubble ---------- */
+  .prompt, .toast {
+    position: absolute; left: 50%; transform: translate(-50%, 6px);
+    padding: 7px 16px; border-radius: 999px;
+    background: rgba(14,16,22,.62); color: #eef0f5; font-size: 13.5px; font-weight: 600;
+    white-space: nowrap; opacity: 0; transition: opacity .2s ease, transform .2s ease;
+  }
+  .prompt { bottom: 17%; }
+  /* the E prompt near an activity: a size up, with an E key cap in the start button's colours */
+  .prompt { font-size: 15px; background: rgba(14,16,22,.74); border: 1px solid rgba(255,255,255,.18); }
+  .prompt:has(kbd) { display: inline-flex; align-items: center; gap: 9px; padding: 6px 17px 6px 6px; }
+  .prompt kbd {
+    display: inline-grid; place-items: center; width: 27px; height: 27px; border-radius: 6px;
+    background: #e8542f; color: #fff; border: 1.5px solid #2f3346; box-shadow: 2px 2px 0 #2f3346;
+    font: 700 14px/1 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  }
+  /* touch: the action button (core/hud.js), bottom right, above the E V T K / P M H buttons */
+  .act {
+    position: absolute; right: 14px; bottom: calc(168px + env(safe-area-inset-bottom));
+    min-width: 132px; height: 58px; padding: 0 24px; border-radius: 999px;
+    border: 2px solid #2f3346; background: #e8542f; color: #fff;
+    font: 700 17px/1 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .02em;
+    box-shadow: 3px 4px 0 #2f3346; pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent;
+    opacity: 0; visibility: hidden; transform: translateY(8px) scale(.96); transition: opacity .18s ease, transform .18s ease, visibility .18s;
+  }
+  .act.on { opacity: 1; visibility: visible; transform: none; }
+  .act.on:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 #2f3346; }
+  .toast { top: 11%; }
+  .prompt.on, .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  .bubble {
+    position: absolute; transform: translate(-50%, -100%);
+    padding: 5px 11px; border-radius: 12px; background: #fbfaf6; color: #2a2d38;
+    font-size: 13px; font-weight: 600; box-shadow: 0 2px 0 rgba(0,0,0,.18);
+    opacity: 0; transition: opacity .2s ease; white-space: nowrap;
+  }
+  .bubble.on { opacity: 1; }
+
+  /* ---------- coordinates (C, dev) and ?stats=1 ---------- */
+  .coords, .stats {
+    position: fixed; padding: 6px 10px; border-radius: 6px;
+    background: rgba(14,16,22,.58); color: #d9dce4;
+    font: 12px/1.45 ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    white-space: pre; pointer-events: none; z-index: 10;
+  }
+  .coords { right: 12px; bottom: 40px; opacity: 0; }
+  .coords.on { opacity: 1; }
+  .stats { left: 12px; bottom: 40px; }
+  /* ?perf (core/perfhud.js): top centre, small, over everything; never shown without ?perf */
+  .perfhud {
+    position: fixed; left: 50%; top: 6px; transform: translateX(-50%); z-index: 40; pointer-events: none;
+    max-width: calc(100vw - 16px); padding: 5px 9px; border-radius: 6px;
+    background: rgba(8,10,14,.78); color: #d9f2c4; white-space: pre; overflow: hidden;
+    font: 600 10.5px/1.45 ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+
+  /* ---------- start / pause card ---------- */
+  /* the card is plain HTML in this page, so it (and the About text below it) shows before any
+     script has loaded; main.js wires it up once the world is built */
+  .overlay {
+    position: fixed; inset: 0; pointer-events: auto;
+    overflow-y: auto; overscroll-behavior: contain;
+    background: linear-gradient(160deg, rgba(40,48,78,.55), rgba(231,163,90,.28) 55%, rgba(201,224,247,.35));
+    backdrop-filter: blur(6px) saturate(.9);
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  .overlay.hidden { opacity: 0; visibility: hidden; }
+  .stage { min-height: 100%; display: grid; place-items: center; padding: 16px; }
+  .card {
+    display: grid; grid-template-columns: 200px minmax(0, 1fr);
+    width: min(760px, 100%); overflow: hidden;
+    background: #fbf7ee; border: 2px solid #2f3346; border-radius: 6px;
+    box-shadow: 8px 10px 0 rgba(47,51,70,.25);
+  }
+  .card-art { position: relative; min-height: 360px; background: linear-gradient(#e7a35a, #f4d7a8 55%, #c9d7e6 56%); overflow: hidden; border-right: 2px solid #2f3346; }
+  .card-art .sun { position: absolute; left: 58%; top: 40%; width: 46px; height: 46px; margin: -23px; border-radius: 50%; background: #ffd55a; box-shadow: 0 0 40px 12px rgba(255,213,90,.5); }
+  .card-art .ridge { position: absolute; left: -10%; right: -10%; height: 90px; border-radius: 50% 50% 0 0; }
+  .card-art .r1 { top: 44%; background: #a9b3c6; transform: scaleX(1.4); }
+  .card-art .r2 { top: 49%; background: #7d8aa3; left: -40%; }
+  .card-art .water { position: absolute; left: 0; right: 0; top: 56%; bottom: 0; background: linear-gradient(#d7b99a, #8c96a6); }
+  .card-art .dam { position: absolute; left: -20%; right: -20%; bottom: 18%; height: 18px; background: #9a978d; border-top: 5px solid #b9b3a4; transform: rotate(-6deg); }
+  .card-copy { padding: 28px 30px 22px; display: flex; flex-direction: column; gap: 10px; }
+  .kicker { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8a6a4a; }
+  .card .wordmark { margin: 0; font-size: 46px; font-weight: 700; line-height: 1; letter-spacing: -.02em; color: #2f3346; }
+  .names { font-size: 17px; color: #5a5f73; }
+  .card p { margin: 2px 0; font-size: 13.5px; line-height: 1.6; color: #4a4f60; }
+  .pause-only { display: none; }
+  .overlay[data-mode='paused'] .start-only { display: none; }
+  .overlay[data-mode='paused'] .pause-only { display: initial; }
+  .outfits { display: flex; flex-wrap: wrap; gap: 8px; }
+  .outfits button {
+    display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px;
+    border: 1.5px solid #c9c2b2; border-radius: 6px; background: #fff; cursor: pointer; font: inherit; font-size: 12px; color: #3a3f50;
+  }
+  .outfits button[aria-checked='true'] { border-color: #2f3346; box-shadow: 2px 2px 0 #2f3346; }
+  .outfits span { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,.25); }
+  .outfits em { font-style: normal; margin-left: 4px; }
+  .controls { font-size: 11.5px; color: #6a6f80; line-height: 1.6; }
+  .go {
+    margin-top: 6px; padding: 11px 16px; border: 2px solid #2f3346; border-radius: 6px;
+    background: #e8542f; color: #fff; font: inherit; font-size: 15px; font-weight: 700; letter-spacing: .04em; cursor: pointer;
+    box-shadow: 4px 4px 0 #2f3346;
+  }
+  .go:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #2f3346; }
+  .go:disabled { background: #b9a79a; cursor: progress; }
+  .go:disabled:active { transform: none; box-shadow: 4px 4px 0 #2f3346; }
+  .nogl { margin: 0; font-size: 12.5px; color: #8a4a2f; }
+  .credits { font-size: 10.5px; color: #8a8e9a; }
+  .more { align-self: flex-start; font-size: 12px; font-weight: 600; color: #8a6a4a; text-decoration: none; border-bottom: 1px dashed #c9b49a; }
+  .for-touch { display: none; }
+  @media (pointer: coarse) { .for-touch { display: inline; } .for-mouse { display: none; } }
+
+  /* ---------- About and FAQ: below the start card ---------- */
+  .about {
+    width: min(760px, calc(100% - 32px)); margin: 8px auto 56px; padding: 26px 30px 22px;
+    background: rgba(251,247,238,.96); border: 2px solid #2f3346; border-radius: 6px;
+    box-shadow: 8px 10px 0 rgba(47,51,70,.25);
+    color: #3f4456; font-size: 14.5px; line-height: 1.65;
+  }
+  .about h2 { margin: 26px 0 8px; font-size: 20px; line-height: 1.25; color: #2f3346; }
+  .about h1 { margin: 0 0 8px; font-size: 24px; line-height: 1.25; color: #2f3346; }
+  .about h3 { margin: 18px 0 4px; font-size: 15.5px; color: #2f3346; }
+  .about p { margin: 6px 0; }
+  .about ul { margin: 6px 0; padding-left: 20px; }
+  .about li { margin: 5px 0; }
+  .about a { color: #b8431f; }
+  .about .links { font-weight: 600; }
+  .about .quiet { margin-top: 18px; font-size: 12.5px; color: #7a7f90; }
+
+  /* ---------- touch ---------- */
+  .touch { position: fixed; inset: 0; pointer-events: none; transition: opacity .45s ease, visibility .45s ease; }
+  /* not over the start / pause card: on a phone the stick and buttons covered its credits */
+  body:has(.overlay:not(.hidden)) .touch { opacity: 0; visibility: hidden; }
+  /* on touch, the E prompt sits above the stick and buttons (at 17 % it fell behind them on short phones) */
+  body:has(.touch) .prompt { bottom: calc(196px + env(safe-area-inset-bottom)); }
+  .stick { position: absolute; left: 22px; bottom: 56px; width: 130px; height: 130px; border-radius: 50%; background: rgba(14,16,22,.28); border: 1px solid rgba(255,255,255,.3); pointer-events: auto; touch-action: none; }
+  .knob { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px; border-radius: 50%; background: rgba(255,255,255,.7); }
+  .tbuttons { position: absolute; right: 14px; bottom: 56px; display: grid; grid-template-columns: repeat(4, 44px); gap: 8px; pointer-events: auto; }
+  .tbuttons button { height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(14,16,22,.45); color: #fff; font-weight: 700; font-size: 15px; touch-action: none; }
+
+  /* ---------- ?flat=1 map panel (world/flat.js) ---------- */
+  .flatpanel {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 42vw;
+    background: rgba(245,243,236,.96); border-left: 1px solid rgba(0,0,0,.2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 5;
+  }
+  .flatpanel canvas { max-width: 100%; }
+  .flatinfo { font: 12px ui-monospace, Consolas, monospace; color: #333; }
+
+  /* a short screen (a phone on its side): the list goes beside the jog card, not under it, so it
+     stays clear of the touch stick in the bottom-left corner */
+  @media (max-height: 520px) {
+    .corner { flex-direction: row; }
+    .toast { top: 46%; } /* (below the list, which is at the top here, and above the E prompt) */
+  }
+  @media (max-width: 640px) {
+    .card { grid-template-columns: 1fr; }
+    .card-art { min-height: 110px; border-right: 0; border-bottom: 2px solid #2f3346; }
+    .card-copy { padding: 18px 18px 16px; }
+    .card .wordmark { font-size: 36px; }
+    .about { padding: 20px 18px 16px; font-size: 14px; }
+    .corner { left: 8px; top: 8px; gap: 6px; }
+    .jog { min-width: 0; padding: 7px 9px; }
+    .jog b { font-size: 14px; }
+    .cond { right: 8px; top: 8px; padding: 7px 9px; gap: 3px; }
+    .cond b { font-size: 13px; }
+    .todo-card { min-width: 0; padding: 7px 9px 8px; }
+    /* the toast under the conditions card on the right: centred it sat on the jog card */
+    .toast { left: auto; right: 8px; top: 100px; transform: translate(0, 6px); max-width: calc(100% - 16px); white-space: normal; }
+    .toast.on { transform: translate(0, 0); }
+    .todo { font-size: 11.5px; }
+    .hintbar { font-size: 10.5px; }
+  }
+</style>
+  <script type="module" crossorigin src="./assets/index-Cl0MuB4i.js"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","@id":"https://sukhna-lake.trymurmur.studio/#faq","mainEntity":[{"@type":"Question","name":"Is this the real Sukhna Lake?","acceptedAnswer":{"@type":"Answer","text":"Its shape and size are real: the walk follows the dam's actual curve for its full 2.5 km, the water has the lake's true outline and islands, and the hills sit where they really are. The look is a stylised, hand-drawn-style take rather than a photographic copy, and some details are made up, such as the lamps, the benches, the people, and exactly where the steps down to the water are."}},{"@type":"Question","name":"Does it work on a phone?","acceptedAnswer":{"@type":"Answer","text":"Yes. On a phone or tablet you get a thumb stick to jog, a drag to look around and buttons for everything else, and the game picks lighter graphics on its own. A recent phone runs it most smoothly; if frames start to drop on a slower device, the game lowers its quality by itself."}},{"@type":"Question","name":"Is it free? Do I need to install anything?","acceptedAnswer":{"@type":"Answer","text":"It is free, with no ads, no sign-up and nothing to download. It runs in any recent version of Chrome, Edge, Firefox or Safari that supports WebGL 2."}},{"@type":"Question","name":"How was it made?","acceptedAnswer":{"@type":"Answer","text":"With three.js and real map data: OpenStreetMap for the dam, the lake and the city, elevation data for the terrain and hills, and a solar calculation for the sunrise. It was built live on stream with Claude Code, and the source code is open on GitHub under the MIT licence."}},{"@type":"Question","name":"What time of day is it in the game?","acceptedAnswer":{"@type":"Answer","text":"A mid-January morning. The game opens at golden hour, 07:45, just after the real 07:19 sunrise, and the clock runs four times faster than real life. Pre-dawn and the other times are one press of T away (the time button on touch): pre-dawn, sunrise, golden hour, bright morning and sunset."}},{"@type":"Question","name":"Can I go boating on the lake?","acceptedAnswer":{"@type":"Answer","text":"Yes, on clear or foggy mornings; the counter closes in the rain. Get a ticket at the shack by the Boating gateway at the west end of the dam, go down the steps to the jetty and press E beside a swan boat to take it out. W and S pedal, A and D steer, and you dock again back at the jetty."}}]}</script>
+</head>
+<body>
+  <canvas id="view"></canvas>
+  <div class="overlay" data-mode="start">
+    <div class="stage">
+      <section class="card" role="dialog" aria-labelledby="card-title">
+        <div class="card-art" aria-hidden="true">
+          <div class="sun"></div><div class="ridge r1"></div><div class="ridge r2"></div><div class="water"></div><div class="dam"></div>
+        </div>
+        <div class="card-copy">
+          <div class="kicker"><span class="start-only">Golden hour · Chandigarh</span><span class="pause-only">Paused</span></div>
+          <div class="wordmark" id="card-title">Sukhna</div>
+          <div class="names"><span lang="hi">सुखना झील</span> · <span lang="pa">ਸੁਖਨਾ ਝੀਲ</span></div>
+          <p class="start-only">A jog along the dam at Sukhna Lake at its real shape and scale, in the golden hour of a mid-January morning, with the sun low over the lake and the Shivalik hills, where it really is.</p>
+          <p class="pause-only">The lake is waiting where you left it.</p>
+          <div class="outfits" role="radiogroup" aria-label="Outfit">
+            <button type="button" role="radio" data-outfit="0" aria-checked="true"><span style="background:#e8542f"></span><span style="background:#2b3040"></span><em>Tee &amp; track pants</em></button>
+            <button type="button" role="radio" data-outfit="1" aria-checked="false"><span style="background:#2f6fb0"></span><span style="background:#1f2430"></span><span style="background:#f08a2e"></span><em>Patka, tee &amp; shorts</em></button>
+            <button type="button" role="radio" data-outfit="2" aria-checked="false"><span style="background:#6b7a5a"></span><span style="background:#3a3f48"></span><em>Hoodie &amp; joggers</em></button>
+          </div>
+          <div class="controls"><span class="for-mouse">WASD jog · Shift run · mouse look · wheel zoom · E interact · V auto-jog · T time · K rain · P overview · M sound · L things to do · H hide · Esc pause</span><span class="for-touch">Left stick jog (push to the rim to run) · drag to look · pinch to zoom · buttons for E V T K P M H</span></div>
+          <button type="button" class="go" disabled>Loading the lake…</button>
+          <noscript><p>Sukhna runs in the browser with JavaScript and WebGL; turn JavaScript on to play.</p></noscript>
+          <div class="credits">Map data © OpenStreetMap contributors (ODbL) · terrain: Mapzen / AWS Terrain Tiles · engine after sakura-crossing (MIT)</div>
+          <a class="more start-only" href="#about">About this game · FAQ ↓</a>
+        </div>
+      </section>
+    </div>
+
+    <article id="about" class="about start-only" aria-labelledby="about-title">
+      <h1 id="about-title">Sukhna Lake 3D: a morning jog in Chandigarh, in your browser</h1>
+      <p>Sukhna is a free 3D game about one simple pleasure: a winter-morning jog along the dam at Sukhna Lake in Chandigarh. The lake, the 2.5 km promenade and the Shivalik hills behind them are laid out at their real shape and real size, so a length of the dam takes about as long here as it does there. It runs in the browser on a laptop or a phone, with nothing to install.</p>
+      <p class="links"><a href="https://youtu.be/h8QdG8cU2Go">Watch the 30-second trailer</a> · <a href="https://github.com/Vikraantnegi/sukhna-lake-3d-jogging">Source code on GitHub</a></p>
+
+      <h2>What you can do</h2>
+      <ul>
+        <li><strong>Jog the dam</strong> from end to end, or turn on auto-jog and just watch the water go by. Your distance, pace and lengths are counted.</li>
+        <li><strong>Follow the real sun.</strong> The sky tracks the actual sun over Chandigarh on 15 January, always in the right part of the sky. The game opens at golden hour, 07:45, just after the real sunrise; pre-dawn, sunrise, bright morning and sunset are each a press of T away (the time button on touch).</li>
+        <li><strong>Go boating.</strong> Buy a ticket at the counter, walk down to the jetty and pedal a swan boat out onto the lake, past the rowing eight on its training lane.</li>
+        <li><strong>Change the weather</strong> between clear skies, rain, and the thick winter fog that January brings to Chandigarh.</li>
+        <li><strong>Join the laughter club</strong> in its circle on the promenade, say hello to the morning walkers, high-five a passing runner, and stop at the stall for a cutting chai.</li>
+        <li><strong>Sit on the water steps or a bench</strong> and a soft lo-fi track starts playing while the light changes over the lake.</li>
+      </ul>
+
+      <h2>How it was made</h2>
+      <p>The layout comes from real data. The promenade's curve, the lake's outline and islands, and the streets and building plots around them are taken from OpenStreetMap. The ground and the hills, out to about 45 km, come from elevation data, and the sun's position is worked out for the exact date, time and place. On top of that sits a cel-shaded world built with three.js: the parapet, palms, people, boats and birds are all modelled and animated in code. Every sound, from birdsong to the lo-fi music, is synthesised in the browser as well; there are no audio recordings.</p>
+      <p>The whole game was built live on stream at <a href="https://kick.com/asumagg">kick.com/asumagg</a>, with Claude Code, Anthropic's AI coding assistant, doing the programming alongside.</p>
+
+      <h2 id="faq">Questions</h2>
+      <section class="faq" aria-labelledby="faq">
+        <h3>Is this the real Sukhna Lake?</h3>
+        <p>Its shape and size are real: the walk follows the dam's actual curve for its full 2.5 km, the water has the lake's true outline and islands, and the hills sit where they really are. The look is a stylised, hand-drawn-style take rather than a photographic copy, and some details are made up, such as the lamps, the benches, the people, and exactly where the steps down to the water are.</p>
+        <h3>Does it work on a phone?</h3>
+        <p>Yes. On a phone or tablet you get a thumb stick to jog, a drag to look around and buttons for everything else, and the game picks lighter graphics on its own. A recent phone runs it most smoothly; if frames start to drop on a slower device, the game lowers its quality by itself.</p>
+        <h3>Is it free? Do I need to install anything?</h3>
+        <p>It is free, with no ads, no sign-up and nothing to download. It runs in any recent version of Chrome, Edge, Firefox or Safari that supports WebGL 2.</p>
+        <h3>How was it made?</h3>
+        <p>With three.js and real map data: OpenStreetMap for the dam, the lake and the city, elevation data for the terrain and hills, and a solar calculation for the sunrise. It was built live on stream with Claude Code, and the source code is open on GitHub under the MIT licence.</p>
+        <h3>What time of day is it in the game?</h3>
+        <p>A mid-January morning. The game opens at golden hour, 07:45, just after the real 07:19 sunrise, and the clock runs four times faster than real life. Pre-dawn and the other times are one press of T away (the time button on touch): pre-dawn, sunrise, golden hour, bright morning and sunset.</p>
+        <h3>Can I go boating on the lake?</h3>
+        <p>Yes, on clear or foggy mornings; the counter closes in the rain. Get a ticket at the shack by the Boating gateway at the west end of the dam, go down the steps to the jetty and press E beside a swan boat to take it out. W and S pedal, A and D steer, and you dock again back at the jetty.</p>
+      </section>
+
+      <h2>Credits</h2>
+      <ul>
+        <li>Map data © OpenStreetMap contributors, available under the Open Database Licence (ODbL).</li>
+        <li>Terrain from Mapzen / AWS Terrain Tiles (SRTM and other sources).</li>
+        <li>The rendering engine is adapted from sakura-crossing by Kenton Wang (MIT licence).</li>
+        <li>Built with three.js. Code © 2026 Vikrant Negi, MIT licence.</li>
+      </ul>
+      <p class="quiet">Anonymous usage stats (such as which time of day people choose) are collected without cookies, and nothing in them identifies you.</p>
+    </article>
+  </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://minecraft-iota-coral.vercel.app/">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<title>Mine</title>
+<meta name="description" content="A voxel sandbox game that runs in the browser." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%235a8f3d'/%3E%3Crect y='6' width='16' height='10' fill='%237a5a3a'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="./styles/base.css" />
+<link rel="stylesheet" href="./styles/hud.css" />
+<link rel="stylesheet" href="./styles/screens.css" />
+</head>
+<body>
+
+<canvas id="view" aria-label="Game world"></canvas>
+
+<!-- ------------------------------------------------------------------ loading -->
+<div id="loading" class="screen screen--solid" role="status" aria-live="polite">
+  <div class="loading__inner">
+    <div class="brand brand--lg" aria-hidden="true">
+      <span class="brand__word">MINE</span>
+    </div>
+    <p class="loading__stage" id="loading-stage">Starting up</p>
+    <div class="progress" role="progressbar" aria-labelledby="loading-stage" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="loading-bar">
+      <div class="progress__fill" id="loading-fill"></div>
+    </div>
+    <p class="loading__tip" id="loading-tip"></p>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------------ main menu -->
+<div id="menu" class="screen screen--veil" hidden>
+  <div class="menu__stack">
+    <div class="brand brand--xl">
+      <span class="brand__word">MINE</span>
+      <span class="brand__sub">a voxel sandbox</span>
+    </div>
+    <div class="menu__buttons">
+      <button class="btn btn--primary" id="btn-play" type="button">Play</button>
+      <button class="btn" id="btn-new" type="button">Create new world</button>
+      <div class="menu__row">
+        <button class="btn" id="btn-settings" type="button">Settings</button>
+        <button class="btn" id="btn-controls" type="button">Controls</button>
+      </div>
+    </div>
+    <p class="menu__meta" id="menu-meta"></p>
+  </div>
+  <p class="menu__credit">Built with WebGL2. No plugins, no downloads.</p>
+</div>
+
+<!-- ------------------------------------------------------------------ pause -->
+<div id="pause" class="screen screen--veil" hidden>
+  <div class="panel panel--narrow">
+    <h2 class="panel__title">Game paused</h2>
+    <div class="menu__buttons">
+      <button class="btn btn--primary" id="btn-resume" type="button">Back to game</button>
+      <button class="btn" id="btn-pause-settings" type="button">Settings</button>
+      <button class="btn" id="btn-pause-controls" type="button">Controls</button>
+      <button class="btn" id="btn-save-quit" type="button">Save and quit</button>
+    </div>
+    <p class="panel__note" id="pause-note">Your world saves automatically.</p>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------------ settings -->
+<div id="settings" class="screen screen--veil" hidden>
+  <div class="panel">
+    <h2 class="panel__title">Settings</h2>
+    <div class="tabs" role="tablist" aria-label="Settings sections">
+      <button class="tab is-active" role="tab" aria-selected="true" aria-controls="tab-video" id="tabbtn-video" type="button">Video</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-audio" id="tabbtn-audio" type="button">Audio</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-input" id="tabbtn-input" type="button">Controls</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-world" id="tabbtn-world" type="button">World</button>
+    </div>
+
+    <div class="tabpanel" id="tab-video" role="tabpanel" aria-labelledby="tabbtn-video"></div>
+    <div class="tabpanel" id="tab-audio" role="tabpanel" aria-labelledby="tabbtn-audio" hidden></div>
+    <div class="tabpanel" id="tab-input" role="tabpanel" aria-labelledby="tabbtn-input" hidden></div>
+    <div class="tabpanel" id="tab-world" role="tabpanel" aria-labelledby="tabbtn-world" hidden></div>
+
+    <div class="panel__footer">
+      <button class="btn btn--primary" id="btn-settings-done" type="button">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------------ controls help -->
+<div id="controls" class="screen screen--veil" hidden>
+  <div class="panel">
+    <h2 class="panel__title">Controls</h2>
+    <dl class="keys" id="keys-list"></dl>
+    <div class="panel__footer">
+      <button class="btn btn--primary" id="btn-controls-done" type="button">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------------ world creation -->
+<div id="create" class="screen screen--veil" hidden>
+  <div class="panel panel--narrow">
+    <h2 class="panel__title">Create new world</h2>
+    <form id="create-form" class="form">
+      <div class="field">
+        <label for="world-name">World name</label>
+        <input id="world-name" name="world-name" type="text" maxlength="28" autocomplete="off" spellcheck="false" value="New World" />
+      </div>
+      <div class="field">
+        <label for="world-seed">Seed <span class="field__hint">leave blank for random</span></label>
+        <input id="world-seed" name="world-seed" type="text" maxlength="24" autocomplete="off" spellcheck="false" placeholder="e.g. mountains" />
+      </div>
+      <fieldset class="field">
+        <legend>Mode</legend>
+        <div class="segmented" id="world-mode">
+          <button type="button" class="seg is-active" data-mode="survival">Survival</button>
+          <button type="button" class="seg" data-mode="creative">Creative</button>
+        </div>
+        <p class="field__hint" id="mode-hint">Blocks take time to break, you keep health and hunger.</p>
+      </fieldset>
+      <p class="form__warn" id="create-warn" hidden>This replaces your saved world. It cannot be undone.</p>
+      <div class="panel__footer">
+        <button class="btn btn--primary" type="submit" id="btn-create">Create world</button>
+        <button class="btn" type="button" id="btn-create-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------------ hud -->
+<div id="hud" hidden>
+  <div id="crosshair" aria-hidden="true">
+    <span class="cross__h"></span><span class="cross__v"></span>
+  </div>
+
+  <div id="vitals" aria-hidden="true">
+    <div class="vitals__row" id="hearts"></div>
+    <div class="vitals__row vitals__row--right" id="hunger"></div>
+  </div>
+
+  <div id="hotbar" role="toolbar" aria-label="Hotbar"></div>
+  <p id="held-name" aria-live="polite"></p>
+
+  <div id="toasts" aria-live="polite"></div>
+  <div id="debug" hidden></div>
+  <div id="damage-flash" aria-hidden="true"></div>
+  <div id="water-overlay" aria-hidden="true"></div>
+  <div id="vignette" aria-hidden="true"></div>
+</div>
+
+<!-- ------------------------------------------------------------------ inventory / container -->
+<div id="container-screen" class="screen screen--veil" hidden>
+  <div class="panel panel--inv">
+    <h2 class="panel__title" id="container-title">Inventory</h2>
+    <div class="inv" id="inv-top"></div>
+    <div class="inv__label" id="inv-main-label">Inventory</div>
+    <div class="inv" id="inv-main"></div>
+    <div class="inv" id="inv-hot"></div>
+    <p class="panel__note" id="inv-hint">Click to pick up a stack, right click to take half, shift click to move it across. Q drops the held item.</p>
+  </div>
+</div>
+<div id="drag-item" aria-hidden="true" hidden></div>
+<div id="tooltip" role="tooltip" hidden></div>
+
+<script type="module" src="./src/main.js"></script>
+<noscript>
+  <div class="screen screen--solid"><p class="loading__stage">Mine needs JavaScript and WebGL2 to run.</p></div>
+</noscript>
+</body>
+</html>

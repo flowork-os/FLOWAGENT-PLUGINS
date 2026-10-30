@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://roomwave-live.sagan1122.chatgpt.site/together/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#211e30">
+  <meta name="description" content="Visit Gaming, Hangout, Baking, Fitness, Fortunes, and Karaoke. Choose room music, send gifts, and enjoy original songs.">
+  <title>Roomwave — Six rooms, live together</title>
+  <base href="/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css?v=shared-live-1">
+  <link rel="stylesheet" href="dressing-room.css?v=cast-shop-1">
+  <link rel="stylesheet" href="studio-ui.css?v=shared-live-1">
+  <link rel="stylesheet" href="trio-ui.css?v=compact-gift-row-2">
+  <link rel="stylesheet" href="live-rooms.css?v=continuous-loop-2">
+  <link rel="stylesheet" href="gaming-room.css?v=shared-live-1">
+  <link rel="stylesheet" href="gaming-seated-room.css?v=lilac-star-1">
+  <link rel="stylesheet" href="workout-room.css?v=brooke-safe-area-feet-1">
+  <link rel="stylesheet" href="baking-room.css?v=baking-room-snap-1">
+  <link rel="stylesheet" href="fortune-room.css?v=fortune-reading-timeout-1">
+  <link rel="stylesheet" href="room-music.css?v=song-picker-1">
+  <link rel="stylesheet" href="karaoke-room.css?v=june-fullbody-restored-1">
+  <link rel="stylesheet" href="room-chrome.css?v=matching-live-badge-1">
+  <link rel="stylesheet" href="room-layout.css?v=song-picker-1">
+  <link rel="stylesheet" href="room-glass.css?v=song-picker-1">
+  <link rel="stylesheet" href="mia-lilly-room.css?v=shared-room-ui-3">
+  <link rel="preload" as="image" href="assets/stella-v1/casual-standing.lossless.webp">
+  <link rel="preload" as="image" href="assets/rooms-v1/room-balcony.lossless.webp">
+  <link rel="preload" as="image" href="assets/collection-v1/lily-weekend-standing.lossless.webp">
+  <link rel="preload" as="image" href="assets/collection-v1/mia-weekend-standing.lossless.webp">
+  <link rel="stylesheet" href="roomwave.css">
+</head>
+<body data-app="stella-and-mia" data-live-room="gaming-seated">
+  <div class="live-room-feed" id="live-room-feed" aria-label="Live room feed" tabindex="-1">
+  <section class="live-room-panel" id="gaming-seated-room" data-live-room-panel="gaming-seated" aria-label="Gaming live room" aria-hidden="false"></section>
+  <section class="live-room-panel" id="stream-room" data-live-room-panel="stream" aria-label="Hangout live room" aria-hidden="true" inert>
+  <main class="app-shell">
+    <section class="stream-grid" aria-label="Fictional livestream">
+      <section class="stream-card">
+        <div class="stage-camera" id="stage-camera" data-room="balcony" aria-label="Livestream stage">
+          <div class="live-bar">
+            <div class="host-profile"><span class="host-avatar" aria-hidden="true">♡</span><div class="host-stack room-heading"><b class="room-host-name">Lilly &amp; Mia</b><small class="room-type">Hangout</small><button type="button" class="like-pill" id="like-button" aria-label="Send a like. 0 likes" title="Tap to like" hidden><span aria-hidden="true">♥</span> <span id="like-count">0</span><small>likes</small></button></div><button type="button" id="wardrobe-open" class="live-pill wardrobe-open" aria-label="LIVE — open shop" aria-haspopup="dialog" aria-controls="wardrobe-dialog" aria-expanded="false" title="Open outfits and rooms">LIVE<i hidden></i></button></div>
+            <div class="viewer-pill" id="visits-pill" aria-label="Loading room audience" hidden><svg class="ui-icon" aria-hidden="true"><use href="#icon-visits"/></svg><span id="viewer-count">…</span></div>
+            <button type="button" class="sound-button" id="voice-toggle" aria-label="Unmute all audio" aria-pressed="true"><svg class="ui-icon" aria-hidden="true"><use href="#icon-muted"/></svg></button>
+          </div>
+          <svg class="stage-svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Adult anime streamers Lily, Stella, and Mia. Select a name to send her gifts.">
+            <g class="floor-shadow" aria-hidden="true"><ellipse data-shadow-for="lily" cx="200" cy="410" rx="46" ry="7"/><ellipse data-shadow-for="stella" cx="400" cy="410" rx="46" ry="7"/><ellipse data-shadow-for="mia" cx="600" cy="410" rx="46" ry="7"/></g>
+            <g class="character character-lily expr-happy" id="lily" data-character="lily" transform="translate(200 160)"><g class="name-tag" data-mood="calm" transform="translate(-64 265)"><title data-mood-label>Lilly's mood: Calm</title><rect width="128" height="44" rx="14"/><g class="mood-face" data-mood-face transform="translate(24 22) scale(2.2)" aria-hidden="true"><circle class="mood-face-outline" r="6.7"/><circle class="mood-eye" cx="-2.3" cy="-1.4" r=".85"/><circle class="mood-eye" cx="2.3" cy="-1.4" r=".85"/><path class="mood-brows" d="M-4.2-4.4-1.3-3.5M1.3-3.5 4.2-4.4"/><path class="mood-mouth" data-mood-mouth d="M-2.6 2.5 Q0 2.5 2.6 2.5"/></g><path class="selection-pointer" d="M56-10H72L64-3Z" aria-hidden="true"/><text class="mood-name" x="48" y="22">LILLY</text><path class="mood-track" d="M52 32H116" aria-hidden="true"/><path class="mood-fill" data-mood-fill d="M52 32H84" aria-hidden="true"/></g></g>
+            <g class="character character-stella expr-happy" id="stella" data-character="stella" transform="translate(400 160)"><g class="name-tag" data-mood="calm" transform="translate(-64 265)"><title data-mood-label>Stella's mood: Calm</title><rect width="128" height="44" rx="14"/><g class="mood-face" data-mood-face transform="translate(24 22) scale(2.2)" aria-hidden="true"><circle class="mood-face-outline" r="6.7"/><circle class="mood-eye" cx="-2.3" cy="-1.4" r=".85"/><circle class="mood-eye" cx="2.3" cy="-1.4" r=".85"/><path class="mood-brows" d="M-4.2-4.4-1.3-3.5M1.3-3.5 4.2-4.4"/><path class="mood-mouth" data-mood-mouth d="M-2.6 2.5 Q0 2.5 2.6 2.5"/></g><path class="selection-pointer" d="M56-10H72L64-3Z" aria-hidden="true"/><text class="mood-name" x="48" y="22">STELLA</text><path class="mood-track" d="M52 32H116" aria-hidden="true"/><path class="mood-fill" data-mood-fill d="M52 32H84" aria-hidden="true"/></g></g>
+            <g class="character character-mia expr-happy" id="mia" data-character="mia" transform="translate(600 160)"><g class="name-tag" data-mood="calm" transform="translate(-64 265)"><title data-mood-label>Mia's mood: Calm</title><rect width="128" height="44" rx="14"/><g class="mood-face" data-mood-face transform="translate(24 22) scale(2.2)" aria-hidden="true"><circle class="mood-face-outline" r="6.7"/><circle class="mood-eye" cx="-2.3" cy="-1.4" r=".85"/><circle class="mood-eye" cx="2.3" cy="-1.4" r=".85"/><path class="mood-brows" d="M-4.2-4.4-1.3-3.5M1.3-3.5 4.2-4.4"/><path class="mood-mouth" data-mood-mouth d="M-2.6 2.5 Q0 2.5 2.6 2.5"/></g><path class="selection-pointer" d="M56-10H72L64-3Z" aria-hidden="true"/><text class="mood-name" x="48" y="22">MIA</text><path class="mood-track" d="M52 32H116" aria-hidden="true"/><path class="mood-fill" data-mood-fill d="M52 32H84" aria-hidden="true"/></g></g>
+          </svg>
+          <div class="rescue-system" id="rescue-system" aria-hidden="true">
+            <div class="system-readout">
+              <b id="rescue-time">10</b>
+              <span class="rescue-score">SCORE <strong id="rescue-score">−200</strong></span>
+            </div>
+            <small id="rescue-message" class="sr-only"></small>
+          </div>
+          <div class="effects-layer" id="effects-layer" aria-hidden="true"></div>
+          <div class="like-effects" id="like-effects" aria-hidden="true"></div>
+          <div class="reaction-label" id="reaction-label" hidden></div>
+          <div id="sprite-loading" class="sprite-loading" role="status" aria-live="polite" hidden><span id="sprite-loading-message">Loading artwork…</span><button type="button" id="sprite-retry" hidden>Retry artwork</button></div>
+          <img id="camera-hand" class="camera-hand" src="assets/stream-controls-v1/camera-hand-v1.lossless.webp" alt="" aria-hidden="true" draggable="false" hidden>
+        </div>
+      </section>
+    </section>
+    <div class="stream-dialogue" id="stream-dialogue">
+      <div class="bubble bubble-lily show" id="bubble-lily" aria-hidden="false">Hiii everyone! ✨</div>
+      <div class="bubble bubble-stella show" id="bubble-stella" aria-hidden="false">Hi, I’m Stella! ✨</div>
+      <div class="bubble bubble-mia show" id="bubble-mia" aria-hidden="false">Heyyy! ❤️</div>
+    </div>
+    <section class="gift-dock" aria-label="Gift controls">
+      <div class="sr-only" id="gift-ledger" aria-label="0 gifts sent"><span id="target-status" aria-live="polite">To: Any</span><span>Total gifted: <b id="spend-total">0</b></span><small id="gift-status">0 GIFTS</small></div>
+      <div class="dock-heading">
+        <div class="recipient-controls"><strong id="recipient-label" class="sr-only" aria-live="polite" aria-atomic="true">To: Any</strong><button type="button" id="take-turns" class="any-recipient" aria-pressed="true" aria-disabled="false" aria-label="Any — automatically alternate gift recipients">Any</button></div>
+        <div class="dock-wallet" hidden><span><strong id="stream-balance">…</strong><small>combined coins</small></span></div>
+      </div>
+      <div class="gift-buttons" id="gift-buttons">
+        <button type="button" data-gift="rose" aria-label="Send Rose, adds 1 to the game score and earns 1 coin"><svg class="gift-icon" aria-hidden="true"><use href="#icon-rose"/></svg><b>Rose</b></button>
+        <button type="button" data-gift="heart" aria-label="Send Heart, adds 100 to the game score and earns 100 coins"><svg class="gift-icon" aria-hidden="true"><use href="#icon-heart"/></svg><b>Heart</b></button>
+        <button type="button" data-gift="sunglasses" aria-label="Send Sunglasses, subtracts 200 from the game score and earns 200 coins"><svg class="gift-icon" aria-hidden="true"><use href="#icon-glasses"/></svg><b>Glasses</b></button>
+        <button type="button" data-gift="corgi" aria-label="Send Mini Dance, adds 300 to the game score and earns 300 coins"><svg class="gift-icon" aria-hidden="true"><use href="#icon-dance"/></svg><b>Dance</b></button>
+        <button type="button" data-gift="gg" class="gg" aria-label="Send GG, subtracts 1 from the game score and earns 1 coin"><svg class="gift-icon" aria-hidden="true"><use href="#icon-gg"/></svg><b>GG</b></button>
+      </div>
+    </section>
+  </main>
+  </section>
+  <section class="live-room-panel" id="mia-lilly-room" data-live-room-panel="mia-lilly" data-live-room-rotation="excluded" hidden aria-label="Mia &amp; Lilly live room" aria-hidden="true" inert></section>
+  <section class="live-room-panel" id="gaming-room" data-live-room-panel="gaming" data-live-room-rotation="excluded" hidden aria-label="Gaming live room" aria-hidden="true" inert></section>
+  <section class="live-room-panel" id="baking-room" data-live-room-panel="baking" aria-label="Baking live room" aria-hidden="true" inert></section>
+  <section class="live-room-panel" id="workout-room" data-live-room-panel="workout" aria-label="Fitness live room" aria-hidden="true" inert></section>
+  <section class="live-room-panel" id="fortune-room" data-live-room-panel="fortune" aria-label="Fortunes live room" aria-hidden="true" inert></section>
+  <section class="live-room-panel" id="karaoke-room" data-live-room-panel="karaoke" aria-label="Karaoke live room" aria-hidden="true" inert></section>
+  </div>
+  <p class="sr-only" id="live-room-status" role="status" aria-live="polite" aria-atomic="true">Gaming live room.</p>
+  <dialog id="wardrobe-dialog" class="wardrobe-dialog" aria-labelledby="wardrobe-title">
+    <header class="studio-header"><button type="button" id="wardrobe-close" aria-label="Back to stream">‹</button><div><h2 id="wardrobe-title">Shop</h2><small id="wardrobe-count"></small></div><div class="wardrobe-wallet"><span id="wardrobe-wallet-label">Combined coins</span><strong id="wardrobe-balance">…</strong><small id="wardrobe-points-detail" class="sr-only">Loading your coins…</small></div></header>
+    <div class="wardrobe-controls"><div class="wardrobe-tabs" aria-label="Shop section"><button type="button" data-wardrobe-tab="rooms" aria-pressed="true">Rooms</button><button type="button" data-wardrobe-tab="lily" aria-pressed="false">Lilly</button><button type="button" data-wardrobe-tab="stella" aria-pressed="false">Stella</button><button type="button" data-wardrobe-tab="mia" aria-pressed="false">Mia</button><button type="button" data-wardrobe-tab="characters" aria-pressed="false">Anchors</button></div><div class="wardrobe-tools"><label id="wardrobe-category-label"><span class="sr-only">Outfit category</span><select id="wardrobe-category"><option value="all">All styles</option><option>Everyday</option><option>Sport &amp; stage</option><option>Swimwear</option><option>Costumes</option><option>Seasonal</option></select></label><label class="wardrobe-filter"><span class="sr-only">Show items</span><select id="wardrobe-filter"><option value="all">All items</option><option value="owned">Owned</option></select></label><label class="wardrobe-layout"><span class="sr-only">Dressing room layout</span><select id="wardrobe-layout"><option value="grid">Grid</option><option value="rail">Rail</option><option value="list">List</option></select></label></div></div>
+    <p id="wardrobe-wallet-help">Shared purchases use the girls’ combined coins.</p><div id="wardrobe-items"></div>
+    <footer class="studio-footer"><p id="wardrobe-status" role="status">Loading your dressing room…</p><button type="button" id="wardrobe-retry" hidden>Retry saving</button><details class="studio-music"><summary>Settings</summary><div class="ambient-controls"><label><input id="voice-enabled" type="checkbox"> Audio in all rooms</label><small id="voice-status">Audio muted for you.</small><small id="hand-upgrade-status">Remove the random hand from the Rooms shop.</small><button type="button" id="hand-upgrade-open" class="settings-link">View hand upgrade in Rooms</button></div></details><button type="button" id="reset-open" class="reset-open">Reset my game</button></footer>
+  </dialog>
+  <dialog id="reset-dialog" class="reset-dialog" aria-labelledby="reset-title" aria-describedby="reset-description">
+    <h2 id="reset-title">Start fresh?</h2>
+    <p id="reset-description">Reset your coins, gifts, purchased characters, outfits, rooms and upgrades, likes, both gaming rooms, workout, baking, fortune and karaoke progress, music choices, and settings on this browser. Lilly and Mia return in their free outfits on the Moonlit Balcony, and Stella is locked again. This can’t be undone.</p>
+    <p id="reset-status" role="status"></p>
+    <div class="reset-actions"><button id="reset-cancel" type="button" autofocus>Keep my progress</button><button id="reset-confirm" type="button">Reset everything</button></div>
+  </dialog>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="icon-heart" viewBox="0 0 40 40"><path d="M20 34S4 25 4 14C4 4 16 3 20 11C24 3 36 4 36 14C36 25 20 34 20 34Z" fill="#f28daf" stroke="#a95176" stroke-width="2"/><path d="M10 13C10 10 13 9 15 10" fill="none" stroke="#fff6fa" stroke-width="3" stroke-linecap="round"/></symbol>
+    <symbol id="icon-rose" viewBox="0 0 40 40"><path d="M21 22V36M21 32C11 32 9 27 9 25C16 24 19 28 21 32M21 28C28 28 31 24 31 22C25 22 22 25 21 28" fill="#9dc7a6" stroke="#577c65" stroke-width="2" stroke-linejoin="round"/><path d="M20 5C11 1 6 9 9 15C6 24 18 27 21 23C30 27 36 17 31 13C32 5 25 2 20 5Z" fill="#f19bb3" stroke="#b3627c" stroke-width="2"/><path d="M13 10C21 7 28 14 23 20C18 23 12 18 15 14C18 11 23 14 21 17" fill="none" stroke="#b3627c" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="icon-glasses" viewBox="0 0 40 40"><path d="M2 12H38V19H35V26H32V29H25V26H22V20H18V26H15V29H8V26H5V19H2Z" fill="#090d15" stroke="#f456b4" stroke-width="2"/><path d="M3 12H37" stroke="#3ee9f2" stroke-width="2"/><path d="M7 15H11V19H7ZM11 19H15V23H11ZM25 15H29V19H25ZM29 19H33V23H29Z" fill="#fff"/></symbol>
+    <symbol id="icon-dance" viewBox="0 0 40 40"><path d="M15 29V11L31 7V25M15 15L31 11" fill="none" stroke="#8c78b5" stroke-width="3" stroke-linecap="round"/><ellipse cx="10" cy="30" rx="6" ry="4" fill="#bda7de" stroke="#8c78b5" stroke-width="2"/><ellipse cx="26" cy="26" rx="6" ry="4" fill="#bda7de" stroke="#8c78b5" stroke-width="2"/><path d="M7 4L8 7L11 8L8 9L7 12L6 9L3 8L6 7Z" fill="#eec776"/></symbol>
+    <symbol id="icon-gg" viewBox="0 0 40 40"><rect x="3" y="6" width="34" height="28" rx="10" fill="#f6d4df" stroke="#ba8197" stroke-width="2"/><path d="M16 16C9 10 7 29 16 25V21H13M31 16C24 10 22 29 31 25V21H28" fill="none" stroke="#935c78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icon-visits" viewBox="0 0 24 24"><path d="M3 12S6 5 12 5S21 12 21 12S18 19 12 19S3 12 3 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M5 7H19M5 12H19M5 17H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="icon-sound" viewBox="0 0 24 24"><path d="M4 9H8L13 5V19L8 15H4ZM17 8Q21 12 17 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icon-muted" viewBox="0 0 24 24"><path d="M4 9H8L13 5V19L8 15H4ZM17 9L22 15M22 9L17 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icon-wardrobe" viewBox="0 0 24 24"><path d="M9 6A3 3 0 1 1 14 8L12 10L3 16V19H21V16L12 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs></svg>
+  <p class="sr-only" id="sr-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  <script src="roomwave-codec.js"></script>
+  <script src="gaming-seated-state.js"></script>
+  <script src="workout-room-state.js"></script>
+  <script src="baking-room-state.js"></script>
+  <script src="fortune-room-state.js"></script>
+  <script src="mia-lilly-room-state.js"></script>
+  <script src="music-catalog.js?v=june-playlist-2"></script>
+  <script src="roomwave-engine.js?v=june-playlist-2"></script>
+  <script src="roomwave-shared.js"></script>
+  <script src="duo-sprite-data.js?v=polish-3"></script>
+  <script src="outfit-data.js?v=wardrobe-1"></script>
+  <script src="swim-sprite-data.js?v=swim-1"></script>
+  <script src="classic-swim-data.js?v=swim-2"></script>
+  <script src="cozy-maid-data.js?v=cozy-1"></script>
+  <script src="qipao-data.js?v=qipao-1"></script>
+  <script src="rezero-data.js?v=rezero-1"></script>
+  <script src="nun-data.js?v=nun-1"></script>
+  <script src="halloween-data.js?v=halloween-1"></script>
+  <script src="detailed-data.js?v=evening-1"></script>
+  <script src="hanger-data.js?v=hangers-1"></script>
+  <script src="leather-data.js?v=leather-1"></script>
+  <script src="collection-data.js?v=collection-1"></script>
+  <script src="ballet-data.js?v=ballet-1"></script>
+  <script src="yoga-data.js?v=stream-controls-1"></script>
+  <script src="holiday-data.js?v=holidays-1"></script>
+  <script src="lower-bow-data.js?v=holiday-bows-1"></script>
+  <script src="catgirl-data.js?v=catgirl-1"></script>
+  <script src="stella-data.js?v=stella-1"></script>
+  <script src="stella-spacesuit-data.js?v=space-1"></script>
+  <script src="stella-lilac-data.js?v=lilac-1"></script>
+  <script src="stella-swimsuit-data.js?v=swimsuit-1"></script>
+  <script src="stella-onepiece-data.js?v=onepiece-actions-2"></script>
+  <script src="stella-bikini-data.js?v=bikini-actions-2"></script>
+  <script src="stella-hanger-data.js?v=bikini-1"></script>
+  <script src="duo-sprite.js?v=shared-live-1"></script>
+  <script src="sprite-status.js?v=balcony-loading-1"></script>
+  <script src="user-audio.js?v=1"></script>
+  <script src="voice-data.js?v=stream-controls-1"></script>
+  <script src="voices.js?v=four-rooms-1"></script>
+  <script src="camera-moment.js?v=four-rooms-1"></script>
+  <script src="mood.js?v=stella-trio-1"></script>
+  <script src="live-rooms.js?v=continuous-loop-2-cast-shop-1"></script>
+  <script src="app.js?v=cast-shop-1"></script>
+  <script src="gift-art.js?v=hud-1" defer></script>
+  <script src="stream-dialogue.js?v=stella-trio-1"></script>
+  <script src="stream-life.js?v=four-rooms-1"></script>
+  <script src="dressing-room.js?v=anchors-tabs-1"></script>
+  <script src="visits.js?v=wardrobe-1"></script>
+  <script src="gaming-room-state.js?v=water-stack-2"></script>
+  <script src="gaming-platform-renderer.js?v=lilac-star-1"></script>
+  <script src="gaming-camera-effects.js?v=bubble-stack-1"></script>
+  <script src="gaming-room.js?v=lassa-host-1"></script>
+  <script src="gaming-seated-registration.js?v=seated-water-5"></script>
+  <script src="gaming-seated-sprites.js?v=lilac-star-1"></script>
+  <script src="gaming-seated-effects.js?v=june-room-cleanup-1"></script>
+  <script src="gaming-seated-room.js?v=lassa-host-1"></script>
+  <script src="workout-room.js?v=brooke-idle-exercise-1"></script>
+  <script src="baking-art-layout.js?v=hazel-idle-1"></script>
+  <script src="baking-cake-renderer.js?v=hazel-idle-1"></script>
+  <script src="baking-room.js?v=hazel-idle-1"></script>
+  <script src="fortune-room-motion.js?v=iris-idle-return-1"></script>
+  <script src="fortune-room.js?v=fortune-reading-timeout-1"></script>
+  <script src="mia-lilly-art.js?v=restore-bow-3"></script>
+  <script src="mia-lilly-room.js?v=compact-cast-2"></script>
+  <script src="room-music.js?v=brooke-workout-song-1"></script>
+  <script src="karaoke-vocal-data.js?v=june-playlist-2"></script>
+  <script src="karaoke-vocals.js?v=vocal-cues-1"></script>
+  <script src="karaoke-room.js?v=june-fullbody-restored-1"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a52784756fb46d0c',t:'MTc5MzMzMjg3Mg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a52784756fb46d0c',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

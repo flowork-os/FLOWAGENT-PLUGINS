@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <base href="https://volleyrush.io/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VolleyRush — Free Online Arcade Beach Volleyball</title>
+    <meta
+      name="description"
+      content="VolleyRush is a free browser-based arcade beach volleyball game. Play online multiplayer from 1v1 to 6v6 — no download, just compete."
+    />
+    <link rel="canonical" href="https://volleyrush.io/" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="VolleyRush" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="VolleyRush — Free Online Arcade Beach Volleyball" />
+    <meta
+      property="og:description"
+      content="Browser-based arcade beach volleyball. Indie multiplayer from 1v1 to 6v6 — play online free at VolleyRush.io."
+    />
+    <meta property="og:url" content="https://volleyrush.io/" />
+    <meta property="og:image" content="https://volleyrush.io/brand/card.jpg?v=og1" />
+    <meta property="og:image:secure_url" content="https://volleyrush.io/brand/card.jpg?v=og1" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1672" />
+    <meta property="og:image:height" content="941" />
+    <meta property="og:image:alt" content="VolleyRush — play, compete, be the best" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="VolleyRush — Free Online Arcade Beach Volleyball" />
+    <meta
+      name="twitter:description"
+      content="Play arcade beach volleyball online in your browser. Free indie multiplayer volleyball game."
+    />
+    <meta name="twitter:image" content="https://volleyrush.io/brand/card.jpg?v=og1" />
+    <link rel="image_src" href="https://volleyrush.io/brand/card.jpg?v=og1" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/brand/favicon-64.png" />
+    <link rel="apple-touch-icon" href="/brand/favicon-180.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/marketing.css?v=crt11" />
+    <link rel="stylesheet" href="/css/rotate-landscape.css?v=2" />
+    <link rel="preload" as="image" href="/brand/hero_forest.webp" type="image/webp" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://volleyrush.io/#organization",
+            "name": "VolleyRush",
+            "url": "https://volleyrush.io/",
+            "logo": "https://volleyrush.io/brand/VolleyRush_Logo.png",
+            "sameAs": []
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://volleyrush.io/#website",
+            "url": "https://volleyrush.io/",
+            "name": "VolleyRush",
+            "description": "Free browser-based arcade beach volleyball game with online multiplayer.",
+            "publisher": { "@id": "https://volleyrush.io/#organization" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": ["VideoGame", "WebApplication"],
+            "@id": "https://volleyrush.io/#game",
+            "name": "VolleyRush",
+            "url": "https://volleyrush.io/play",
+            "description": "Arcade beach volleyball you play free in the browser. Online multiplayer from 1v1 to 6v6.",
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires a modern HTML5 WebGL browser",
+            "genre": ["Sports", "Arcade", "Volleyball", "Multiplayer"],
+            "gamePlatform": ["Web browser"],
+            "playMode": ["MultiPlayer", "SinglePlayer"],
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "availability": "https://schema.org/InStock",
+              "url": "https://volleyrush.io/play"
+            },
+            "image": "https://volleyrush.io/brand/card.jpg?v=og1",
+            "publisher": { "@id": "https://volleyrush.io/#organization" }
+          }
+        ]
+      }
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-90ZC63CMP9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-90ZC63CMP9");
+    </script>
+  </head>
+  <body class="arcade-page">
+    <a class="skip" href="#main">Skip to content</a>
+
+    <main id="main">
+      <section class="splash" aria-labelledby="hero-title">
+        <div class="arcade-stage">
+          <!-- Static court under the greenscreen hole until the loop video paints -->
+          <div class="splash-art" aria-hidden="true">
+            <picture>
+              <source srcset="/brand/hero_forest.webp" type="image/webp" />
+              <img
+                src="/brand/hero_forest.jpg"
+                width="2906"
+                height="1440"
+                alt=""
+                fetchpriority="high"
+              />
+            </picture>
+          </div>
+          <!-- Compressed gameplay loop (no live Three.js embed) -->
+          <video
+            class="splash-demo"
+            poster="/brand/hero_forest.webp"
+            muted
+            loop
+            playsinline
+            preload="metadata"
+            tabindex="-1"
+            aria-hidden="true"
+          >
+            <source src="/brand/hero_gameplay.mp4" type="video/mp4" />
+            <source src="/brand/hero_gameplay.webm" type="video/webm" />
+          </video>
+          <!-- CRT chrome + UI (EN / TR via site-locale.js) -->
+          <img
+            class="splash-chrome"
+            src="/brand/hero_frame.png?v=yeni1"
+            width="2906"
+            height="1440"
+            alt=""
+            fetchpriority="high"
+            decoding="sync"
+          />
+          <script>
+            (function () {
+              try {
+                var raw =
+                  localStorage.getItem('volleyrush.settings.v2') ||
+                  localStorage.getItem('volleyrush.settings.v1');
+                var lang = 'en';
+                if (raw) {
+                  var j = JSON.parse(raw);
+                  if (j && (j.language === 'tr' || j.language === 'en')) lang = j.language;
+                } else {
+                  var nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+                  if (nav.indexOf('tr') === 0) lang = 'tr';
+                }
+                if (lang === 'tr') {
+                  document.documentElement.lang = 'tr';
+                  var img = document.querySelector('.splash-chrome');
+                  if (img) img.src = '/brand/hero_frame_tr.png?v=20261012b';
+                }
+              } catch (e) {}
+            })();
+          </script>
+
+          <nav class="hit-layer" aria-label="Primary">
+            <a class="hit hit-logo" href="/" aria-label="VolleyRush home" data-i18n="home" data-i18n-aria="1"></a>
+            <a class="hit hit-how" href="/how-to-play" data-i18n="how">How to play</a>
+            <a class="hit hit-faq" href="/faq" data-i18n="faq">FAQ</a>
+            <a class="hit hit-about" href="/about" data-i18n="about">About</a>
+            <a class="hit hit-nav-play" href="/play/" data-cta="nav_play" data-i18n="play">Play Now</a>
+            <a class="hit hit-play" href="/play/" data-cta="hero_play" data-i18n="play">Play Now</a>
+            <a class="hit hit-howto" href="/how-to-play" data-i18n="how">How to play</a>
+          </nav>
+
+          <h1 id="hero-title" class="sr-only">Spike. Dive. Own the sand.</h1>
+          <p class="sr-only">
+            VolleyRush is indie arcade beach volleyball in your browser — multiplayer from 1v1 to
+            6v6, no download, just play online.
+          </p>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <nav aria-label="Footer">
+          <a href="/how-to-play" data-i18n="how">How to play</a>
+          <a href="/about" data-i18n="about">About</a>
+          <a href="/faq" data-i18n="faq">FAQ</a>
+          <a href="/play/" data-cta="footer_play" data-i18n="playShort">Play</a>
+          <a href="https://discord.gg/BjjpJvzQQV" target="_blank" rel="noopener noreferrer" data-cta="discord_hub">Discord</a>
+        </nav>
+        <p data-i18n="footerCopy">© VolleyRush. Free browser arcade beach volleyball at volleyrush.io.</p>
+      </div>
+    </footer>
+    <script src="/js/site-locale.js?v=20261012b"></script>
+    <script>
+      document.querySelectorAll("[data-cta]").forEach(function (el) {
+        el.addEventListener("click", function () {
+          if (typeof gtag === "function") {
+            gtag("event", "cta_play_click", {
+              cta_id: el.getAttribute("data-cta") || "unknown",
+              page_path: location.pathname,
+            });
+          }
+        });
+      });
+
+      (function () {
+        var splash = document.querySelector(".splash");
+        var video = document.querySelector("video.splash-demo");
+        if (!splash || !video) return;
+
+        var reduce =
+          window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var saveData =
+          (navigator.connection && navigator.connection.saveData) ||
+          (navigator.connection && /2g/.test(navigator.connection.effectiveType || ""));
+        if (reduce || saveData || /(?:\?|&)nodemo=1(?:&|$)/.test(location.search)) {
+          video.removeAttribute("autoplay");
+          video.pause();
+          video.removeAttribute("src");
+          while (video.firstChild) video.removeChild(video.firstChild);
+          video.load();
+          return;
+        }
+
+        splash.classList.add("is-demo");
+        var shown = false;
+
+        function markReady() {
+          if (shown) return;
+          shown = true;
+          splash.classList.add("is-demo-ready");
+          if (typeof gtag === "function") {
+            gtag("event", "hero_demo_shown", { page_path: location.pathname, demo_kind: "video" });
+          }
+        }
+
+        function playSafe() {
+          var p = video.play();
+          if (p && typeof p.then === "function") p.catch(function () {});
+        }
+
+        video.addEventListener("loadeddata", markReady, { once: true });
+        video.addEventListener("playing", markReady, { once: true });
+
+        if ("IntersectionObserver" in window) {
+          var io = new IntersectionObserver(
+            function (entries) {
+              var entry = entries[0];
+              if (!entry) return;
+              if (entry.isIntersecting && entry.intersectionRatio > 0.15) playSafe();
+              else video.pause();
+            },
+            { threshold: [0, 0.15, 0.5] }
+          );
+          io.observe(splash);
+        } else {
+          playSafe();
+        }
+
+        document.addEventListener("visibilitychange", function () {
+          if (document.hidden) video.pause();
+          else playSafe();
+        });
+
+        // Kick decode after first paint
+        if (video.readyState >= 2) markReady();
+        video.preload = "auto";
+        playSafe();
+      })();
+    </script>
+    <script src="/js/rotate-landscape.js?v=2" defer></script>
+  </body>
+</html>

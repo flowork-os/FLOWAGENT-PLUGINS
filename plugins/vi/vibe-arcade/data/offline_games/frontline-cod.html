@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://testyee-09.github.io/Opus5.5Cod/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Frontline">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>Frontline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/index-KJc2867W.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-D5aVsicY.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud" class="hidden">
+  <canvas id="vcanvas"></canvas>
+  <canvas id="minimap" width="220" height="220"></canvas>
+  <div id="uavTag"></div>
+  <div id="scorebar">
+    <div class="team ally"><b class="tname" id="nameA">USA</b><span id="scoreA">0</span><div class="bar"><i id="barA"></i></div></div>
+    <div id="timer">10:00</div>
+    <div class="team enemy"><div class="bar"><i id="barE"></i></div><span id="scoreE">0</span><b class="tname" id="nameE">RUSSIA</b></div>
+  </div>
+  <div id="flagsRow"></div>
+  <div id="susp"><div id="suspState">UNDERCOVER</div><div class="bar"><i id="suspBar"></i></div></div>
+  <div id="objectives"><div class="ot">MISSION</div><ol id="objList"></ol></div>
+  <div id="actbar"><div id="actText"></div><div class="bar"><i id="actFill"></i></div></div>
+  <canvas id="bigmap" class="hidden"></canvas>
+  <div id="banner"></div>
+  <div id="killfeed"></div>
+  <div id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><b></b></div>
+  <div id="hitmarker"><i></i><i></i><i></i><i></i></div>
+  <div id="aimName"></div>
+  <div id="indicators"></div>
+  <div id="popups"></div>
+  <div id="toast"></div>
+  <div id="hint"></div>
+  <div id="coach"></div>
+  <div id="intro"></div>
+  <div id="cookbar"><i id="cook"></i></div>
+  <div id="target"><i></i><i></i><span>MARK TARGET</span></div>
+  <div id="ammo">
+    <div id="wname"></div>
+    <div class="row"><span id="mag">30</span><span class="sep">/</span><span id="reserve">120</span></div>
+    <div id="nades"></div>
+    <div id="ammoHint"></div>
+    <div class="reload"><i id="reloadBar"></i></div>
+  </div>
+  <div id="health"><i id="hpbar"></i></div>
+  <div id="streaks"></div>
+  <div id="vignette"></div>
+  <div id="scope">
+    <div class="lens"></div>
+    <svg class="ret sniper-ret" viewBox="-100 -100 200 200" aria-hidden="true">
+      <g stroke="#000" fill="none">
+        <path d="M-100 0H100M0 -100V100" stroke-width="0.22"/>
+        <path d="M-100 0H-36M36 0H100M0 36V100M0 -100V-36" stroke-width="1.5"/>
+        <g stroke-width="0.35"><path d="M-30 -1.2V1.2M-20 -1.2V1.2M-10 -1.2V1.2M10 -1.2V1.2M20 -1.2V1.2M30 -1.2V1.2M-1.2 10H1.2M-1.2 20H1.2M-1.2 30H1.2M-1.2 -10H1.2M-1.2 -20H1.2M-1.2 -30H1.2"/></g>
+      </g>
+      <circle r="0.45" fill="#ff3b2a"/>
+    </svg>
+    <svg class="ret acog-ret" viewBox="-100 -100 200 200" aria-hidden="true">
+      <g stroke="#111" fill="none" stroke-width="0.5">
+        <path d="M-100 0H-40M40 0H100M0 60V100"/>
+        <path d="M-3 12H3M-2.4 20H2.4M-1.8 27H1.8M-1.2 33H1.2"/>
+      </g>
+      <path d="M-5 4.5L0 -1L5 4.5" stroke="#ff3b2a" stroke-width="1.1" fill="none"/>
+      <circle r="0.5" fill="#ff3b2a"/>
+    </svg>
+    <div id="breath"></div>
+  </div>
+  <div id="vhud" class="hidden"><div id="vname"></div><div class="vbar"><i id="vhp"></i></div><div id="vstats"></div><div id="vhelp"></div></div>
+  <div id="vwarn">MISSILE INCOMING</div>
+  <div id="use"></div>
+</div>
+
+<div id="scoreboard" class="hidden"></div>
+
+<div id="killcam"></div>
+<div id="death" class="hidden">
+  <h2>KILLED IN ACTION</h2>
+  <p id="deathBy"></p>
+  <p id="respawnIn"></p>
+  <p id="spawnSel"></p>
+</div>
+
+<div id="fade"></div>
+
+<div id="loading"><b>FRONTLINE</b><span>Loading scanned assets</span><div class="bar"><i id="loadingBar"></i></div></div>
+
+<div id="menu" class="screen">
+  <div class="panel wide">
+    <div class="topbar">
+      <div><h1>FRONTLINE</h1><p class="sub"><span id="modeName">Ground War</span> &middot; <span id="mapName">Crossroads</span> &middot; USA vs Russia</p></div>
+      <p id="rankLine" class="rank"></p>
+    </div>
+    <nav class="tabs" id="menuTabs"><button data-tab="play" class="on">PLAY</button><button data-tab="loadout">LOADOUT</button><button data-tab="armory">TECH TREE</button><button data-tab="settings">SETTINGS</button></nav>
+    <section class="tab" data-tab="play">
+      <div id="daily" class="daily"></div>
+      <h3>Map</h3>
+      <div id="maps" class="cards maps"></div>
+      <h3>Mode</h3>
+      <div id="modesel" class="cards modes"></div>
+      <div class="cols">
+        <div><h3>Enemy skill</h3><div id="diffs" class="seg"></div><p class="note">Bots adapt as the match goes: they flank campers, take cover when hurt and change kit to counter how you play.</p></div>
+        <div id="huntRow"><h3>FPV Hunt role</h3><div id="huntRole" class="seg"></div><p class="note">Hunter flies FPV + thermal recon drones (0). Hider has to survive 7 minutes.</p></div>
+      </div>
+      <div class="cols">
+        <div><h3>Callsign</h3><input id="callsign" class="text" maxlength="16" placeholder="Player" autocomplete="off"></div>
+        <div>
+          <h3>Multiplayer</h3>
+          <div class="seg"><button id="hostBtn">HOST</button><input id="joinCode" class="text code-in" maxlength="5" placeholder="CODE" autocomplete="off"><button id="joinBtn">JOIN</button></div>
+          <p id="mpMsg" class="note"></p>
+        </div>
+      </div>
+      <button id="deploy" class="primary">PLAY SOLO</button>
+      <div class="controls touch-only touch-help">
+        <span><b>Left thumb</b> anywhere: move, push to the rim to sprint</span><span><b>Right thumb</b> drag: look (every button also looks while you hold it)</span>
+        <span><b>FIRE</b> right or left side</span><span><b>AIM</b> toggles aim down sights</span><span>hold <b>CROUCH</b> to go prone</span>
+        <span>hold <b>FRAG</b> to cook</span><span><b>SWAP</b> weapons</span><span><b>USE</b> vehicles, flags and objectives</span>
+        <span><b>KIT</b> killstreaks, vehicles, sandbags and loadout</span><span><b>II</b> pause</span><span>Tip: add to your home screen to play full screen</span>
+      </div>
+      <div class="controls kb-only">
+        <span><kbd>WASD</kbd> move</span><span><kbd>Shift</kbd> sprint</span><span><kbd>C</kbd> crouch / slide</span>
+        <span><kbd>Space</kbd> jump</span><span><kbd>LMB</kbd> fire</span><span><kbd>RMB</kbd> aim</span>
+        <span><kbd>R</kbd> reload</span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> / wheel swap</span><span><kbd>G</kbd> hold to cook frag</span>
+        <span><kbd>Q</kbd><kbd>E</kbd> lean</span><span><kbd>Ctrl</kbd>/<kbd>Z</kbd> prone</span><span><kbd>V</kbd> knife</span>
+        <span><kbd>F</kbd> enter / exit vehicle</span><span><kbd>4</kbd><kbd>5</kbd><kbd>6</kbd> killstreaks</span>
+        <span><kbd>7</kbd> FPV <kbd>0</kbd> recon drone <kbd>8</kbd> ground vehicle <kbd>9</kbd> jet <kbd>H</kbd> helicopter</span>
+        <span><kbd>F</kbd> drive a jeep parked at spawn · Engineer: <kbd>T</kbd> sandbags <kbd>X</kbd> spawn beacon</span>
+        <span><kbd>B</kbd> loadout in a match</span><span><kbd>Tab</kbd> scores</span>
+        <span><kbd>Shift</kbd><kbd>Shift</kbd> tactical sprint</span><span><kbd>Space</kbd> at a ledge: mantle</span>
+        <span><kbd>M</kbd> map</span><span>hold <kbd>F</kbd> objectives</span>
+      </div>
+    </section>
+    <div class="tabhost" id="menuHost"></div>
+  </div>
+</div>
+
+<!-- shared panes: mounted in the main menu or the pause screen, whichever is open -->
+<div id="panes" class="hidden">
+  <section id="paneLoadout" class="tab" data-tab="loadout">
+    <h3>Class</h3>
+    <div id="classes" class="cards"></div>
+    <h3>Weapons for this class</h3>
+    <div id="picks" class="seg wrap"></div>
+    <p class="note">New guns unlock as you rank up.</p>
+    <h3>Weapon camo</h3>
+    <div id="camos" class="camos"></div>
+  </section>
+  <section id="paneArmory" class="tab" data-tab="armory">
+    <div id="tree" class="wt"></div>
+  </section>
+  <section id="paneSettings" class="tab" data-tab="settings">
+    <div class="cols">
+      <div>
+        <h3>Controls</h3>
+        <label>Sensitivity <input id="sens" type="range" min="0.2" max="3" step="0.05"><output id="sensOut"></output></label>
+        <label>Field of view <input id="fov" type="range" min="65" max="105" step="1"><output id="fovOut"></output></label>
+        <h3>Volume</h3>
+        <div id="volBox" class="vols"></div>
+      </div>
+      <div>
+        <h3>Graphics</h3>
+        <div class="setrow"><span>Quality</span><div id="quality" class="seg"></div></div>
+        <div class="setrow"><span>Look</span><div id="lookSel" class="seg"></div></div>
+        <label>Motion blur <input id="blur" type="range" min="0" max="1" step="0.05"><output id="blurOut"></output></label>
+        <label>Render scale <input id="scale" type="range" min="0.5" max="1" step="0.05"><output id="scaleOut"></output></label>
+        <label class="check"><input id="dynres" type="checkbox"> Dynamic resolution (holds 60 fps)</label>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="lobby" class="screen hidden">
+  <div class="panel small">
+    <h2>LOBBY</h2>
+    <h3>Room code</h3>
+    <div id="roomCode" class="roomcode"></div>
+    <p class="note" id="codeNote">Friends open this page, pick Join and type the code.</p>
+    <h3>Mode</h3>
+    <div id="modes" class="seg"><button data-mode="versus">Versus</button><button data-mode="coop">Co-op vs bots</button></div>
+    <h3>Map</h3>
+    <div id="lobbyMaps" class="seg"></div>
+    <h3>Game mode</h3>
+    <div id="lobbyGm" class="seg wrap"></div>
+    <div id="lobbyHunt"><h3>FPV Hunt: host plays</h3><div id="lobbyRole" class="seg"></div></div>
+    <h3>Players</h3>
+    <ul id="members" class="members"></ul>
+    <button id="startMp" class="primary">START MATCH</button>
+    <p id="lobbyMsg" class="note"></p>
+    <button id="leaveLobby" class="wide">LEAVE</button>
+  </div>
+</div>
+
+<div id="pause" class="screen hidden">
+  <div class="panel wide">
+    <div class="topbar">
+      <div><h2 id="pauseTitle">PAUSED</h2><p id="pauseNote" class="note"></p></div>
+      <div class="pbtns"><button id="resume" class="primary">RESUME</button><button id="quit">QUIT</button></div>
+    </div>
+    <p id="lockMsg" class="note"></p>
+    <nav class="tabs" id="pauseTabs"><button data-tab="loadout" class="on">LOADOUT</button><button data-tab="armory">TECH TREE</button><button data-tab="settings">SETTINGS</button></nav>
+    <p id="loadoutNote" class="note live"></p>
+    <div class="tabhost" id="pauseHost"></div>
+  </div>
+</div>
+
+<div id="end" class="screen hidden">
+  <div class="panel">
+    <h1 id="endTitle">VICTORY</h1>
+    <p id="endScore" class="bigscore"></p>
+    <div id="endStats" class="stats"></div>
+    <p id="endXp" class="xp"></p>
+    <div id="endBoard" class="board"></div>
+    <div class="row-btns"><button id="again" class="primary">PLAY AGAIN</button><button id="toMenu">MAIN MENU</button></div>
+    <p id="endNote" class="note"></p>
+  </div>
+</div>
+
+</body>
+</html>

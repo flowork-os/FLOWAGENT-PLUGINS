@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://vasu-devs.github.io/FishSlop_Opus5.5/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Fishslop</title>
+    <meta name="description" content="Pilot a bathyscaphe through a sunken reef, feed its fish, bank the coins they drop, and ping sonar for the Veilfin. A 3D game that runs in your browser." />
+    <meta name="theme-color" content="#04141c" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2304141c'/%3E%3Cpath d='M12 32c8-12 24-14 34-2l8-7v18l-8-7c-10 12-26 10-34-2z' fill='%23ff6b4a'/%3E%3Ccircle cx='22' cy='30' r='2.6' fill='%2304141c'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@700;900&family=Instrument+Sans:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script type="module" crossorigin src="/FishSlop_Opus5.5/assets/index-B9_qaF02.js"></script>
+    <link rel="stylesheet" crossorigin href="/FishSlop_Opus5.5/assets/index-CacChn8a.css">
+  </head>
+  <body>
+    <canvas id="scene" aria-label="Underwater reef, rendered in 3D"></canvas>
+
+    <div id="app">
+      <!-- Title -->
+      <section id="title" class="screen title" aria-labelledby="logo">
+        <div class="title-inner">
+          <p class="eyebrow">Bathyscaphe FS-7 · Reef keeper's log</p>
+          <h1 id="logo" class="logo">Fish<span>slop</span></h1>
+          <p class="pitch">Pilot the sub. Feed the reef. Bank the coins it drops. Ping sonar when something pale circles the ruins.</p>
+          <div class="title-actions">
+            <button id="btn-dive" class="btn primary" type="button" disabled>Loading the reef…</button>
+            <button id="btn-new" class="btn quiet" type="button" hidden>Start a new reef</button>
+          </div>
+          <p id="save-note" class="save-note" hidden></p>
+          <dl class="keys">
+            <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Steer</dd></div>
+            <div><dt><kbd>E</kbd><kbd>Q</kbd></dt><dd>Rise, dive</dd></div>
+            <div><dt><kbd>Space</kbd></dt><dd>Drop food</dd></div>
+            <div><dt><kbd>F</kbd></dt><dd>Sonar ping</dd></div>
+            <div><dt><kbd>Shift</kbd></dt><dd>Boost</dd></div>
+            <div><dt><kbd>Drag</kbd></dt><dd>Look around</dd></div>
+            <div><dt><kbd>B</kbd></dt><dd>The dock</dd></div>
+            <div><dt><kbd>N</kbd></dt><dd>Day, night</dd></div>
+          </dl>
+        </div>
+        <p id="webgl-error" class="webgl-error" role="alert" hidden>
+          This browser can't start WebGL, so the reef can't be drawn. Turn on hardware acceleration in your browser settings, then reload.
+        </p>
+      </section>
+
+      <!-- HUD -->
+      <div id="hud" class="hud" hidden>
+        <header class="hud-top">
+          <div class="panel purse">
+            <span class="label">Coins</span>
+            <output id="coins" class="coins" aria-live="off">0</output>
+          </div>
+          <div class="panel reef-card">
+            <div class="reef-row">
+              <span class="label">Reef</span>
+              <strong id="tier-name">Tide pool</strong>
+            </div>
+            <div class="meter" aria-hidden="true"><i id="tier-bar"></i></div>
+            <div class="reef-row small">
+              <span id="tier-next">60 to Lagoon</span>
+              <span id="residents">8 fish</span>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button id="btn-night" class="icon-btn" type="button" aria-label="Switch to night" title="Day / night (N)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></svg>
+            </button>
+            <button id="btn-sound" class="icon-btn" type="button" aria-label="Mute sound" title="Sound (M)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" /></svg>
+            </button>
+            <button id="btn-pause" class="icon-btn" type="button" aria-label="Pause" title="Pause (Esc)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" /></svg>
+            </button>
+          </div>
+        </header>
+
+        <div id="toasts" class="toasts" aria-live="polite"></div>
+        <div id="floaters" class="floaters" aria-hidden="true"></div>
+
+        <footer class="hud-bottom">
+          <div class="scope-wrap">
+            <canvas id="scope" class="scope" width="220" height="220" aria-label="Sonar scope"></canvas>
+            <div class="scope-read">
+              <span>Depth <b id="depth">0 m</b></span>
+              <span>Hdg <b id="heading">000°</b></span>
+            </div>
+          </div>
+          <div class="panel gauges">
+            <div class="gauge">
+              <span class="label">Food hopper <kbd>Space</kbd></span>
+              <div id="hopper" class="cells" aria-hidden="true"></div>
+            </div>
+            <div class="gauge">
+              <span class="label">Sonar <kbd>F</kbd></span>
+              <div class="meter sonar-meter" aria-hidden="true"><i id="sonar-bar"></i></div>
+              <span id="sonar-state" class="gauge-state">Ready</span>
+            </div>
+          </div>
+          <button id="btn-dock" class="btn dock" type="button">The dock <kbd>B</kbd></button>
+        </footer>
+
+        <div id="touch" class="touch" aria-hidden="true">
+          <div id="stick" class="stick"><i id="stick-knob"></i></div>
+          <div class="touch-buttons">
+            <button type="button" class="tbtn" data-hold="rise">Rise</button>
+            <button type="button" class="tbtn" data-hold="dive">Dive</button>
+            <button type="button" class="tbtn" data-hold="boost">Boost</button>
+            <button type="button" class="tbtn sonar" data-tap="sonar">Ping</button>
+            <button type="button" class="tbtn feed" data-hold="feed">Feed</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shop -->
+      <aside id="shop" class="shop" aria-labelledby="shop-title" hidden>
+        <div class="shop-head">
+          <div>
+            <p class="eyebrow">Docked · Supply bay</p>
+            <h2 id="shop-title">The dock</h2>
+          </div>
+          <div class="shop-purse"><span class="label">Coins</span> <b id="shop-coins">0</b></div>
+          <button id="btn-shop-close" class="icon-btn" type="button" aria-label="Close the dock">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        <div class="tabs" role="tablist">
+          <button id="tab-fish" class="tab" role="tab" aria-selected="true" aria-controls="shop-fish" type="button">Residents</button>
+          <button id="tab-sub" class="tab" role="tab" aria-selected="false" aria-controls="shop-sub" type="button">Sub parts</button>
+        </div>
+        <div id="shop-fish" class="shop-list" role="tabpanel"></div>
+        <div id="shop-sub" class="shop-list" role="tabpanel" hidden></div>
+      </aside>
+
+      <!-- Pause -->
+      <section id="pause" class="screen pause" aria-labelledby="pause-title" hidden>
+        <div class="pause-card panel">
+          <p class="eyebrow">Engines idle</p>
+          <h2 id="pause-title">Paused</h2>
+          <dl id="stats" class="stats"></dl>
+          <div class="pause-actions">
+            <button id="btn-resume" class="btn primary" type="button">Resume dive</button>
+            <button id="btn-reset" class="btn quiet" type="button">Start a new reef</button>
+          </div>
+          <p class="fine">Progress saves in this browser every few seconds. <a href="https://github.com/vasu-devs/FishSlop_Opus5.5" target="_blank" rel="noopener">Source on GitHub</a></p>
+        </div>
+      </section>
+    </div>
+
+  </body>
+</html>

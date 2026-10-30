@@ -12,6 +12,127 @@ import re
 
 
 POSE_REACTIONS = [
+    # --- MUSIC & SONG LYRIC DRAMATIC NARRATIVE ACTING ---
+    {
+        'category': 'music_crying',
+        'trigger_words': ['menangis', 'tangis', 'air mata', 'menetes', 'terisak', 'cried', 'tears', 'crying', 'weep', 'sakit hati', 'hancur hatiku'],
+        'pose': 'kneel_crying',
+        'emotion': 'sad',
+        'prop': 'broken_heart',
+        'background': 'raining_street',
+        'accent': '#38bdf8',
+        'camera_shake': 1,
+        'comic_shout': 'MENANGIS...',
+        'template': "Sticky breaks down crying in the rain overwhelmed by heartbreak: '{snippet}'"
+    },
+    {
+        'category': 'music_photo_memory',
+        'trigger_words': ['foto', 'potret', 'kenangan', 'bayangmu', 'memori', 'teringat', 'wajahmu', 'photograph', 'remember', 'memories', 'masa lalu'],
+        'pose': 'holding_photo',
+        'emotion': 'sad',
+        'prop': 'photo_frame',
+        'background': 'bedroom_night',
+        'accent': '#c084fc',
+        'camera_shake': 0,
+        'comic_shout': 'KENANGAN KITA',
+        'template': "Sticky clutches an old photo close to his heart reminiscing '{snippet}'"
+    },
+    {
+        'category': 'music_reaching_void',
+        'trigger_words': ['pergi', 'tinggalkan', 'jangan pergi', 'ku mohon', 'meraih', 'kembali', 'pulanglah', 'stay', 'leave', 'goodbye', 'fading', 'tinggalkanku'],
+        'pose': 'reaching_out',
+        'emotion': 'sad',
+        'prop': 'fading_silhouette',
+        'background': 'dream_void',
+        'accent': '#818cf8',
+        'camera_shake': 2,
+        'comic_shout': 'JANGAN PERGI!',
+        'template': "Sticky desperately reaches out into empty space pleading '{snippet}'"
+    },
+    {
+        'category': 'music_rain_cold',
+        'trigger_words': ['hujan', 'gerimis', 'basah', 'dingin', 'malam dingin', 'payung', 'rain', 'storm', 'cold night', 'kedinginan'],
+        'pose': 'walking_cold',
+        'emotion': 'sad',
+        'prop': 'umbrella',
+        'background': 'raining_street',
+        'accent': '#38bdf8',
+        'camera_shake': 1,
+        'comic_shout': 'MALAM HUJAN',
+        'template': "Sticky walks hunched alone through cold falling rain: '{snippet}'"
+    },
+    {
+        'category': 'music_running_chase',
+        'trigger_words': ['kejar', 'mengejar', 'lari', 'mencari', 'temukanmu', 'chasing', 'running after', 'find you', 'berlari kencang'],
+        'pose': 'running_chase',
+        'emotion': 'surprised',
+        'prop': 'speedlines',
+        'background': 'motion_street',
+        'accent': '#f59e0b',
+        'camera_shake': 3,
+        'comic_shout': 'MENGEJAR!',
+        'template': "Sticky sprints frantically down the street chasing after '{snippet}'"
+    },
+    {
+        'category': 'music_watching_betrayal',
+        'trigger_words': ['kau dengannya', 'dia bersamamu', 'melihatmu bersamanya', 'bahagia dengannya', 'with someone else', 'replaced', 'duaan', 'pelukanmu dengannya'],
+        'pose': 'peeking_heartbreak',
+        'emotion': 'sad',
+        'prop': 'couple_silhouette',
+        'background': 'park_bench',
+        'accent': '#ef4444',
+        'camera_shake': 2,
+        'comic_shout': 'BERSAMANYA...',
+        'template': "Sticky watches from shadows as his love walks with someone else: '{snippet}'"
+    },
+    {
+        'category': 'music_cafe_reflecting',
+        'trigger_words': ['kopi', 'kafe', 'secangkir', 'duduk sendiri', 'menunggu', 'cafe', 'coffee cup', 'solitude', 'meja kafe'],
+        'pose': 'cafe_reflecting',
+        'emotion': 'neutral',
+        'prop': 'coffee_steam',
+        'background': 'cafe_interior',
+        'accent': '#fbbf24',
+        'camera_shake': 0,
+        'comic_shout': 'MENUNGGU...',
+        'template': "Sticky sits alone in a quiet cafe staring into steaming coffee: '{snippet}'"
+    },
+    {
+        'category': 'music_heartbreak_clutch',
+        'trigger_words': ['sesak', 'dada', 'perih', 'menusuk', 'remuk', 'terluka', 'chest hurts', 'bleeding heart', 'hancur dadaku'],
+        'pose': 'heartbreak_clutch',
+        'emotion': 'sad',
+        'prop': 'broken_heart',
+        'background': 'speedlines_panic',
+        'accent': '#ef4444',
+        'camera_shake': 3,
+        'comic_shout': 'SESAK DADA!',
+        'template': "Sticky clutches his chest stumbling in intense emotional ache: '{snippet}'"
+    },
+    {
+        'category': 'music_rooftop_stargazing',
+        'trigger_words': ['bintang', 'langit', 'rembulan', 'malam berbintang', 'stars', 'night sky', 'moonlight', 'menatap langit', 'waktu malam'],
+        'pose': 'stargazing_rooftop',
+        'emotion': 'neutral',
+        'prop': 'shooting_star',
+        'background': 'rooftop_stars',
+        'accent': '#a78bfa',
+        'camera_shake': 0,
+        'comic_shout': 'DI BAWAH BINTANG',
+        'template': "Sticky gazes upward at the starry night sky wishing upon a star: '{snippet}'"
+    },
+    {
+        'category': 'music_peaceful_sunrise',
+        'trigger_words': ['ikhlas', 'merelakan', 'bangkit', 'esok hari', 'mentari', 'fajar', 'tersenyum', 'sunrise', 'new dawn', 'peace', 'bahagia lagi', 'terang'],
+        'pose': 'peaceful_sunrise',
+        'emotion': 'happy',
+        'prop': 'sunrise_rays',
+        'background': 'sunrise_hill',
+        'accent': '#fbbf24',
+        'camera_shake': 0,
+        'comic_shout': 'MENYAMBUT FAJAR!',
+        'template': "Sticky stands tall smiling serenely into the golden sunrise: '{snippet}'"
+    },
     {
         'category': 'medical_dna',
         'trigger_words': ['dna', 'replikasi', 'genetik', 'molekul', 'rantai', 'biologi', 'double helix'],
@@ -221,10 +342,26 @@ def extract_punchy_shout(text, default="IKUTI INI!"):
         return f"{words[0].upper()}!"
 
 
-def detect_video_domain(all_text):
+def detect_video_domain(all_text, staging_style=None):
     """Detects global narrative domain to guarantee consistent visual world and characters."""
     t = all_text.lower()
     
+    music_words = [
+        'lirik', 'lagu', 'nyanyi', 'musik', 'cover', 'nada', 'melodi', 'vokal', 'sing',
+        'song', 'singing', 'acoustic', 'reff', 'chorus', 'verse', 'cinta', 'rindu',
+        'hati', 'menangis', 'sayang', 'galau', 'kenangan', 'kekasih', 'bayangmu'
+    ]
+    if (staging_style == 'music_narrative_story') or any(w in t for w in music_words):
+        return {
+            'theme': 'music_narrative_story',
+            'default_bg': 'raining_street',
+            'actor1_label': 'STICKY',
+            'actor2_label': 'FADING MEMORY',
+            'actor2_is_silhouette': True,
+            'actor2_is_skeleton': False,
+            'fallback_props': ['broken_heart', 'photo_frame', 'umbrella', 'fading_silhouette', 'coffee_steam', 'sunrise_rays']
+        }
+
     medical_words = ['doktoran', 'kedokteran', 'dokter', 'dna', 'tulang', 'medis', 'anatomi', 'flashcard', 'replikasi', 'situlang', 'gemini']
     if any(w in t for w in medical_words):
         return {
@@ -233,6 +370,7 @@ def detect_video_domain(all_text):
             'actor1_label': 'MAHASISWA',
             'actor2_label': 'SI TULANG',
             'actor2_is_skeleton': True,
+            'actor2_is_silhouette': False,
             'fallback_props': ['brain', 'dna', 'bone', 'quiz', 'phone']
         }
     
@@ -244,6 +382,7 @@ def detect_video_domain(all_text):
             'actor1_label': 'HOST',
             'actor2_label': 'CO-HOST',
             'actor2_is_skeleton': False,
+            'actor2_is_silhouette': False,
             'fallback_props': ['sunglasses', 'phone', 'coffee', 'megaphone']
         }
 
@@ -255,6 +394,7 @@ def detect_video_domain(all_text):
             'actor1_label': 'TRADER',
             'actor2_label': 'ANALYST',
             'actor2_is_skeleton': False,
+            'actor2_is_silhouette': False,
             'fallback_props': ['chart_up', 'chart_down', 'phone', 'money_bag', 'coffee']
         }
 
@@ -264,6 +404,7 @@ def detect_video_domain(all_text):
         'actor1_label': 'HOST',
         'actor2_label': 'CO-HOST',
         'actor2_is_skeleton': False,
+        'actor2_is_silhouette': False,
         'fallback_props': ['bulb', 'phone', 'coffee', 'brain', 'megaphone']
     }
 
@@ -273,11 +414,12 @@ def direct_storyboard_beats(manifest):
     total_beats = len(beats)
 
     # 1. Global Narrative Domain & World Establishment
+    staging_style = manifest.get('staging_style')
     full_transcript = " ".join([b.get('text', '') for b in beats])
-    domain = detect_video_domain(full_transcript)
+    domain = detect_video_domain(full_transcript, staging_style=staging_style)
     manifest['domain_theme'] = domain['theme']
 
-    enable_two_actors = total_beats >= 2
+    enable_two_actors = total_beats >= 2 or domain.get('actor2_is_silhouette', False)
 
     # Staging variations across beats to guarantee dynamic positions
     stagings_cycle = [
@@ -330,14 +472,18 @@ def direct_storyboard_beats(manifest):
         # Staging assignment: alternates every beat
         staging = stagings_cycle[idx % len(stagings_cycle)]
 
-        # Determine speaker turn:
-        # If text explicitly mentions "si tulang" or "suka banget", Si Tulang takes center stage!
-        if 'situlang' in t_clean or 'si tulang' in t_clean or 'suka banget' in t_clean:
+        # Determine speaker turn & actor roles:
+        if domain.get('actor2_is_silhouette'):
+            is_actor2_speaking = False
+            actor2_action = 'wistful_memory' if idx % 2 == 0 else 'fading_away'
+            actor2_prop = 'fading_silhouette'
+            actor2_shout = None
+        elif domain.get('actor2_is_skeleton') and ('situlang' in t_clean or 'si tulang' in t_clean):
             is_actor2_speaking = True
             actor2_action = 'celebrate'
             actor2_prop = 'bone'
-            actor2_shout = 'SI TULANG SUKA!'
-        elif 'tulang' in t_clean or 'flashcard' in t_clean:
+            actor2_shout = extract_punchy_shout(text, default="SI TULANG!")
+        elif domain.get('actor2_is_skeleton') and ('tulang' in t_clean or 'flashcard' in t_clean):
             is_actor2_speaking = True
             actor2_action = 'think'
             actor2_prop = 'bone'
@@ -350,7 +496,7 @@ def direct_storyboard_beats(manifest):
         else:
             is_actor2_speaking = False
             actor2_action = 'listen'
-            actor2_prop = 'bone' if domain['actor2_is_skeleton'] else 'coffee'
+            actor2_prop = 'bone' if domain.get('actor2_is_skeleton') else 'coffee'
             actor2_shout = None
 
         # Build Dual Actor Specification
@@ -361,26 +507,42 @@ def direct_storyboard_beats(manifest):
             'action': pose if not is_actor2_speaking else 'listen',
             'prop': prop if not is_actor2_speaking else 'coffee',
             'emotion': emotion if not is_actor2_speaking else 'neutral',
-            'accent_color': [255, 230, 0],
+            'accent_color': [255, 230, 0] if not domain.get('actor2_is_silhouette') else [0, 229, 255],
             'comic_shout': comic_shout if not is_actor2_speaking else None,
             'scale': 1.05 if not is_actor2_speaking else 0.95
         }
 
-        actor_2 = {
-            'label': domain['actor2_label'],
-            'x': 510,
-            'speaking': is_actor2_speaking,
-            'action': actor2_action,
-            'prop': actor2_prop,
-            'emotion': 'happy' if is_actor2_speaking else 'neutral',
-            'accent_color': [0, 229, 255] if domain['actor2_is_skeleton'] else [247, 85, 168],
-            'comic_shout': actor2_shout,
-            'scale': 1.05 if is_actor2_speaking else 0.95
-        }
+        if domain.get('actor2_is_silhouette'):
+            actor_2 = {
+                'label': domain['actor2_label'],
+                'x': 510,
+                'speaking': False,
+                'action': actor2_action,
+                'prop': actor2_prop,
+                'emotion': 'neutral',
+                'accent_color': [192, 132, 252], # Ethereal violet-cyan glowing memory
+                'comic_shout': None,
+                'is_silhouette': True,
+                'opacity': 0.45,
+                'scale': 0.92
+            }
+        else:
+            actor_2 = {
+                'label': domain['actor2_label'],
+                'x': 510,
+                'speaking': is_actor2_speaking,
+                'action': actor2_action,
+                'prop': actor2_prop,
+                'emotion': 'happy' if is_actor2_speaking else 'neutral',
+                'accent_color': [0, 229, 255] if domain.get('actor2_is_skeleton') else [247, 85, 168],
+                'comic_shout': actor2_shout,
+                'scale': 1.05 if is_actor2_speaking else 0.95
+            }
 
         directed_beat = dict(beat)
         directed_beat.update({
             'model': 'classic',
+            'action': pose,
             'pose': pose,
             'emotion': emotion,
             'prop': prop,

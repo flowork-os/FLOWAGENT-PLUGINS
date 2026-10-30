@@ -76,14 +76,27 @@ def analyze_audio_envelope(audio_path, window_sec=0.08):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(json.dumps({"error": "Usage: audio_analyzer.py <audio_path> [output_json]"}))
+        print(json.dumps({"error": "Usage: audio_analyzer.py <audio_path> [fps_or_output_json]"}))
         sys.exit(1)
         
     in_file = sys.argv[1]
-    out_json = sys.argv[2] if len(sys.argv) > 2 else None
+    second_arg = sys.argv[2] if len(sys.argv) > 2 else None
+    
+    window = 0.08
+    out_json = None
+    if second_arg:
+        if second_arg.endswith(".json"):
+            out_json = second_arg
+        else:
+            try:
+                fps_val = float(second_arg)
+                if fps_val > 0:
+                    window = 1.0 / fps_val
+            except ValueError:
+                out_json = second_arg
     
     try:
-        data = analyze_audio_envelope(in_file)
+        data = analyze_audio_envelope(in_file, window_sec=window)
         if out_json:
             with open(out_json, "w") as f:
                 json.dump(data, f, indent=2)

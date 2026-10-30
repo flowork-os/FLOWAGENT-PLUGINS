@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en" data-als-shell="1">
+<head>
+  <base href="https://avengers-last-stand.vercel.app/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Avengers: Last Stand — Assemble. Survive. Evolve.</title>
+<meta name="description" content="Assemble your hero and hold the line for 15 minutes against endless alien, robot and Asgardian hordes. A 3D Avengers survivor-like that runs right in your browser — desktop and mobile.">
+<meta name="theme-color" content="#05080f">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Last Stand">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Avengers: Last Stand">
+<meta property="og:title" content="Avengers: Last Stand">
+<meta property="og:description" content="Assemble. Survive. Evolve. A 3D Avengers survivor-like — free to play in your browser.">
+<meta property="og:image" content="media/key_art.jpg" data-als="og-image">
+<meta property="og:image:alt" content="Avengers: Last Stand key art">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@riccoasi">
+<meta name="twitter:title" content="Avengers: Last Stand">
+<meta name="twitter:description" content="Assemble. Survive. Evolve. A 3D Avengers survivor-like — free to play in your browser.">
+<meta name="twitter:image" content="media/key_art.jpg" data-als="tw-image">
+<link rel="icon" type="image/png" sizes="192x192" href="media/app_icon_192.png" data-als="icon-png">
+<link rel="apple-touch-icon" href="media/app_icon_192.png" data-als="apple-icon">
+<link rel="preload" href="fonts/Orbitron.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="fonts/Rajdhani-SemiBold.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" as="image" href="media/menu_poster.jpg" fetchpriority="high">
+<link rel="manifest" href="manifest.webmanifest">
+<script>
+/* Runs before the engine script. ?mute=1 (or mute=true) = guaranteed-silent page:
+   the game mutes itself, the trailer is force-muted, and every AudioContext created
+   on this page is kept suspended so nothing can reach the speakers. */
+(function () {
+	var muted = /[?&]mute=(1|true)(&|$)/i.test(window.location.search);
+	window.ALS_MUTED = muted;
+	window.alsTrailerPlaying = false;
+	if (!muted) { return; }
+	document.documentElement.className += ' is-muted';
+	var Native = window.AudioContext || window.webkitAudioContext;
+	if (!Native) { return; }
+	var Silent = function (opts) {
+		var ctx = opts === undefined ? new Native() : new Native(opts);
+		try { ctx.suspend(); } catch (e) { /* already suspended */ }
+		ctx.resume = function () { return Promise.resolve(); };
+		return ctx;
+	};
+	Silent.prototype = Native.prototype;
+	window.AudioContext = Silent;
+	if (window.webkitAudioContext) { window.webkitAudioContext = Silent; }
+}());
+
+/* Language: ?lang=en|zh (persisted) → localStorage['als_lang'] (shared with the game, see
+   scripts/autoload/loc.gd) → English. Never guessed from navigator.language. */
+(function () {
+	var root = document.documentElement;
+	var lang = 'en';
+	var fromUrl = (window.location.search.match(/[?&]lang=(en|zh)(?:&|$)/i) || [])[1];
+	if (fromUrl) {
+		lang = fromUrl.toLowerCase();
+		try { window.localStorage.setItem('als_lang', lang); } catch (e) { /* private mode */ }
+	} else {
+		try {
+			var stored = window.localStorage.getItem('als_lang');
+			if (stored === 'en' || stored === 'zh') { lang = stored; }
+		} catch (e) { /* storage blocked */ }
+	}
+	window.ALS_LANG = lang;
+	root.lang = lang === 'zh' ? 'zh-CN' : 'en';
+	root.setAttribute('data-lang', lang);
+	var hasCjkFont = /*ALS:CJK*/true/*/ALS:CJK*/;
+	if (lang === 'zh') {
+		root.className += ' i18n-pending';   // hide the loader until the Chinese strings are in place
+		if (hasCjkFont) {
+			var l = document.createElement('link');
+			l.rel = 'preload'; l.as = 'font'; l.type = 'font/woff2'; l.crossOrigin = 'anonymous';
+			l.href = 'fonts/NotoSansSC-Game.woff2';
+			document.head.appendChild(l);
+		}
+	}
+}());
+</script>
+<style>
+@font-face { font-family: 'Orbitron'; src: url('fonts/Orbitron.ttf') format('truetype'); font-weight: 400 900; font-display: swap; }
+@font-face { font-family: 'Rajdhani'; src: url('fonts/Rajdhani-Medium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Rajdhani'; src: url('fonts/Rajdhani-SemiBold.ttf') format('truetype'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Rajdhani'; src: url('fonts/Rajdhani-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
+/* Noto Sans SC subset built by tools/i18n/build_cjk_font.py from assets/localization/zh_*.json (incl. zh_shell.json).
+   unicode-range: English visitors never download it. */
+/*ALS:CJK-FACE*/@font-face { font-family: 'ALS CJK'; src: url('fonts/NotoSansSC-Game.woff2') format('woff2'); font-display: swap; unicode-range: U+2E80-2FFF, U+3000-303F, U+3100-312F, U+31C0-31EF, U+3200-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF; }/*/ALS:CJK-FACE*/
+
+:root {
+	--bg: #05080f;
+	--bg-2: #0a1426;
+	--cyan: #3fd8ff;
+	--gold: #ffc34d;
+	--red: #ff3b4e;
+	--green: #4dff9a;
+	--text: #e8f4ff;
+	--text-dim: #8fa7c0;
+	--text-muted: rgba(143, 167, 192, 0.72);
+	--line: rgba(89, 204, 255, 0.34);
+	--panel: rgba(5, 12, 24, 0.8);
+	--cjk: 'ALS CJK', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC', 'Source Han Sans SC';
+	--display: 'Orbitron', 'Rajdhani', var(--cjk), 'Segoe UI', system-ui, sans-serif;
+	--body: 'Rajdhani', var(--cjk), 'Segoe UI', system-ui, -apple-system, sans-serif;
+	--gutter: clamp(18px, 5vw, 84px);
+	--safe-t: env(safe-area-inset-top, 0px);
+	--safe-r: env(safe-area-inset-right, 0px);
+	--safe-b: env(safe-area-inset-bottom, 0px);
+	--safe-l: env(safe-area-inset-left, 0px);
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body {
+	margin: 0; padding: 0; width: 100%; height: 100%;
+	background: var(--bg); color: var(--text);
+	overflow: hidden; overscroll-behavior: none;
+	font-family: var(--body); font-weight: 600;
+	-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+	-webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
+	-webkit-user-select: none; user-select: none;
+}
+body { position: fixed; inset: 0; }
+#canvas {
+	position: fixed; inset: 0; display: block; width: 100%; height: 100%;
+	background: #05080f; border: 0; outline: none;
+	touch-action: none; -webkit-touch-callout: none;
+}
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+kbd {
+	display: inline-block; min-width: 1.9em; padding: 2px 6px 1px; margin: 0 1px;
+	font-family: var(--display); font-size: 10px; font-weight: 700; line-height: 1.5; text-align: center;
+	color: var(--text); background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(143, 167, 192, 0.38); border-bottom-width: 2px; border-radius: 3px;
+}
+.noscript { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px; text-align: center; background: var(--bg); font-size: 20px; }
+
+/* chamfered glass (top-left + bottom-right 45° cuts, like the in-game panels) */
+.cham {
+	--c: 14px; --bc: var(--line); --fill: var(--panel);
+	position: relative; isolation: isolate; background: var(--bc);
+	clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+}
+.cham::before {
+	content: ''; position: absolute; inset: 1px; z-index: -1; background: var(--fill);
+	clip-path: polygon(calc(var(--c) - 0.4px) 0, 100% 0, 100% calc(100% - var(--c) + 0.4px), calc(100% - var(--c) + 0.4px) 100%, 0 100%, 0 calc(var(--c) - 0.4px));
+}
+.glass { -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+
+/* ------------------------------------------------------------------ loader */
+.loader {
+	position: fixed; inset: 0; z-index: 10;
+	display: flex; flex-direction: column;
+	padding: max(16px, var(--safe-t)) max(var(--gutter), var(--safe-r)) max(16px, var(--safe-b)) max(var(--gutter), var(--safe-l));
+	transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
+}
+.loader.is-leaving { opacity: 0; transform: scale(1.03); filter: blur(4px); pointer-events: none; }
+
+.bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; background: var(--bg); pointer-events: none; }
+.bg > * { position: absolute; inset: 0; }
+.bg-poster {
+	inset: -3%;
+	background-image:
+		var(--poster-a, none), var(--poster-b, none),
+		radial-gradient(110% 90% at 78% 28%, rgba(63, 216, 255, 0.2), transparent 58%),
+		radial-gradient(80% 70% at 12% 100%, rgba(255, 59, 78, 0.16), transparent 62%),
+		radial-gradient(60% 50% at 88% 90%, rgba(255, 195, 77, 0.1), transparent 70%),
+		linear-gradient(160deg, #0c1a33 0%, #05080f 58%, #020408 100%);
+	background-size: cover; background-position: 60% 50%; background-repeat: no-repeat;
+	animation: kenburns 42s ease-in-out infinite alternate;
+}
+.bg-video { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.4s ease; }
+.bg.has-video .bg-video { opacity: 1; }
+.bg-shade {
+	background:
+		linear-gradient(90deg, rgba(5, 8, 15, 0.97) 0%, rgba(5, 8, 15, 0.88) 26%, rgba(5, 8, 15, 0.5) 52%, rgba(5, 8, 15, 0.18) 74%, rgba(5, 8, 15, 0.5) 100%),
+		linear-gradient(0deg, rgba(5, 8, 15, 0.96) 0%, rgba(5, 8, 15, 0) 40%),
+		linear-gradient(180deg, rgba(5, 8, 15, 0.75) 0%, rgba(5, 8, 15, 0) 24%);
+}
+.bg-hexmask {
+	overflow: hidden; opacity: 0.1;
+	-webkit-mask-image: radial-gradient(ellipse 75% 70% at 28% 52%, #000 15%, transparent 78%);
+	mask-image: radial-gradient(ellipse 75% 70% at 28% 52%, #000 15%, transparent 78%);
+}
+.bg-hex {
+	position: absolute; top: -100px; left: -56px; right: -56px; bottom: -100px;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0 0v34' fill='none' stroke='%233fd8ff' stroke-width='1'/%3E%3C/svg%3E");
+	background-size: 56px 100px;
+	animation: hexdrift 36s linear infinite;
+	will-change: transform;
+}
+.bg-scan { background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px); }
+.bg-scan::after {
+	content: ''; position: absolute; left: 0; right: 0; top: -30%; height: 30%;
+	background: linear-gradient(180deg, transparent 0%, rgba(63, 216, 255, 0.05) 75%, rgba(63, 216, 255, 0.12) 99%, transparent 100%);
+	animation: sweep 8s linear infinite; will-change: transform;
+}
+.bg-vignette { background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%); }
+
+.topbar {
+	flex: none; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+	font-family: var(--display); font-size: 10px; font-weight: 700; letter-spacing: 0.28em; color: var(--text-dim);
+	animation: fade-in 0.8s ease both;
+}
+.brandline { display: flex; align-items: center; gap: 10px; white-space: nowrap; overflow: hidden; }
+.brandline .sep { color: rgba(63, 216, 255, 0.5); }
+.diamond { width: 9px; height: 9px; flex: none; border: 1.5px solid var(--cyan); transform: rotate(45deg); box-shadow: 0 0 8px rgba(63, 216, 255, 0.6); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid rgba(143, 167, 192, 0.25); background: rgba(5, 8, 15, 0.55); white-space: nowrap; }
+.pill svg { width: 13px; height: 13px; }
+.pill-alert { color: #ff8a95; border-color: rgba(255, 59, 78, 0.45); }
+.pill-alert i { width: 7px; height: 7px; border-radius: 50%; background: var(--red); box-shadow: 0 0 8px var(--red); animation: blink 1.4s ease-in-out infinite; }
+.pill-muted { color: var(--gold); border-color: rgba(255, 195, 77, 0.45); }
+
+.stage {
+	flex: 1 1 auto; min-height: 0; width: 100%; max-width: 640px;
+	display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 2.4vh, 24px);
+	padding: 10px 0;
+}
+.kicker {
+	margin: 0; display: flex; align-items: center; gap: 12px;
+	font-family: var(--display); font-size: clamp(10px, 1.1vw, 12px); font-weight: 700; letter-spacing: 0.42em; color: var(--cyan);
+	animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s both;
+}
+.kicker::before { content: ''; width: 28px; height: 2px; background: var(--red); box-shadow: 0 0 8px rgba(255, 59, 78, 0.7); }
+.kicker i { width: 5px; height: 5px; background: var(--gold); transform: rotate(45deg); }
+
+.lockup { margin: 0; display: inline-flex; flex-direction: column; align-self: flex-start; line-height: 1; animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s both; }
+.lk-top-wrap { position: relative; display: block; }
+.lk-top, .lk-ghost {
+	display: block; font-family: var(--display); font-weight: 900;
+	font-size: clamp(40px, min(8.4vw, 13.5vh), 116px); letter-spacing: 0.055em; margin-right: -0.055em;
+}
+.lk-top {
+	position: relative;
+	background-image:
+		linear-gradient(100deg, transparent 42%, rgba(255, 255, 255, 0.95) 50%, transparent 58%),
+		linear-gradient(180deg, #ffffff 0%, #dff7ff 42%, #8be6ff 68%, #2fb8e8 100%);
+	background-size: 300% 100%, 100% 100%; background-repeat: no-repeat;
+	background-position: 150% 0, 0 0;
+	-webkit-background-clip: text; background-clip: text;
+	-webkit-text-fill-color: transparent; color: transparent;
+	filter: drop-shadow(0 0 22px rgba(63, 216, 255, 0.35)) drop-shadow(0 4px 0 rgba(3, 20, 36, 0.9));
+	animation: text-shine 6.5s ease-in-out 1.2s infinite;
+}
+.lk-ghost {
+	position: absolute; left: 0; top: 0; color: rgba(255, 59, 78, 0.5);
+	transform: translate(-3px, 1px); mix-blend-mode: screen; filter: blur(0.3px);
+	animation: glitch 7s steps(1) 2s infinite;
+}
+.lk-bottom { display: flex; align-items: center; gap: 0.7em; margin-top: 0.34em; }
+.lk-bottom i { flex: 1 1 0; height: 2px; min-width: 16px; background: linear-gradient(90deg, rgba(255, 195, 77, 0), var(--gold)); }
+.lk-bottom i:last-child { background: linear-gradient(90deg, var(--gold), rgba(255, 195, 77, 0)); }
+.lk-bottom b {
+	font-family: var(--display); font-weight: 800; color: var(--gold);
+	font-size: clamp(14px, min(2.5vw, 4vh), 36px); letter-spacing: 0.5em; margin-right: -0.5em;
+	text-shadow: 0 0 18px rgba(255, 195, 77, 0.45);
+}
+
+.uplink { --c: 12px; width: 100%; max-width: 580px; padding: 14px 18px 12px; animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both; }
+.uplink-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+.status { font-size: clamp(15px, 1.5vw, 18px); font-weight: 600; color: var(--text); letter-spacing: 0.02em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pct { font-family: var(--display); font-weight: 800; font-size: clamp(20px, 2.2vw, 28px); color: var(--cyan); font-variant-numeric: tabular-nums; text-shadow: 0 0 14px rgba(63, 216, 255, 0.45); white-space: nowrap; }
+.pct small { font-size: 0.55em; margin-left: 2px; opacity: 0.8; }
+.bar {
+	--c: 6px; position: relative; height: 14px; margin: 10px 0;
+	background: rgba(63, 216, 255, 0.07); box-shadow: inset 0 0 0 1px rgba(63, 216, 255, 0.3);
+	clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+}
+.bar-track { position: absolute; inset: 3px; }
+.bar-fill {
+	position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+	background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.22) 0 6px, transparent 6px 12px), linear-gradient(90deg, #147fb0, #3fd8ff 72%, #c9f6ff);
+	background-size: 17px 17px, 100% 100%;
+	box-shadow: 0 0 14px rgba(63, 216, 255, 0.55);
+	animation: stripes 0.9s linear infinite;
+	transition: background-image 0.4s ease;
+}
+.bar-fill::after { content: ''; position: absolute; right: -1px; top: -3px; bottom: -3px; width: 3px; background: #fff; box-shadow: 0 0 10px 2px rgba(63, 216, 255, 0.9); }
+.bar-ticks { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(5, 8, 15, 0.85) calc(10% - 1px) 10%); pointer-events: none; }
+.bar.is-indeterminate .bar-fill { width: 30% !important; animation: stripes 0.9s linear infinite, indeterminate 1.6s ease-in-out infinite; }
+.loader[data-phase="ready"] .bar-fill, .loader[data-phase="starting"] .bar-fill, .loader[data-phase="running"] .bar-fill {
+	background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.25) 0 6px, transparent 6px 12px), linear-gradient(90deg, #c7861c, #ffc34d 70%, #fff0c4);
+	box-shadow: 0 0 16px rgba(255, 195, 77, 0.55);
+}
+.loader[data-phase="ready"] .bar-fill::after { box-shadow: 0 0 10px 2px rgba(255, 195, 77, 0.9); }
+.loader[data-phase="ready"] .pct { color: var(--gold); text-shadow: 0 0 14px rgba(255, 195, 77, 0.45); }
+.uplink-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.steps { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.steps li {
+	position: relative; padding: 4px 9px 3px 21px;
+	font-family: var(--display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.2em;
+	color: var(--text-muted); border: 1px solid rgba(143, 167, 192, 0.2);
+	transition: color 0.3s ease, border-color 0.3s ease;
+}
+.steps li::before { content: ''; position: absolute; left: 8px; top: 50%; width: 6px; height: 6px; margin-top: -3px; transform: rotate(45deg); background: rgba(143, 167, 192, 0.35); }
+.steps li.is-active { color: var(--cyan); border-color: rgba(63, 216, 255, 0.5); }
+.steps li.is-active::before { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: blink 0.9s ease-in-out infinite; }
+.steps li.is-done { color: var(--gold); border-color: rgba(255, 195, 77, 0.45); }
+.steps li.is-done::before { background: var(--gold); }
+.bytes { font-size: 14px; color: var(--text-dim); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; white-space: nowrap; }
+.uplink-warn { margin: 8px 0 0; font-size: 14px; color: var(--gold); }
+.uplink-warn button { padding: 0; border: 0; background: none; color: var(--cyan); text-decoration: underline; cursor: pointer; font-weight: 700; }
+
+.actions { display: flex; align-items: center; gap: 14px 18px; flex-wrap: wrap; animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.28s both; }
+.deploy-wrap { filter: drop-shadow(0 10px 26px rgba(255, 195, 77, 0.28)); transition: filter 0.3s ease; }
+.deploy-wrap.is-idle { filter: none; }
+.deploy {
+	--c: 16px; position: relative; overflow: hidden; min-width: 280px; height: 78px; padding: 0 38px;
+	display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+	border: 0; cursor: pointer; color: #1b1103;
+	background: linear-gradient(180deg, #ffe08c 0%, #ffc34d 46%, #e39a14 100%);
+	clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+	transition: transform 0.15s ease, background 0.3s ease, color 0.3s ease;
+}
+.deploy::after {
+	content: ''; position: absolute; inset: 0; pointer-events: none;
+	background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.6) 50%, transparent 62%);
+	transform: translateX(-130%); animation: sheen 3.2s ease-in-out 0.6s infinite;
+}
+.deploy-main { font-family: var(--display); font-weight: 900; font-size: 27px; letter-spacing: 0.2em; margin-right: -0.2em; line-height: 1; }
+.deploy-sub { font-weight: 700; font-size: 13px; letter-spacing: 0.34em; margin-right: -0.34em; opacity: 0.78; line-height: 1; }
+.deploy:hover:not(:disabled) { background: linear-gradient(180deg, #fff0bd 0%, #ffd06a 46%, #f0a91f 100%); transform: translateY(-1px); }
+.deploy:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
+.deploy:focus-visible { outline: none; box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px rgba(27, 17, 3, 0.8); }
+.deploy.is-ready { animation: pulse 2.4s ease-in-out infinite; }
+.deploy:disabled { cursor: progress; color: var(--text-dim); background: linear-gradient(180deg, rgba(22, 42, 66, 0.95), rgba(8, 18, 34, 0.95)); }
+.deploy:disabled::after { display: none; }
+.deploy:disabled .deploy-main { opacity: 0.55; }
+.deploy.is-small { min-width: 0; height: 52px; padding: 0 28px; --c: 12px; }
+.deploy.is-small .deploy-main { font-size: 16px; }
+
+.actions-side { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.ghost {
+	--c: 10px; --bc: rgba(63, 216, 255, 0.5); --fill: rgba(5, 14, 28, 0.72);
+	display: inline-flex; align-items: center; gap: 10px; height: 42px; padding: 0 18px 0 14px;
+	border: 0; cursor: pointer; color: var(--text);
+	font-family: var(--display); font-size: 11.5px; font-weight: 700; letter-spacing: 0.2em;
+	transition: color 0.2s ease, transform 0.15s ease;
+}
+.ghost svg { width: 16px; height: 16px; color: var(--cyan); flex: none; }
+.ghost:hover { --bc: var(--cyan); --fill: rgba(10, 42, 66, 0.85); color: #fff; transform: translateY(-1px); }
+.ghost:focus-visible { outline: none; --bc: var(--gold); }
+.fs-toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; color: var(--text-dim); letter-spacing: 0.04em; }
+.fs-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.switch { position: relative; width: 34px; height: 18px; border: 1px solid rgba(143, 167, 192, 0.45); background: rgba(5, 8, 15, 0.6); transition: background 0.2s ease, border-color 0.2s ease; }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 10px; height: 10px; background: var(--text-dim); transform: rotate(45deg); transition: transform 0.2s ease, background 0.2s ease; }
+.fs-toggle input:checked + .switch { border-color: var(--cyan); background: rgba(63, 216, 255, 0.16); }
+.fs-toggle input:checked + .switch::after { background: var(--cyan); transform: translateX(16px) rotate(45deg); box-shadow: 0 0 8px var(--cyan); }
+.fs-toggle input:focus-visible + .switch { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.tip { margin: 0; display: flex; align-items: baseline; gap: 12px; max-width: 580px; min-height: 2.5em; font-size: clamp(15px, 1.4vw, 17px); font-weight: 500; line-height: 1.3; color: var(--text-dim); animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.36s both; }
+.tip-tag { flex: none; padding: 3px 7px 2px; font-family: var(--display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.24em; color: var(--gold); border: 1px solid rgba(255, 195, 77, 0.45); transform: translateY(-2px); }
+.tip-text { opacity: 0; transform: translateY(5px); transition: opacity 0.35s ease, transform 0.35s ease; }
+.tip-text.in { opacity: 1; transform: none; }
+.tip-text b { color: var(--text); font-weight: 700; }
+
+.foot { flex: none; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; animation: fade-in 1s ease 0.4s both; }
+.controls { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-muted); letter-spacing: 0.08em; }
+.controls-row { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; }
+.controls-row span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.controls .touch-only { display: none; }
+.is-touch .controls .touch-only { display: flex; }
+.is-touch .controls .desk-only { display: none; }
+.credit-line { font-size: 11px; letter-spacing: 0.16em; color: rgba(143, 167, 192, 0.5); }
+
+.creator { --c: 14px; --fill: rgba(5, 12, 24, 0.82); display: flex; align-items: center; gap: 14px; padding: 10px 12px 10px 10px; }
+.avatar { position: relative; flex: none; width: 56px; height: 56px; padding: 2px; border-radius: 50%; background: conic-gradient(from 210deg, var(--gold), var(--cyan), var(--gold)); box-shadow: 0 0 16px rgba(63, 216, 255, 0.3); }
+.avatar img, .avatar .mono { display: block; width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--bg); background: var(--bg-2); object-fit: cover; }
+.avatar .mono { display: none; place-items: center; font-family: var(--display); font-weight: 900; font-size: 20px; color: var(--gold); }
+.avatar.no-img img { display: none; }
+.avatar.no-img .mono { display: grid; }
+.creator-meta { display: flex; flex-direction: column; gap: 4px; line-height: 1; min-width: 0; }
+.creator-label { font-family: var(--display); font-size: 9px; font-weight: 700; letter-spacing: 0.3em; color: var(--gold); white-space: nowrap; }
+.creator-name { font-family: var(--display); font-size: 22px; font-weight: 900; color: var(--text); letter-spacing: 0.06em; }
+.creator-handle { font-size: 16px; font-weight: 700; color: var(--cyan); letter-spacing: 0.02em; }
+.socials { display: flex; gap: 8px; margin-left: 4px; }
+.social {
+	--c: 8px; --bc: rgba(143, 167, 192, 0.35); --fill: rgba(255, 255, 255, 0.04);
+	display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 12px;
+	text-decoration: none; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; color: var(--text);
+	transition: transform 0.15s ease;
+}
+.social svg { width: 17px; height: 17px; flex: none; }
+.social:hover { --bc: var(--cyan); --fill: rgba(63, 216, 255, 0.12); transform: translateY(-1px); }
+.social.tt:hover { --bc: #fe2c55; --fill: rgba(254, 44, 85, 0.12); }
+.social:focus-visible { outline: none; --bc: var(--gold); }
+
+/* ------------------------------------------------------------------ language */
+.i18n-pending .loader, .i18n-pending .rotate { visibility: hidden; }
+.lang {
+	display: inline-flex; align-items: stretch; height: 26px; padding: 2px; gap: 2px;
+	border: 1px solid rgba(143, 167, 192, 0.3); background: rgba(5, 8, 15, 0.6);
+	-webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.lang-btn {
+	display: inline-flex; align-items: center; justify-content: center; min-width: 38px; padding: 0 9px;
+	border: 0; background: transparent; color: var(--text-dim); cursor: pointer;
+	font-family: var(--display); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; line-height: 1;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+.lang-btn[data-lang="zh"] { font-family: var(--body); font-size: 12.5px; letter-spacing: 0.08em; }
+/* English visitors: draw 中文 with the system CJK font so the subset font is never fetched for it */
+html[data-lang="en"] .lang-btn[data-lang="zh"] { font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC', 'ALS CJK', sans-serif; font-weight: 500; }
+.lang-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+.lang-btn[aria-pressed="true"] { color: var(--bg); background: var(--cyan); box-shadow: 0 0 10px rgba(63, 216, 255, 0.45); cursor: default; }
+.lang-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+.lk-zh { display: none; }
+html[data-lang="zh"] .lk-zh {
+	display: block; margin-top: 0.55em; text-align: center;
+	font-family: var(--body); font-weight: 700; font-size: clamp(13px, min(1.9vw, 3.3vh), 24px);
+	letter-spacing: 0.62em; margin-right: -0.62em; color: var(--text);
+	text-shadow: 0 0 16px rgba(63, 216, 255, 0.35);
+}
+/* CJK has no caps and wide glyphs: bigger sizes, calmer tracking than the Latin display type */
+html[data-lang="zh"] .brandline, html[data-lang="zh"] .pill { font-size: 11.5px; letter-spacing: 0.14em; }
+html[data-lang="zh"] .kicker { font-size: clamp(12px, 1.2vw, 14px); letter-spacing: 0.5em; }
+html[data-lang="zh"] .steps li { font-size: 11px; letter-spacing: 0.1em; }
+html[data-lang="zh"] .status { letter-spacing: 0.04em; }
+html[data-lang="zh"] .deploy-main { font-size: 26px; letter-spacing: 0.16em; margin-right: -0.16em; }
+html[data-lang="zh"] .deploy-sub { font-size: 13px; letter-spacing: 0.4em; margin-right: -0.4em; }
+html[data-lang="zh"] .ghost { font-size: 13px; letter-spacing: 0.14em; }
+html[data-lang="zh"] .tip { line-height: 1.5; }
+html[data-lang="zh"] .tip-tag, html[data-lang="zh"] .creator-label { font-size: 11px; letter-spacing: 0.2em; }
+html[data-lang="zh"] .controls { letter-spacing: 0.04em; }
+html[data-lang="zh"] .credit-line { font-size: 11.5px; letter-spacing: 0.08em; }
+html[data-lang="zh"] .trailer-title, html[data-lang="zh"] .fault-code { font-size: 13px; letter-spacing: 0.2em; }
+html[data-lang="zh"] .trailer-empty strong { letter-spacing: 0.24em; }
+html[data-lang="zh"] .fault h2 { letter-spacing: 0.02em; }
+html[data-lang="zh"] .rotate h2 { font-size: 21px; letter-spacing: 0.3em; }
+
+/* ------------------------------------------------------------------ trailer */
+.trailer {
+	position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
+	padding: max(16px, var(--safe-t)) max(16px, var(--safe-r)) max(16px, var(--safe-b)) max(16px, var(--safe-l));
+	background: rgba(2, 4, 9, 0.88); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+	opacity: 0; transition: opacity 0.25s ease;
+}
+.trailer.is-open { opacity: 1; }
+.trailer-box { width: min(1200px, 100%, calc((100vh - 110px) * 16 / 9)); width: min(1200px, 100%, calc((100dvh - 110px) * 16 / 9)); transform: scale(0.97); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.trailer.is-open .trailer-box { transform: none; }
+.trailer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.trailer-title { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 12px; font-weight: 700; letter-spacing: 0.3em; color: var(--cyan); }
+.trailer-title::before { content: ''; width: 22px; height: 2px; background: var(--red); }
+.trailer-close { --c: 8px; height: 38px; padding: 0 12px 0 10px; font-size: 11px; }
+.trailer-close svg { color: var(--text); }
+.trailer-frame { --c: 18px; --bc: rgba(63, 216, 255, 0.45); --fill: #000; aspect-ratio: 16 / 9; width: 100%; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); }
+.trailer-frame video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; outline: none; }
+.trailer-empty { position: absolute; inset: 0; display: grid; place-content: center; gap: 10px; text-align: center; padding: 24px; background: radial-gradient(ellipse at center, rgba(63, 216, 255, 0.12), transparent 70%); }
+.trailer-empty strong { font-family: var(--display); font-size: clamp(16px, 2.2vw, 24px); letter-spacing: 0.2em; color: var(--text); }
+.trailer-empty span { color: var(--text-dim); font-size: 17px; }
+
+/* ------------------------------------------------------------------ fault */
+.fault {
+	position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; overflow: auto;
+	padding: max(20px, var(--safe-t)) max(20px, var(--safe-r)) max(20px, var(--safe-b)) max(20px, var(--safe-l));
+	background: radial-gradient(ellipse at 50% 40%, rgba(255, 59, 78, 0.12), transparent 60%), rgba(3, 5, 10, 0.86);
+	-webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+	-webkit-user-select: text; user-select: text;
+}
+.fault-card { --c: 18px; --bc: rgba(255, 59, 78, 0.6); --fill: rgba(10, 10, 20, 0.95); width: min(600px, 100%); padding: 26px 28px 24px; animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.fault[data-kind="exit"] .fault-card { --bc: rgba(63, 216, 255, 0.5); }
+.fault-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.fault-icon { width: 34px; height: 34px; flex: none; color: var(--red); }
+.fault[data-kind="exit"] .fault-icon { color: var(--cyan); }
+.fault-code { margin: 0; font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 0.32em; color: var(--red); }
+.fault[data-kind="exit"] .fault-code { color: var(--cyan); }
+.fault h2 { margin: 0 0 8px; font-family: var(--display); font-size: clamp(20px, 2.6vw, 28px); font-weight: 800; letter-spacing: 0.04em; line-height: 1.15; }
+.fault p { margin: 0 0 12px; font-size: 17px; font-weight: 500; line-height: 1.4; color: var(--text-dim); }
+.fault ul { margin: 0 0 14px; padding: 0; list-style: none; display: grid; gap: 8px; }
+.fault li { padding: 10px 12px; border-left: 3px solid var(--red); background: rgba(255, 59, 78, 0.07); font-size: 16px; line-height: 1.35; color: var(--text-dim); }
+.fault li b { display: block; color: var(--text); font-weight: 700; letter-spacing: 0.04em; }
+.fault details { margin: 0 0 16px; font-size: 14px; color: var(--text-muted); }
+.fault summary { cursor: pointer; letter-spacing: 0.08em; }
+.fault pre { margin: 8px 0 0; max-height: 170px; overflow: auto; padding: 10px 12px; font-size: 12px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; color: #ffb9c0; background: rgba(255, 59, 78, 0.06); border: 1px solid rgba(255, 59, 78, 0.25); }
+.fault-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+
+/* ------------------------------------------------------------------ rotate hint */
+.rotate {
+	position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; text-align: center;
+	padding: max(24px, var(--safe-t)) max(24px, var(--safe-r)) max(24px, var(--safe-b)) max(24px, var(--safe-l));
+	background: radial-gradient(ellipse at 50% 35%, rgba(63, 216, 255, 0.14), transparent 60%), rgba(5, 8, 15, 0.97);
+}
+.rotate-card { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 340px; }
+.rotate-icon { width: 104px; height: 104px; }
+.rotate-icon .phone { transform-box: view-box; transform-origin: 48px 41px; animation: tilt 2.8s ease-in-out infinite; }
+.rotate h2 { margin: 6px 0 0; font-family: var(--display); font-size: 18px; font-weight: 800; letter-spacing: 0.22em; color: var(--text); }
+.rotate p { margin: 0 0 8px; font-size: 17px; font-weight: 500; line-height: 1.4; color: var(--text-dim); }
+
+/* ------------------------------------------------------------------ responsive */
+@media (max-width: 1100px) {
+	.social span { display: none; }
+	.social { padding: 0 11px; }
+}
+@media (max-width: 900px) {
+	.brandline .hide-sm, .pill-alert { display: none; }
+	.controls { display: none; }
+	.foot { justify-content: flex-end; }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+	.loader { padding-top: max(10px, var(--safe-t)); padding-bottom: max(10px, var(--safe-b)); }
+	.stage { gap: 9px; max-width: 540px; }
+	.kicker, .controls, .pill-alert { display: none; }
+	.lk-top, .lk-ghost { font-size: clamp(30px, 13vh, 64px); }
+	.lk-bottom b { font-size: clamp(11px, 3.6vh, 18px); }
+	.uplink { padding: 10px 14px 9px; }
+	.bar { margin: 7px 0; height: 12px; }
+	.deploy { height: 60px; min-width: 220px; }
+	.deploy-main { font-size: 21px; }
+	.tip { font-size: 14px; min-height: 0; }
+	.creator { padding: 7px 9px 7px 7px; gap: 10px; }
+	.avatar { width: 42px; height: 42px; }
+	.creator-name { font-size: 17px; }
+	.creator-handle { font-size: 13px; }
+	.creator-label { font-size: 8px; }
+	.social { height: 34px; }
+	/* the bottom row is taken by the actions: park the creator card in the free top-right art area */
+	.foot { position: absolute; right: max(var(--gutter), var(--safe-r)); top: calc(max(10px, var(--safe-t)) + 36px); }
+	.creator-label { display: none; }
+}
+@media (max-height: 400px) and (orientation: landscape) {
+	.tip, .steps { display: none; }
+	.fs-toggle { font-size: 13px; }
+	.ghost { height: 36px; }
+}
+@media (orientation: portrait) and (max-width: 760px) {
+	.loader { overflow-y: auto; touch-action: pan-y; }
+	.stage { flex: none; justify-content: flex-start; padding-top: 6vh; }
+	.status { white-space: normal; }
+	.lk-top, .lk-ghost { font-size: clamp(34px, 13vw, 64px); }
+	.lk-bottom b { font-size: clamp(12px, 4vw, 18px); }
+	.actions { flex-direction: column; align-items: stretch; }
+	.deploy { width: 100%; }
+	.actions-side { flex-direction: row; justify-content: space-between; align-items: center; }
+	.foot { margin-top: 18px; justify-content: stretch; }
+	.creator { width: 100%; flex-wrap: wrap; }
+	.socials { margin-left: auto; }
+}
+
+/* ------------------------------------------------------------------ motion */
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kenburns { from { transform: scale(1.02) translate3d(0, 0, 0); } to { transform: scale(1.1) translate3d(-1.5%, -1%, 0); } }
+@keyframes hexdrift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(56px, 100px, 0); } }
+@keyframes sweep { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 470%, 0); } }
+@keyframes text-shine { 0% { background-position: 150% 0, 0 0; } 45%, 100% { background-position: -50% 0, 0 0; } }
+@keyframes glitch { 0%, 100% { transform: translate(-3px, 1px); opacity: 1; } 92% { transform: translate(-7px, 0); opacity: 0.9; } 94% { transform: translate(4px, -1px); opacity: 0.7; } 96% { transform: translate(-2px, 2px); } }
+@keyframes stripes { to { background-position: 17px 0, 0 0; } }
+@keyframes indeterminate { 0% { left: -30%; } 100% { left: 100%; } }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes sheen { 0% { transform: translateX(-130%); } 55%, 100% { transform: translateX(130%); } }
+@keyframes pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.12); } }
+@keyframes tilt { 0%, 18% { transform: rotate(0deg); } 48%, 70% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; }
+	.bg-video { display: none; }
+}
+</style>
+
+</head>
+<body>
+<canvas id="canvas" tabindex="0" aria-label="Avengers: Last Stand — game view" data-i18n-aria="canvas.label">Your browser does not support the canvas element.</canvas>
+<noscript><div class="noscript">JavaScript is required to play Avengers: Last Stand.<br><span lang="zh-CN">需要启用 JavaScript 才能游玩《复仇者联盟：最后防线》。</span></div></noscript>
+
+<div id="loader" class="loader" data-phase="boot" aria-busy="true">
+	<div class="bg" id="bg" aria-hidden="true">
+		<div class="bg-poster" id="bg-poster"></div>
+		<video class="bg-video" id="bg-video" muted autoplay loop playsinline disablepictureinpicture disableremoteplayback preload="auto" tabindex="-1"></video>
+		<div class="bg-shade"></div>
+		<div class="bg-hexmask"><div class="bg-hex"></div></div>
+		<div class="bg-scan"></div>
+		<div class="bg-vignette"></div>
+	</div>
+
+	<header class="topbar">
+		<div class="brandline"><i class="diamond"></i><span data-i18n="brand">LAST STAND PROTOCOL</span><span class="sep hide-sm">//</span><span class="hide-sm" id="build-tag">WEB BUILD</span></div>
+		<div class="topbar-right">
+			<span class="pill pill-muted" id="muted-pill" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><path d="M16 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="pill.muted">MUTED</span></span>
+			<span class="pill pill-alert"><i></i><span data-i18n="pill.alert">INCURSION DETECTED</span></span>
+			<div class="lang" id="lang" role="group" aria-label="Language" data-i18n-aria="lang.label"><button type="button" class="lang-btn" data-lang="en" lang="en" aria-pressed="true" title="English">EN</button><button type="button" class="lang-btn" data-lang="zh" lang="zh-CN" aria-pressed="false" title="简体中文">中文</button></div>
+		</div>
+	</header>
+
+	<main class="stage">
+		<p class="kicker"><span data-i18n="kicker.assemble">ASSEMBLE</span><i></i><span data-i18n="kicker.survive">SURVIVE</span><i></i><span data-i18n="kicker.evolve">EVOLVE</span></p>
+		<h1 class="lockup" aria-label="Avengers: Last Stand" data-i18n-aria="game.name">
+			<span class="lk-top-wrap" aria-hidden="true"><span class="lk-ghost">AVENGERS</span><span class="lk-top">AVENGERS</span></span>
+			<span class="lk-bottom" aria-hidden="true"><i></i><b>LAST STAND</b><i></i></span>
+			<span class="lk-zh" aria-hidden="true" data-i18n="subtitle"></span>
+		</h1>
+
+		<section class="uplink cham glass" aria-label="Loading" data-i18n-aria="loading.label">
+			<div class="uplink-head">
+				<span class="status" id="status" role="status" aria-live="polite">Establishing secure uplink…</span>
+				<span class="pct"><span id="pct">0</span><small>%</small></span>
+			</div>
+			<div class="bar" id="bar" role="progressbar" aria-label="Loading progress" data-i18n-aria="progress.label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+				<div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
+				<div class="bar-ticks"></div>
+			</div>
+			<div class="uplink-foot">
+				<ol class="steps" aria-hidden="true">
+					<li data-step="engine" data-i18n="step.engine">ENGINE</li>
+					<li data-step="assets" data-i18n="step.assets">ASSETS</li>
+					<li data-step="shaders" data-i18n="step.shaders">SHADERS</li>
+				</ol>
+				<span class="bytes" id="bytes"></span>
+			</div>
+			<p class="uplink-warn" id="warn" hidden></p>
+		</section>
+
+		<div class="actions">
+			<div class="deploy-wrap is-idle" id="deploy-wrap">
+				<button id="deploy" class="deploy" type="button" disabled>
+					<span class="deploy-main" data-i18n="deploy.main">ASSEMBLE</span>
+					<span class="deploy-sub" id="deploy-sub">PREPARING…</span>
+				</button>
+			</div>
+			<div class="actions-side">
+				<button id="trailer-btn" class="ghost cham" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6L19 12z" fill="currentColor"/></svg><span data-i18n="trailer.watch">WATCH TRAILER</span></button>
+				<label class="fs-toggle" id="fs-wrap"><input type="checkbox" id="fs"><span class="switch" aria-hidden="true"></span><span data-i18n="fullscreen">Fullscreen</span></label>
+			</div>
+		</div>
+
+		<p class="tip"><span class="tip-tag" data-i18n="tip.tag">INTEL</span><span class="tip-text" id="tip"></span></p>
+	</main>
+
+	<footer class="foot">
+		<div class="controls">
+			<div class="controls-row desk-only"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span data-i18n="controls.move">MOVE</span></span><span><kbd>SPACE</kbd> <span data-i18n="controls.ultimate">ULTIMATE</span></span><span><kbd>ESC</kbd> <span data-i18n="controls.pause">PAUSE</span></span><span data-i18n="controls.gamepad">GAMEPAD READY</span></div>
+			<div class="controls-row touch-only"><span data-i18n="controls.touch.move">LEFT THUMB · MOVE</span><span data-i18n="controls.touch.ult">ULT BUTTON · UNLEASH</span></div>
+			<div class="credit-line" data-i18n="controls.credit">WEAPONS FIRE AUTOMATICALLY · BUILT WITH GODOT ENGINE</div>
+		</div>
+		<aside class="creator cham glass" aria-label="Follow the creator" data-i18n-aria="creator.aria">
+			<div class="avatar" id="avatar"><img src="media/avatar.png" alt="Ricco (@riccoasi)" width="56" height="56" decoding="async" id="avatar-img"><span class="mono" aria-hidden="true">R</span></div>
+			<div class="creator-meta"><span class="creator-label" data-i18n="creator.label">FOLLOW THE CREATOR</span><span class="creator-name">Ricco</span><span class="creator-handle">@riccoasi</span></div>
+			<div class="socials">
+				<a class="social cham x" href="https://x.com/riccoasi" target="_blank" rel="noopener me" aria-label="Ricco (@riccoasi) on X" data-i18n-aria="creator.x" title="X · Ricco (@riccoasi)"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>X</span></a>
+				<a class="social cham tt" href="https://www.tiktok.com/@riccoasi" target="_blank" rel="noopener me" aria-label="Ricco (@riccoasi) on TikTok" data-i18n-aria="creator.tiktok" title="TikTok · Ricco (@riccoasi)"><svg viewBox="-1 -1 26 26" aria-hidden="true"><path fill="#25f4ee" transform="translate(-.8 -.8)" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/><path fill="#fe2c55" transform="translate(.8 .8)" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/><path fill="#fff" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg><span>TikTok</span></a>
+			</div>
+		</aside>
+	</footer>
+</div>
+
+<div id="trailer" class="trailer" role="dialog" aria-modal="true" aria-label="Trailer" data-i18n-aria="trailer.dialog" hidden>
+	<div class="trailer-box">
+		<div class="trailer-head">
+			<span class="trailer-title" data-i18n="trailer.title">MISSION BRIEFING</span>
+			<button id="trailer-close" class="ghost cham trailer-close" type="button" aria-label="Close trailer" data-i18n-aria="trailer.close.aria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span data-i18n="trailer.close">CLOSE</span> <kbd>ESC</kbd></button>
+		</div>
+		<div class="trailer-frame cham">
+			<video id="trailer-video" controls playsinline preload="metadata" tabindex="0" controlslist="nodownload" disablepictureinpicture></video>
+			<div class="trailer-empty" id="trailer-empty" hidden><strong data-i18n="trailer.empty.title">TRAILER INCOMING</strong><span data-i18n="trailer.empty.text">The mission briefing isn't available in this build yet.</span></div>
+		</div>
+	</div>
+</div>
+
+<div id="fault" class="fault" role="alertdialog" aria-modal="true" aria-labelledby="fault-title" aria-describedby="fault-msg" hidden>
+	<div class="fault-card cham">
+		<div class="fault-top">
+			<svg class="fault-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20.5h20z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.2" fill="currentColor"/></svg>
+			<p class="fault-code" id="fault-code">SYSTEM FAULT</p>
+		</div>
+		<h2 id="fault-title">Mission aborted</h2>
+		<p id="fault-msg"></p>
+		<ul id="fault-list" hidden></ul>
+		<details id="fault-more"><summary data-i18n="fault.details">Technical details</summary><pre id="fault-details"></pre></details>
+		<div class="fault-actions">
+			<div class="deploy-wrap"><button id="fault-retry" class="deploy is-small" type="button"><span class="deploy-main">RETRY</span></button></div>
+			<button id="fault-copy" class="ghost cham" type="button" data-i18n="fault.copy">COPY DETAILS</button>
+		</div>
+	</div>
+</div>
+
+<div id="rotate" class="rotate" hidden>
+	<div class="rotate-card">
+		<svg class="rotate-icon" viewBox="0 0 96 96" aria-hidden="true"><g class="phone"><rect x="33" y="14" width="30" height="54" rx="5" fill="rgba(63,216,255,.08)" stroke="#3fd8ff" stroke-width="3"/><rect x="43" y="61" width="10" height="2.6" rx="1.3" fill="#3fd8ff"/></g><path d="M18 66a34 34 0 0 0 30 20" fill="none" stroke="#ffc34d" stroke-width="3" stroke-linecap="round"/><path d="M42 80l7 6-7 6" fill="none" stroke="#ffc34d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+		<h2 data-i18n="rotate.title">ROTATE YOUR DEVICE</h2>
+		<p data-i18n="rotate.text">Last Stand is built for landscape. Turn your phone sideways to hold the line.</p>
+		<button id="rotate-dismiss" class="ghost cham" type="button" data-i18n="rotate.continue">CONTINUE ANYWAY</button>
+	</div>
+</div>
+
+<!-- Shell strings: key → [English, 简体中文]. Single source of truth; tools/web/extract_shell_strings.py
+     mirrors the Chinese into assets/localization/zh_shell.json so the CJK subset font covers every glyph. -->
+<script type="application/json" id="als-i18n">
+{
+	"strings": {
+		"doc.title": ["Avengers: Last Stand — Assemble. Survive. Evolve.", "复仇者联盟：最后防线 — 集结·生存·进化"],
+		"doc.description": ["Assemble your hero and hold the line for 15 minutes against endless alien, robot and Asgardian hordes. A 3D Avengers survivor-like that runs right in your browser — desktop and mobile.", "集结英雄，在 15 分钟内抵御源源不断的外星人、机器人与阿斯加德大军。一款可直接在浏览器中游玩的 3D 复仇者联盟幸存者类游戏，支持电脑与手机。"],
+		"game.name": ["Avengers: Last Stand", "复仇者联盟：最后防线"],
+		"canvas.label": ["Avengers: Last Stand — game view", "复仇者联盟：最后防线 — 游戏画面"],
+		"lang.label": ["Language", "语言"],
+		"brand": ["LAST STAND PROTOCOL", "最后防线协议"],
+		"build.version": ["BUILD {version}", "版本 {version}"],
+		"build.dev": ["DEV BUILD", "开发版本"],
+		"pill.muted": ["MUTED", "已静音"],
+		"pill.alert": ["INCURSION DETECTED", "侦测到入侵"],
+		"kicker.assemble": ["ASSEMBLE", "集结"],
+		"kicker.survive": ["SURVIVE", "生存"],
+		"kicker.evolve": ["EVOLVE", "进化"],
+		"subtitle": ["", "复仇者联盟：最后防线"],
+		"loading.label": ["Loading", "加载中"],
+		"progress.label": ["Loading progress", "加载进度"],
+		"step.engine": ["ENGINE", "引擎"],
+		"step.assets": ["ASSETS", "资源"],
+		"step.shaders": ["SHADERS", "着色器"],
+		"status.boot": ["Establishing secure uplink…", "正在建立安全连接…"],
+		"status.both": ["Downloading engine core & mission assets…", "正在下载引擎核心与任务资源…"],
+		"status.engine": ["Downloading engine core…", "正在下载引擎核心…"],
+		"status.assets": ["Downloading mission assets…", "正在下载任务资源…"],
+		"status.compile": ["Compiling engine…", "正在编译引擎…"],
+		"status.ready": ["All systems online. Awaiting your command.", "全系统就绪，等待你的指令。"],
+		"status.starting": ["Deploying — compiling shaders…", "正在部署，编译着色器…"],
+		"status.running": ["Deployed. Hold the line.", "部署完成，守住防线！"],
+		"bytes.ready": ["{total} ready", "{total} 已就绪"],
+		"warn.compile": ["Compiling takes a little longer on this device — hang tight.", "此设备编译需要更长时间，请稍候。"],
+		"warn.stalled": ["The download seems stalled.", "下载似乎停滞了。"],
+		"warn.reload": ["Reload", "重新加载"],
+		"warn.slow": ["Slow connection — still downloading. Keep this tab open.", "网络较慢，仍在下载中，请保持此页面打开。"],
+		"deploy.main": ["ASSEMBLE", "集结出击"],
+		"deploy.preparing": ["PREPARING…", "准备中…"],
+		"deploy.click": ["CLICK TO DEPLOY", "点击出击"],
+		"deploy.tap": ["TAP TO DEPLOY", "轻触出击"],
+		"deploy.deploying": ["DEPLOYING…", "部署中…"],
+		"deploy.offline": ["OFFLINE", "离线"],
+		"trailer.watch": ["WATCH TRAILER", "观看预告片"],
+		"fullscreen": ["Fullscreen", "全屏"],
+		"tip.tag": ["INTEL", "情报"],
+		"controls.move": ["MOVE", "移动"],
+		"controls.ultimate": ["ULTIMATE", "终极技"],
+		"controls.pause": ["PAUSE", "暂停"],
+		"controls.gamepad": ["GAMEPAD READY", "支持手柄"],
+		"controls.touch.move": ["LEFT THUMB · MOVE", "拖动左侧 · 移动"],
+		"controls.touch.ult": ["ULT BUTTON · UNLEASH", "点击圆环 · 终极技"],
+		"controls.credit": ["WEAPONS FIRE AUTOMATICALLY · BUILT WITH GODOT ENGINE", "武器自动开火 · 基于 Godot 引擎制作"],
+		"creator.label": ["FOLLOW THE CREATOR", "关注创作者"],
+		"creator.aria": ["Follow the creator", "关注创作者"],
+		"creator.x": ["Ricco (@riccoasi) on X", "在 X 上关注 Ricco (@riccoasi)"],
+		"creator.tiktok": ["Ricco (@riccoasi) on TikTok", "在 TikTok 上关注 Ricco (@riccoasi)"],
+		"trailer.dialog": ["Trailer", "预告片"],
+		"trailer.title": ["MISSION BRIEFING", "任务简报"],
+		"trailer.close": ["CLOSE", "关闭"],
+		"trailer.close.aria": ["Close trailer", "关闭预告片"],
+		"trailer.empty.title": ["TRAILER INCOMING", "预告片即将上线"],
+		"trailer.empty.text": ["The mission briefing isn't available in this build yet.", "此版本暂未包含任务简报。"],
+		"fault.details": ["Technical details", "技术详情"],
+		"fault.copy": ["COPY DETAILS", "复制详情"],
+		"fault.copied": ["COPIED", "已复制"],
+		"fault.features.code": ["COMPATIBILITY CHECK FAILED", "兼容性检查未通过"],
+		"fault.features.title": ["This browser can't run the mission", "此浏览器无法运行本任务"],
+		"fault.features.msg": ["Avengers: Last Stand needs a few browser features that aren't available here:", "《复仇者联盟：最后防线》需要以下浏览器功能，但当前环境不支持："],
+		"fault.features.retry": ["TRY AGAIN", "重试"],
+		"fault.file.code": ["LAUNCH ERROR", "启动错误"],
+		"fault.file.title": ["Open the game through a web server", "请通过网页服务器打开游戏"],
+		"fault.file.msg": ["Browsers block games opened straight from disk (file://). Serve this folder over HTTP — for example run “python3 -m http.server” inside it and open http://localhost:8000.", "浏览器会阻止直接从磁盘（file://）打开的游戏。请通过 HTTP 提供此文件夹，例如在其中运行“python3 -m http.server”，然后访问 http://localhost:8000。"],
+		"fault.file.retry": ["RELOAD", "重新加载"],
+		"fault.script.code": ["ENGINE FILES MISSING", "引擎文件缺失"],
+		"fault.script.title": ["The engine could not be loaded", "无法加载游戏引擎"],
+		"fault.script.msg": ["index.js failed to load. If you host this build yourself, upload every file of the build folder next to index.html.", "index.js 加载失败。如果你自行托管此版本，请将构建文件夹中的所有文件与 index.html 一起上传。"],
+		"fault.script.retry": ["RETRY", "重试"],
+		"fault.load.code": ["UPLINK INTERRUPTED", "连接中断"],
+		"fault.load.title": ["A game file failed to load", "游戏文件加载失败"],
+		"fault.load.msg": ["A required file could not be downloaded or started. Check your connection and try again.", "无法下载或启动必需的文件。请检查网络连接后重试。"],
+		"fault.load.retry": ["RETRY", "重试"],
+		"fault.engine.code": ["ENGINE FAULT", "引擎故障"],
+		"fault.engine.title": ["The engine failed to start", "引擎启动失败"],
+		"fault.engine.msg": ["Something went wrong while starting the game. Reloading usually fixes it.", "启动游戏时出现问题，重新加载通常即可解决。"],
+		"fault.engine.retry": ["RELOAD", "重新加载"],
+		"fault.crash.code": ["ENGINE CRASH", "引擎崩溃"],
+		"fault.crash.title": ["The engine stopped unexpectedly", "引擎意外停止运行"],
+		"fault.crash.msg": ["Reload to redeploy. If it keeps happening, lower Quality in Settings or close other heavy tabs.", "请重新加载以再次部署。若反复出现，请在设置中降低画质，或关闭其他占用资源的标签页。"],
+		"fault.crash.retry": ["RELOAD", "重新加载"],
+		"fault.context.code": ["GPU RESET", "GPU 已重置"],
+		"fault.context.title": ["Graphics device lost", "图形设备丢失"],
+		"fault.context.msg": ["The browser reset the graphics context (driver update, GPU sleep or low memory). Reload to redeploy.", "浏览器重置了图形上下文（驱动更新、GPU 休眠或内存不足）。请重新加载以再次部署。"],
+		"fault.context.retry": ["RELOAD", "重新加载"],
+		"fault.exit.code": ["SESSION ENDED", "会话已结束"],
+		"fault.exit.title": ["You left the battlefield", "你已离开战场"],
+		"fault.exit.msg": ["The game has closed. Relaunch whenever you're ready.", "游戏已关闭，准备好后随时重新启动。"],
+		"fault.exit.retry": ["RELAUNCH", "重新启动"],
+		"feat.webgl.title": ["WebGL 2 is unavailable", "WebGL 2 不可用"],
+		"feat.webgl.text": ["Turn on hardware acceleration (Chrome/Edge: Settings > System), update your graphics drivers, or use a current Chrome, Edge, Firefox or Safari 16.4+.", "请开启硬件加速（Chrome/Edge：设置 > 系统），更新显卡驱动，或使用最新版 Chrome、Edge、Firefox 或 Safari 16.4 及以上版本。"],
+		"feat.fetch.title": ["Streaming downloads are unavailable", "不支持流式下载"],
+		"feat.fetch.text": ["Update your browser to a current version.", "请将浏览器更新到最新版本。"],
+		"feat.secure.title": ["Not a secure context", "非安全上下文"],
+		"feat.secure.text": ["Open the game over https:// (http://localhost also works for local testing).", "请通过 https:// 打开游戏（本地测试也可使用 http://localhost）。"],
+		"feat.coi.title": ["Cross-origin isolation", "跨源隔离"],
+		"feat.coi.text": ["This no-threads build should not need it — redeploy the build produced by tools/web/build_web.sh.", "此无线程版本无需跨源隔离，请重新部署由 tools/web/build_web.sh 生成的版本。"],
+		"rotate.title": ["ROTATE YOUR DEVICE", "请横置设备"],
+		"rotate.text": ["Last Stand is built for landscape. Turn your phone sideways to hold the line.", "《最后防线》专为横屏设计。请将手机横过来，守住防线。"],
+		"rotate.continue": ["CONTINUE ANYWAY", "仍然继续"]
+	},
+	"tips": [
+		["Weapons fire on their own — <b>your only job is to move</b>. Kite the swarm, never stand still.", "武器会自动开火——<b>你只需要走位</b>。牵着敌群走，千万别停下。"],
+		["Max a weapon to <b>level 8</b>, own its paired passive, then crack a <b>Stark Tech Case</b> to <b>evolve</b> it.", "将武器升到 <b>8 级</b>并拥有对应的被动，再打开<b>斯塔克科技箱</b>即可将其<b>进化</b>。"],
+		["Mini-bosses land at <b>05:00</b> and <b>10:00</b>. The map boss arrives at <b>15:00</b>.", "精英首领会在 <b>05:00</b> 和 <b>10:00</b> 登场，地图首领在 <b>15:00</b> 降临。"],
+		["<b>Shawarma</b> restores 30 HP. Tony would approve.", "<b>沙威玛</b>可恢复 30 点生命。托尼一定会点赞。"],
+		["A <b>Stark Magnet</b> vacuums every XP crystal on the field — great before a level-up spike.", "<b>斯塔克磁铁</b>会吸走场上所有经验水晶——冲级前捡最划算。"],
+		["Your <b>Ultimate</b> charges with kills. Press <b>Space</b> (or tap ULT) to turn the tide.", "<b>终极技</b>随击杀充能。按<b>空格键</b>（或点击圆环）扭转战局。"],
+		["Gold carries over between runs — spend it in the <b>Armory</b> and unlock new heroes.", "金币会跨局保留——去<b>军械库</b>强化能力并解锁新英雄。"],
+		["<b>Repulsor Blast</b> + <b>Arc Reactor</b> evolves into the piercing <b>Unibeam</b>.", "<b>掌心炮</b> + <b>方舟反应堆</b>可进化为穿透一切的<b>胸口炮</b>。"],
+		["<b>Mjolnir</b> + <b>Asgardian Mead</b> evolves into <b>Stormbreaker</b>.", "<b>雷神之锤</b> + <b>阿斯加德蜜酒</b>可进化为<b>风暴战斧</b>。"],
+		["Luck from the <b>Time Stone</b> can offer a <b>4th card</b> when you level up.", "<b>时间宝石</b>提供的幸运可让升级时多出<b>第 4 张卡牌</b>。"],
+		["A <b>Nuke</b> wipes everything on screen — grab it when you're surrounded.", "<b>核弹</b>能清空屏幕上的所有敌人——被包围时赶紧捡。"],
+		["Six weapons, six passives: <b>plan your build around evolutions</b>.", "六件武器、六个被动：<b>围绕进化来规划你的搭配</b>。"],
+		["<b>Hulk</b> trades speed for raw power: +40% max HP and +15% might.", "<b>绿巨人</b>以速度换蛮力：最大生命 +40%，力量 +15%。"],
+		["<b>Doctor Strange</b>'s Time Loop freezes time for 4 seconds.", "<b>奇异博士</b>的时间循环可冻结时间 4 秒。"],
+		["Gamepad plugged in? Just <b>press a button</b> — it's supported everywhere.", "接上手柄了？<b>按任意键</b>即可——全程支持手柄操作。"]
+	]
+}
+</script>
+<script>
+/* i18n core — runs before the engine script, so Chinese is in place before the first paint. */
+(function () {
+	'use strict';
+	var doc = document;
+	var root = doc.documentElement;
+	var table = { strings: {}, tips: [] };
+	try { table = JSON.parse(doc.getElementById('als-i18n').textContent); } catch (e) { /* keep the English markup */ }
+	var listeners = [];
+	var englishTitle = doc.title;
+	var i18n = {
+		lang: window.ALS_LANG === 'zh' ? 'zh' : 'en',
+		keepTitle: false,   // set once the engine runs (Godot owns document.title from then on)
+		t: function (key, vars) {
+			var e = table.strings[key];
+			var s = e ? (i18n.lang === 'zh' && e[1] ? e[1] : e[0]) : key;
+			if (vars) {
+				s = s.replace(/\{(\w+)\}/g, function (m, k) { return vars[k] !== undefined ? String(vars[k]) : m; });
+			}
+			return s;
+		},
+		tip: function (i) {
+			var n = table.tips.length;
+			var p = n ? table.tips[((i % n) + n) % n] : null;
+			return p ? (i18n.lang === 'zh' && p[1] ? p[1] : p[0]) : '';
+		},
+		tipCount: function () { return table.tips.length; },
+		set: function (code, opts) {
+			code = code === 'zh' ? 'zh' : 'en';
+			if (!opts || opts.persist !== false) {
+				try { window.localStorage.setItem('als_lang', code); } catch (e) { /* private mode */ }
+			}
+			// an explicit ?lang= in the address must not undo the current choice on reload
+			if (/[?&]lang=/i.test(window.location.search) && window.history && window.history.replaceState) {
+				var url = window.location.href.replace(/([?&]lang=)(en|zh)/i, '$1' + code);
+				if (url !== window.location.href) {
+					try { window.history.replaceState(window.history.state, '', url); } catch (e) { /* ignore */ }
+				}
+			}
+			if (code === i18n.lang) { return; }
+			i18n.lang = code;
+			apply();
+			listeners.forEach(function (fn) { try { fn(code); } catch (e) { console.error(e); } });
+		},
+		// The game can switch language in its settings (it writes localStorage['als_lang']).
+		sync: function () {
+			try {
+				var s = window.localStorage.getItem('als_lang');
+				if ((s === 'en' || s === 'zh') && s !== i18n.lang) { i18n.set(s, { persist: false }); }
+			} catch (e) { /* storage blocked */ }
+		},
+		onChange: function (fn) { listeners.push(fn); },
+	};
+	function each(sel, fn) { Array.prototype.forEach.call(doc.querySelectorAll(sel), fn); }
+	function apply() {
+		var zh = i18n.lang === 'zh';
+		root.lang = zh ? 'zh-CN' : 'en';
+		root.setAttribute('data-lang', i18n.lang);
+		each('[data-i18n]', function (el) { el.textContent = i18n.t(el.getAttribute('data-i18n')); });
+		each('[data-i18n-aria]', function (el) { el.setAttribute('aria-label', i18n.t(el.getAttribute('data-i18n-aria'))); });
+		each('[data-i18n-title]', function (el) { el.setAttribute('title', i18n.t(el.getAttribute('data-i18n-title'))); });
+		each('.lang-btn', function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-lang') === i18n.lang)); });
+		if (!i18n.keepTitle) { doc.title = zh ? i18n.t('doc.title') : englishTitle; }
+		var desc = doc.querySelector('meta[name="description"]');
+		if (desc) { desc.setAttribute('content', i18n.t('doc.description')); }
+	}
+	each('.lang-btn', function (b) {
+		b.addEventListener('click', function () { i18n.set(b.getAttribute('data-lang')); });
+	});
+	window.alsI18n = i18n;
+	apply();
+	root.classList.remove('i18n-pending');
+}());
+</script>
+<script src="index.js" onerror="window.alsEngineScriptFailed = true"></script>
+<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":10840056,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_THREADS_ENABLED = false;
+/* Filled in by tools/web/finalize_web.py: {version, build, built, media:[files in media/]}. */
+window.ALS_BUILD = /*ALS:BUILD*/{"version":"1.0.0","build":"0eefa506b9","built":"2026-09-29T13:02:38Z","media":["app_icon_192.png","app_icon_512.png","avatar.png","fallback_bg.jpg","intro_cinematic.mp4","intro_cinematic.webm","intro_poster.jpg","key_art.jpg","menu_ambient.mp4","menu_ambient.webm","menu_poster.jpg"]}/*/ALS:BUILD*/;
+
+(function () {
+	'use strict';
+
+	var doc = document;
+	var root = doc.documentElement;
+	function byId(id) { return doc.getElementById(id); }
+	function readPref(key) { try { return window.localStorage.getItem(key); } catch (e) { return null; } }
+	function writePref(key, value) { try { window.localStorage.setItem(key, value); } catch (e) { /* private mode */ } }
+
+	var params = new URLSearchParams(window.location.search);
+	var MUTED = !!window.ALS_MUTED;
+	var i18n = window.alsI18n;
+	var t = i18n.t;
+	var BUILD = window.ALS_BUILD || null;
+	var AUTOSTART = /^(1|true)$/i.test(params.get('autostart') || '');
+
+	var el = {
+		canvas: byId('canvas'), loader: byId('loader'), bg: byId('bg'), bgPoster: byId('bg-poster'), bgVideo: byId('bg-video'),
+		status: byId('status'), pct: byId('pct'), bar: byId('bar'), fill: byId('bar-fill'), bytes: byId('bytes'), warn: byId('warn'),
+		deploy: byId('deploy'), deployWrap: byId('deploy-wrap'), deploySub: byId('deploy-sub'),
+		trailerBtn: byId('trailer-btn'), fs: byId('fs'), fsWrap: byId('fs-wrap'), tip: byId('tip'),
+		buildTag: byId('build-tag'), mutedPill: byId('muted-pill'), avatar: byId('avatar'), avatarImg: byId('avatar-img'),
+		trailer: byId('trailer'), tVideo: byId('trailer-video'), tClose: byId('trailer-close'), tEmpty: byId('trailer-empty'),
+		fault: byId('fault'), faultCode: byId('fault-code'), faultTitle: byId('fault-title'), faultMsg: byId('fault-msg'),
+		faultList: byId('fault-list'), faultMore: byId('fault-more'), faultDetails: byId('fault-details'),
+		faultRetry: byId('fault-retry'), faultCopy: byId('fault-copy'),
+		rotate: byId('rotate'), rotateDismiss: byId('rotate-dismiss'),
+	};
+	var steps = {};
+	Array.prototype.forEach.call(doc.querySelectorAll('.steps li'), function (li) { steps[li.getAttribute('data-step')] = li; });
+
+	/* ------------------------------------------------------------ device */
+	var isTouch = (navigator.maxTouchPoints || 0) > 0 || window.matchMedia('(pointer: coarse)').matches;
+	root.classList.toggle('is-touch', isTouch);
+	var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	var conn = navigator.connection || {};
+	var lowData = conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || '');
+
+	/* ------------------------------------------------------------ media (degrades gracefully) */
+	var mediaList = BUILD && Array.isArray(BUILD.media) ? BUILD.media : null;
+	// Unknown (build not finalized): assume a file may exist and rely on error fallbacks.
+	function mayHave(name) { return mediaList ? mediaList.indexOf(name) !== -1 : true; }
+	function surelyHas(name) { return mediaList ? mediaList.indexOf(name) !== -1 : false; }
+	var probeVideo = doc.createElement('video');
+	function videoUrls(base, order) {
+		var out = [];
+		order.forEach(function (ext) {
+			var name = base + '.' + ext;
+			if (!mayHave(name)) { return; }
+			if (probeVideo.canPlayType && probeVideo.canPlayType('video/' + ext) === '') { return; }
+			out.push('media/' + name);
+		});
+		return out;
+	}
+	// Try each url in turn; returns a cancel function.
+	function playChain(video, urls, onFail) {
+		var index = 0;
+		var dead = false;
+		function onError() { if (!dead) { next(); } }
+		function cancel() { dead = true; video.removeEventListener('error', onError); }
+		function next() {
+			if (index >= urls.length) { cancel(); if (onFail) { onFail(); } return; }
+			video.src = urls[index++];
+			var p = video.play();
+			if (p && p.catch) {
+				p.catch(function (err) {
+					// Autoplay with sound refused: fall back to muted playback (controls can unmute).
+					if (!dead && err && err.name === 'NotAllowedError' && !video.muted) {
+						video.muted = true;
+						video.play().catch(function () { /* user can press play */ });
+					}
+				});
+			}
+		}
+		video.addEventListener('error', onError);
+		next();
+		return cancel;
+	}
+
+	var posterName = ['menu_poster.jpg', 'key_art.jpg', 'fallback_bg.jpg'].filter(surelyHas)[0];
+	if (posterName) {
+		el.bgPoster.style.setProperty('--poster-a', 'url("media/' + posterName + '")');
+		el.bgVideo.poster = 'media/' + posterName;
+	} else if (!mediaList) {
+		el.bgPoster.style.setProperty('--poster-a', 'url("media/menu_poster.jpg")');
+		el.bgPoster.style.setProperty('--poster-b', 'url("media/fallback_bg.jpg")');
+	}
+
+	var ambientCancel = null;
+	(function startAmbient() {
+		var urls = videoUrls('menu_ambient', ['webm', 'mp4']);
+		var v = el.bgVideo;
+		if (!urls.length || lowData || reduceMotion) { v.hidden = true; return; }
+		v.muted = true; v.defaultMuted = true; v.volume = 0; v.loop = true; v.playsInline = true;
+		v.addEventListener('playing', function () { el.bg.classList.add('has-video'); });
+		ambientCancel = playChain(v, urls, function () { v.hidden = true; });
+	}());
+	function stopAmbient() {
+		var v = el.bgVideo;
+		if (ambientCancel) { ambientCancel(); ambientCancel = null; }
+		try { v.pause(); } catch (e) { /* ignore */ }
+		v.removeAttribute('src');
+		v.load();
+	}
+
+	el.avatarImg.addEventListener('error', function () { el.avatar.classList.add('no-img'); });
+	if (el.avatarImg.complete && el.avatarImg.naturalWidth === 0 && el.avatarImg.src) { el.avatar.classList.add('no-img'); }
+
+	// Favicon: keep the PNG only if it exists (inline SVG otherwise), and keep Godot from swapping in its own icon.
+	var pngIcons = doc.querySelectorAll('link[data-als="icon-png"], link[data-als="apple-icon"]');
+	if (pngIcons.length && !mediaList) {
+		var iconProbe = new Image();
+		iconProbe.onerror = function () { Array.prototype.forEach.call(pngIcons, function (l) { l.remove(); }); };
+		iconProbe.src = pngIcons[0].href;
+	}
+	try {
+		new MutationObserver(function () {
+			var gd = doc.getElementById('-gd-engine-icon');
+			if (gd && doc.querySelector('link[data-als^="icon"]')) { gd.remove(); }
+		}).observe(doc.head, { childList: true });
+	} catch (e) { /* old browser */ }
+
+	if (MUTED) { el.mutedPill.hidden = false; }
+	function renderBuildTag() {
+		el.buildTag.textContent = BUILD && BUILD.version ? t('build.version', { version: BUILD.version }) : t('build.dev');
+	}
+	renderBuildTag();
+
+	/* ------------------------------------------------------------ tips (strings live in #als-i18n) */
+	var tipOrder = [];
+	for (var ti = 0; ti < i18n.tipCount(); ti++) { tipOrder.push(ti); }
+	for (var tk = tipOrder.length - 1; tk > 0; tk--) { var tj = Math.floor(Math.random() * (tk + 1)); var tt = tipOrder[tk]; tipOrder[tk] = tipOrder[tj]; tipOrder[tj] = tt; }
+	var tipIndex = -1;
+	var tipTimer = 0;
+	function renderTip() { el.tip.innerHTML = tipOrder.length ? i18n.tip(tipOrder[tipIndex % tipOrder.length]) : ''; }
+	function showTip() {
+		var first = tipIndex < 0;
+		tipIndex++;
+		el.tip.classList.remove('in');
+		window.setTimeout(function () { renderTip(); el.tip.classList.add('in'); }, first ? 0 : 320);
+	}
+	showTip();
+	tipTimer = window.setInterval(showTip, 6500);
+	function stopTips() { window.clearInterval(tipTimer); }
+
+	/* ------------------------------------------------------------ fullscreen + orientation */
+	var docEl = doc.documentElement;
+	var requestFs = docEl.requestFullscreen || docEl.webkitRequestFullscreen;
+	var canFullscreen = !!requestFs && !!(doc.fullscreenEnabled || doc.webkitFullscreenEnabled);
+	if (!canFullscreen) { el.fsWrap.hidden = true; }
+	var fsPref = readPref('als.fullscreen');
+	el.fs.checked = canFullscreen && (fsPref === null ? isTouch : fsPref === '1');
+	el.fs.addEventListener('change', function () { writePref('als.fullscreen', el.fs.checked ? '1' : '0'); });
+	function enterFullscreen() {
+		try {
+			var p = requestFs.call(docEl, { navigationUI: 'hide' });
+			if (p && p.then) { p.then(lockLandscape, function () { /* stay windowed */ }); } else { lockLandscape(); }
+		} catch (e) { /* stay windowed */ }
+	}
+	function lockLandscape() {
+		try {
+			if (isTouch && window.screen.orientation && window.screen.orientation.lock) {
+				window.screen.orientation.lock('landscape').catch(function () { /* unsupported */ });
+			}
+		} catch (e) { /* unsupported */ }
+	}
+
+	var rotateDismissed = false;
+	function updateRotate() {
+		var w = window.innerWidth;
+		var h = window.innerHeight;
+		root.classList.toggle('is-portrait', h > w);
+		el.rotate.hidden = !(isTouch && h > w && Math.min(w, h) < 900 && !rotateDismissed);
+	}
+	el.rotateDismiss.addEventListener('click', function () {
+		rotateDismissed = true;
+		updateRotate();
+		(state.running ? el.canvas : el.deploy).focus({ preventScroll: true });
+	});
+	window.addEventListener('resize', updateRotate);
+	window.addEventListener('orientationchange', updateRotate);
+
+	/* ------------------------------------------------------------ loading state */
+	var exe = GODOT_CONFIG.executable || 'index';
+	var pack = GODOT_CONFIG.mainPack || (exe + '.pck');
+	var sizes = GODOT_CONFIG.fileSizes || {};
+	var state = {
+		phase: 'boot', loaded: 0, total: (sizes[exe + '.wasm'] || 0) + (sizes[pack] || 0),
+		shown: 0, target: 0, wasmFetched: false, packFetched: false, initDone: false, packDone: false,
+		ready: false, started: false, running: false, faulted: false, lastProgress: 0, phaseSince: 0,
+		gameSaidReady: false,
+	};
+	var engine = null;
+	var engineErrors = [];
+
+	function mb(bytes) { return (bytes / 1048576).toFixed(1) + ' MB'; }
+
+	function statusText() {
+		switch (state.phase) {
+		case 'boot': return t('status.boot');
+		case 'download':
+			if (!state.wasmFetched && !state.packFetched) { return t('status.both'); }
+			if (!state.wasmFetched) { return t('status.engine'); }
+			if (!state.packFetched) { return t('status.assets'); }
+			return t('status.compile');
+		case 'ready': return t('status.ready');
+		case 'starting': return t('status.starting');
+		case 'running': return t('status.running');
+		default: return '';
+		}
+	}
+
+	function render() {
+		el.status.textContent = statusText();
+		var dl = state.phase === 'download' || state.phase === 'boot';
+		steps.engine.className = state.initDone ? 'is-done' : (dl ? 'is-active' : '');
+		steps.assets.className = (state.packDone || state.packFetched) ? 'is-done' : (dl ? 'is-active' : '');
+		steps.shaders.className = state.phase === 'running' ? 'is-done' : (state.phase === 'starting' ? 'is-active' : '');
+		if (state.total > 0) {
+			el.bytes.textContent = state.ready ? t('bytes.ready', { total: mb(state.total) }) : mb(Math.min(state.loaded, state.total)) + ' / ' + mb(state.total);
+		}
+		el.bar.classList.toggle('is-indeterminate', state.phase === 'download' && state.total === 0);
+	}
+
+	var rafId = 0;
+	function animateBar() {
+		rafId = 0;
+		var delta = state.target - state.shown;
+		state.shown += delta * (state.ready ? 0.22 : 0.12);
+		if (Math.abs(state.target - state.shown) < 0.0008) { state.shown = state.target; }
+		var p = Math.max(0, Math.min(1, state.shown));
+		el.fill.style.width = (p * 100).toFixed(2) + '%';
+		var pct = state.ready && state.shown === 1 ? 100 : Math.min(99, Math.floor(p * 100));
+		el.pct.textContent = String(pct);
+		el.bar.setAttribute('aria-valuenow', String(pct));
+		if (state.shown !== state.target) { rafId = window.requestAnimationFrame(animateBar); }
+	}
+	function kickBar() { if (!rafId) { rafId = window.requestAnimationFrame(animateBar); } }
+
+	function setPhase(phase) {
+		state.phase = phase;
+		state.phaseSince = performance.now();
+		el.loader.setAttribute('data-phase', phase);
+		el.warn.hidden = true;
+		render();
+	}
+
+	function onProgress(current, total) {
+		if (total > 0) { state.total = total; }
+		state.loaded = current;
+		state.lastProgress = performance.now();
+		if (state.phase === 'boot') { setPhase('download'); }
+		if (state.total > 0 && !state.ready) {
+			// Downloads fill the bar to 95%; the rest is compile + init.
+			state.target = Math.max(state.target, Math.min(1, current / state.total) * 0.95);
+			if (current >= state.total) { state.wasmFetched = true; state.packFetched = true; }
+		}
+		render();
+		kickBar();
+	}
+
+	// Per-file completion (which of engine/assets is still downloading), without touching the engine.
+	try {
+		new PerformanceObserver(function (list) {
+			list.getEntries().forEach(function (entry) {
+				var name = entry.name.split(/[?#]/)[0];
+				if (name.slice(-(exe.length + 6)) === '/' + exe + '.wasm') { state.wasmFetched = true; }
+				if (name.slice(-(pack.length + 1)) === '/' + pack) { state.packFetched = true; }
+			});
+			if (!state.ready) {
+				if (state.wasmFetched && state.packFetched) { state.target = Math.max(state.target, 0.97); kickBar(); }
+				render();
+			}
+		}).observe({ type: 'resource', buffered: true });
+	} catch (e) { /* no Resource Timing: aggregate progress only */ }
+
+	// Slow / stalled connection hints (never aborts on its own).
+	window.setInterval(function () {
+		if (state.ready || state.faulted || state.phase !== 'download') { return; }
+		var now = performance.now();
+		var idle = now - (state.lastProgress || state.phaseSince);
+		if (state.wasmFetched && state.packFetched && now - state.phaseSince > 25000) {
+			showWarn('warn.compile', false);
+		} else if (idle > 45000) {
+			showWarn('warn.stalled', true);
+		} else if (idle > 12000) {
+			showWarn('warn.slow', false);
+		} else {
+			el.warn.hidden = true;
+			warnKey = null;
+		}
+	}, 2000);
+	var warnKey = null;
+	function showWarn(key, withRetry) {
+		warnKey = { key: key, retry: withRetry };
+		el.warn.textContent = t(key) + (withRetry ? ' ' : '');
+		if (withRetry) {
+			var b = doc.createElement('button');
+			b.type = 'button';
+			b.textContent = t('warn.reload');
+			b.onclick = function () { window.location.reload(); };
+			el.warn.appendChild(b);
+		}
+		el.warn.hidden = false;
+	}
+
+	function onPrintError() {
+		var args = Array.prototype.slice.call(arguments);
+		engineErrors.push(args.join(' '));
+		if (engineErrors.length > 40) { engineErrors.shift(); }
+		console.error.apply(console, args);
+	}
+
+	/* ------------------------------------------------------------ boot → ready → deploy */
+	function boot() {
+		if (window.location.protocol === 'file:') { fault('file'); return; }
+		if (typeof Engine === 'undefined' || window.alsEngineScriptFailed) { fault('script'); return; }
+		var missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
+		if (missing.length) { fault('features', null, missing); return; }
+		try {
+			engine = new Engine(Object.assign({}, GODOT_CONFIG, {
+				canvas: el.canvas,
+				onProgress: onProgress,
+				onPrintError: onPrintError,
+			}));
+		} catch (err) { fault('engine', err); return; }
+		setPhase('download');
+		state.lastProgress = performance.now();
+		var initP = engine.init(exe).then(function () { state.initDone = true; state.wasmFetched = true; render(); });
+		var packP = engine.preloadFile(pack, pack).then(function () { state.packDone = true; state.packFetched = true; render(); });
+		Promise.all([initP, packP]).then(onReady, function (err) { fault('load', err); });
+	}
+
+	// engine.init() swallows wasm download/compile failures (they surface as unhandled rejections).
+	window.addEventListener('unhandledrejection', function (ev) {
+		if (state.ready || state.faulted) { return; }
+		var r = ev.reason;
+		var msg = String((r && (r.message || r)) || '');
+		if (/Failed loading file|Failed to fetch|NetworkError|WebAssembly|CompileError|LinkError|RuntimeError|Aborted|out of memory/i.test(msg)) {
+			fault('load', r);
+		}
+	});
+	window.addEventListener('error', function (ev) {
+		if (!state.started || state.faulted) { return; }
+		var msg = String(ev.message || (ev.error && ev.error.message) || '');
+		if (/RuntimeError|Aborted\(|unreachable|out of bounds|out of memory/i.test(msg)) { fault('crash', ev.error || msg); }
+	});
+	el.canvas.addEventListener('webglcontextlost', function () { if (state.started) { fault('context'); } });
+	el.canvas.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
+	doc.addEventListener('gesturestart', function (ev) { ev.preventDefault(); });
+
+	function onReady() {
+		if (state.faulted) { return; }
+		state.ready = true;
+		state.target = 1;
+		kickBar();
+		setPhase('ready');
+		el.deploy.disabled = false;
+		el.deploy.classList.add('is-ready');
+		el.deployWrap.classList.remove('is-idle');
+		setDeploySub(isTouch ? 'deploy.tap' : 'deploy.click');
+		if (el.trailer.hidden && el.rotate.hidden) {
+			try { el.deploy.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+		}
+		if (AUTOSTART) { deploy(); }
+	}
+
+	function deploy() {
+		if (!state.ready || state.started || state.faulted) { return; }
+		state.started = true;
+		// Must run synchronously inside the click: fullscreen + WebAudio unlock both need the user gesture.
+		if (el.fs.checked && canFullscreen) { enterFullscreen(); }
+		el.deploy.disabled = true;
+		el.deploy.classList.remove('is-ready');
+		setDeploySub('deploy.deploying');
+		setPhase('starting');
+		engine.start({
+			canvas: el.canvas,
+			args: ['--main-pack', pack].concat(GODOT_CONFIG.args || []),
+			onExit: onExit,
+		}).then(onStarted, function (err) { fault('engine', err); });
+	}
+	el.deploy.addEventListener('click', deploy);
+	doc.addEventListener('keydown', function (ev) {
+		if (ev.key !== 'Enter' || !state.ready || state.started || !el.trailer.hidden || !el.fault.hidden) { return; }
+		var a = doc.activeElement;
+		if (!a || a === doc.body || a === el.canvas || a === el.loader) { ev.preventDefault(); deploy(); }
+	});
+
+	function onStarted() {
+		state.running = true;
+		i18n.keepTitle = true;
+		// follow language switches made in the game's settings (overlays + the ?lang= of a reload)
+		window.setInterval(i18n.sync, 1500);
+		settle().then(revealGame);
+	}
+
+	// Keep the loader up while the first frames compile shaders: wait until frame pacing is smooth,
+	// or until the game calls window.alsGameReady() (optional hook), with hard caps.
+	var settleFinish = null;
+	window.alsGameReady = function () {
+		state.gameSaidReady = true;
+		if (settleFinish) { settleFinish(); }
+	};
+	function settle() {
+		return new Promise(function (resolve) {
+			var done = false;
+			var t0 = performance.now();
+			var last = t0;
+			var smooth = 0;
+			settleFinish = function () { if (!done) { done = true; resolve(); } };
+			if (state.gameSaidReady) { settleFinish(); return; }
+			window.setTimeout(settleFinish, 10000);
+			function tick(now) {
+				if (done) { return; }
+				smooth = now - last < 50 ? smooth + 1 : 0;
+				last = now;
+				if ((smooth >= 10 && now - t0 > 700) || now - t0 > 8000) { settleFinish(); return; }
+				window.requestAnimationFrame(tick);
+			}
+			window.requestAnimationFrame(tick);
+		});
+	}
+
+	function revealGame() {
+		if (state.faulted) { return; }
+		setPhase('running');
+		el.loader.classList.add('is-leaving');
+		el.loader.setAttribute('aria-busy', 'false');
+		window.setTimeout(function () {
+			el.loader.hidden = true;
+			stopAmbient();
+			stopTips();
+		}, 850);
+		if (el.trailer.hidden) { focusCanvas(); }
+	}
+	function focusCanvas() { try { el.canvas.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+
+	function onExit(code) {
+		state.running = false;
+		fault('exit', null, code);
+	}
+
+	/* ------------------------------------------------------------ faults */
+	function featureHelp(missing) {
+		if (/^WebGL2/i.test(missing)) { return [t('feat.webgl.title'), t('feat.webgl.text')]; }
+		if (/^Fetch/i.test(missing)) { return [t('feat.fetch.title'), t('feat.fetch.text')]; }
+		if (/^Secure Context/i.test(missing)) { return [t('feat.secure.title'), t('feat.secure.text')]; }
+		if (/Cross-Origin|SharedArrayBuffer/i.test(missing)) { return [t('feat.coi.title'), t('feat.coi.text')]; }
+		return [missing, ''];
+	}
+	function gpuName() {
+		try {
+			var c = doc.createElement('canvas');
+			var gl = c.getContext('webgl2') || c.getContext('webgl');
+			if (!gl) { return 'no WebGL'; }
+			var ext = gl.getExtension('WEBGL_debug_renderer_info');
+			var name = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+			var lose = gl.getExtension('WEBGL_lose_context');
+			if (lose) { lose.loseContext(); }
+			return String(name);
+		} catch (e) { return 'unknown'; }
+	}
+	var FAULT_KINDS = /^(features|file|script|load|engine|crash|context|exit)$/;
+	var currentFault = null;
+	function renderFault() {
+		if (!currentFault) { return; }
+		var k = 'fault.' + currentFault.kind + '.';
+		el.faultCode.textContent = t(k + 'code');
+		el.faultTitle.textContent = t(k + 'title');
+		el.faultMsg.textContent = t(k + 'msg');
+		el.faultRetry.querySelector('.deploy-main').textContent = t(k + 'retry');
+		el.faultList.textContent = '';
+		if (currentFault.kind === 'features' && Array.isArray(currentFault.extra)) {
+			currentFault.extra.forEach(function (m) {
+				var h = featureHelp(m);
+				var li = doc.createElement('li');
+				var b = doc.createElement('b');
+				b.textContent = h[0];
+				li.appendChild(b);
+				li.appendChild(doc.createTextNode(h[1]));
+				el.faultList.appendChild(li);
+			});
+		}
+		el.faultList.hidden = !el.faultList.childNodes.length;
+	}
+	function fault(kind, err, extra) {
+		if (state.faulted && kind !== 'exit') { return; }
+		state.faulted = true;
+		i18n.sync();   // the game may have switched language since the page loaded
+		if (!FAULT_KINDS.test(kind)) { kind = 'engine'; }
+		currentFault = { kind: kind, extra: extra };
+		el.fault.setAttribute('data-kind', kind);
+		renderFault();
+		var lines = [];
+		if (err) { lines.push('Error: ' + (err && err.message ? err.message : String(err))); }
+		if (Array.isArray(extra)) { extra.forEach(function (m) { lines.push('Missing: ' + m); }); } else if (extra !== undefined && extra !== null) { lines.push('Exit code: ' + extra); }
+		lines.push('Phase: ' + state.phase);
+		lines.push('Build: ' + (BUILD ? BUILD.version + ' (' + BUILD.build + ')' : 'unfinalized'));
+		lines.push('Page: ' + window.location.origin + window.location.pathname);
+		lines.push('Browser: ' + navigator.userAgent);
+		lines.push('GPU: ' + gpuName());
+		if (engineErrors.length) { lines.push('Engine errors:\n  ' + engineErrors.slice(-12).join('\n  ')); }
+		el.faultDetails.textContent = lines.join('\n');
+		el.faultMore.hidden = kind === 'exit';
+		el.faultCopy.hidden = kind === 'exit';
+		if (kind !== 'exit') { el.deploy.disabled = true; setDeploySub('deploy.offline'); }
+		el.fault.hidden = false;
+		try { el.faultRetry.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+		if (err) { console.error('[Last Stand] ' + kind + ' fault', err); }
+	}
+	el.faultRetry.addEventListener('click', function () { window.location.reload(); });
+	el.faultCopy.addEventListener('click', function () {
+		var text = el.faultTitle.textContent + '\n' + el.faultDetails.textContent;
+		var done = function () { el.faultCopy.textContent = t('fault.copied'); };
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(text).then(done, function () { el.faultMore.open = true; });
+		} else { el.faultMore.open = true; }
+	});
+
+	/* ------------------------------------------------------------ trailer (window.alsPlayTrailer) */
+	var trailerUrls = videoUrls('intro_cinematic', ['mp4', 'webm']);
+	if (mediaList && !trailerUrls.length) { el.trailerBtn.hidden = true; }
+	var trailer = { open: false, cancel: null, returnFocus: null };
+	var tv = el.tVideo;
+	function forceMute(v) { v.muted = true; v.defaultMuted = true; v.volume = 0; v.setAttribute('muted', ''); }
+	tv.addEventListener('volumechange', function () { if (MUTED && (!tv.muted || tv.volume > 0)) { forceMute(tv); } });
+	tv.addEventListener('ended', function () { closeTrailer(); });
+
+	function openTrailer() {
+		if (trailer.open) { return true; }
+		i18n.sync();
+		trailer.open = true;
+		window.alsTrailerPlaying = true;
+		trailer.returnFocus = doc.activeElement;
+		if (MUTED) { forceMute(tv); } else { tv.muted = false; tv.defaultMuted = false; tv.volume = 1; tv.removeAttribute('muted'); }
+		if (surelyHas('intro_poster.jpg')) { tv.poster = 'media/intro_poster.jpg'; } else { tv.removeAttribute('poster'); }
+		tv.hidden = false;
+		el.tEmpty.hidden = true;
+		el.trailer.hidden = false;
+		window.requestAnimationFrame(function () { el.trailer.classList.add('is-open'); });
+		if (trailerUrls.length) {
+			trailer.cancel = playChain(tv, trailerUrls, trailerUnavailable);
+		} else {
+			trailerUnavailable();
+		}
+		try { el.tClose.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+		return true;
+	}
+	function trailerUnavailable() { tv.hidden = true; el.tEmpty.hidden = false; }
+	function closeTrailer() {
+		if (!trailer.open) { return; }
+		trailer.open = false;
+		if (trailer.cancel) { trailer.cancel(); trailer.cancel = null; }
+		try { tv.pause(); } catch (e) { /* ignore */ }
+		el.trailer.classList.remove('is-open');
+		window.alsTrailerPlaying = false;
+		window.setTimeout(function () {
+			if (trailer.open) { return; }
+			el.trailer.hidden = true;
+			tv.removeAttribute('src');
+			tv.load();
+		}, 260);
+		if (state.running) {
+			focusCanvas();
+		} else if (trailer.returnFocus && trailer.returnFocus.focus && trailer.returnFocus !== doc.body) {
+			try { trailer.returnFocus.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+		}
+	}
+	el.trailerBtn.addEventListener('click', openTrailer);
+	el.tClose.addEventListener('click', closeTrailer);
+	el.trailer.addEventListener('click', function (ev) { if (ev.target === el.trailer) { closeTrailer(); } });
+	window.addEventListener('keydown', function (ev) {
+		if (!trailer.open) { return; }
+		if (ev.key === 'Escape' || ev.key === 'Esc') {
+			ev.preventDefault();
+			ev.stopImmediatePropagation();
+			closeTrailer();
+		} else if (ev.key === 'Tab') {
+			var ring = tv.hidden ? [el.tClose] : [el.tClose, tv];
+			var i = ring.indexOf(doc.activeElement);
+			ev.preventDefault();
+			ring[(i + (ev.shiftKey ? -1 : 1) + ring.length) % ring.length].focus();
+		}
+	}, true);
+	window.alsPlayTrailer = openTrailer;
+	window.alsCloseTrailer = closeTrailer;
+
+	/* ------------------------------------------------------------ language switch */
+	var deploySubKey = 'deploy.preparing';
+	function setDeploySub(key) { deploySubKey = key; el.deploySub.textContent = t(key); }
+	setDeploySub(deploySubKey);
+	i18n.onChange(function () {
+		render();
+		renderBuildTag();
+		renderTip();
+		setDeploySub(deploySubKey);
+		if (warnKey && !el.warn.hidden) { showWarn(warnKey.key, warnKey.retry); }
+		renderFault();   // (data-i18n elements were already re-applied by the i18n core)
+	});
+
+	/* ------------------------------------------------------------ public shell API */
+	window.alsShell = {
+		version: BUILD ? BUILD.version : 'dev',
+		muted: MUTED,
+		lang: function () { return i18n.lang; },
+		setLang: function (code) { i18n.set(code); },
+		media: mediaList,
+		state: function () {
+			return { phase: state.phase, loaded: state.loaded, total: state.total, ready: state.ready, running: state.running, faulted: state.faulted, trailerOpen: trailer.open };
+		},
+		deploy: deploy,
+		playTrailer: openTrailer,
+		closeTrailer: closeTrailer,
+	};
+
+	updateRotate();
+	render();
+	boot();
+}());
+</script>
+</body>
+</html>
+

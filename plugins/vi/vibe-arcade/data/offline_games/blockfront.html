@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://first-person-shooter.opus5-5.demos.sulat.com/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#14120f">
+
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
+<title data-sulat-seo>First Person Shooter — Claude Opus 5.5 one-shot demo | Sulat</title>
+<meta name="description" content="Explore First Person Shooter, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta name="robots" content="index, follow, max-image-preview:large" data-sulat-seo>
+<link rel="canonical" href="https://first-person-shooter.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta property="og:type" content="website" data-sulat-seo>
+<meta property="og:locale" content="en_NZ" data-sulat-seo>
+<meta property="og:site_name" content="Sulat" data-sulat-seo>
+<meta property="og:title" content="First Person Shooter — Claude Opus 5.5" data-sulat-seo>
+<meta property="og:description" content="Explore First Person Shooter, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta property="og:url" content="https://first-person-shooter.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta property="og:image" content="https://demos.sulat.com/anthropic/opus5-5/first-person-shooter/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:secure_url" content="https://demos.sulat.com/anthropic/opus5-5/first-person-shooter/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:type" content="image/jpeg" data-sulat-seo>
+<meta property="og:image:width" content="1200" data-sulat-seo>
+<meta property="og:image:height" content="630" data-sulat-seo>
+<meta property="og:image:alt" content="First Person Shooter one-shot demo preview" data-sulat-seo>
+<meta name="twitter:card" content="summary_large_image" data-sulat-seo>
+<meta name="twitter:title" content="First Person Shooter — Claude Opus 5.5" data-sulat-seo>
+<meta name="twitter:description" content="Explore First Person Shooter, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta name="twitter:url" content="https://first-person-shooter.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta name="twitter:image" content="https://demos.sulat.com/anthropic/opus5-5/first-person-shooter/thumbnail.jpg" data-sulat-seo>
+<meta name="twitter:image:alt" content="First Person Shooter one-shot demo preview" data-sulat-seo>
+<!--
+Sulat content-use policy:
+User-initiated automated scraping, extraction, and bulk copying are not permitted.
+Search indexing and discovery crawlers may access this content.
+When citing, summarising, or reusing Sulat content, credit Sulat and link to this page's canonical URL.
+Preserve the original creator credits and source links shown on this page; do not attribute third-party work to Sulat.
+Canonical URL: https://first-person-shooter.opus5-5.demos.sulat.com/
+--></head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- ================= HUD ================= -->
+<div id="hud">
+  <div id="vignette"></div><div id="bloodFlash"></div><div id="lowhp"></div><div id="suppress"></div>
+
+  <div id="mmWrap">
+    <canvas id="minimap" width="200" height="200"></canvas>
+    <div class="mm-frame"></div>
+    <div id="uavBadge"><span>UAV</span><b id="uavTime">30</b></div>
+  </div>
+  <div id="objective"><div id="objTitle">PREPARE</div><div id="objBody"></div><div id="objBar" class="objbar"><div id="objFill"></div></div></div>
+
+  <div id="compassWrap"><canvas id="compass" width="520" height="50"></canvas></div>
+  <div id="bossbar"><div class="bb-name">JUGGERNAUT</div><div class="bb-bar"><div id="bossFill"></div></div></div>
+
+  <div id="scorebox">
+    <div class="sb-row"><span id="waveNum">WAVE 1</span><span id="matchTimer">00:00</span></div>
+    <div class="sb-score"><span>SCORE</span><b id="scoreVal">0</b></div>
+    <div id="lives"></div>
+  </div>
+  <div id="killfeed"></div>
+
+  <div id="crosshair"><i id="chL"></i><i id="chR"></i><i id="chT"></i><i id="chB"></i><i id="chDot"></i><i id="chCircle"></i></div>
+  <div id="hitmarker" class="hm"><i></i><i></i><i></i><i></i></div>
+  <div id="popTotal"></div>
+  <div id="popups"></div>
+  <div id="announce" class="announce"></div>
+  <div id="dmgDirs"></div>
+  <div id="nadeInd"></div>
+  <div id="cook"><div id="cookTxt">COOKING</div><div class="cook-bar"><div id="cookFill"></div></div></div>
+  <div id="prompt"><div class="pr-txt"></div><div class="pr-bar"><div class="pr-fill"></div></div></div>
+
+  <div id="hpWrap"><div class="hp-label">HEALTH</div><div class="hp-bar"><div id="hpFill"></div></div><div class="hp-regen">REGENERATING</div></div>
+
+  <div id="rightStack">
+    <div id="streaks"><div id="streakPips"></div><div id="streakList"></div></div>
+    <div id="ammo">
+      <div class="am-top"><div id="wName">ARK-7</div><div id="wClass"></div></div>
+      <div class="am-mid"><div id="wMag">30</div><div class="am-sep">/</div><div id="wRes">180</div></div>
+      <div id="wPips" class="pips"></div>
+      <div class="am-bot"><div id="nades"></div><div id="wHint" class="hint"></div></div>
+    </div>
+  </div>
+
+  <div id="scope"><div id="scopeInner"><div class="sc-h"></div><div class="sc-v"></div><div class="sc-dot"></div><div class="sc-mils"></div></div><div id="breathWrap"><span>HOLD SHIFT TO STEADY</span><div class="br-bar"><div id="breath"></div></div></div></div>
+  <div id="gunshipHud">
+    <div class="gs-corners"><i></i><i></i><i></i><i></i></div>
+    <div class="gs-reticle"><i></i><i></i><i></i><i></i><div class="gs-box"></div></div>
+    <div class="gs-info"><div>GUNSHIP // THERMAL</div><div id="gs105" class="gs-wpn">105MM <span>LMB</span><div id="gsReload"></div></div><div class="gs-wpn ready">25MM <span>RMB</span></div><div class="gs-time">TIME <b id="gsTime">30</b></div></div>
+  </div>
+  <div id="designatorHud"><div class="ds-frame"><i></i><i></i><i></i><i></i></div><div class="ds-cross"></div><div class="ds-txt">PRECISION AIRSTRIKE — LMB CONFIRM • RMB CANCEL</div></div>
+  <div id="fps"></div>
+</div>
+
+<!-- ================= SCREENS ================= -->
+<div id="screens">
+  <section id="sBoot" class="screen on">
+    <div class="boot-inner">
+      <div class="logo"><span class="logo-a">BLOCK</span><span class="logo-b">FRONT</span></div>
+      <div class="logo-sub">VOXEL WARFARE</div>
+      <div id="bootStatus" class="boot-status">Building the battlefield…</div>
+      <div class="boot-bar"><div id="bootFill"></div></div>
+      <button id="bootStart" class="press-start" hidden>CLICK TO ENLIST</button>
+    </div>
+  </section>
+
+  <section id="sMenu" class="screen">
+    <div class="menu-col">
+      <div class="logo small"><span class="logo-a">BLOCK</span><span class="logo-b">FRONT</span></div>
+      <div class="logo-sub">VOXEL WARFARE</div>
+      <nav class="menu-list">
+        <button class="mbtn big" data-go="deploy">DEPLOY<small>Start an operation</small></button>
+        <button class="mbtn" data-go="loadout">LOADOUT<small>Weapons &amp; equipment</small></button>
+        <button class="mbtn" data-go="settings">SETTINGS<small>Controls, audio, video</small></button>
+        <button class="mbtn" data-go="controls">FIELD MANUAL<small>Controls &amp; killstreaks</small></button>
+      </nav>
+    </div>
+    <aside class="profile">
+      <div class="pf-rank"><div id="pfBadge" class="badge">1</div><div><div id="pfRank" class="pf-name">PRIVATE</div><div class="pf-xpbar"><div id="pfXp"></div></div><div id="pfXpTxt" class="pf-xptxt"></div></div></div>
+      <div class="pf-grid">
+        <div><span>BEST SCORE</span><b id="pfBest">0</b></div>
+        <div><span>TOTAL KILLS</span><b id="pfKills">0</b></div>
+        <div><span>OPERATIONS WON</span><b id="pfWins">0</b></div>
+        <div><span>BEST ENDLESS WAVE</span><b id="pfWave">0</b></div>
+      </div>
+      <div id="pfLoadout" class="pf-loadout"></div>
+    </aside>
+    <div class="menu-foot">Map: <b>DUST YARD</b> — a walled desert compound. All sound synthesized live.</div>
+  </section>
+
+  <section id="sDeploy" class="screen">
+    <div class="panel wide">
+      <h2>DEPLOY</h2>
+      <h3>MODE</h3>
+      <div id="modeCards" class="cards two"></div>
+      <h3>DIFFICULTY</h3>
+      <div id="diffCards" class="cards four"></div>
+      <div class="deploy-foot">
+        <div id="deployLoadout" class="deploy-lo"></div>
+        <div class="btnrow"><button class="mbtn ghost" data-go="menu">BACK</button><button class="mbtn ghost" data-go="loadout" data-return="deploy">EDIT LOADOUT</button><button id="btnStart" class="mbtn primary">START OPERATION</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sLoadout" class="screen">
+    <div class="panel wide">
+      <h2>LOADOUT</h2>
+      <div class="lo-grid">
+        <div>
+          <h3>PRIMARY</h3><div id="priCards" class="wcards"></div>
+          <h3>SECONDARY</h3><div id="secCards" class="wcards two"></div>
+        </div>
+        <div class="lo-detail">
+          <div id="loDetail"></div>
+          <h3>EQUIPMENT</h3>
+          <div class="lo-eq"><b>2× FRAG GRENADE</b><span>Hold G to cook, release to throw.</span></div>
+          <h3>KILLSTREAKS</h3>
+          <div id="loStreaks" class="lo-streaks"></div>
+        </div>
+      </div>
+      <div class="btnrow right"><button id="btnLoadoutDone" class="mbtn primary">CONFIRM</button></div>
+    </div>
+  </section>
+
+  <section id="sSettings" class="screen">
+    <div class="panel">
+      <h2>SETTINGS</h2>
+      <div id="settingsForm" class="settings"></div>
+      <div class="btnrow right"><button id="btnSettingsDone" class="mbtn primary">DONE</button></div>
+    </div>
+  </section>
+
+  <section id="sControls" class="screen">
+    <div class="panel wide">
+      <h2>FIELD MANUAL</h2>
+      <div class="manual">
+        <div class="keys">
+          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows<span>Move</span></div>
+          <div><kbd>MOUSE</kbd><span>Look</span></div>
+          <div><kbd>LMB</kbd><span>Fire</span></div>
+          <div><kbd>RMB</kbd><span>Aim down sights</span></div>
+          <div><kbd>SHIFT</kbd><span>Sprint (hold) • Steady scope</span></div>
+          <div><kbd>SPACE</kbd><span>Jump</span></div>
+          <div><kbd>C</kbd><span>Crouch • Slide while sprinting</span></div>
+          <div><kbd>R</kbd><span>Reload</span></div>
+          <div><kbd>1</kbd><kbd>2</kbd> <kbd>Q</kbd> / wheel<span>Switch weapon</span></div>
+          <div><kbd>G</kbd><span>Frag grenade (hold to cook)</span></div>
+          <div><kbd>V</kbd> / <kbd>MMB</kbd><span>Knife</span></div>
+          <div><kbd>F</kbd><span>Hold to pick up weapon</span></div>
+          <div><kbd>3</kbd><kbd>4</kbd><kbd>5</kbd><span>Activate killstreak</span></div>
+          <div><kbd>ESC</kbd> / <kbd>P</kbd><span>Pause</span></div>
+        </div>
+        <div class="tips">
+          <h3>KILLSTREAKS</h3>
+          <div id="manStreaks" class="lo-streaks"></div>
+          <h3>FIELD NOTES</h3>
+          <ul>
+            <li>Health regenerates after a few seconds out of fire. The screen bleeds red as you take damage.</li>
+            <li>Headshots deal bonus damage and score. Damage falls off with range — know your weapon.</li>
+            <li>Enemies react to gunfire, take cover, peek and flank. Marksmen give away their position with a scope glint.</li>
+            <li>Explosions carve the voxel terrain. Crates and cloth break under sustained fire.</li>
+            <li>Hardpoint waves: stand in the zone with no hostiles inside to capture.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="btnrow right"><button class="mbtn primary" data-go="menu">BACK</button></div>
+    </div>
+  </section>
+
+  <section id="sPause" class="screen dim">
+    <div class="menu-col">
+      <h2 class="big-title">PAUSED</h2>
+      <div id="pauseInfo" class="pause-info"></div>
+      <nav class="menu-list">
+        <button id="btnResume" class="mbtn big">RESUME</button>
+        <button class="mbtn" data-go="loadout" data-return="pause">LOADOUT<small>Applies on next respawn</small></button>
+        <button class="mbtn" data-go="settings" data-return="pause">SETTINGS</button>
+        <button id="btnRestart" class="mbtn">RESTART</button>
+        <button id="btnQuit" class="mbtn">QUIT TO MENU</button>
+      </nav>
+      <div id="lockMsg" class="lock-msg"></div>
+    </div>
+  </section>
+
+  <section id="sDeath" class="screen death">
+    <div class="death-card">
+      <div class="dc-title">YOU WERE KILLED</div>
+      <div id="dcKiller" class="dc-killer"></div>
+      <div id="dcLives" class="dc-lives"></div>
+      <div class="dc-count">RESPAWN IN <b id="dcCount">5</b></div>
+      <div id="dcTip" class="dc-tip"></div>
+    </div>
+  </section>
+
+  <section id="sEnd" class="screen dim">
+    <div class="panel wide end">
+      <div id="endTitle" class="end-title">VICTORY</div>
+      <div id="endSub" class="end-sub"></div>
+      <div id="endBest" class="end-best">NEW BEST SCORE</div>
+      <div id="endStats" class="end-stats"></div>
+      <div class="end-xp">
+        <div id="endRank" class="end-rank"></div>
+        <div class="pf-xpbar big"><div id="endXpFill"></div></div>
+        <div id="endXpTxt" class="pf-xptxt"></div>
+      </div>
+      <div class="btnrow center"><button id="btnMenu" class="mbtn ghost">MAIN MENU</button><button id="btnAgain" class="mbtn primary">PLAY AGAIN</button></div>
+    </div>
+  </section>
+
+  <section id="sTouch" class="screen dim">
+    <div class="panel narrow">
+      <h2>BEST ON DESKTOP</h2>
+      <p>BLOCKFRONT is designed for keyboard and mouse with pointer lock. On this device you can play with touch controls: left thumb moves, right thumb looks, and on-screen buttons fire, aim, reload, jump, crouch and throw.</p>
+      <p class="muted">For the full experience, open this page on a desktop browser.</p>
+      <div class="btnrow center"><button id="btnTouchGo" class="mbtn primary">CONTINUE WITH TOUCH</button></div>
+    </div>
+  </section>
+</div>
+
+<div id="rotate"><div><div class="rot-ico"></div>ROTATE TO LANDSCAPE</div></div>
+
+<!-- ================= TOUCH ================= -->
+<div id="touch">
+  <div id="tStick"></div>
+  <div id="tLook"></div>
+  <div id="tKnob"><i></i></div>
+  <button class="tb t-fire" data-btn="fire">FIRE</button>
+  <button class="tb t-ads" data-btn="ads">ADS</button>
+  <button class="tb t-jump" data-btn="jump">JUMP</button>
+  <button class="tb t-crouch" data-btn="crouch">CRCH</button>
+  <button class="tb t-reload" data-btn="reload">RLD</button>
+  <button class="tb t-nade" data-btn="nade">NADE</button>
+  <button class="tb t-swap" data-btn="swap">SWAP</button>
+  <button class="tb t-knife" data-btn="melee">KNIFE</button>
+  <button class="tb t-use" data-btn="use">USE</button>
+  <button class="tb t-s1" data-btn="streak:uav">UAV</button>
+  <button class="tb t-s2" data-btn="streak:airstrike">AIR</button>
+  <button class="tb t-s3" data-btn="streak:gunship">GUN</button>
+  <button class="tb t-pause" data-btn="pause">II</button>
+</div>
+
+<script type="module" src="js/main.js"></script>
+<link rel="stylesheet" href="/.well-known/sulat-demo-overlay-v12.css" data-sulat-demo-overlay-asset="styles-v12">
+<details id="sulat-demo-referral-overlay" data-model="opus5-5" data-experiment="first-person-shooter" data-storage-scope="opus5-5.demos.sulat.com" data-deal-id="oneshot-websites" data-has-deal="true" data-collapsed="true">
+  <summary data-overlay-toggle aria-label="Expand demo links" aria-expanded="false" title="Expand demo links"></summary>
+  <div class="sulat-demo-overlay__actions">
+    <div class="sulat-demo-overlay__primary">
+      <details class="sulat-demo-overlay__share" data-overlay-share>
+        <summary aria-label="Share this demo" title="Share this demo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M12 15.75v-12m0 0L7.5 8.25M12 3.75l4.5 4.5M5.25 13.5v5.25h13.5V13.5"/></svg><span class="sulat-demo-overlay__share-label">Share</span></summary>
+        <nav class="sulat-demo-overlay__share-menu" aria-label="Share this demo">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Ffirst-person-shooter.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Ffirst-person-shooter.opus5-5.demos.sulat.com%2F&t=First%20Person%20Shooter%20%E2%80%94%20Claude%20Opus%205.5%20demo" target="_blank" rel="noopener noreferrer">Hacker News</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Ffirst-person-shooter.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text=First%20Person%20Shooter%20%E2%80%94%20Claude%20Opus%205.5%20demo&url=https%3A%2F%2Ffirst-person-shooter.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Twitter</a>
+        </nav>
+      </details>
+      <a class="sulat-demo-overlay__catalogue" data-overlay-catalogue href="https://opus5-5.demos.sulat.com/" aria-label="More demos"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>More demos</a>
+      <a class="sulat-demo-overlay__next" data-overlay-next href="https://demos.sulat.com/surprise" aria-label="Open another random demo" title="Open another random demo"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 4 12 8-12 8z"/></svg>Next demo</a>
+    </div>
+    <a class="sulat-demo-overlay__deal" data-overlay-deal href="https://github.com/jpcaparas/skills#oneshot-websites" target="_blank" rel="sponsored noopener noreferrer" aria-label="Create your own one-shots (opens in a new tab)">Create your own one-shots</a>
+  </div>
+</details>
+<script src="/.well-known/sulat-demo-overlay-v12.js" defer data-sulat-demo-overlay-asset="script-v12"></script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5278441e89bcec2',t:'MTc5MzMzMjg2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5278441e89bcec2',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ecb2b94d4b63450a9e0af42e304662ed","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

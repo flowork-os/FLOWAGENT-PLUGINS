@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://tesana.com/play/8d052fdd-93a3-4466-a908-083f5f263a80/">
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" sizes="32x32" href="https://tesana.com/api/games/8d052fdd-93a3-4466-a908-083f5f263a80/icon.png?size=32">
+    <link rel="icon" type="image/png" sizes="64x64" href="https://tesana.com/api/games/8d052fdd-93a3-4466-a908-083f5f263a80/icon.png?size=64">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://tesana.com/api/games/8d052fdd-93a3-4466-a908-083f5f263a80/icon.png?size=192">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://tesana.com/api/games/8d052fdd-93a3-4466-a908-083f5f263a80/icon.png?size=152">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://tesana.com/api/games/8d052fdd-93a3-4466-a908-083f5f263a80/icon.png?size=180">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#161616" />
+    <!-- Apply the saved theme class to <html> before first paint so the
+         initial loader (and the whole app's CSS variables) render in the
+         right theme with no flash. ThemeContext reconciles this on mount. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('onetap_theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark';
+          }
+          document.documentElement.classList.add(t);
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <!-- A signed-in visitor (a saved session) who opens the landing page goes
+         to Home (signed-in build, SPEC 2.3). Rewriting the address here,
+         before the app boots, means the app starts on /home and the
+         prerendered landing page never flashes. Pages that switch by sign-in
+         (Create, Play, a store page, a profile, Help, Explore) keep their
+         address but are hidden the same way, so the signed-out version the
+         server prerendered does not flash before the signed-in one. #root
+         stays hidden until the first page has rendered (src/lib/bootLoader.ts
+         lifts it; the timeout below is a backstop). Not on a game's own
+         address, in the desktop app or for the prerenderer. A session that
+         proves stale is sent back to the landing page (App.tsx). -->
+    <style>html[data-signed-in-boot] #root{visibility:hidden}</style>
+    <script>
+      (function () {
+        try {
+          var d = document.documentElement;
+          if (window.__TAURI_INTERNALS__ || d.hasAttribute('data-vanity-boot')) return;
+          if (/[?&]__prerender(?:[=&]|$)/.test(location.search)) return;
+          if (!localStorage.getItem('auth_token')) return;
+          var lang = '(?:/(ru|zh|ja|ko|pt-BR|en))?';
+          var root = new RegExp('^' + lang + '/?$').exec(location.pathname);
+          var switching = new RegExp('^' + lang + '/(?:create|help|explore|play|play/(?:charts|tags|search)|play/(?:category|tag|section)/[^/]+|game/[^/]+|u/[^/]+)/?$').test(location.pathname);
+          if (!root && !switching) return;
+          if (root) {
+            var prefix = root[1] && root[1] !== 'en' ? '/' + root[1] : '';
+            history.replaceState(history.state, '', prefix + '/home' + location.search + location.hash);
+            try { sessionStorage.setItem('tesana_root_redirect', '1'); } catch (e) {}
+          }
+          d.setAttribute('data-signed-in-boot', '');
+          setTimeout(function () { d.removeAttribute('data-signed-in-boot'); }, 6000);
+        } catch (e) {}
+      })();
+    </script>
+    <title>Cozy Cove - Play on Tesana</title>
+    <meta name="description" content="Arrive in a quiet seaside village with a bamboo rod, a few coins, and an old fisherman waiting at the docks." />
+    <!-- Canonical and share link are separate on purpose: a public game's play
+         addresses point Google at its storefront, while the share card keeps
+         the game's own address so a tap lands in the game (node/index.js). -->
+    <link rel="canonical" href="https://tesana.com/game/cozy-cove-6d2dab35" />
+    <meta name="robots" content="follow">
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cozy-cove-6d2dab35.tesana.com" />
+    <meta property="og:title" content="Cozy Cove - Play on Tesana" />
+    <meta property="og:description" content="Arrive in a quiet seaside village with a bamboo rod, a few coins, and an old fisherman waiting at the docks." />
+    <meta property="og:image" content="https://tesana.com/cdn-cgi/image/width=1200,height=630,fit=cover,format=jpeg,quality=85/https://play.tesana.ai/game-20260926-cc84ce43/poster.webp" />
+    <meta property="og:image:secure_url" content="https://tesana.com/cdn-cgi/image/width=1200,height=630,fit=cover,format=jpeg,quality=85/https://play.tesana.ai/game-20260926-cc84ce43/poster.webp" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Cozy Cove" />
+    <meta property="og:site_name" content="Tesana" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@TesanaAI" />
+    <meta name="twitter:title" content="Cozy Cove - Play on Tesana" />
+    <meta name="twitter:description" content="Arrive in a quiet seaside village with a bamboo rod, a few coins, and an old fisherman waiting at the docks." />
+    <meta name="twitter:image" content="https://tesana.com/cdn-cgi/image/width=1200,height=630,fit=cover,format=jpeg,quality=85/https://play.tesana.ai/game-20260926-cc84ce43/poster.webp" />
+    <meta name="twitter:image:alt" content="Cozy Cove" />
+
+    
+    
+    
+
+    <!-- Warm the connections every page needs before its script asks: the API
+         (CORS requests, hence crossorigin), and the hosts game art and builds
+         come from. dns-prefetch is the fallback where preconnect is not
+         supported. -->
+    <link rel="preconnect" href="https://api.tesana.ai" crossorigin />
+    <link rel="preconnect" href="https://cdn.tesana.ai" />
+    <link rel="preconnect" href="https://play.tesana.ai" />
+    <link rel="dns-prefetch" href="https://api.tesana.ai" />
+    <link rel="dns-prefetch" href="https://cdn.tesana.ai" />
+    <link rel="dns-prefetch" href="https://play.tesana.ai" />
+
+    <!-- Preload critical above-fold assets -->
+    <link rel="preload" href="/fonts/sf-pro-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/sf-pro-expanded-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/logos/tessala-logo.svg" as="image" />
+
+    <!-- Analytics gate (TES-24). Decides once, before any analytics script,
+         whether Mixpanel, GTM and the Facebook Pixel may start, and publishes
+         the answer as window.__TESANA_ANALYTICS_OFF. Off on every page the
+         Tesana app opens in its WebViews (window.__TESANA_IN_APP: a
+         "TesanaApp/<version>" user agent; window.__TESANA_IN_APP_HOST adds the
+         /app-host/<gameId> path for the lean game host; the two functions
+         between the in-app-mode markers are a copy of
+         src/lib/inApp/inAppMode.ts and inAppMode.test.ts runs both), in the
+         desktop app
+         (Tauri), on local development hosts (localhost, *.localhost, *.test,
+         *.local, loopback and private IPs), on HQ (/hq, staff only), and when an ANALYTICS_DISABLED
+         flag is set: in the build/dev environment, as window.ANALYTICS_DISABLED
+         before this script runs, or as localStorage.ANALYTICS_DISABLED = '1'.
+         The two functions between the markers are a copy of
+         src/lib/analyticsGate.ts; analyticsGate.test.ts runs both. -->
+    <script>
+      (function () {
+        /* analytics-gate:start */
+        function __tesanaIsLocalDevHost(hostname) {
+          var h = String(hostname || '').toLowerCase().replace(/\.$/, '');
+          if (h.charAt(0) === '[' && h.charAt(h.length - 1) === ']') h = h.slice(1, -1);
+          if (h === '') return true;
+          if (h === 'localhost' || h === '::1' || h === '0.0.0.0') return true;
+          if (/\.(localhost|test|local)$/.test(h)) return true;
+          var ip = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
+          if (ip) {
+            var a = Number(ip[1]);
+            var b = Number(ip[2]);
+            if (a === 127 || a === 10) return true;
+            if (a === 192 && b === 168) return true;
+            if (a === 172 && b >= 16 && b <= 31) return true;
+          }
+          return false;
+        }
+        function __tesanaIsFlagOn(value) {
+          if (value === true || value === 1) return true;
+          if (typeof value !== 'string') return false;
+          var v = value.trim().toLowerCase();
+          return v === '1' || v === 'true' || v === 'yes';
+        }
+        /* analytics-gate:end */
+        /* in-app-mode:start */
+        function __tesanaHasAppToken(userAgent) {
+          return /(?:^|\s)TesanaApp\/\d/.test(String(userAgent || ''));
+        }
+        function __tesanaIsAppHostPath(pathname) {
+          return /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?app-host\/[^/]+\/?$/.test(String(pathname || ''));
+        }
+        /* in-app-mode:end */
+        var stored = null;
+        try { stored = window.localStorage.getItem('ANALYTICS_DISABLED'); } catch (e) { stored = null; }
+        window.__TESANA_IS_TAURI = !!window.__TAURI_INTERNALS__;
+        // Any page inside the Tesana app's WebViews (src/lib/inApp/inAppMode.ts):
+        // the app does its own analytics, so no tracker starts inside it. The
+        // game host is the one in-app page that also drops the site around it.
+        window.__TESANA_IN_APP = __tesanaHasAppToken(window.navigator && window.navigator.userAgent);
+        window.__TESANA_IN_APP_HOST =
+          window.__TESANA_IN_APP &&
+          __tesanaIsAppHostPath(window.location && window.location.pathname);
+        // HQ (/hq, staff only): its paths carry decision and support-case ids
+        // that must not reach Mixpanel, GTM or the Pixel (src/lib/RouteTracker.tsx
+        // skips its page views on in-app navigation too).
+        window.__TESANA_IS_HQ_PATH = /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?hq(?:\/|$)/.test(
+          String((window.location && window.location.pathname) || ''));
+        window.__TESANA_ANALYTICS_OFF =
+          window.__TESANA_IS_HQ_PATH ||
+          window.__TESANA_IN_APP ||
+          window.__TESANA_IS_TAURI ||
+          __tesanaIsLocalDevHost(window.location && window.location.hostname) ||
+          __tesanaIsFlagOn(window.ANALYTICS_DISABLED) ||
+          __tesanaIsFlagOn(stored) ||
+          __tesanaIsFlagOn('');
+      })();
+    </script>
+
+    <!-- Google Tag Manager -->
+    <script>if (!window.__TESANA_ANALYTICS_OFF) (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MN5SQGK5');</script>
+    <!-- End Google Tag Manager -->
+     
+    <!-- Web-only third-party analytics scripts.
+         Skipped entirely when loaded inside the Tauri desktop bundle:
+           - GTM, Mixpanel CDN, and Facebook Pixel all hit endpoints that
+             CORS-reject the `tauri://localhost` origin (3rd-party servers
+             can't add a Tauri-specific allowlist), so they're effectively
+             dead weight in the .app — and worse, they pollute the console
+             with CSP / network errors that drown out our own logs.
+           - The Mixpanel snippet specifically tries to load
+             `//cdn.mxpnl.com/...` which Tauri resolves to `tauri:` scheme
+             (404). Setting MIXPANEL_CUSTOM_LIB_URL would only mask that
+             one error, not the underlying CORS dead-end.
+         The same holds wherever the analytics gate above says off (local
+         hosts, ANALYTICS_DISABLED). The no-op `mixpanel` / `dataLayer` /
+         `fbq` globals defined below keep app-side `mixpanel.track(…)` calls
+         safely no-op'd whenever analytics are off. -->
+    <script>
+      if (window.__TESANA_IS_TAURI) {
+        // Tag the document so CSS can target Tauri builds (e.g. to
+        // disable WebKit overscroll/rubberband bounce — see the
+        // `html.tesana-tauri` block in src/styles/index.css).
+        document.documentElement.classList.add('tesana-tauri');
+      }
+      if (window.__TESANA_ANALYTICS_OFF) {
+        // No-op stubs so app code can keep calling mixpanel.* / fbq() / etc.
+        // without runtime errors.
+        //
+        // CRITICAL: the mixpanel stub MUST be recursive. App code calls
+        // chained APIs like `mixpanel.people.set({...})`,
+        // `mixpanel.register(...)`, `mixpanel.get_group(...).set(...)`.
+        // A flat `{ get: () => fn }` proxy returns a plain function for
+        // `mixpanel.people` and then `.set` on that function is
+        // `undefined` → `TypeError: ...is not a function`. That
+        // TypeError gets caught by `AuthContext.initAuth`'s try/catch
+        // (which only looks for HTTP 401/403 to mean "auth error"),
+        // falls into the generic `else` branch, and triggers the
+        // "Unable to reach our servers" overlay even though every API
+        // call actually succeeded with 200.
+        //
+        // The recursive proxy below makes every property access AND
+        // every call return another no-op proxy, so any chain depth
+        // works. We also nullify `then` so async code that does
+        // `await mixpanel.something()` doesn't accidentally treat the
+        // proxy as a thenable and hang.
+        //
+        // The id getters return undefined rather than a stub, so
+        // services/mixpanel.ts never stores a fake `$device_id` and sends it
+        // to the API as X-MP-Device-Id.
+        var __noopProxyHandler = {
+          get: function (target, prop) {
+            if (prop === 'then') return undefined;
+            if (prop === 'get_property' || prop === 'get_distinct_id' || prop === 'get_config') {
+              return function () { return undefined; };
+            }
+            if (prop === Symbol.toPrimitive) return function () { return '[mixpanel-stub]'; };
+            return new Proxy(function () {}, __noopProxyHandler);
+          },
+          // Also return a chainable stub on call so patterns like
+          // `mixpanel.get_group('id').set('k', 'v')` don't crash on the
+          // intermediate `(...)` returning undefined.
+          apply: function () {
+            return new Proxy(function () {}, __noopProxyHandler);
+          },
+        };
+        window.mixpanel = new Proxy(function () {}, __noopProxyHandler);
+        window.dataLayer = window.dataLayer || [];
+        window.fbq = function () {};
+        window.fbq.queue = [];
+
+        // (Removed in Phase A.5, May 2026: the cross-game-relaunch
+        // pre-React overlay. The subprocess libgodot architecture
+        // means cross-game switches no longer require a Tesana
+        // relaunch — `RunnerSupervisor::boot()` kills + respawns
+        // the runner subprocess for the new project, which the
+        // standard "Starting engine…" overlay in
+        // `EmbeddedGameViewport` already covers visually.)
+      }
+    </script>
+
+    <script type="text/javascript">
+      if (!window.__TESANA_ANALYTICS_OFF) {
+      (function(e,c){if(!c.__SV){var l,h;window.mixpanel=c;c._i=[];c.init=function(q,r,f){function t(d,a){var g=a.split(".");2==g.length&&(d=d[g[0]],a=g[1]);d[a]=function(){d.push([a].concat(Array.prototype.slice.call(arguments,0)))}}var b=c;"undefined"!==typeof f?b=c[f]=[]:f="mixpanel";b.people=b.people||[];b.toString=function(d){var a="mixpanel";"mixpanel"!==f&&(a+="."+f);d||(a+=" (stub)");return a};b.people.toString=function(){return b.toString(1)+".people (stub)"};l="disable time_event track track_pageview track_links track_forms track_with_groups add_group set_group remove_group register register_once alias unregister identify name_tag set_config reset opt_in_tracking opt_out_tracking has_opted_in_tracking has_opted_out_tracking clear_opt_in_out_tracking start_batch_senders start_session_recording stop_session_recording people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user people.remove".split(" ");
+      for(h=0;h<l.length;h++)t(b,l[h]);var n="set set_once union unset remove delete".split(" ");b.get_group=function(){function d(p){a[p]=function(){b.push([g,[p].concat(Array.prototype.slice.call(arguments,0))])}}for(var a={},g=["get_group"].concat(Array.prototype.slice.call(arguments,0)),m=0;m<n.length;m++)d(n[m]);return a};c._i.push([q,r,f])};c.__SV=1.2;var k=e.createElement("script");k.type="text/javascript";k.async=!0;k.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?MIXPANEL_CUSTOM_LIB_URL:"file:"===
+      e.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";e=e.getElementsByTagName("script")[0];e.parentNode.insertBefore(k,e)}})(document,window.mixpanel||[])
+      }
+
+      // No session recording, on any page. It recorded a quarter of sessions,
+      // and in Safari it made Home drop about one frame in five while
+      // scrolling (perf research, 10 Oct 2026). Leaving `record_sessions_percent`
+      // out keeps Mixpanel's default of 0, so the recorder is never loaded.
+      // Events and autocapture are unchanged.
+      if (!window.__TESANA_ANALYTICS_OFF) {
+      mixpanel.init('58796b6270bbfcff93403caaf515001a', {
+        autocapture: true,
+        track_pageview: false,
+      })
+      }
+
+      // CRITICAL — Register attribution super properties BEFORE the first $mp_web_page_view
+      // fires. We disable Mixpanel's automatic page view (track_pageview: false) and fire
+      // it manually below, AFTER UTM + click-ID super properties are queued. This guarantees
+      // every Mixpanel event (autocapture included) carries the correct attribution context
+      // for ad-spend measurement.
+      ;(function () {
+        try {
+          var loc = window.location || {}
+          var search = loc.search || ''
+          var params = null
+          try { params = new URLSearchParams(search) } catch (_e) { params = null }
+
+          var ATTR_KEYS = [
+            'utm_source','utm_medium','utm_campaign','utm_term','utm_content','utm_id',
+            'gclid','fbclid','msclkid','ttclid','twclid','li_fat_id','igshid','yclid','dclid',
+            'wbraid','gbraid','rdt_cid','epik','_kx','ref','referrer','source'
+          ]
+
+          var sessionAttr = {
+            platform: 'web',
+            page_hostname: loc.hostname || null,
+            page_host: loc.host || null,
+            page_origin: loc.origin || null,
+          }
+          var firstTouchAttr = {
+            first_touch_url: loc.href || null,
+            first_touch_path: loc.pathname || null,
+            first_touch_referrer: (document && document.referrer) || null,
+          }
+
+          if (params) {
+            ATTR_KEYS.forEach(function (k) {
+              var v = params.get(k)
+              if (v != null && v !== '' && v !== 'undefined' && v !== 'null') {
+                sessionAttr[k] = v
+                firstTouchAttr['first_touch_' + k] = v
+              }
+            })
+          }
+
+          if (window.__TESANA_ANALYTICS_OFF) {
+            // Skip — analytics are off here (desktop app, local host or
+            // ANALYTICS_DISABLED); see the analytics gate at the top.
+            return
+          }
+
+          mixpanel.register(sessionAttr)
+          mixpanel.register_once(firstTouchAttr)
+
+          // Fire the initial page view AFTER super properties are queued so the very
+          // first $mp_web_page_view carries utm_source / rdt_cid / etc.
+          mixpanel.track_pageview()
+        } catch (e) {
+          // Tracking must never break the page; swallow any errors.
+        }
+      })();
+
+    </script>
+    <script type="module" crossorigin src="/assets/index-D848w3Az.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-CLnwsRWW.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-fa-CkhIPHJ-.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-query-DWUcREpN.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-B6kE331Z.css">
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MN5SQGK5"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
+    <div id="root">
+      <!-- PRERENDER_CONTENT_START -->
+      <!-- First-paint branded loader. The server replaces it with the
+           prerendered body on prerendered routes; otherwise main.tsx moves it
+           out of #root and removes it once route content has committed
+           (src/lib/bootLoader.ts). Defaults to the dark video; the script
+           below swaps to the light video when the saved theme is light. -->
+      <div id="initial-loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#161616;">
+        <div style="position:relative;width:48px;height:48px;opacity:0.3;">
+          <video id="initial-loader-video" src="/loading/tesana-loading-128-black.mp4" autoplay loop muted playsinline style="width:48px;height:48px;object-fit:cover;"></video>
+          <div id="initial-loader-overlay" style="position:absolute;inset:0;background:rgba(255,255,255,0.087);"></div>
+        </div>
+      </div>
+      <!-- PRERENDER_CONTENT_END -->
+    </div>
+    <script>
+      (function () {
+        try {
+          if (document.documentElement.classList.contains('light')) {
+            var v = document.getElementById('initial-loader-video');
+            var loader = document.getElementById('initial-loader');
+            var overlay = document.getElementById('initial-loader-overlay');
+            if (v) v.src = '/loading/tesana-loading-128-white.mp4';
+            if (loader) loader.style.background = '#ffffff';
+            if (overlay) overlay.style.display = 'none';
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Deferred: Mixpanel CDN + init, Facebook Pixel (loaded after first paint) -->
+    <script>
+      function __loadDeferredAnalytics() {
+        if (window.__analyticsLoaded) return;
+        if (window.__TESANA_ANALYTICS_OFF) return;  // see the analytics gate in <head>
+        window.__analyticsLoaded = true;
+
+        // Facebook Pixel
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1570988284201631');
+        fbq('track', 'PageView');
+      }
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(__loadDeferredAnalytics, { timeout: 4000 });
+      } else {
+        setTimeout(__loadDeferredAnalytics, 3000);
+      }
+    </script>
+    <noscript>
+      <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1570988284201631&ev=PageView&noscript=1"
+      ></img>
+    </noscript>
+  </body>
+</html>

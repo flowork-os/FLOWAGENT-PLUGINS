@@ -9,7 +9,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-model_path = '/home/mrflow/flowork/apps/stickman-studio/engine/models/pose_landmarker_lite.task'
+model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models', 'pose_landmarker_lite.task')
 base_options = python.BaseOptions(model_asset_path=model_path)
 options = vision.PoseLandmarkerOptions(
     base_options=base_options,
@@ -130,6 +130,8 @@ def extract_and_draw_stickman(image_path, output_path):
     return True
 
 if __name__ == '__main__':
-    in_img = '/home/mrflow/flowork/apps/stickman-studio/data/beats_1793262917932/keyframes/beats_1793262917932_beat_006.jpg'
-    out_img = '/home/mrflow/.gemini/antigravity/brain/9d84b1bc-9008-4ff0-8385-38876f178980/test_pose_stickman_beat6.jpg'
-    extract_and_draw_stickman(in_img, out_img)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    in_img = os.path.join(base_dir, '..', 'data', 'test.jpg')
+    out_img = os.path.join(base_dir, '..', 'data', 'test_out.jpg')
+    if os.path.exists(in_img):
+        extract_and_draw_stickman(in_img, out_img)

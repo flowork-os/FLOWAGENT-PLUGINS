@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en"><head>
+  <base href="https://d-va.astra.demos.sulat.com/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#11152d"><link rel="stylesheet" href="./style.css"><title data-sulat-seo>D Va — GPT 6 Astra one-shot demo | Sulat</title>
+<meta name="description" content="Explore D Va, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="robots" content="index, follow, max-image-preview:large" data-sulat-seo>
+<link rel="canonical" href="https://d-va.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:type" content="website" data-sulat-seo>
+<meta property="og:locale" content="en_NZ" data-sulat-seo>
+<meta property="og:site_name" content="Sulat" data-sulat-seo>
+<meta property="og:title" content="D Va — GPT 6 Astra" data-sulat-seo>
+<meta property="og:description" content="Explore D Va, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta property="og:url" content="https://d-va.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:image" content="https://demos.sulat.com/openai/astra/d-va/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:secure_url" content="https://demos.sulat.com/openai/astra/d-va/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:type" content="image/jpeg" data-sulat-seo>
+<meta property="og:image:width" content="1200" data-sulat-seo>
+<meta property="og:image:height" content="630" data-sulat-seo>
+<meta property="og:image:alt" content="D Va one-shot demo preview" data-sulat-seo>
+<meta name="twitter:card" content="summary_large_image" data-sulat-seo>
+<meta name="twitter:title" content="D Va — GPT 6 Astra" data-sulat-seo>
+<meta name="twitter:description" content="Explore D Va, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="twitter:url" content="https://d-va.astra.demos.sulat.com/" data-sulat-seo>
+<meta name="twitter:image" content="https://demos.sulat.com/openai/astra/d-va/thumbnail.jpg" data-sulat-seo>
+<meta name="twitter:image:alt" content="D Va one-shot demo preview" data-sulat-seo>
+<!--
+Sulat content-use policy:
+User-initiated automated scraping, extraction, and bulk copying are not permitted.
+Search indexing and discovery crawlers may access this content.
+When citing, summarising, or reusing Sulat content, credit Sulat and link to this page's canonical URL.
+Preserve the original creator credits and source links shown on this page; do not attribute third-party work to Sulat.
+Canonical URL: https://d-va.astra.demos.sulat.com/
+--></head>
+<body>
+<svg class="svg-defs" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="bunny" viewBox="0 0 64 64"><path d="M20 30C10 8 15 0 21 5l10 23 3-1C39 4 46 1 49 8s-1 15-7 25c9 8 9 22-2 26-5 2-16 1-20-2-10-7-10-20 0-27Z" fill="currentColor"/><path d="m22 42 7 3m9-3-6 3" stroke="#15182f" stroke-width="3" stroke-linecap="round"/><path d="m27 51 4 3 5-4" fill="none" stroke="#15182f" stroke-width="2.5" stroke-linecap="round"/></symbol><symbol id="shield" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="m8 11 3 3 6-6" fill="none" stroke="currentColor" stroke-width="2"/></symbol><symbol id="rocket" viewBox="0 0 24 24"><path d="M9 16c-3-7 5-12 12-13 0 7-5 15-12 13Zm2-3 4-4M8 10 3 12l3 3m8 2-2 5-3-4M6 18l-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol><symbol id="bolt" viewBox="0 0 24 24"><path d="M14 2 4 14h7l-1 8L21 9h-8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol></defs></svg>
+<div class="page">
+ <header class="topbar"><a class="brand" href="./" aria-label="Busan Burst home"><svg><use href="#bunny"/></svg><span>MEKA<span class="brand-divider">/</span><b>ARCADE</b></span></a><div class="top-actions"><button id="help-button" class="text-button">How to play <span>?</span></button><button id="sound-button" class="icon-button" aria-label="Enable sound" title="Toggle sound">♫<span id="sound-label">OFF</span></button><button id="pause-button" class="icon-button pause-button" aria-label="Pause game" title="Pause (Esc)">Ⅱ</button></div></header>
+ <main class="arcade-layout">
+  <aside class="pilot-column">
+   <div class="eyebrow"><span class="live-dot"></span> PLAYER ONE, YOU'RE UP</div>
+   <h1><span>D.VA'S</span>BUSAN<br><em>BURST</em><span class="title-star">✦</span></h1>
+   <p class="intro-copy">Big waves.<br>Bigger gamer energy.</p>
+   <div class="pilot-card"><div class="pilot-art" id="pilot-portrait"></div><div class="pilot-caption"><span class="tiny-label">PILOT ONLINE</span><strong>HANA SONG <span>송하나</span></strong><p>Pro gamer. Home defender.</p></div><span class="pilot-sticker">MEKA<br>01</span></div>
+   <div class="mission-copy"><span class="tiny-label">TONIGHT'S MISSION</span><p>Gwishin drones are closing in.<br>Turn their fire into your high score.<br>Bring everyone home.</p></div>
+   <div class="best-sticker"><span>★ PERSONAL BEST</span><strong id="best-score">000000</strong></div>
+  </aside>
+  <section class="game-column" aria-label="Busan Burst game">
+   <div class="cabinet">
+    <div class="cabinet-top"><span><i class="live-dot"></i> BUSAN HARBOR</span><span>부산 <b>21:08</b></span></div>
+    <div id="arena" class="arena"><canvas id="game-canvas" tabindex="0" aria-label="Game arena. Move with WASD or arrows. Hold Space or left mouse to fire. Hold right mouse or F for Defense Matrix."></canvas>
+     <div class="arena-lines"></div>
+     <div class="game-hud"><div class="hull"><div><span id="hull-label">MEKA ARMOR</span><b id="health-text">650 / 650</b></div><div class="hull-track"><i id="health-bar"></i></div></div><div class="score-badge"><span>SCORE</span><strong id="score">000000</strong><b id="combo">×1</b></div></div>
+     <div class="wave-header" id="wave-header"><span id="wave-label">HARBOR PATROL</span><div class="wave-dots"><i class="current"></i><i></i><i></i></div><span id="wave-time">01 / 03</span></div>
+     <div class="boss-hud" id="boss-hud" hidden><span>GWISHIN // LEVIATHAN</span><div><i id="boss-health"></i></div></div>
+     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+     <div class="dialogue" id="dialogue"><svg><use href="#bunny"/></svg><span id="dialogue-text">“Busan, your carry has arrived.”</span></div>
+     <div id="intro-overlay" class="intro-overlay"><div class="showcase-label"><span>◆ TOKKI</span> MEKA UNIT 01</div><div class="intro-panel"><span class="tiny-label">A THREE-WAVE ARCADE RUN</span><h2>READY, PLAYER ONE?</h2><p>Absorb their fire. Return the favor.<br>Defeat the Leviathan. Save Busan.</p><div class="difficulty-picker" aria-label="Difficulty"><button data-difficulty="rookie">Rookie <small>extra armor</small></button><button data-difficulty="arcade" class="selected">Arcade <small>the full challenge</small></button></div><button id="start-button" class="primary-button">DEPLOY MEKA <span>↗</span></button><span class="entry-tip"><kbd>WASD</kbd> move <span>·</span> <kbd>SPACE</kbd> fire <span>·</span> <kbd>F</kbd> absorb</span></div></div>
+     <div class="state-overlay" id="pause-overlay" hidden><div class="state-panel"><svg class="state-bunny"><use href="#bunny"/></svg><span class="tiny-label">QUICK BREATHER</span><h2>PAUSED</h2><p>Even a carry needs a snack break.</p><button id="resume-button" class="primary-button">BACK TO THE FIGHT <span>↗</span></button><button id="restart-button" class="secondary-button">Restart run</button></div></div>
+     <div class="state-overlay" id="result-overlay" hidden><div class="state-panel result-panel"><span class="rank-sticker" id="result-rank">S</span><span class="tiny-label" id="result-kicker">MISSION COMPLETE</span><h2 id="result-title">BUSAN, SAFE.</h2><p id="result-copy">Another GG for the home team.</p><div class="result-score"><span>FINAL SCORE</span><strong id="final-score">000000</strong></div><div class="result-stats"><span><b id="final-elims">0</b>ELIMINATED</span><span><b id="final-absorbed">0</b>ABSORBED</span><span><b id="final-combo">0</b>BEST COMBO</span></div><button id="replay-button" class="primary-button">PLAY AGAIN <span>↻</span></button><button id="hangar-button" class="secondary-button">Back to hangar</button></div></div>
+     <div class="blast-flash" id="blast-flash"></div>
+     <div class="touch-flight" id="touch-flight"><div class="dpad" aria-label="Flight controls"><button data-hold="up" class="up" aria-label="Move up">↑</button><button data-hold="left" class="left" aria-label="Move left">←</button><button data-hold="down" class="down" aria-label="Move down">↓</button><button data-hold="right" class="right" aria-label="Move right">→</button></div><button class="touch-fire" data-hold="fire" aria-label="Hold to fire fusion cannons">FIRE<small>HOLD</small></button></div>
+    </div>
+    <div class="cabinet-bottom"><span><svg><use href="#bunny"/></svg> I PLAY TO WIN.</span><span id="run-status">ALL SYSTEMS CUTE <i></i></span></div>
+   </div>
+   <div class="keyboard-legend"><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Move</span><span><kbd>SPACE</kbd> / click Fire</span><span><kbd>ESC</kbd> Pause</span></div>
+  </section>
+  <aside class="loadout-column"><div class="loadout-title"><span class="tiny-label">YOUR WIN CONDITIONS</span><h2>THE LOADOUT<span>✳</span></h2></div>
+   <button class="ability-card matrix" id="matrix-button" data-hold="matrix" aria-label="Hold Defense Matrix"><span class="ability-top"><svg><use href="#shield"/></svg><kbd>F / RMB</kbd><i>HOLD</i></span><strong>Defense Matrix</strong><p>Eat their bullets.<br>Build your ultimate.</p><span class="ability-meter"><i id="matrix-bar"></i></span><span class="ability-status" id="matrix-status">100% ENERGY</span></button>
+   <button class="ability-card missiles" id="missiles-button" data-action="missiles" aria-label="Fire Micro Missiles"><span class="ability-top"><svg><use href="#rocket"/></svg><kbd>E</kbd><i>VOLLEY</i></span><strong>Micro Missiles</strong><p>Lock on. Let six<br>little problems loose.</p><span class="ability-meter"><i id="missiles-bar"></i></span><span class="ability-status" id="missiles-status">READY</span></button>
+   <button class="ability-card boosters" id="boosters-button" data-action="boost" aria-label="Activate Boosters"><span class="ability-top"><svg><use href="#bolt"/></svg><kbd>SHIFT</kbd><i>DASH</i></span><strong>Boosters</strong><p>Dash through danger.<br>Keep your combo alive.</p><span class="ability-meter"><i id="boost-bar"></i></span><span class="ability-status" id="boost-status">READY</span></button>
+   <button class="ability-card ultimate" id="ultimate-button" data-action="ultimate" aria-label="Activate Self-Destruct"><span class="ability-top"><svg><use href="#bunny"/></svg><kbd>Q</kbd><i>ULTIMATE</i></span><strong>Self-Destruct</strong><p>Eject. Big boom.<br>Fresh mech. Your move.</p><span class="ability-meter"><i id="ultimate-bar"></i></span><span class="ability-status" id="ultimate-status">0% CHARGED</span></button>
+   <div class="combo-note"><span>✦ PRO TIP</span><p>Matrix pauses your cannons.<br>Catch a burst, then shoot back.</p></div>
+  </aside>
+ </main>
+ <footer><span>AN UNOFFICIAL FAN-MADE ARCADE EXPERIENCE</span><span>MADE FOR THE LOVE OF THE GAME <i>♡</i></span><button id="credits-button">Field notes ↗</button></footer>
+</div>
+<dialog id="help-dialog"><button class="close-dialog" aria-label="Close instructions">×</button><span class="tiny-label">MEKA PILOT HANDBOOK</span><h2>PLAY TO WIN.</h2><p>Protect Busan through two drone waves, then defeat the Gwishin Leviathan. Keep your armor above zero.</p><div class="help-grid"><div><kbd>WASD / ARROWS</kbd><strong>Fly the harbor</strong><p>Left is screen-left. Up flies toward the top. Your flight frame stays fixed as Tokki banks.</p></div><div><kbd>SPACE / LEFT MOUSE</kbd><strong>Fusion Cannons</strong><p>Hold to fire straight up the harbor. Line up with a drone to land your shots.</p></div><div><kbd>F / RIGHT MOUSE</kbd><strong>Defense Matrix</strong><p>Hold to absorb bullets in the mint field ahead. It uses energy and pauses your cannons. Release to recharge.</p></div><div><kbd>E</kbd><strong>Micro Missiles</strong><p>Six homing rockets. An 8-second recharge rewards a well-timed counterattack.</p></div><div><kbd>SHIFT</kbd><strong>Boosters</strong><p>Dash in your current movement direction; with no direction, dash up. Briefly ignore damage. Recharges in 5 seconds.</p></div><div><kbd>Q</kbd><strong>Self-Destruct</strong><p>At 100% charge, eject and launch Tokki. After 2 seconds: boom. Fly with your Light Gun until a fresh mech arrives.</p></div></div><p class="help-tip">Chain eliminations within 5 seconds for a score multiplier. Absorbed fire charges your ultimate faster. On mobile, use the direction pad, hold FIRE, and tap your ability cards.</p><button class="primary-button close-help">GOT IT <span>↗</span></button></dialog>
+<dialog id="credits-dialog"><button class="close-dialog" aria-label="Close field notes">×</button><span class="tiny-label">FIELD NOTES</span><h2>FROM BUSAN,<br>WITH LOVE.</h2><p>Hana Song is a former professional gamer and a MEKA pilot protecting South Korea from the sea-born Gwishin threat. This original arcade game translates her defense-first heroics into an absorb-and-counterattack score chase.</p><p>Character and world belong to Blizzard Entertainment. This is an unofficial, noncommercial fan work. Models, illustration, effects, music and game design were authored for this minigame.</p><a href="https://overwatch.blizzard.com/en-us/heroes/dva/" target="_blank" rel="noreferrer">Official D.Va hero profile ↗</a><p class="help-tip">Three.js rendering · Bungee & Nunito typefaces<br>Your best score and sound preference are stored only in this browser.</p></dialog>
+<script type="module" src="./assets/game.js"></script>
+<link rel="stylesheet" href="/.well-known/sulat-demo-overlay-v12.css" data-sulat-demo-overlay-asset="styles-v12">
+<details id="sulat-demo-referral-overlay" data-model="astra" data-experiment="d-va" data-storage-scope="astra.demos.sulat.com" data-deal-id="oneshot-websites" data-has-deal="true" data-collapsed="true">
+  <summary data-overlay-toggle aria-label="Expand demo links" aria-expanded="false" title="Expand demo links"></summary>
+  <div class="sulat-demo-overlay__actions">
+    <div class="sulat-demo-overlay__primary">
+      <details class="sulat-demo-overlay__share" data-overlay-share>
+        <summary aria-label="Share this demo" title="Share this demo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M12 15.75v-12m0 0L7.5 8.25M12 3.75l4.5 4.5M5.25 13.5v5.25h13.5V13.5"/></svg><span class="sulat-demo-overlay__share-label">Share</span></summary>
+        <nav class="sulat-demo-overlay__share-menu" aria-label="Share this demo">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fd-va.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fd-va.astra.demos.sulat.com%2F&t=D%20Va%20%E2%80%94%20GPT%206%20Astra%20demo" target="_blank" rel="noopener noreferrer">Hacker News</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fd-va.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text=D%20Va%20%E2%80%94%20GPT%206%20Astra%20demo&url=https%3A%2F%2Fd-va.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Twitter</a>
+        </nav>
+      </details>
+      <a class="sulat-demo-overlay__catalogue" data-overlay-catalogue href="https://astra.demos.sulat.com/" aria-label="More demos"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>More demos</a>
+      <a class="sulat-demo-overlay__next" data-overlay-next href="https://demos.sulat.com/surprise" aria-label="Open another random demo" title="Open another random demo"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 4 12 8-12 8z"/></svg>Next demo</a>
+    </div>
+    <a class="sulat-demo-overlay__deal" data-overlay-deal href="https://github.com/jpcaparas/skills#oneshot-websites" target="_blank" rel="sponsored noopener noreferrer" aria-label="Create your own one-shots (opens in a new tab)">Create your own one-shots</a>
+  </div>
+</details>
+<script src="/.well-known/sulat-demo-overlay-v12.js" defer data-sulat-demo-overlay-asset="script-v12"></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ecb2b94d4b63450a9e0af42e304662ed","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a52784448af9cec6',t:'MTc5MzMzMjg2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a52784448af9cec6',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>

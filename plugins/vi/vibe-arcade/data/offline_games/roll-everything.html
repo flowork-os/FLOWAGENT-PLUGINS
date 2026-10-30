@@ -1,0 +1,1213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <base href="https://superdiaodiao.github.io/wanwu-gun/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>万物皆可滚</title>
+<meta name="description" content="女娲补天 × 块魂：推着五色石，从一颗瓜子滚起，把整个小区、整座城、连山带云都滚上天去补窟窿。全部模型、贴图与音乐均为程序实时生成。">
+<meta name="theme-color" content="#1f1b24">
+<style>
+/* 万物皆可滚 — UI. A single committed look: ink panels, rice-paper text, the five colours of 女娲's stone. */
+:root {
+  color-scheme: dark;
+  --ink: #1f1b24;
+  --ink-2: #2b2632;
+  --paper: #f6efe0;
+  --paper-dim: #cfc6b4;
+  --red: #d8342c;
+  --red-deep: #a8231d;
+  --gold: #f2c14e;
+  --teal: #2aa198;
+  --white-stone: #f4efe2;
+  --shadow: 0 10px 30px rgba(10, 6, 14, 0.35);
+  --display: "ZCOOL KuaiLe", "Yuanti SC", "YouYuan", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  --num: "Baloo 2", "ZCOOL KuaiLe", ui-rounded, system-ui, sans-serif;
+  --brush: "Ma Shan Zheng", "STKaiti", "KaiTi", serif;
+}
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #121017;
+  color: var(--paper);
+  font-family: var(--body);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+kbd {
+  display: inline-block;
+  min-width: 1.7em;
+  padding: 0.05em 0.4em;
+  margin: 0 0.1em;
+  border-radius: 6px;
+  background: rgba(246, 239, 224, 0.14);
+  border: 1px solid rgba(246, 239, 224, 0.28);
+  border-bottom-width: 2px;
+  font: 600 0.85em/1.5 var(--num);
+  text-align: center;
+}
+
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+#vignette {
+  position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 45%, transparent 60%, rgba(18, 10, 24, 0.35) 100%);
+}
+
+/* ---------- HUD ---------- */
+/* stacking: canvas < hud < touch controls < toasts < dialog < screens < loading */
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+#hud-size {
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left));
+  top: max(14px, env(safe-area-inset-top));
+  width: 132px; height: 132px;
+  display: grid; place-items: center;
+  filter: drop-shadow(0 6px 14px rgba(10, 6, 14, 0.45));
+}
+#hud-size .ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+#hud-size .ring circle { fill: rgba(31, 27, 36, 0.78); stroke-width: 9; }
+#hud-size .ring .track { stroke: rgba(246, 239, 224, 0.16); }
+#hud-size .ring .bar {
+  fill: none;
+  stroke: var(--gold);
+  stroke-linecap: round;
+  stroke-dasharray: 326.7;
+  stroke-dashoffset: 326.7;
+  transition: stroke 0.4s;
+}
+#hud-size .num { position: relative; display: flex; align-items: baseline; gap: 2px; margin-top: -8px; }
+#size-num { font: 800 40px/1 var(--num); color: var(--paper); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+#size-unit { font: 800 17px/1 var(--num); color: var(--gold); }
+#hud-size .goal { position: absolute; bottom: 26px; font-size: 12px; color: var(--paper-dim); letter-spacing: 0.5px; }
+#hud-size .goal b { color: var(--paper); font-weight: 700; }
+#hud-size .ring .bar.next { stroke: rgba(242, 193, 78, 0.34); }
+#hud-size.bump { animation: bump 0.35s ease-out; }
+/* "+1.2 cm" floating off the gauge as things get rolled up */
+#hud-gains { position: absolute; left: calc(100% - 10px); top: 34%; width: 0; height: 0; }
+.gain {
+  position: absolute; left: 0; top: 0;
+  white-space: nowrap;
+  font: 800 19px/1 var(--num); color: var(--gold);
+  text-shadow: 0 2px 0 var(--ink), 0 3px 10px rgba(0, 0, 0, 0.55);
+  animation: gain-up 1.1s ease-out forwards;
+}
+.gain.big { font-size: 25px; }
+@keyframes gain-up {
+  0% { transform: translate(0, 8px) scale(0.7); opacity: 0; }
+  18% { transform: translate(4px, 0) scale(1.12); opacity: 1; }
+  100% { transform: translate(10px, -36px) scale(1); opacity: 0; }
+}
+/* 连滚 ×N: the pickup streak */
+#hud-combo {
+  position: absolute;
+  left: max(18px, env(safe-area-inset-left));
+  top: calc(max(14px, env(safe-area-inset-top)) + 178px);
+  display: flex; align-items: baseline; gap: 6px;
+  color: var(--paper);
+  text-shadow: 0 3px 0 var(--ink), 0 4px 14px rgba(0, 0, 0, 0.55);
+  transition: opacity 0.35s;
+}
+#hud-combo .lbl { font: 24px/1 var(--display); color: var(--gold); }
+#hud-combo b { display: inline-block; font: 800 46px/1 var(--num); font-variant-numeric: tabular-nums; }
+#hud-combo b::before { content: "×"; font-size: 0.6em; margin-right: 1px; }
+#hud-combo small { font: 700 14px/1 var(--body); color: var(--paper-dim); }
+#hud-combo.hot b { color: var(--gold); }
+#hud-combo.fire b { color: #ff8a3d; }
+#hud-combo.five b {
+  background: linear-gradient(90deg, #2aa198, #d8342c, #f2c14e, #f4efe2, #8a6ad0);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none; filter: drop-shadow(0 3px 0 var(--ink));
+}
+#hud-combo.tick b { animation: combo-pop 0.24s ease-out; transform-origin: 30% 70%; }
+@keyframes combo-pop { 0% { transform: scale(1.5); } 100% { transform: scale(1); } }
+#hud-combo.done small { color: var(--gold); font-weight: 800; }
+#hud-combo.out { opacity: 0; }
+@keyframes bump { 30% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+#hud-time {
+  position: absolute; left: 50%; top: max(16px, env(safe-area-inset-top));
+  transform: translateX(-50%);
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 6px 16px 5px;
+  border-radius: 999px;
+  background: rgba(31, 27, 36, 0.78);
+  box-shadow: var(--shadow);
+}
+#hud-time .label { font-size: 12px; color: var(--paper-dim); letter-spacing: 1px; }
+/* free mode, once the ball is big enough to patch the sky: where the clock would be */
+#btn-patch {
+  position: absolute; left: 50%; top: max(16px, env(safe-area-inset-top));
+  transform: translateX(-50%);
+  padding: 8px 18px 7px;
+  border-radius: 999px;
+  border: 2px solid var(--gold);
+  background: var(--red);
+  color: var(--paper);
+  font: 20px/1 var(--display);
+  box-shadow: var(--shadow);
+  pointer-events: auto; cursor: pointer;
+}
+#btn-patch b { margin-left: 2px; }
+#btn-patch.timed { top: calc(max(16px, env(safe-area-inset-top)) + 50px); font-size: 17px; padding: 6px 14px 5px; }
+#btn-patch.urge { animation: pulse 1s infinite; }
+#time-text { font: 800 26px/1 var(--num); font-variant-numeric: tabular-nums; }
+#hud-time.hurry #time-text { color: var(--red); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: 0.55; } }
+
+#hud-last {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right));
+  top: max(14px, env(safe-area-inset-top));
+  display: flex; flex-direction: row-reverse; align-items: center; gap: 10px;
+  max-width: min(340px, 58vw);
+}
+#last-view {
+  width: 92px; height: 92px; flex: none;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  box-shadow: 0 6px 16px rgba(10, 6, 14, 0.45);
+}
+#hud-last .info {
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: rgba(31, 27, 36, 0.8);
+  box-shadow: var(--shadow);
+  text-align: right;
+}
+#hud-last .label { font-size: 11px; color: var(--paper-dim); letter-spacing: 1px; }
+#last-name { font: 24px/1.15 var(--display); color: var(--paper); text-wrap: balance; }
+#last-size { font: 600 13px/1.3 var(--num); color: var(--gold); }
+#hud-last.pop { animation: pop 0.3s ease-out; }
+@keyframes pop { 0% { transform: scale(0.92); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+#hud-count {
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left));
+  top: calc(max(14px, env(safe-area-inset-top)) + 140px);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(31, 27, 36, 0.62);
+  font-size: 13px; color: var(--paper-dim);
+}
+#hud-count b { font: 800 16px/1 var(--num); color: var(--paper); font-variant-numeric: tabular-nums; }
+/* the count pill also carries 女娲's wishes as stars; tap it for the list */
+#hud-count { pointer-events: auto; cursor: pointer; }
+#hud-count .wish-lbl { margin-left: 8px; padding-left: 8px; border-left: 1px solid rgba(246, 239, 224, 0.25); }
+#hud-wish { margin-left: 3px; letter-spacing: 1px; color: rgba(246, 239, 224, 0.55); }
+#hud-wish .on { color: var(--gold); }
+/* (a line of its own under the pill, so a long note doesn't push it into the clock on phones) */
+#hud-wish-note {
+  position: absolute; left: 0; top: calc(100% + 5px);
+  padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  background: rgba(31, 27, 36, 0.62);
+  font-weight: 700; color: var(--gold);
+}
+#hud-wish-note:empty { display: none; }
+#hud-wish i { font-style: normal; }
+#wish-card {
+  position: fixed; left: 0; right: 0; top: 21%; z-index: 5;
+  margin: 0 auto;
+  width: min(88vw, 380px);
+  padding: 12px 16px 10px;
+  border-radius: 16px;
+  border: 2px solid rgba(242, 193, 78, 0.65);
+  background: rgba(31, 27, 36, 0.9);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  animation: hint-in 0.3s ease-out;
+}
+.wc-head { font: 18px var(--display); color: var(--gold); margin-bottom: 6px; }
+#wish-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+#wish-list li { display: flex; align-items: baseline; gap: 8px; font-size: 15px; color: var(--paper); }
+#wish-list li i { font-style: normal; color: rgba(246, 239, 224, 0.5); }
+#wish-list li span { flex: 1; }
+#wish-list li small { display: block; font-size: 12px; color: var(--paper-dim); }
+.wc-foot { margin-top: 6px; font-size: 11px; color: rgba(246, 239, 224, 0.45); }
+#wish-list li b { font: 700 13px var(--num); color: var(--gold); white-space: nowrap; }
+#wish-list li.done { color: var(--paper-dim); }
+#wish-list li.done i { color: var(--gold); }
+#wish-list li.done span { text-decoration: line-through; text-decoration-color: rgba(242, 193, 78, 0.7); }
+#hud-keys {
+  position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  font-size: 12px; color: rgba(246, 239, 224, 0.75);
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  transition: opacity 1s;
+}
+#hud-keys.fade { opacity: 0; }
+.icon-btn {
+  position: absolute; pointer-events: auto;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(246, 239, 224, 0.25);
+  background: rgba(31, 27, 36, 0.7);
+  display: grid; place-items: center;
+  color: var(--paper);
+}
+#btn-sound { right: calc(max(16px, env(safe-area-inset-right)) + 54px); }
+#btn-sound .slash { display: none; }
+#btn-sound.off { color: var(--paper-dim); }
+#btn-sound.off .waves { display: none; }
+#btn-sound.off .slash { display: inline; }
+
+/* about to run into something the camera doesn't show: a red "!" at the screen edge that way */
+#edge-warn {
+  position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--red); border: 3px solid var(--paper);
+  box-shadow: 0 4px 14px rgba(10, 6, 14, 0.5);
+  animation: edge-warn 0.5s ease-in-out infinite alternate;
+}
+#edge-warn i { font: 900 26px/1 var(--num); font-style: normal; color: var(--paper); }
+@keyframes edge-warn { to { scale: 1.15; } }
+/* the way to something that can still be rolled up (see main.js foodPointer) */
+#food-arrow { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
+#food-arrow .dir, #food-arrow .ping { position: absolute; left: -28px; top: -28px; width: 56px; height: 56px; box-sizing: border-box; border-radius: 50%; }
+#food-arrow .dir {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gold); border: 3px solid var(--paper);
+  box-shadow: 0 6px 18px rgba(10, 6, 14, 0.55);
+}
+/* an arrow with a shaft (a bare triangle reads either way round) */
+#food-arrow .dir::before { content: ''; width: 15px; height: 7px; margin-right: -1px; border-radius: 2px 0 0 2px; background: var(--ink); }
+#food-arrow .dir::after { content: ''; width: 0; height: 0; border-left: 15px solid var(--ink); border-top: 11px solid transparent; border-bottom: 11px solid transparent; }
+/* a ring going out from it, over and over, to catch the eye */
+#food-arrow .ping { border: 4px solid var(--gold); animation: food-ping 1.1s ease-out infinite; }
+@keyframes food-ping { from { scale: 1; opacity: 0.95; } to { scale: 2.2; opacity: 0; } }
+#food-arrow span {
+  position: absolute; left: 0; top: 36px; transform: translateX(-50%); white-space: nowrap;
+  padding: 4px 11px; border-radius: 999px; background: rgba(31, 27, 36, 0.82);
+  color: var(--gold); font-weight: 800; font-size: 14px;
+}
+#food-arrow.up span { top: auto; bottom: 36px; }
+#food-arrow.bare span { display: none; }
+/* over the thing the arrow points at, once it's in view */
+#food-mark { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
+#food-mark b {
+  position: absolute; left: 0; bottom: 12px; transform: translateX(-50%); white-space: nowrap;
+  padding: 5px 12px; border-radius: 999px; background: var(--gold); border: 3px solid var(--paper);
+  color: var(--ink); font: 800 15px/1 var(--body);
+  box-shadow: 0 4px 14px rgba(10, 6, 14, 0.5);
+  animation: wish-bob 0.6s ease-in-out infinite alternate;
+}
+#food-mark b::after { content: ''; position: absolute; left: 50%; top: 100%; margin-left: -8px; border: 8px solid transparent; border-top-color: var(--paper); }
+/* over things a wish wants (see main.js wishMarks) */
+#wish-marks { position: absolute; inset: 0; pointer-events: none; }
+.wish-mark { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+/* (the nearest one says what the star means: the same star as the wishes on the HUD) */
+.wish-mark b {
+  position: absolute; left: 0; bottom: 8px; transform: translateX(-50%);
+  min-width: 24px; height: 24px; padding: 0 5px; box-sizing: border-box;
+  display: grid; place-items: center; white-space: nowrap;
+  border-radius: 999px; background: var(--gold); border: 2px solid var(--paper);
+  color: var(--ink); font: 800 12px/1 var(--body);
+  box-shadow: 0 3px 10px rgba(10, 6, 14, 0.45);
+  animation: wish-bob 0.8s ease-in-out infinite alternate;
+}
+.wish-mark:first-child b { padding: 0 8px; }
+@keyframes wish-bob { to { translate: 0 -6px; } }
+
+/* on the thing about to be run into: that it can't be taken yet, and how big the ball must get */
+#warn-tag {
+  position: absolute; left: 0; top: 0;
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 5px 11px 4px;
+  border-radius: 10px;
+  background: rgba(216, 52, 44, 0.94);
+  color: var(--paper);
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(10, 6, 14, 0.45);
+  pointer-events: none;
+}
+#warn-tag b { font: 17px/1.2 var(--display); }
+#warn-tag span { font: 700 13px/1.2 var(--num); color: #ffe0d8; }
+#warn-tag::after {
+  content: ""; position: absolute; left: 50%; bottom: -6px; margin-left: -6px;
+  border: 6px solid transparent; border-bottom: 0; border-top-color: rgba(216, 52, 44, 0.94);
+}
+
+/* minimap: under the last-item card, same size as the size gauge on the other side */
+#minimap-btn {
+  position: absolute; pointer-events: auto;
+  right: max(16px, env(safe-area-inset-right));
+  top: calc(max(14px, env(safe-area-inset-top)) + 116px);
+  width: 132px; height: 132px; padding: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(246, 239, 224, 0.32);
+  background: rgba(31, 27, 36, 0.78);
+  box-shadow: 0 6px 14px rgba(10, 6, 14, 0.45);
+  overflow: hidden;
+  touch-action: none;
+}
+#minimap { display: block; width: 100%; height: 100%; border-radius: 50%; }
+
+/* size goal reached: a big stamp in the middle of the screen */
+#stamp {
+  position: fixed; left: 50%; top: 50%; z-index: 4;
+  width: max-content; max-width: 92vw;
+  transform: translate(-50%, -50%);
+  text-align: center; pointer-events: none;
+  animation: stamp-in 0.5s cubic-bezier(0.2, 1.5, 0.4, 1), stamp-out 0.5s ease-in forwards 2.1s;
+}
+#stamp .big {
+  white-space: nowrap;
+  font: 800 clamp(58px, 15vw, 116px)/1 var(--num); color: var(--paper);
+  -webkit-text-stroke: 3px var(--ink);
+  text-shadow: 0 6px 0 var(--ink), 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+#stamp .big em { font-style: normal; color: var(--gold); }
+#stamp .sub {
+  margin-top: 10px;
+  font: 22px/1.35 var(--display); color: var(--gold);
+  text-shadow: 0 2px 0 var(--ink), 0 3px 12px rgba(0, 0, 0, 0.7);
+  text-wrap: balance;
+}
+@keyframes stamp-in { from { transform: translate(-50%, -50%) scale(2.4) rotate(-10deg); opacity: 0; } }
+@keyframes stamp-out { to { transform: translate(-50%, -62%) scale(0.92); opacity: 0; } }
+
+/* toasts: short lines when something notable gets rolled up */
+#toast-stack {
+  position: fixed; left: 50%; top: 22%;
+  z-index: 4;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  pointer-events: none;
+  width: min(92vw, 560px);
+}
+.toast {
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(31, 27, 36, 0.82);
+  font: 20px/1.3 var(--display);
+  color: var(--paper);
+  box-shadow: var(--shadow);
+  text-align: center;
+  animation: toast-in 0.25s ease-out, toast-out 0.5s ease-in forwards 2.4s;
+}
+.toast.big { font-size: 30px; padding: 10px 22px; color: var(--gold); }
+.toast em { font-style: normal; color: var(--gold); }
+@keyframes toast-in { from { transform: translateY(8px) scale(0.9); opacity: 0; } }
+@keyframes toast-out { to { transform: translateY(-10px); opacity: 0; } }
+
+/* ---------- 女娲 dialog ---------- */
+#dialog {
+  position: fixed; left: 50%;
+  z-index: 5;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(94vw, 760px);
+  display: flex; align-items: flex-end; gap: 12px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+#dialog-portrait {
+  width: 136px; height: 136px; flex: none;
+  border-radius: 50%;
+  border: 4px solid var(--paper);
+  box-shadow: 0 0 0 3px var(--red), var(--shadow);
+}
+#dialog .bubble {
+  position: relative; flex: 1;
+  min-height: 96px;
+  padding: 14px 20px 26px;
+  border-radius: 20px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  border: 3px solid var(--red);
+}
+#dialog .who {
+  position: absolute; top: -14px; left: 18px;
+  padding: 2px 12px;
+  border-radius: 8px;
+  background: var(--red);
+  color: var(--paper);
+  font: 18px/1.4 var(--brush);
+  letter-spacing: 2px;
+}
+#dialog-text { font: 21px/1.55 var(--display); min-height: 1.6em; }
+#dialog-skip {
+  position: absolute; top: -14px; right: 14px;
+  padding: 3px 12px;
+  border-radius: 8px;
+  border: 2px solid var(--red);
+  background: var(--paper);
+  color: var(--red-deep);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+}
+#dialog .next { position: absolute; right: 16px; bottom: 6px; font-size: 12px; color: var(--red-deep); animation: pulse 1.2s infinite; }
+#dialog.passing {
+  left: max(16px, env(safe-area-inset-left));
+  transform: none;
+  width: min(560px, calc(100vw - 96px));
+  pointer-events: none;
+}
+#dialog.passing #dialog-portrait { width: 84px; height: 84px; border-width: 3px; }
+#dialog.passing .bubble { min-height: 0; padding: 12px 16px 12px; }
+#dialog.passing #dialog-text { font-size: 18px; }
+
+/* ---------- screens ---------- */
+.screen {
+  position: fixed; inset: 0;
+  z-index: 10;
+  display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+#loading { background: #121017; z-index: 20; transition: opacity 0.6s; }
+#loading.done { opacity: 0; pointer-events: none; }
+.loading-card { display: grid; justify-items: center; gap: 18px; font: 20px var(--display); color: var(--paper-dim); }
+.spinner { display: flex; gap: 8px; }
+.spinner i { width: 14px; height: 14px; border-radius: 50%; animation: hop 0.9s infinite ease-in-out; }
+.spinner i:nth-child(1) { background: var(--teal); }
+.spinner i:nth-child(2) { background: var(--red); animation-delay: 0.1s; }
+.spinner i:nth-child(3) { background: var(--gold); animation-delay: 0.2s; }
+.spinner i:nth-child(4) { background: var(--white-stone); animation-delay: 0.3s; }
+.spinner i:nth-child(5) { background: #5b4a78; animation-delay: 0.4s; }
+@keyframes hop { 50% { transform: translateY(-12px); } }
+
+#title-screen {
+  background: linear-gradient(180deg, rgba(18, 16, 23, 0.1) 30%, rgba(18, 16, 23, 0.72) 100%);
+  align-items: end;
+}
+.title-card {
+  width: min(100%, 720px);
+  display: grid; justify-items: center; gap: 14px;
+  text-align: center;
+  padding-bottom: 2vh;
+}
+.eyebrow { font: 15px/1 var(--display); letter-spacing: 6px; color: var(--gold); text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
+.logo {
+  margin: 0;
+  display: flex; gap: 0.04em;
+  font: clamp(56px, 13vw, 128px)/1 var(--display);
+  letter-spacing: 0;
+}
+.logo span {
+  display: inline-block;
+  color: var(--paper);
+  -webkit-text-stroke: 3px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 6px 0 var(--ink), 0 10px 26px rgba(0, 0, 0, 0.45);
+  animation: roll-in 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) backwards;
+}
+.logo span:nth-child(1) { color: var(--teal); animation-delay: 0.05s; transform: rotate(-6deg); }
+.logo span:nth-child(2) { color: var(--red); animation-delay: 0.15s; transform: translateY(6px) rotate(4deg); }
+.logo span:nth-child(3) { color: var(--gold); animation-delay: 0.25s; transform: rotate(-3deg); }
+.logo span:nth-child(4) { color: var(--white-stone); animation-delay: 0.35s; transform: translateY(8px) rotate(5deg); }
+.logo span:nth-child(5) { color: #a88be0; animation-delay: 0.45s; transform: rotate(-4deg); }
+@keyframes roll-in { from { transform: translateY(-40px) rotate(-200deg) scale(0.3); opacity: 0; } }
+.pitch { margin: 0; max-width: 34em; font-size: 16px; line-height: 1.7; color: var(--paper); text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7); text-wrap: balance; }
+.start-pick { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 10px; font-size: 13px; opacity: 0.92; }
+.start-pick span { margin-right: 4px; }
+.start-pick .chip { background: rgba(31, 27, 36, 0.6); }
+.start-pick .chip[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: var(--ink); font-weight: 700; }
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.btn {
+  display: grid; justify-items: center; gap: 2px;
+  min-width: 170px;
+  padding: 12px 22px 10px;
+  border-radius: 16px;
+  border: 0;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35), var(--shadow);
+  transition: transform 0.12s, box-shadow 0.12s, background 0.2s;
+}
+.btn b { font: 24px/1.1 var(--display); font-weight: normal; }
+.btn small { font-size: 12px; opacity: 0.85; }
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
+.btn.primary { background: var(--red); color: var(--paper); }
+.btn.primary:hover { background: #e4453c; }
+.btn.ghost { background: rgba(246, 239, 224, 0.92); color: var(--ink); }
+.btn.ghost:hover { background: var(--paper); }
+.settings {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(31, 27, 36, 0.66);
+  font-size: 14px;
+}
+.settings select {
+  background: var(--ink-2); color: var(--paper);
+  border: 1px solid rgba(246, 239, 224, 0.3); border-radius: 8px;
+  padding: 3px 8px; font: inherit;
+}
+.settings .check { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.settings input { accent-color: var(--red); width: 16px; height: 16px; }
+.keys-help .k-gold { color: var(--gold); }
+.keys-help .k-red { color: #ff7a6b; }
+.keys-help { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: 13px; color: var(--paper-dim); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); }
+.best { font: 15px var(--display); color: var(--gold); }
+.fine { font-size: 11px; color: rgba(246, 239, 224, 0.6); }
+
+.panel {
+  width: min(100%, 440px);
+  display: grid; gap: 12px; justify-items: stretch;
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(31, 27, 36, 0.9);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.panel h2 { margin: 0 0 4px; font: 34px var(--display); font-weight: normal; color: var(--gold); }
+.panel p { margin: 0; line-height: 1.7; color: var(--paper-dim); }
+#pause { background: rgba(18, 16, 23, 0.45); }
+.pause-panel { width: min(100%, 440px); }
+.pause-side { display: grid; gap: 12px; }
+.pause-panel > h2 { margin: 0; }
+.map-box { display: grid; gap: 8px; justify-items: center; }
+#bigmap {
+  display: block; width: min(100%, 50vh, 420px); aspect-ratio: 1;
+  border-radius: 16px; background: #6f9b52;
+  box-shadow: 0 0 0 2px rgba(246, 239, 224, 0.2);
+}
+.map-tabs { display: flex; gap: 8px; }
+.map-tabs .chip[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: var(--ink); font-weight: 700; }
+.map-legend { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 14px; font-size: 12px; color: var(--paper-dim); }
+.map-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.map-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.map-legend .lg-gold { background: #f7c94f; }
+.map-legend .lg-red { background: #e23e32; }
+.map-legend .lg-target { background: #ff8a2a; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(31, 27, 36, 0.7); }
+.map-legend em { font-style: normal; }
+.map-legend .lg-trail { width: 16px; height: 3px; border-radius: 2px; background: #f7c94f; box-shadow: 0 0 0 1.5px rgba(31, 27, 36, 0.7); }
+@media (min-width: 760px) and (min-aspect-ratio: 1/1) {
+  .pause-panel { width: min(100%, 800px); grid-template-columns: auto 250px; align-items: center; gap: 16px 24px; }
+  .pause-panel > h2 { grid-column: 1 / -1; }
+  #bigmap { width: min(440px, 64vh); }
+}
+#results { background: rgba(18, 16, 23, 0.35); }
+.panel.results { width: min(100%, 620px); gap: 10px; }
+.results-stack { display: grid; justify-items: center; gap: 12px; width: min(100%, 620px); }
+#res-ball {
+  width: 168px; height: 168px; flex: none;
+  border-radius: 50%;
+  border: 4px solid var(--gold);
+  box-shadow: 0 0 0 4px var(--ink), 0 10px 30px rgba(10, 6, 14, 0.5);
+}
+.res-size { font: 800 clamp(48px, 12vw, 84px)/1 var(--num); color: var(--paper); font-variant-numeric: tabular-nums; }
+.res-rank { font: 26px var(--display); color: var(--gold); }
+.res-quote { font: 18px/1.6 var(--display); color: var(--paper); text-wrap: balance; }
+.res-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.res-stats span { padding: 4px 12px; border-radius: 999px; background: rgba(246, 239, 224, 0.1); font-size: 14px; }
+.res-stats b { font: 800 16px var(--num); color: var(--gold); margin-left: 4px; }
+.res-items { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-height: 30vh; overflow-y: auto; font-size: 13px; color: var(--paper-dim); }
+.res-items span { padding: 3px 9px; border-radius: 8px; background: rgba(246, 239, 224, 0.07); }
+.res-items b { color: var(--paper); font-weight: 700; }
+.res-wish { display: grid; gap: 4px; justify-items: center; font-size: 14px; }
+.res-wish:empty { display: none; }
+.rw-head { font: 18px var(--display); color: var(--paper); }
+.rw-head b { margin-left: 6px; color: var(--gold); font: 800 17px var(--num); }
+.rw-head small { margin-left: 8px; color: var(--paper-dim); font: 700 13px var(--num); }
+.rw { color: var(--paper-dim); }
+.rw i { font-style: normal; margin-right: 6px; color: rgba(246, 239, 224, 0.45); }
+.rw.ok { color: var(--paper); }
+.rw.ok i { color: var(--gold); }
+.rw small { margin-left: 8px; color: var(--paper-dim); font: 700 12px var(--num); }
+.res-goal { font-size: 15px; color: var(--paper); }
+.res-goal b { color: var(--gold); }
+.res-goal.short { color: var(--paper-dim); }
+.res-tip { margin: 0; font-size: 13px; color: var(--gold); text-align: center; }
+.res-goal small { display: block; margin-top: 2px; font-size: 13px; color: var(--paper-dim); }
+.res-dex { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; font-size: 14px; }
+.res-dex b { font: 800 16px var(--num); color: var(--gold); }
+.res-dex-new { font-size: 13px; color: var(--paper-dim); text-align: center; }
+.res-dex-new:empty { display: none; }
+
+/* ---------- 图鉴 ---------- */
+.dex-chip { font-size: 14px; padding: 7px 16px; }
+.dex-chip b { font: 800 14px var(--num); color: var(--gold); margin-left: 4px; }
+#dex { z-index: 12; background: rgba(14, 12, 18, 0.7); overflow: hidden; }
+/* (a height of its own: the list scrolls inside, the panel stays on screen) */
+.dex-panel {
+  width: min(100%, 760px); height: min(calc(100vh - 32px), 900px); height: min(calc(100dvh - 32px), 900px);
+  display: flex; flex-direction: column; gap: 8px; padding: 16px 14px;
+}
+.dex-head { display: flex; align-items: center; gap: 12px; }
+.dex-head h2 { margin: 0; font: 28px var(--display); }
+#dex-count { flex: 1; color: var(--paper-dim); font: 700 15px var(--num); }
+#dex-count b { color: var(--gold); font-size: 20px; }
+.dex-list { flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 2px 8px; }
+.dex-sec h3 {
+  position: sticky; top: 0; z-index: 1;
+  margin: 0; padding: 10px 2px 8px;
+  font: 18px var(--display); background: rgb(31, 27, 36);
+}
+.dex-sec h3 small { margin-left: 6px; font: 700 13px var(--num); color: var(--paper-dim); }
+.dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+.dex-cell {
+  position: relative; display: grid; justify-items: center; gap: 4px;
+  padding: 7px 3px 8px; border-radius: 12px;
+  border: 1px solid rgba(246, 239, 224, 0.12); background: #2e2836;
+  color: var(--paper); font-size: 12px; cursor: pointer;
+}
+.dex-cell:hover { border-color: rgba(242, 193, 78, 0.6); }
+.dex-cell canvas { width: 64px; height: 64px; border-radius: 8px; }
+.dex-cell span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dex-cell.missing { background: #1c1921; color: rgba(246, 239, 224, 0.4); }
+.dex-cell .new {
+  display: none; position: absolute; top: 4px; right: 4px;
+  padding: 1px 5px; border-radius: 6px;
+  background: var(--gold); color: var(--ink); font: 800 11px/1.3 var(--body); font-style: normal;
+}
+.dex-cell.fresh .new { display: block; }
+#dex-card { position: fixed; inset: 0; z-index: 13; display: grid; place-items: center; padding: 16px; background: rgba(12, 10, 16, 0.55); }
+.dex-card { width: min(100%, 360px); display: grid; justify-items: center; gap: 8px; }
+#dex-big { width: min(70vw, 240px); height: min(70vw, 240px); border-radius: 18px; }
+#dex-name { margin: 0; font: 26px var(--display); }
+#dex-info { display: grid; gap: 4px; justify-items: center; font-size: 14px; color: var(--paper-dim); text-align: center; }
+#dex-info b { color: var(--gold); }
+.dex-nav { display: flex; gap: 10px; margin-top: 4px; }
+.dex-nav .chip { min-width: 44px; font-size: 15px; }
+.dex-said { margin: 0 0 4px; font: 16px/1.6 var(--display); color: var(--paper); text-wrap: balance; }
+#hud-last.fresh .label { color: var(--gold); font-weight: 800; }
+.panel .actions .btn { min-width: 150px; }
+.brag { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(246, 239, 224, 0.08); text-align: left; }
+.brag p { flex: 1; margin: 0; font-size: 13px; line-height: 1.6; color: var(--paper); user-select: text; -webkit-user-select: text; }
+.chip { flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(246, 239, 224, 0.35); background: rgba(246, 239, 224, 0.12); font-size: 13px; }
+.chip:hover { background: rgba(246, 239, 224, 0.22); }
+
+/* ---------- more ways to play (modes.js, rivals.js, skins.js, shards.js, share.js) ---------- */
+/* the title letters hop when tapped; 女娲's picture wobbles when poked */
+.logo span { cursor: pointer; }
+.logo span.hop { animation: letter-hop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both !important; }
+@keyframes letter-hop { 0% { translate: 0 0; } 40% { translate: 0 -26px; } 100% { translate: 0 0; } }
+#dialog-portrait.poked { animation: poke 0.45s ease-out; }
+@keyframes poke { 20% { rotate: -9deg; scale: 0.92; } 55% { rotate: 7deg; } 100% { rotate: 0deg; scale: 1; } }
+.btn.daily { background: var(--gold); color: var(--ink); }
+.btn.daily:hover { background: #f6cf6c; }
+.modes { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.btn.mode {
+  min-width: 0; padding: 9px 16px 8px;
+  background: rgba(31, 27, 36, 0.84); color: var(--paper);
+  border: 1px solid rgba(246, 239, 224, 0.28);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+.btn.mode:hover { background: rgba(43, 38, 50, 0.95); }
+.btn.mode b { font-size: 19px; }
+.btn.mode small { font-size: 11px; }
+.title-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.title-chips .chip { font-size: 14px; padding: 7px 14px; background: rgba(31, 27, 36, 0.6); }
+.title-chips .chip b { font: 800 14px var(--num); color: var(--gold); margin-left: 4px; }
+/* the level's own count in the pill, where the wishes go in other modes */
+#hud-count.no-wish .wish-lbl, #hud-count.no-wish #hud-wish { display: none; }
+#hud-lvl { margin-left: 8px; padding-left: 8px; border-left: 1px solid rgba(246, 239, 224, 0.25); font-weight: 700; color: var(--gold); }
+#hud-lvl b { font: 800 16px/1 var(--num); color: var(--paper); margin: 0 2px; }
+/* 3 · 2 · 1 · 滚！ */
+#countdown {
+  position: fixed; left: 50%; top: 36%; z-index: 6;
+  transform: translate(-50%, -50%);
+  font: 800 150px/1 var(--num); color: var(--paper);
+  text-shadow: 0 7px 0 rgba(0, 0, 0, 0.35), 0 0 34px rgba(0, 0, 0, 0.45);
+  pointer-events: none; white-space: nowrap;
+}
+#countdown.go { font: 130px/1 var(--display); color: var(--gold); }
+#countdown.tick { animation: cd-pop 1s ease-out both; }
+#cd-hint {
+  position: fixed; left: 50%; top: calc(36% + 100px); z-index: 6;
+  transform: translateX(-50%);
+  padding: 7px 16px; border-radius: 999px;
+  background: rgba(31, 27, 36, 0.8); color: var(--paper);
+  font-weight: 700; font-size: 16px; white-space: nowrap;
+  box-shadow: var(--shadow); pointer-events: none;
+}
+/* the thumb hint during the countdown: straight up, ringed in gold */
+#stick-hint.cd { box-shadow: 0 0 0 3px var(--gold), var(--shadow); }
+#stick-hint.cd .dot { animation: stick-up 1s ease-in-out infinite; }
+@keyframes stick-up { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -20px); } }
+@keyframes cd-pop { 0% { scale: 1.7; opacity: 0; } 10% { scale: 1; opacity: 1; } 88% { opacity: 1; scale: 0.94; } 100% { scale: 0.86; opacity: 0.2; } }
+/* rays round the edges while dashing */
+#speed-lines {
+  position: fixed; inset: -12%; z-index: 2; pointer-events: none; opacity: 0;
+  background: repeating-conic-gradient(from 3deg at 50% 50%, rgba(255, 255, 255, 0) 0deg 5.2deg, rgba(255, 255, 255, 0.8) 5.5deg 6.1deg, rgba(255, 255, 255, 0) 6.4deg 9deg),
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0) 0deg 9.4deg, rgba(255, 244, 214, 0.55) 9.6deg 10.2deg, rgba(255, 255, 255, 0) 10.4deg 13deg);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 52%, #000 96%);
+  mask-image: radial-gradient(closest-side, transparent 52%, #000 96%);
+}
+#speed-lines.on { animation: speed-lines 0.7s ease-out both; }
+@keyframes speed-lines { 0% { opacity: 0; rotate: 0deg; scale: 1.08; } 14% { opacity: 1; } 100% { opacity: 0; rotate: 5deg; scale: 1; } }
+/* 对手赛: who's how big, and names over the other balls */
+#rank-board {
+  position: absolute; left: max(16px, env(safe-area-inset-left)); top: calc(max(14px, env(safe-area-inset-top)) + 240px);
+  margin: 0; padding: 7px 10px; list-style: none;
+  display: grid; gap: 3px; min-width: 160px;
+  border-radius: 12px; background: rgba(31, 27, 36, 0.66);
+  font-size: 13px;
+}
+#rank-board li { display: grid; grid-template-columns: 14px 1fr auto; gap: 6px; align-items: baseline; color: var(--paper-dim); }
+#rank-board li i { font: 800 12px var(--num); font-style: normal; color: rgba(246, 239, 224, 0.5); }
+#rank-board li b { font: 700 13px var(--num); color: var(--paper); }
+#rank-board li.me span, #rank-board li.me b, #rank-board li.me i { color: var(--gold); font-weight: 800; }
+#rank-board li.out { opacity: 0.5; }
+#rank-board li.out b { font-family: var(--body); font-size: 12px; }
+/* (out of the way while a goal stamp is up) */
+#rank-board.hush { opacity: 0; transition: opacity 0.2s; }
+#rival-tags { position: absolute; inset: 0; pointer-events: none; }
+.rival-tag {
+  position: absolute; left: 0; top: 0; translate: -50% -100%;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2px 9px 3px; border-radius: 9px;
+  background: rgba(31, 27, 36, 0.72); white-space: nowrap;
+}
+.rival-tag b { font: 14px/1.2 var(--display); font-weight: normal; color: #ffb0a4; }
+.rival-tag span { font: 700 12px/1.1 var(--num); color: var(--paper); }
+/* small enough to roll up: gold */
+.rival-tag.prey { background: rgba(242, 193, 78, 0.92); }
+.rival-tag.prey b, .rival-tag.prey span { color: var(--ink); }
+/* panels: 关卡, 球皮 */
+#levels, #skins { z-index: 12; background: rgba(14, 12, 18, 0.72); }
+.list-panel { width: min(100%, 560px); max-height: min(calc(100vh - 32px), 900px); max-height: min(calc(100dvh - 32px), 900px); overflow-y: auto; overscroll-behavior: contain; text-align: left; }
+.list-panel .dex-head h2 { margin: 0; font: 28px var(--display); }
+.head-count { flex: 1; font: 800 17px var(--num); color: var(--gold); }
+.panel .panel-how { margin: 0; font-size: 13px; line-height: 1.6; color: var(--paper-dim); }
+.level-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.level-list button {
+  width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: baseline;
+  padding: 12px 14px; border-radius: 14px;
+  border: 1px solid rgba(246, 239, 224, 0.2); background: rgba(246, 239, 224, 0.07);
+  text-align: left; color: var(--paper);
+}
+.level-list button:hover:not(:disabled) { background: rgba(246, 239, 224, 0.14); }
+.level-list button:disabled { opacity: 0.45; cursor: default; }
+.level-list .ln { font: 21px var(--display); }
+.level-list .ls { font: 18px var(--num); letter-spacing: 2px; color: var(--gold); }
+.level-list .ls i { font-style: normal; color: rgba(246, 239, 224, 0.25); }
+.level-list .lt { grid-column: 1 / -1; font-size: 13px; color: var(--paper-dim); }
+.level-list .lb { grid-column: 1 / -1; font-size: 12px; color: rgba(246, 239, 224, 0.55); }
+.skin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
+.skin-card {
+  display: grid; justify-items: center; gap: 3px;
+  padding: 10px 6px 8px; border-radius: 14px;
+  border: 2px solid transparent; background: rgba(246, 239, 224, 0.07); color: var(--paper);
+}
+.skin-card canvas { width: 84px; height: 84px; }
+.skin-card b { font: 17px var(--display); font-weight: normal; }
+.skin-card small { font-size: 11px; color: var(--paper-dim); }
+.skin-card.on { border-color: var(--gold); background: rgba(242, 193, 78, 0.14); }
+.skin-card.on small { color: var(--gold); font-weight: 700; }
+.skin-card.locked { cursor: default; }
+.skin-card.locked canvas { filter: grayscale(1) brightness(0.5); }
+.shard-h { margin: 6px 0 0; font: 20px var(--display); font-weight: normal; color: var(--paper); }
+.shard-h b { font: 800 17px var(--num); color: var(--gold); margin-left: 6px; }
+.shard-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 13px; color: var(--paper-dim); }
+.shard-list li::before { content: '◇ '; color: rgba(246, 239, 224, 0.4); }
+.shard-list li.found { color: var(--paper); }
+.shard-list li.found::before { content: '◆ '; color: var(--gold); }
+/* 战绩图 */
+#share { z-index: 13; background: rgba(14, 12, 18, 0.75); }
+.share-panel { width: min(100%, 420px); }
+#share-img { display: block; width: 100%; max-height: 66vh; max-height: 66dvh; object-fit: contain; border-radius: 12px; -webkit-touch-callout: default; }
+/* results: a level's stars, the 对手赛 table */
+.res-level { display: grid; gap: 4px; justify-items: center; }
+.res-level .stars { font-size: 38px; line-height: 1; letter-spacing: 6px; color: var(--gold); }
+.res-level .stars i { font-style: normal; color: rgba(246, 239, 224, 0.22); }
+.res-level p { margin: 0; font-size: 16px; color: var(--paper); }
+.res-level small { font-size: 13px; color: var(--paper-dim); }
+.res-rivals { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 4px; width: min(100%, 330px); }
+.res-rivals li { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 12px; border-radius: 10px; background: rgba(246, 239, 224, 0.07); font-size: 15px; text-align: left; }
+.res-rivals li i { font: 800 15px var(--num); font-style: normal; color: var(--paper-dim); }
+.res-rivals li b { font: 700 15px var(--num); }
+.res-rivals li.me { background: rgba(242, 193, 78, 0.2); color: var(--gold); font-weight: 700; }
+.res-rivals li.me i { color: var(--gold); }
+.res-rivals li.out b { font-family: var(--body); font-size: 13px; color: var(--paper-dim); }
+.brag-btns { display: grid; gap: 6px; }
+.share-chip { background: var(--gold); color: var(--ink); border-color: var(--gold); font-weight: 700; }
+.share-chip:hover { background: #f6cf6c; }
+
+/* ---------- touch ---------- */
+#touch-zone { position: fixed; left: 0; bottom: 0; width: 62%; height: 60%; pointer-events: auto; touch-action: none; z-index: 3; }
+/* upright phone: the stick starts in the lower half only, below the ball */
+@media (orientation: portrait) { #touch-zone { height: 50%; } }
+#touch-stick {
+  position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px;
+  z-index: 3;
+  border-radius: 50%;
+  background: rgba(246, 239, 224, 0.12);
+  border: 2px solid rgba(246, 239, 224, 0.3);
+  pointer-events: none;
+}
+#touch-knob {
+  position: absolute; left: 50%; top: 50%;
+  width: 54px; height: 54px; margin: -27px 0 0 -27px;
+  border-radius: 50%;
+  background: rgba(246, 239, 224, 0.55);
+}
+/* where the right thumb swipes the view round: a finger sliding left and right (see main.js swipeHint) */
+#swipe-hint {
+  position: fixed; z-index: 4;
+  /* just above 冲, where the right thumb rests: swiping there doesn't cover the ball */
+  right: max(18px, env(safe-area-inset-right)); bottom: calc(max(22px, env(safe-area-inset-bottom)) + 150px);
+  display: grid; justify-items: center; gap: 8px;
+  padding: 12px 16px 10px;
+  border-radius: 18px;
+  background: rgba(31, 27, 36, 0.72);
+  color: var(--paper); font-size: 14px; letter-spacing: 0.5px;
+  pointer-events: none;
+  animation: hint-in 0.3s ease-out;
+}
+#swipe-hint .track { position: relative; width: 112px; height: 34px; }
+#swipe-hint .track::before, #swipe-hint .track::after {
+  content: ''; position: absolute; top: 11px; width: 10px; height: 10px;
+  border: solid rgba(246, 239, 224, 0.7); border-width: 0 0 2.5px 2.5px;
+}
+#swipe-hint .track::before { left: 2px; transform: rotate(45deg); }
+#swipe-hint .track::after { right: 2px; transform: rotate(-135deg); }
+#swipe-hint .dot {
+  position: absolute; left: 22px; top: 4px; width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.22);
+  animation: swipe-dot 1.3s ease-in-out infinite;
+}
+@keyframes swipe-dot { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(42px); } }
+/* where the left thumb goes: a stick being pushed (see main.js touchHints) */
+#stick-hint {
+  position: fixed; z-index: 4;
+  left: max(20px, env(safe-area-inset-left)); bottom: calc(max(22px, env(safe-area-inset-bottom)) + 96px);
+  display: grid; justify-items: center; gap: 8px;
+  padding: 12px 16px 10px;
+  border-radius: 18px;
+  background: rgba(31, 27, 36, 0.72);
+  color: var(--paper); font-size: 14px; letter-spacing: 0.5px;
+  pointer-events: none;
+  animation: hint-in 0.3s ease-out;
+}
+#stick-hint .pad {
+  position: relative; width: 64px; height: 64px; border-radius: 50%;
+  border: 2px solid rgba(246, 239, 224, 0.45); background: rgba(246, 239, 224, 0.1);
+}
+#stick-hint .dot {
+  position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.22);
+  animation: stick-dot 1.8s ease-in-out infinite;
+}
+@keyframes stick-dot { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(0, -18px); } 60% { transform: translate(15px, -11px); } }
+@keyframes hint-in { from { opacity: 0; transform: translateY(8px); } }
+
+#touch-dash {
+  position: fixed;
+  z-index: 3;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: calc(max(22px, env(safe-area-inset-bottom)) + 60px);
+  width: 78px; height: 78px; border-radius: 50%;
+  border: 3px solid var(--paper);
+  background: var(--red);
+  font: 30px var(--display);
+  color: var(--paper);
+  box-shadow: var(--shadow);
+  touch-action: none;
+}
+
+@media (max-width: 640px) {
+  #hud-size { width: 104px; height: 104px; }
+  #size-num { font-size: 31px; }
+  #size-unit { font-size: 14px; }
+  #hud-size .goal { bottom: 19px; font-size: 11px; }
+  #hud-count { top: calc(max(14px, env(safe-area-inset-top)) + 110px); }
+  #last-view { width: 64px; height: 64px; }
+  #last-name { font-size: 18px; }
+  #hud-keys { display: none; }
+  #hud-time { top: calc(max(14px, env(safe-area-inset-top)) + 118px); left: auto; right: 16px; transform: none; }
+  /* under the minimap (the clock has the spot above it in a timed game) */
+  #btn-patch, #btn-patch.timed { top: calc(max(14px, env(safe-area-inset-top)) + 280px); left: auto; right: 16px; transform: none; font-size: 17px; padding: 6px 14px 5px; }
+  #minimap-btn { width: 104px; height: 104px; top: calc(max(14px, env(safe-area-inset-top)) + 168px); }
+  #toast-stack { top: calc(max(14px, env(safe-area-inset-top)) + 290px); } /* below the minimap */
+  #dialog-portrait { width: 84px; height: 84px; }
+  #res-ball { width: 110px; height: 110px; }
+  #dialog-text { font-size: 17px; }
+  .toast { font-size: 17px; }
+  #hud-combo { top: calc(max(14px, env(safe-area-inset-top)) + 146px); }
+  #hud-combo b { font-size: 36px; }
+  #hud-combo .lbl { font-size: 20px; }
+  #stamp .sub { font-size: 18px; max-width: 86vw; }
+  /* under the count, clear of the minimap on the right */
+  #wish-card { right: auto; left: max(16px, env(safe-area-inset-left)); top: calc(max(14px, env(safe-area-inset-top)) + 148px); width: calc(100vw - 150px); padding: 10px 12px 8px; }
+  #wish-list li { font-size: 14px; }
+  .gain { font-size: 16px; }
+  .gain.big { font-size: 21px; }
+  .btn { min-width: 140px; }
+  .btn.mode { min-width: 0; padding: 8px 12px 7px; }
+  /* four ways to play: two by two rather than three and one */
+  .modes { display: grid; grid-template-columns: 1fr 1fr; width: min(100%, 340px); margin-inline: auto; }
+  .btn.mode b { font-size: 17px; }
+  #rank-board { top: calc(max(14px, env(safe-area-inset-top)) + 196px); min-width: 0; max-width: 150px; padding: 5px 8px; gap: 1px; font-size: 11.5px; }
+  #rank-board li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #rank-board li b { font-size: 12px; }
+  #countdown { top: 30%; font-size: 120px; }
+  #cd-hint { top: calc(30% + 84px); font-size: 14px; }
+  #countdown.go { font-size: 100px; }
+}
+/* upright phone: the ball sits half way down (see main.js), so the milestone stamp goes above it */
+@media (max-width: 640px) and (orientation: portrait) {
+  #stamp { top: 29%; }
+  #stamp .big { font-size: clamp(50px, 14vw, 116px); }
+}
+@media (max-height: 500px) {
+  #minimap-btn { width: 96px; height: 96px; top: calc(max(10px, env(safe-area-inset-top)) + 108px); }
+  .pause-panel { padding: 16px; }
+  .pause-panel > h2 { display: none; }
+  #bigmap { width: min(440px, 60vh); }
+}
+/* touch screens have no keyboard to explain */
+@media (pointer: coarse) {
+  #hud-keys { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo span, .toast, #hud-size.bump, #hud-last.pop, #hud-combo.tick b, .gain, #stamp, #edge-warn, #food-arrow .ping, #food-mark b, .wish-mark b, #countdown, #speed-lines, #swipe-hint, #swipe-hint .dot, #stick-hint, #stick-hint .dot { animation: none !important; }
+}
+
+/* English (i18n/): the rounded Latin face reads better than ZCOOL KuaiLe's Latin letters in long
+   lines; the logo keeps its brush-pen look. Wide letter-spacing is for CJK eyebrows only. */
+html[lang="en"] { --display: "Baloo 2", "ZCOOL KuaiLe", ui-rounded, system-ui, sans-serif; }
+html[lang="en"] .logo { font-family: "ZCOOL KuaiLe", "Baloo 2", ui-rounded, sans-serif; }
+html[lang="en"] .eyebrow, html[lang="en"] #res-eyebrow { letter-spacing: 1.5px; }
+
+/* short landscape windows (a game portal's 16:9 frame, 800×450): the title fits without the pitch,
+   and the results keep their buttons in reach at the bottom while the rest scrolls */
+@media (max-height: 560px) and (orientation: landscape) {
+  .title-card .pitch { display: none; }
+  .logo { font-size: clamp(48px, 15vh, 96px); }
+  #res-ball { width: 84px; height: 84px; }
+  .res-size { font-size: 46px; }
+  .panel.results > .actions {
+    position: sticky; bottom: -16px; z-index: 1;
+    margin: 0 -24px -24px; padding: 10px 12px 16px; border-radius: 0 0 24px 24px;
+    background: linear-gradient(rgba(24, 21, 30, 0), rgba(24, 21, 30, 0.96) 30%);
+  }
+}
+
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="vignette"></div>
+<div id="speed-lines" aria-hidden="true"></div>
+<div id="countdown" hidden aria-live="polite"></div>
+<div id="cd-hint" hidden></div>
+
+<div id="hud" hidden>
+  <div id="hud-size">
+    <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+      <circle class="track" cx="60" cy="60" r="52"></circle>
+      <circle id="size-ring-next" class="bar next" cx="60" cy="60" r="52"></circle>
+      <circle id="size-ring" class="bar" cx="60" cy="60" r="52"></circle>
+    </svg>
+    <div class="num"><span id="size-num">12</span><span id="size-unit">cm</span></div>
+    <div class="goal"><span id="goal-lbl">目标</span> <b id="goal-text">30 cm</b></div>
+    <div id="hud-gains" aria-hidden="true"></div>
+  </div>
+  <div id="hud-combo" hidden><span class="lbl">连滚</span><b id="combo-n">3</b><small id="combo-bonus">长大 +6%</small></div>
+  <div id="hud-time" hidden><span class="label">天黑前</span><span id="time-text">8:00</span></div>
+  <ol id="rank-board" hidden aria-label="名次"></ol>
+  <div id="rival-tags" aria-hidden="true"></div>
+  <button id="btn-patch" hidden>去补天 <b>›</b></button>
+  <div id="food-arrow" hidden aria-hidden="true"><i class="ping"></i><i class="dir"></i><span>能滚的在这边</span></div>
+  <div id="food-mark" hidden aria-hidden="true"><b>能滚</b></div>
+  <div id="wish-marks" aria-hidden="true"><i class="wish-mark" hidden><b>★ 心愿</b></i><i class="wish-mark" hidden><b>★</b></i><i class="wish-mark" hidden><b>★</b></i></div>
+  <div id="hud-last" hidden>
+    <div id="last-view"></div>
+    <div class="info">
+      <div class="label">刚滚起</div>
+      <div id="last-name">—</div>
+      <div id="last-size"></div>
+    </div>
+  </div>
+  <div id="hud-count" role="button" aria-label="已滚起的件数和女娲的心愿">已滚起 <b id="count-num">0</b> 件<span class="wish-lbl">心愿</span><span id="hud-wish"></span><span id="hud-lvl" hidden></span><span id="hud-wish-note"></span></div>
+  <button id="minimap-btn" aria-label="小地图（点开看全图）"><canvas id="minimap"></canvas></button>
+  <div id="edge-warn" hidden aria-hidden="true"><i>!</i></div>
+  <div id="warn-tag" hidden aria-hidden="true"><b>滚不动</b><span id="warn-need"></span></div>
+  <div id="hud-keys"><kbd>W</kbd> 前进 <kbd>A</kbd><kbd>D</kbd> 转弯 <kbd>S</kbd> 掉头 · 拖动鼠标转镜头 <kbd>空格</kbd> 冲刺 <kbd>C</kbd> 镜头 <kbd>Esc</kbd> 暂停·地图</div>
+  <button id="btn-sound" class="icon-btn" aria-label="声音开关"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.5h3.2L12 5.2v13.6l-4.8-4.3H4z" fill="currentColor"/><g class="waves" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8"/></g><path class="slash" d="M15.5 9l6 6m0-6l-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+  <button id="btn-pause" class="icon-btn" aria-label="暂停游戏"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="12" y="3" width="4" height="14" rx="1.2" fill="currentColor"/></svg></button>
+</div>
+
+<div id="toast-stack" aria-live="polite"></div>
+<div id="stamp" hidden aria-live="polite"><div class="big" id="stamp-size">20 cm</div><div class="sub" id="stamp-sub"></div></div>
+
+<div id="dialog" hidden>
+  <div id="dialog-portrait"></div>
+  <div class="bubble">
+    <div class="who">女娲</div>
+    <button id="dialog-skip" hidden>跳过 ▸▸</button>
+    <div id="dialog-text"></div>
+    <div class="next" id="dialog-next">点击继续 ▸</div>
+  </div>
+</div>
+
+<div id="title-screen" class="screen">
+  <div class="title-card">
+    <div class="eyebrow">女娲补天 · 块魂同人</div>
+    <h1 class="logo" data-i18n><span>万</span><span>物</span><span>皆</span><span>可</span><span>滚</span></h1>
+    <p class="pitch" data-i18n>天破了个窟窿。推着五色石，从一颗瓜子滚起——<br>猫、大妈、公交车、居民楼、整座山，统统滚上天去补。</p>
+    <div id="start-pick" class="start-pick" role="group" aria-label="从哪儿滚起">
+      <span>从哪儿滚起</span><button class="chip" type="button" data-start="home" aria-pressed="true">小区</button><button class="chip" type="button" data-start="office" aria-pressed="false">工位</button>
+    </div>
+    <div class="actions">
+      <button id="btn-quick" class="btn primary"><b>开始补天</b><small>快滚 3 分钟</small></button>
+      <button id="btn-daily" class="btn daily"><b>每日挑战</b><small id="daily-sub">4 分钟 · 今天人人同一题</small></button>
+    </div>
+    <div class="modes">
+      <button id="btn-timed" class="btn mode"><b>限时补天</b><small>6 分钟 · 滚到天黑</small></button>
+      <button id="btn-levels" class="btn mode"><b>关卡</b><small id="levels-sub">5 关</small></button>
+      <button id="btn-rivals" class="btn mode"><b>对手赛</b><small>3 分钟 · 比谁大</small></button>
+      <button id="btn-free" class="btn mode"><b>自由滚</b><small>不限时</small></button>
+    </div>
+    <div class="title-chips">
+      <button id="btn-dex" class="chip dex-chip">图鉴 <b id="dex-num">0/0</b></button>
+      <button id="btn-skins" class="chip">球皮 <b id="star-num">★ 0</b></button>
+      <button id="btn-shards" class="chip">五色石碎片 <b id="shard-num">0/10</b></button>
+    </div>
+    <div class="settings">
+      <label for="sel-quality">画质</label>
+      <select id="sel-quality"><option value="high">高</option><option value="medium">中</option><option value="low">低</option></select>
+      <label class="check"><input type="checkbox" id="chk-music" checked> 音乐</label>
+      <label class="check"><input type="checkbox" id="chk-sfx" checked> 音效</label>
+      <label class="check" title="每秒画 30 帧而不是 60 帧：手机不容易发烫，更省电"><input type="checkbox" id="chk-save"> 省电</label>
+      <button id="btn-lang" class="chip lang-chip" type="button">EN</button>
+    </div>
+    <div class="keys-help">
+      <span><kbd>W</kbd> 前进 <kbd>A</kbd><kbd>D</kbd> 转弯 <kbd>S</kbd> 掉头</span><span><kbd>空格</kbd> 冲刺</span><span>拖动鼠标转镜头 · 手机：球自己往前滚，一根拇指拖着拐弯，往下拉掉头，按住不动停下</span><span data-i18n><b class="k-gold">金边</b>的能滚起，<b class="k-red">红纹</b>的还太大、先绕开；平时撞一下不掉东西，冲刺撞上才会掉</span>
+    </div>
+    <div id="best-line" class="best" hidden></div>
+    <div class="fine"><span id="fine-tribute">非官方同人作品，致敬《块魂》。</span>所有模型、贴图、音乐均为程序实时生成。</div>
+  </div>
+</div>
+
+<div id="loading" class="screen">
+  <div class="loading-card">
+    <div class="spinner"><i></i><i></i><i></i><i></i><i></i></div>
+    <div id="loading-text">女娲正在捏泥人……</div>
+  </div>
+</div>
+
+<div id="pause" class="screen" hidden>
+  <div class="panel pause-panel">
+    <h2>暂停</h2>
+    <div class="map-box">
+      <canvas id="bigmap" aria-label="地图"></canvas>
+      <div class="map-tabs" role="group" aria-label="地图范围">
+        <button id="map-all" class="chip" aria-pressed="true">全图</button>
+        <button id="map-near" class="chip" aria-pressed="false">附近</button>
+      </div>
+      <div class="map-legend"><span><i class="lg-gold"></i>能滚起</span><span id="lg-red"><i class="lg-red"></i>还太大</span><span id="lg-target" hidden><i class="lg-target"></i><em></em></span><span><i class="lg-trail"></i>滚过的路</span></div>
+    </div>
+    <div class="pause-side">
+      <button id="btn-resume" class="btn primary"><b>继续滚</b></button>
+      <button id="btn-finish" class="btn ghost" hidden><b>现在就去补天</b></button>
+      <button id="btn-help" class="btn ghost"><b>操作说明</b></button>
+      <button id="btn-restart" class="btn ghost"><b>重新开始</b></button>
+      <button id="btn-home" class="btn ghost"><b>回到标题</b></button>
+    </div>
+  </div>
+</div>
+
+<div id="results" class="screen" hidden>
+  <div class="results-stack">
+  <div id="res-ball" aria-hidden="true"></div>
+  <div class="panel results">
+    <div id="res-eyebrow" class="eyebrow">补天石 · 最终尺寸</div>
+    <div id="res-size" class="res-size">0 m</div>
+    <div id="res-rank" class="res-rank"></div>
+    <div id="res-level" class="res-level" hidden></div>
+    <ol id="res-rivals" class="res-rivals" hidden></ol>
+    <div id="res-goal" class="res-goal"></div>
+    <p id="res-quote" class="res-quote"></p>
+    <div id="res-stats" class="res-stats"></div>
+    <div id="res-items" class="res-items"></div>
+    <div id="res-wish" class="res-wish"></div>
+    <div class="res-dex"><span id="res-dex-line"></span><button id="res-dex-open" class="chip">看图鉴</button></div>
+    <div id="res-dex-new" class="res-dex-new"></div>
+    <p id="res-tip" class="res-tip" hidden>手机发烫的话，回开始页勾上「省电」，会凉快很多。</p>
+    <div class="brag"><p id="res-brag"></p><div class="brag-btns"><button id="btn-copy" class="chip">复制战绩</button><button id="btn-share" class="chip share-chip">生成战绩图</button></div></div>
+    <div class="actions">
+      <button id="btn-next" class="btn primary" hidden><b>下一关</b></button>
+      <button id="btn-again" class="btn primary"><b>再滚一次</b></button>
+      <button id="btn-keep" class="btn ghost"><b>继续自由滚</b></button>
+      <button id="btn-title" class="btn ghost"><b>回到标题</b></button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="levels" class="screen" hidden>
+  <div class="panel list-panel">
+    <div class="dex-head"><h2>关卡</h2><span id="levels-stars" class="head-count"></span><button id="levels-close" class="chip">关闭</button></div>
+    <p class="panel-how">每关有自己的规矩，拿到 ★ 就开下一关。</p>
+    <ol id="level-list" class="level-list"></ol>
+  </div>
+</div>
+
+<div id="skins" class="screen" hidden>
+  <div class="panel list-panel">
+    <div class="dex-head"><h2>球皮</h2><span id="skins-stars" class="head-count"></span><button id="skins-close" class="chip">关闭</button></div>
+    <p class="panel-how">星星这么来：心愿达成一个 ★；每个关卡最多 ★★★；对手赛拿第一 ★★★。</p>
+    <div id="skin-grid" class="skin-grid"></div>
+    <h3 class="shard-h">五色石碎片 <b id="shards-count"></b></h3>
+    <p class="panel-how">女娲当年炼石头掉的，一共十块，藏在城里各处。靠近了会闪光；有的要球够大才够得着。</p>
+    <ol id="shard-list" class="shard-list"></ol>
+  </div>
+</div>
+
+<div id="share" class="screen" hidden>
+  <div class="panel share-panel">
+    <img id="share-img" alt="战绩图">
+    <p class="panel-how">长按图片保存，发给朋友 · 电脑上右键「图片另存为」</p>
+    <div class="actions"><a id="share-dl" class="btn ghost" download="万物皆可滚-战绩.png"><b>下载图片</b></a><button id="share-close" class="btn primary"><b>好的</b></button></div>
+  </div>
+</div>
+
+<div id="wish-card" hidden><div class="wc-head">女娲的心愿</div><ol id="wish-list"></ol><div class="wc-foot">点左上角的「心愿」随时看</div></div>
+
+<div id="dex" class="screen" hidden>
+  <div class="panel dex-panel">
+    <div class="dex-head"><h2>图鉴</h2><span id="dex-count"></span><button id="dex-close" class="chip">关闭</button></div>
+    <div id="dex-list" class="dex-list"></div>
+  </div>
+  <div id="dex-card" hidden>
+    <div class="panel dex-card">
+      <canvas id="dex-big" width="1" height="1"></canvas>
+      <h3 id="dex-name"></h3>
+      <div id="dex-info"></div>
+      <div class="dex-nav"><button id="dex-prev" class="chip" aria-label="上一个">‹</button><button id="dex-card-close" class="chip">返回</button><button id="dex-next" class="chip" aria-label="下一个">›</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="touch-zone" hidden></div>
+<div id="touch-stick" hidden><div id="touch-knob"></div></div>
+<button id="touch-dash" hidden aria-label="冲刺">冲</button>
+<div id="swipe-hint" hidden aria-hidden="true"><div class="track"><i class="dot"></i></div><span>右手左右滑 · 转镜头</span></div>
+<div id="stick-hint" hidden aria-hidden="true"><div class="pad"><i class="dot"></i></div><span>拇指拖着拐弯 · 松手接着滚 · 按住不动停下</span></div>
+
+<div id="webgl-error" class="screen" hidden>
+  <div class="panel"><h2>无法启动 3D</h2><p>当前浏览器不支持 WebGL2。请换用新版 Chrome、Edge 或 Safari 打开。</p></div>
+</div>
+<script>(function () {
+  var file = 'wanwu.4a9ffca3.js', cos = 'https://wan-wu-gun-1318514885.cos.ap-guangzhou.myqcloud.com/' + file, cn = false, i = 0;
+  try { cn = /^(Asia\/(Shanghai|Chongqing|Harbin|Urumqi|Kashgar)|PRC)$/.test(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch (e) {}
+  var order = cn ? [cos, file] : [file, cos];
+  function next() {
+    if (window.__wanwuBoot || i >= order.length) return;
+    var s = document.createElement('script');
+    s.src = order[i++];
+    s.onerror = next;
+    document.body.appendChild(s);
+    setTimeout(next, 12000);
+  }
+  next();
+})();</script>
+</body>
+</html>

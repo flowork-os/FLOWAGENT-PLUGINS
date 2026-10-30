@@ -6,7 +6,7 @@
   "description": "Sovereign AI-driven audio to 2D dynamic stickman animation generator. Features real-time voice transformation (kids, cartoon, chipmunk), procedural stickman action state machine, kinetic word-by-word subtitles, and 9:16 viral short video rendering.",
   "category": "Media, Creative Writing & Journalism",
   "icon": "🤺",
-  "hash": "d3eb06cde159abd9",
+  "hash": "30207c1208b5a68c",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"

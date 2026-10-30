@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://ascii-district.vercel.app/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#090d0a" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title data-en="ASCII DISTRICT — a first-person ASCII shooter" data-pt="ASCII DISTRICT — um FPS de caracteres">ASCII DISTRICT — a first-person ASCII shooter</title>
+    <script type="module" crossorigin src="/assets/index-Dcgu2X3k.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DabDO8ps.css">
+  </head>
+  <body>
+    <canvas id="world" aria-label="First-person ASCII arena" data-en-label="First-person ASCII arena" data-pt-label="Arena em ASCII vista em primeira pessoa"></canvas>
+    <div class="scanlines"></div>
+    <header>
+      <a class="brand" href="/">[A/D] <span>ASCII DISTRICT</span></a>
+      <span class="status"><i></i> <span data-en="SYSTEM ONLINE" data-pt="SISTEMA ONLINE">SYSTEM ONLINE</span> <b>v.2.2</b></span>
+    </header>
+    <main id="menu">
+      <div class="eyebrow" data-en="// ONE CHARACTER. ONE SHOT." data-pt="// UM CARACTERE. UM DISPARO.">// ONE CHARACTER. ONE SHOT.</div>
+      <pre class="logo" aria-label="ASCII">
+ █████╗ ███████╗ ██████╗██╗██╗
+██╔══██╗██╔════╝██╔════╝██║██║
+███████║███████╗██║     ██║██║
+██╔══██║╚════██║██║     ██║██║
+██║  ██║███████║╚██████╗██║██║
+╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝╚═╝</pre>
+      <h1>D I S T R I C T<span>_</span></h1>
+      <div class="menu-actions">
+        <button id="start" class="primary"><span class="button-label" data-en="START OPERATION" data-pt="INICIAR OPERAÇÃO">START OPERATION</span><span>[ ENTER ↵ ]</span></button>
+        <button id="controls"><span class="button-label" data-en="HOW TO PLAY" data-pt="COMO JOGAR">HOW TO PLAY</span><span>[ ? ]</span></button>
+        <button id="sound" aria-label="Game audio" data-en-label="Game audio" data-pt-label="Áudio do jogo" aria-pressed="true"><span class="button-label" data-en="AUDIO" data-pt="ÁUDIO">AUDIO</span><span id="sound-label">[ ON ]</span></button>
+      </div>
+      <div class="menu-audio">
+        <div class="audio-volume-row">
+          <label for="volume" data-en="VOLUME" data-pt="VOLUME">VOLUME</label>
+          <input id="volume" type="range" min="0" max="100" step="1" value="55" />
+          <output id="volume-value" for="volume">55%</output>
+        </div>
+      </div>
+      <div class="settings-row language-row">
+        <label for="language" data-en="LANGUAGE" data-pt="IDIOMA">LANGUAGE</label>
+        <select id="language" data-language-select>
+          <option value="en">EN — English</option>
+          <option value="pt-BR">PT-BR — Português</option>
+        </select>
+      </div>
+      <div class="record">
+        <span data-en="PERSONAL BEST" data-pt="SEU RECORDE">PERSONAL BEST</span><strong id="best">000000</strong>
+        <small data-en="SOLO / ENDLESS WAVES" data-pt="MODO SOLO / ONDAS INFINITAS">SOLO / ENDLESS WAVES</small>
+      </div>
+      <a class="menu-instagram" href="https://www.instagram.com/ackerocde/" target="_blank" rel="noopener noreferrer">
+        <span>INSTAGRAM</span> @ackerocde <span aria-hidden="true">↗</span>
+      </a>
+    </main>
+    <aside id="scene-label">
+      <span data-en="02 / OPEN DISTRICT" data-pt="02 / DISTRITO ABERTO">02 / OPEN DISTRICT</span>
+      <p><span data-en="THE SYSTEM WANTS YOU DEAD." data-pt="O SISTEMA QUER VOCÊ MORTO.">THE SYSTEM WANTS YOU DEAD.</span><br /><strong data-en="MAKE IT CRASH." data-pt="FAÇA ELE CAIR.">MAKE IT CRASH.</strong></p>
+      <small><span data-en="RENDERING:" data-pt="RENDERIZANDO:">RENDERING:</span> . : + * # % @</small>
+    </aside>
+    <footer>
+      <span data-en="BUILT FROM ASCII. FUELED BY ADRENALINE." data-pt="FEITO DE ASCII. MOVIDO A ADRENALINA.">BUILT FROM ASCII. FUELED BY ADRENALINE.</span>
+      <span>SHIFT <b data-en="SPRINT" data-pt="CORRER">SPRINT</b> / <span data-en="SPACE" data-pt="ESPAÇO">SPACE</span> <b data-en="JUMP" data-pt="PULAR">JUMP</b> / C <b data-en="SLIDE" data-pt="DESLIZAR">SLIDE</b></span>
+    </footer>
+    <section id="hud" hidden>
+      <div class="hud-top">
+        <span><span data-en="WAVE" data-pt="ONDA">WAVE</span> <b id="wave">01</b></span>
+        <span id="notice">ELIMINATE THE INTRUDERS</span>
+        <span>PTS <b id="score">000000</b></span>
+      </div>
+      <div id="crosshair"><i></i><i></i><i></i><i></i><b></b></div>
+      <div id="lock-hint" hidden data-en="CLICK TO CAPTURE THE MOUSE · ESC TO RELEASE" data-pt="CLIQUE PARA CAPTURAR O MOUSE · ESC PARA LIBERAR">CLICK TO CAPTURE THE MOUSE · ESC TO RELEASE</div>
+      <div id="hit">×</div>
+      <div class="movement-hud">
+        <span id="movement">WASD MOVE · SPACE JUMP</span><span id="slide-status">[C] SLIDE READY</span>
+      </div>
+      <div class="hud-bottom">
+        <div id="health-panel">
+          <small id="health-label">INTEGRITY</small><strong id="health">100</strong><span id="healthbar">||||||||||||||||||||</span>
+        </div>
+        <div class="weapon-info">
+          <small id="weapon-name">01 / RIFLE</small><strong id="ammo">30 <em>/ ∞</em></strong><span id="weapon-hint">[R] RELOAD · [1–5] WEAPON</span>
+        </div>
+      </div>
+    </section>
+    <dialog id="help">
+      <span class="eyebrow" data-en="// FIELD MANUAL" data-pt="// MANUAL DE CAMPO">// FIELD MANUAL</span>
+      <h2 data-en="Own the terminal." data-pt="Domine o terminal.">Own the terminal.</h2>
+      <div class="audio-settings">
+        <div class="audio-settings-heading">
+          <span data-en="// MUSIC + EFFECTS" data-pt="// MÚSICA + EFEITOS">// MUSIC + EFFECTS</span>
+          <button id="settings-sound" aria-label="Game audio" data-en-label="Game audio" data-pt-label="Áudio do jogo" aria-pressed="true"><span class="button-label" data-en="SOUND" data-pt="SOM">SOUND</span><span id="settings-sound-label">[ ON ]</span></button>
+        </div>
+        <div class="audio-volume-row">
+          <label for="settings-volume" data-en="MASTER VOLUME" data-pt="VOLUME GERAL">MASTER VOLUME</label>
+          <input id="settings-volume" type="range" min="0" max="100" step="1" value="55" />
+          <output id="settings-volume-value" for="settings-volume">55%</output>
+        </div>
+      </div>
+      <div class="settings-row">
+        <label for="settings-language" data-en="LANGUAGE" data-pt="IDIOMA">LANGUAGE</label>
+        <select id="settings-language" data-language-select>
+          <option value="en">EN — English</option>
+          <option value="pt-BR">PT-BR — Português</option>
+        </select>
+      </div>
+      <dl>
+        <dt>W A S D</dt><dd data-en="Move in any direction" data-pt="Mover em qualquer direção">Move in any direction</dd>
+        <dt data-en="MOUSE / ARROWS" data-pt="MOUSE / SETAS">MOUSE / ARROWS</dt><dd data-en="Free horizontal and vertical aiming" data-pt="Mira livre horizontal e vertical">Free horizontal and vertical aiming</dd>
+        <dt data-en="LEFT CLICK / F" data-pt="CLIQUE ESQUERDO / F">LEFT CLICK / F</dt><dd data-en="Shoot / slash (hold for automatic rifle fire)" data-pt="Atirar / cortar (segure para rifle automático)">Shoot / slash (hold for automatic rifle fire)</dd>
+        <dt data-en="RIGHT CLICK" data-pt="CLIQUE DIREITO">RIGHT CLICK</dt><dd data-en="Aim down sights for greater accuracy" data-pt="Aproximar a mira e ganhar precisão">Aim down sights for greater accuracy</dd>
+        <dt data-en="SHIFT / SPACE" data-pt="SHIFT / ESPAÇO">SHIFT / SPACE</dt><dd data-en="Sprint / jump" data-pt="Correr / pular">Sprint / jump</dd>
+        <dt data-en="C WHILE MOVING" data-pt="C EM MOVIMENTO">C WHILE MOVING</dt><dd data-en="Slide; jump to exit the slide" data-pt="Deslizar; pule para sair do deslize">Slide; jump to exit the slide</dd>
+        <dt>R / 1–5</dt><dd data-en="Reload / 1 rifle, 2 shotgun, 3 sniper, 4 sword, 5 pistol" data-pt="Recarregar / 1 rifle, 2 escopeta, 3 sniper, 4 espada, 5 pistola">Reload / 1 rifle, 2 shotgun, 3 sniper, 4 sword, 5 pistol</dd>
+        <dt>ESC</dt><dd data-en="Pause and release the mouse" data-pt="Pausar e liberar o mouse">Pause and release the mouse</dd>
+      </dl>
+      <div class="settings-row">
+        <label for="sensitivity"><span data-en="SENSITIVITY" data-pt="SENSIBILIDADE">SENSITIVITY</span> <output id="sens-value">1.0</output></label>
+        <input id="sensitivity" type="range" min="0.3" max="2.5" step="0.1" value="1" />
+      </div>
+      <div class="settings-row">
+        <label for="quality" data-en="ASCII DETAIL" data-pt="DETALHE ASCII">ASCII DETAIL</label>
+        <select id="quality">
+          <option value="high" data-en="High" data-pt="Alto">High</option>
+          <option value="medium" data-en="Medium" data-pt="Médio">Medium</option>
+          <option value="low" data-en="Light" data-pt="Leve">Light</option>
+        </select>
+      </div>
+      <p data-en="Coral enemies. Cyan stairs and access routes. Use stairs and walkways to gain height; shots respect cover, jumps and slides. Clearing a wave restores 25 integrity. New enemy types appear as you advance. Face ILOVEYOU, WANNACRY and MYDOOM on waves 3, 6 and 9; a boss returns every three waves. Health regenerates at 25 per second after 2.5 seconds without damage. Lethal headshots display ASCII lettering and grant +50 points. Snipers deal 4× head damage; armored bodies resist more. Explore the LAN cafes: CRT computers, doors and routes through the buildings." data-pt="Inimigos em coral; escadas e acessos em ciano. Use escadas e passarelas para ganhar altura; disparos respeitam cobertura, salto e deslize. Elimine a onda para recuperar 25 de integridade. Novos tipos surgem conforme você avança. Enfrente ILOVEYOU, WANNACRY e MYDOOM nas ondas 3, 6 e 9; um chefe retorna a cada três ondas. A vida regenera 25 pontos por segundo após 2,5 segundos sem dano. Headshots letais mostram letras ASCII e dão +50 pontos. A sniper causa 4× de dano na cabeça; corpos blindados resistem mais. Explore as LAN houses: computadores de tubo, portas e rotas internas.">Coral enemies. Cyan stairs and access routes. Use stairs and walkways to gain height; shots respect cover, jumps and slides. Clearing a wave restores 25 integrity. New enemy types appear as you advance. Face ILOVEYOU, WANNACRY and MYDOOM on waves 3, 6 and 9; a boss returns every three waves. Health regenerates at 25 per second after 2.5 seconds without damage. Lethal headshots display ASCII lettering and grant +50 points. Snipers deal 4× head damage; armored bodies resist more. Explore the LAN cafes: CRT computers, doors and routes through the buildings.</p>
+      <button id="close-help" class="primary" data-en="UNDERSTOOD [ ↵ ]" data-pt="ENTENDIDO [ ↵ ]">UNDERSTOOD [ ↵ ]</button>
+    </dialog>
+    <div id="overlay" hidden>
+      <div>
+        <span class="eyebrow" id="overlay-label">// CONNECTION INTERRUPTED</span>
+        <h2 id="overlay-title">OPERATION PAUSED</h2>
+        <p id="overlay-info">Take a breath. The district can wait.</p>
+        <button id="resume" class="primary">RESUME [ ENTER ↵ ]</button>
+        <button id="pause-settings" data-en="AUDIO / AIM / VISUAL SETTINGS" data-pt="AJUSTAR SOM / MIRA / VISUAL">AUDIO / AIM / VISUAL SETTINGS</button>
+        <button id="back" data-en="BACK TO MENU" data-pt="VOLTAR AO MENU">BACK TO MENU</button>
+      </div>
+    </div>
+    <div id="render-error" hidden data-en="Could not start 3D. Enable hardware acceleration or use a browser with WebGL 2." data-pt="Não foi possível iniciar o 3D. Ative a aceleração de hardware ou use um navegador com WebGL 2.">Could not start 3D. Enable hardware acceleration or use a browser with WebGL 2.</div>
+    <div id="mobile-note" data-en="Play on a computer with a keyboard and mouse." data-pt="Para jogar, abra no computador com teclado e mouse.">Play on a computer with a keyboard and mouse.</div>
+  </body>
+</html>

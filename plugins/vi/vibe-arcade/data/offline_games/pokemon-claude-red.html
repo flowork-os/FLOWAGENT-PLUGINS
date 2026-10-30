@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://claudered.dev/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pokémon Claude Red: Play Pokémon Red Free in Your Browser</title>
+<meta name="description" content="Play Pokémon Red free in your browser, remade from raw pixels by Claude AI: all 151 Pokémon, the full Kanto story, online battles and trades. No download.">
+<meta name="theme-color" content="#0d0c16">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pokémon Claude Red">
+<meta property="og:url" content="https://claudered.dev/">
+<meta property="og:title" content="Pokémon Claude Red: Play Pokémon Red Free in Your Browser">
+<meta property="og:description" content="Pokémon Red remade from raw pixels by Claude: the full Kanto story, all 151 Pokémon, online link battles and trades. Free, no download, works on phones.">
+<meta property="og:image" content="https://claudered.dev/preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="720">
+<meta property="og:image:alt" content="Pokémon Claude Red title screen, drawn in pixel art by code">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pokémon Claude Red: Play Pokémon Red Free in Your Browser">
+<meta name="twitter:description" content="Pokémon Red remade from raw pixels by Claude: all 151 Pokémon, the full Kanto story, online battles and trades. Free in your browser.">
+<script type="application/ld+json">[
+{"@context":"https://schema.org","@type":"VideoGame","name":"Pokémon Claude Red","alternateName":["Claude Red","Pokemon Claude Red"],"url":"https://claudered.dev/","image":"https://claudered.dev/preview.png",
+ "description":"A free, non-commercial fan remake of Pokémon Red that runs in any web browser. Claude, an AI model by Anthropic, rebuilt the game from raw pixels in JavaScript: all 151 Pokémon, the full Kanto story, the classic glitches, and online link battles and trades.",
+ "genre":["Role-playing game","Adventure"],"gamePlatform":["Web browser","PC","iOS","Android"],"applicationCategory":"Game","operatingSystem":"Any","playMode":["SinglePlayer","MultiPlayer"],"inLanguage":"en",
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},
+ "author":{"@type":"Organization","name":"Levy Street","url":"https://levystreet.com"},"publisher":{"@type":"Organization","name":"Levy Street","url":"https://levystreet.com"},
+ "sameAs":["https://github.com/levy-street/pokemon-claude-red","https://www.youtube.com/watch?v=7G3PPKV0iHA"]},
+{"@context":"https://schema.org","@type":"WebSite","name":"Pokémon Claude Red","alternateName":"Claude Red","url":"https://claudered.dev/"},
+{"@context":"https://schema.org","@type":"Organization","name":"Levy Street","url":"https://levystreet.com","email":"hello@levystreet.com","logo":"https://claudered.dev/icon-512.png"}
+]</script>
+<style>
+  html, body { margin: 0; height: 100%; background: #0d0c16; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  #disclaimer { position: fixed; left: 0; right: 0; bottom: 2px; margin: 0; text-align: center; font: 10px/1.2 system-ui, sans-serif; color: #6a6488; pointer-events: none; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+  /* Levy St. bar (src/game/topbar.js): page chrome around the game, not part of it */
+  body.has-bar { padding-top: 44px; box-sizing: border-box; }
+  #lsbar { position: fixed; z-index: 20; top: 0; left: 0; right: 0; height: 44px; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 0 14px;
+    background: linear-gradient(#17152c, #100e1e); border-bottom: 1px solid #28233f; font: 500 13px/1.2 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: #bdb6d8; }
+  #lsbar a { color: inherit; text-decoration: none; }
+  #lsbar svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
+  #lsbar #ls-logo { height: 22px; width: auto; image-rendering: auto; display: block; }
+  .ls-brand { display: flex; align-items: center; flex: none; }
+  .ls-pitch { color: #8a83a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .ls-pitch b { color: #e08a5f; font-weight: 600; }
+  .ls-drop { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  #ls-form { display: flex; align-items: center; gap: 6px; margin: 0; }
+  #ls-form input[type=email] { width: 210px; height: 30px; box-sizing: border-box; padding: 0 10px; border-radius: 7px; border: 1px solid #3a3360; background: #0b0a14; color: #f3f0e9; font: inherit; outline: none; }
+  #ls-form input[type=email]:focus { border-color: #e08a5f; }
+  #lsbar button { height: 30px; padding: 0 12px; border-radius: 7px; border: 0; background: #e08a5f; color: #1b1020; font: 700 12px/1 ui-sans-serif, system-ui, -apple-system, sans-serif; letter-spacing: .03em; cursor: pointer; white-space: nowrap; }
+  #lsbar button:disabled { opacity: .6; cursor: default; }
+  .ls-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  #ls-msg { color: #5fd3b0; white-space: nowrap; }
+  #ls-msg.err { color: #ff8a7a; white-space: normal; }
+  .ls-fine { display: none; color: #7d769c; font-size: 11px; }
+  .ls-links { display: flex; align-items: center; gap: 14px; flex: none; }
+  .ls-links a { display: flex; align-items: center; gap: 6px; }
+  .ls-links a:hover, .ls-brand:hover { color: #fff; }
+  #ls-toggle { display: none; align-items: center; gap: 6px; margin-left: auto; }
+  @media (max-width: 980px) { .ls-pitch { display: none; } }
+  /* compact: the signup drops down under a button */
+  #lsbar.compact .ls-pitch, #lsbar.compact .ls-links span { display: none; }
+  #lsbar.compact #ls-toggle { display: flex; }
+  #lsbar.compact .ls-drop { display: none; position: absolute; top: calc(100% + 6px); right: 8px; flex-direction: column; align-items: stretch; gap: 8px; margin: 0; padding: 12px;
+    width: min(320px, calc(100vw - 16px)); box-sizing: border-box; background: #17152c; border: 1px solid #2f2950; border-radius: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, .55); }
+  #lsbar.compact.open .ls-drop { display: flex; }
+  #lsbar.compact #ls-form input[type=email] { flex: 1; width: auto; min-width: 0; }
+  #lsbar.compact .ls-fine { display: block; }
+  /* pill: floats over the corner when a full bar would shrink the game a whole scale step */
+  #lsbar.pill { left: auto; right: 8px; top: 8px; height: 38px; padding: 0 6px 0 12px; gap: 12px; border: 1px solid #2f2950; border-radius: 19px; opacity: .55; transition: opacity .2s; }
+  #lsbar.pill:hover, #lsbar.pill.open, #lsbar.pill:focus-within { opacity: 1; }
+  #lsbar.pill .ls-brand, #lsbar.pill #ls-toggle span { display: none; }
+  #lsbar.pill #ls-toggle { order: 3; padding: 0 9px; }
+  #ls-hits { image-rendering: pixelated; image-rendering: crisp-edges; flex: none; }
+  #lsbar.pill #ls-hits { display: none; }
+  /* touch screens: 16px text stops iOS zooming into fields; bigger targets for thumbs */
+  html.touch body { touch-action: manipulation; }
+  html.touch #lsbar input, html.touch #acct input { font-size: 16px; }
+  html.touch #ls-form input[type=email], html.touch #lsbar .ls-drop button { height: 42px; }
+  html.touch #disclaimer { z-index: 6; font-size: 8px; line-height: 1.3; padding: 0 14px; }
+  #pad #ls-hits { position: absolute; }
+  #pad #ls-hits.cramped { display: none; }
+
+  /* on-screen controller (src/game/touchpad.js) */
+  #pad { position: fixed; inset: 0; z-index: 5; pointer-events: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #pad[hidden] { display: none; }
+  #pad-body { position: absolute; background: linear-gradient(#1a182e, #110f20 70%); border-top: 1px solid #2a2544; border-bottom-right-radius: 72px; }
+  #pad-body::after { content: ''; position: absolute; right: 22px; bottom: 44px; width: 58px; height: 46px; transform: rotate(-28deg);
+    background: repeating-linear-gradient(90deg, #07060e 0 5px, transparent 5px 11px); border-radius: 3px; opacity: .8; }
+  .dpad, .pbtn { position: absolute; pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent; }
+  .dpad svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .dpad .hl { opacity: 0; }
+  .dpad.up .hl.u, .dpad.down .hl.d, .dpad.left .hl.l, .dpad.right .hl.r { opacity: .2; }
+  .pbtn { border: 0; margin: 0; padding: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; cursor: pointer; }
+  .pbtn.ab { border-radius: 50%; color: #3b1509; font-size: 20px; font-weight: 800;
+    background: radial-gradient(circle at 34% 28%, #f7b391 0, #e3825b 40%, #b9573a 82%);
+    box-shadow: 0 4px 0 #6d2d17, 0 8px 16px rgba(0, 0, 0, .45), inset 0 -3px 6px rgba(0, 0, 0, .2); }
+  .pbtn.ab.on { transform: translateY(3px); filter: brightness(.9); box-shadow: 0 1px 0 #6d2d17, 0 3px 6px rgba(0, 0, 0, .45), inset 0 2px 6px rgba(0, 0, 0, .3); }
+  .pbtn.pill { border-radius: 11px; color: #bab4d8; font-size: 9px; font-weight: 800; letter-spacing: .14em;
+    background: linear-gradient(#47445f, #34324b); box-shadow: 0 2px 0 #14121f, 0 4px 8px rgba(0, 0, 0, .35); }
+  #pad.portrait .pbtn.pill { transform: rotate(-24deg); }
+  .pbtn.pill.on { filter: brightness(1.3); }
+
+  /* account box for cloud saves (src/game/cloudsave.js) */
+  #acct { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; background: rgba(4, 3, 10, .74); }
+  #acct[hidden] { display: none; }
+  #acct.arming .acct-card { pointer-events: none; }
+  html.touch #acct { align-items: flex-start; padding-top: max(16px, env(safe-area-inset-top)); }
+  .acct-card { width: min(380px, 100%); box-sizing: border-box; padding: 20px 20px 16px; border-radius: 6px; background: #17152c; color: #d8d3ee;
+    border: 2px solid #f3f0e9; box-shadow: 0 0 0 4px #17152c, 0 0 0 6px #5a5480, 0 20px 50px rgba(0, 0, 0, .6); font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  .acct-card h2 { margin: 0 0 6px; font-size: 19px; color: #ffd66a; letter-spacing: .02em; }
+  .acct-card p { margin: 0 0 14px; color: #a9a3c9; font-size: 14px; }
+  .acct-card label { display: block; margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #c9c3e0; }
+  .acct-card input[type=email], .acct-card input[type=password], .acct-card input[type=text]:not(.ls-hp) { display: block; width: 100%; box-sizing: border-box; height: 44px; margin-top: 4px; padding: 0 12px;
+    border-radius: 8px; border: 1px solid #3a3360; background: #0b0a14; color: #f3f0e9; font: inherit; font-size: 15px; outline: none; }
+  .acct-card input:focus { border-color: #e08a5f; }
+  .acct-pw { position: relative; }
+  .acct-pw button { position: absolute; right: 6px; bottom: 7px; height: 30px; padding: 0 10px; border: 0; border-radius: 6px; background: #2a2544; color: #c9c3e0; font: 600 12px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer; }
+  .acct-card label.acct-opt { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; color: #a9a3c9; font-size: 13px; line-height: 1.35; }
+  .acct-opt input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: #e08a5f; }
+  #acct-err { color: #ff8a7a; margin: 4px 0 10px; }
+  #acct-go { width: 100%; height: 46px; border: 0; border-radius: 8px; background: #e08a5f; color: #1b1020; font: 800 15px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer; }
+  #acct-go:disabled { opacity: .6; }
+  .acct-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 13px; color: #8a83a8; }
+  .acct-row button { border: 0; background: none; color: #e08a5f; font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; padding: 8px 0; cursor: pointer; }
+  /* "Not now" lives up top, away from where the on-screen A and B buttons sit under the box */
+  .acct-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  #acct-skip { flex: none; border: 0; background: none; color: #8a83a8; font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; padding: 6px 0 6px 8px; cursor: pointer; }
+  #cloud-toast { position: fixed; z-index: 30; left: 50%; top: 54px; transform: translate(-50%, -8px); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none;
+    padding: 8px 14px; border-radius: 18px; background: #17152c; border: 1px solid #2f2950; color: #5fd3b0; font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; white-space: nowrap; }
+  #cloud-toast.show { opacity: 1; transform: translate(-50%, 0); }
+  /* what the canvas shows, in words: for screen readers and search engines (the game itself is pixels) */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  noscript p { position: fixed; inset: 40% 16px auto; text-align: center; color: #ece8f6; font: 16px/1.5 system-ui, sans-serif; }
+  noscript a { color: #e08a5f; }
+  /* live SOCIAL ZONE chat (src/game/lounge.js) */
+  #lounge-chat, #coop-join { position: fixed; z-index: 25; display: flex; gap: 6px; margin: 0; padding: 6px; box-sizing: border-box; border-radius: 10px; background: rgba(12, 10, 28, .88); border: 1px solid #3a3360; }
+  #lounge-chat[hidden], #lounge-chat-btn[hidden], #coop-join[hidden] { display: none; }
+  #lounge-chat input, #coop-join input { flex: 1; min-width: 0; height: 34px; box-sizing: border-box; padding: 0 10px; border-radius: 7px; border: 1px solid #3a3360; background: #0b0a14; color: #f3f0e9; font: 15px/1 ui-sans-serif, system-ui, -apple-system, sans-serif; outline: none; }
+  #lounge-chat input:focus, #coop-join input:focus { border-color: #e08a5f; }
+  #lounge-chat button, #coop-join button { height: 34px; padding: 0 14px; border: 0; border-radius: 7px; background: #e08a5f; color: #1b1020; font: 700 13px/1 ui-sans-serif, system-ui, -apple-system, sans-serif; cursor: pointer; }
+  html.touch #lounge-chat input, html.touch #coop-join input { font-size: 16px; height: 40px; }
+  html.touch #lounge-chat button, html.touch #coop-join button { height: 40px; }
+  #coop-join { flex-wrap: wrap; } #coop-join .hint { flex-basis: 100%; margin: 0 2px 2px; color: #d8d0f0; font: 13px/1.3 ui-sans-serif, system-ui, -apple-system, sans-serif; } #coop-join button.alt { background: #3a3360; color: #f3f0e9; }
+  #agent-box { position: fixed; z-index: 26; overflow: auto; padding: 14px 16px; box-sizing: border-box; border-radius: 10px; background: rgba(12, 10, 28, .96); border: 1px solid #3a3360; color: #f3f0e9; font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  #agent-box[hidden] { display: none; }
+  #agent-box h2 { margin: 0 0 8px; font-size: 17px; color: #ffe070; }
+  #agent-box p { margin: 8px 0 4px; color: #d8d0f0; }
+  #agent-box code { font: 12.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: #b8f4ff; word-break: break-all; }
+  #agent-box .row { display: flex; gap: 8px; align-items: flex-start; background: #0b0a14; border: 1px solid #3a3360; border-radius: 7px; padding: 8px; }
+  #agent-box .row code { flex: 1; }
+  #agent-box button { height: 32px; padding: 0 14px; border: 0; border-radius: 7px; background: #e08a5f; color: #1b1020; font: 700 13px/1 ui-sans-serif, system-ui, -apple-system, sans-serif; cursor: pointer; flex: none; }
+  #agent-box button.done { margin-top: 12px; width: 100%; height: 38px; }
+  #agent-box a { color: #ffb070; }
+  #lounge-chat-btn { position: fixed; z-index: 24; width: 38px; height: 38px; padding: 9px; border: 1px solid #3a3360; border-radius: 50%; background: rgba(12, 10, 28, .8); color: #f3f0e9; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #lounge-chat-btn svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+</style>
+<meta name="subscribe-endpoint" content="api/subscribe">
+<meta name="google-site-verification" content="rSAhUu_bN4McRQcu5seBDztEngVJxSbL2hThLxsLavY">
+<link rel="canonical" href="https://claudered.dev/">
+</head>
+<body>
+<header id="lsbar" data-chrome>
+  <a class="ls-brand" href="https://levystreet.com/?utm_source=pokemon-claude-red&amp;utm_medium=game&amp;utm_campaign=topbar" target="_blank" rel="noopener" title="Levy St."><canvas id="ls-logo" role="img" aria-label="Levy St."></canvas></a>
+  <canvas id="ls-hits" hidden role="img" aria-label="Hit counter"></canvas>
+  <span class="ls-pitch">Notes from the frontier of <b>AI &times; gaming &times; consumer</b></span>
+  <button id="ls-toggle" type="button" aria-label="Get Levy St. updates"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6v-5a7 7 0 0 0-5.5-6.84V3a1.5 1.5 0 0 0-3 0v1.16A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2z"/></svg><span>Get updates</span></button>
+  <div class="ls-drop">
+    <form id="ls-form">
+      <input type="email" name="email" placeholder="you@email.com" autocomplete="email" required aria-label="Email for Levy St. updates">
+      <input class="ls-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit">Get updates</button>
+    </form>
+    <span id="ls-msg" role="status" hidden></span>
+    <small class="ls-fine">Occasional emails from Levy St. on AI &times; gaming &times; consumer. Unsubscribe anytime.</small>
+  </div>
+  <nav class="ls-links">
+    <a href="guides/" title="Pokémon Red guides, Pokédex and maps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM9 4h2v5l-1-.75L9 9V4zm9 16H6V4h1v9l3-2.25L13 13V4h5v16z"/></svg><span>Guides</span></a>
+    <a href="/cdn-cgi/l/email-protection#a7cfc2cbcbc8e7cbc2d1ded4d3d5c2c2d389c4c8ca98d4d2c5cdc2c4d39af7c8cc82e49482e69ecac8c9829597e4cbc6d2c3c2829597f5c2c3" title="Contact: hello@levystreet.com"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4.24-8 5-8-5V6l8 5 8-5v2.24z"/></svg><span><span class="__cf_email__" data-cfemail="670f020b0b08270b02111e1413150202134904080a">[email&#160;protected]</span></span></a>
+    <a href="https://github.com/levy-street/pokemon-claude-red" target="_blank" rel="noopener" title="Source on GitHub" aria-label="Source on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></a>
+  </nav>
+</header>
+<main class="sr-only">
+  <h1>Pokémon Claude Red: play Pokémon Red free in your browser</h1>
+  <p>Pokémon Claude Red is a free, non-commercial fan remake of Pokémon Red that runs in any web browser on a computer, tablet or phone, with no download, emulator or ROM. Claude, an AI model by Anthropic, rebuilt the whole game from raw pixels in JavaScript: all 151 Pokémon, the Kanto story from Pallet Town to the Elite Four, the classic glitches like MissingNo. and the Mew trick, and a Social Zone for online link battles and trades.</p>
+  <nav aria-label="Guides"><a href="guides/play-pokemon-red-online/">How to play Pokémon Red online</a> · <a href="pokedex/">Pokédex</a> · <a href="locations/">Locations</a> · <a href="gym-leaders/">Gym leaders</a> · <a href="guides/walkthrough/">Walkthrough</a> · <a href="guides/">All guides</a> · <a href="faq/">About &amp; FAQ</a></nav>
+</main>
+<noscript><p>Pokémon Claude Red needs JavaScript to run. Meanwhile, browse the <a href="guides/">Pokémon Red guides</a> and <a href="pokedex/">Pokédex</a>.</p></noscript>
+<canvas id="screen" role="img" aria-label="Pokémon Claude Red, the game"></canvas>
+<div id="pad" data-chrome hidden>
+  <div id="pad-body"></div>
+  <div class="dpad" id="dpad" role="group" aria-label="D-pad">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <linearGradient id="dp-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#403d58"/><stop offset="1" stop-color="#2a2840"/></linearGradient>
+        <radialGradient id="dp-c"><stop offset="0" stop-color="#1b192b"/><stop offset="1" stop-color="#312f47"/></radialGradient>
+      </defs>
+      <g fill="#0a0913" transform="translate(0 4)"><rect x="33" y="0" width="34" height="100" rx="7"/><rect x="0" y="33" width="100" height="34" rx="7"/></g>
+      <g fill="url(#dp-g)"><rect x="33" y="0" width="34" height="100" rx="7"/><rect x="0" y="33" width="100" height="34" rx="7"/></g>
+      <g fill="#fff"><rect class="hl u" x="33" y="0" width="34" height="34" rx="7"/><rect class="hl d" x="33" y="66" width="34" height="34" rx="7"/><rect class="hl l" x="0" y="33" width="34" height="34" rx="7"/><rect class="hl r" x="66" y="33" width="34" height="34" rx="7"/></g>
+      <circle cx="50" cy="50" r="10" fill="url(#dp-c)"/>
+      <g fill="#6f6b92"><path d="M50 8l7 9H43z"/><path d="M50 92l7-9H43z"/><path d="M8 50l9-7v14z"/><path d="M92 50l-9-7v14z"/></g>
+    </svg>
+  </div>
+  <button class="pbtn ab" data-btn="b" aria-label="B">B</button>
+  <button class="pbtn ab" data-btn="a" aria-label="A">A</button>
+  <button class="pbtn pill" data-btn="select" aria-label="Select">SELECT</button>
+  <button class="pbtn pill" data-btn="start" aria-label="Start">START</button>
+</div>
+<div id="acct" data-chrome hidden>
+  <div class="acct-card" role="dialog" aria-modal="true" aria-labelledby="acct-title">
+    <div class="acct-head"><h2 id="acct-title">Keep your save safe</h2><button type="button" id="acct-skip">Not now</button></div>
+    <p id="acct-lede"></p>
+    <form id="acct-form" novalidate>
+      <label>Email<input type="email" name="email" autocomplete="email" required></label>
+      <label class="acct-pw">Password<input type="password" name="password" required minlength="8"><button type="button" id="acct-show">Show</button></label>
+      <label class="acct-opt" id="acct-opt"><input type="checkbox" name="updates"><span>Also send me Levy St. updates on AI &times; gaming &times; consumer</span></label>
+      <input class="ls-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p id="acct-err" role="alert" hidden></p>
+      <button type="submit" id="acct-go">Create account</button>
+    </form>
+    <div class="acct-row"><span><span id="acct-switch-q">Have an account?</span> <button type="button" id="acct-switch">Log in</button></span></div>
+  </div>
+</div>
+<div id="cloud-toast" role="status"></div>
+<p id="disclaimer">Free non-commercial fan project. Pokémon © Nintendo / Creatures / GAME FREAK. Not affiliated with Nintendo, The Pokémon Company, Anthropic or OpenAI.</p>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="src/core/gfx.js?v=4519b85df9"></script>
+<script src="src/core/font.js?v=07b4cff0f2"></script>
+<script src="src/core/input.js?v=caade67256"></script>
+<script src="src/core/engine.js?v=47eec21e03"></script>
+<script src="src/core/audio.js?v=f95de42fb6"></script>
+<script src="src/art/palette.js?v=95d9c8d35c"></script>
+<script src="src/art/terrain.js?v=f065079df6"></script>
+<script src="src/art/buildings.js?v=2e11a958ad"></script>
+<script src="src/art/chars.js?v=d571e26181"></script>
+<script src="src/art/objsprites.js?v=ba56989876"></script>
+<script src="src/art/pokesprite.js?v=f0ccb241f2"></script>
+<script src="src/art/interior.js?v=0ecf2f6c57"></script>
+<script src="src/art/ambient.js?v=18dbc7e64a"></script>
+<script src="src/art/logo.js?v=5701d1b33e"></script>
+<script src="src/art/battlebg.js?v=71f719b6e1"></script>
+<script src="src/art/trainerpics.js?v=e4d150c10c"></script>
+<script src="src/art/portraitpx.js?v=9fcad81ab3"></script>
+<script src="src/data/maps.js?v=14262cf179"></script>
+<script src="src/data/labels.js?v=8d949052cb"></script>
+<script src="src/data/labels_interior.js?v=7f8e77852f"></script>
+<script src="src/data/text/maps_a.js?v=92bacb1a8a"></script>
+<script src="src/data/text/maps_b.js?v=bbab8fb46a"></script>
+<script src="src/data/text/general.js?v=e2072d70ee"></script>
+<script src="src/data/text/dex.js?v=0c3d88773c"></script>
+<script src="src/data/text/aliases.js?v=1b88af54a3"></script>
+<script src="src/data/music.js?v=3dc19c1394"></script>
+<script src="src/data/buildingstyles.js?v=d00edf3b30"></script>
+<script src="src/data/cast.js?v=cba0510891"></script>
+<script src="src/data/pokedata.js?v=9ac6f501ec"></script>
+<script src="src/data/mons/test.js?v=f8d5ff3df3"></script>
+<script src="src/data/mons/001-030.js?v=27264be69a"></script>
+<script src="src/data/mons/031-060.js?v=3d7c585bd8"></script>
+<script src="src/data/mons/061-090.js?v=d2fd97ede4"></script>
+<script src="src/data/mons/091-120.js?v=5bce72a7f8"></script>
+<script src="src/data/mons/121-151.js?v=9cd929ee0e"></script>
+<script src="src/game/map.js?v=8a036e7f48"></script>
+<script src="src/game/maprender.js?v=88167946b1"></script>
+<script src="src/game/ui.js?v=558f52bade"></script>
+<script src="src/game/overworld.js?v=5de38bd9b9"></script>
+<script src="src/game/scripts.js?v=0b02dcf320"></script>
+<script src="src/game/pokemon.js?v=20cb3e9fbc"></script>
+<script src="src/game/battle.js?v=636439bc87"></script>
+<script src="src/game/battlescene.js?v=7beaa2d67e"></script>
+<script src="src/art/vfx.js?v=1a1bdaf333"></script>
+<script src="src/game/party.js?v=48476559ee"></script>
+<script src="src/game/bag.js?v=6527817e6d"></script>
+<script src="src/game/battleflow.js?v=a410569c97"></script>
+<script src="src/game/menus.js?v=1cbfcb9c83"></script>
+<script src="src/game/pc.js?v=46a1a184ca"></script>
+<script src="src/game/title.js?v=5ea1b9e82c"></script>
+<script src="src/data/levylogo.js?v=c0151634e0"></script>
+<script src="src/game/intro.js?v=08be9a667b"></script>
+<script src="src/game/customizer.js?v=c727509b63"></script>
+<script src="src/game/story.js?v=72ce4d1da5"></script>
+<script src="src/game/fieldmoves.js?v=e8368c712c"></script>
+<script src="src/game/townmap.js?v=3b57c764a0"></script>
+<script src="src/scripts/pallet.js?v=0d56ef120c"></script>
+<script src="src/scripts/early.js?v=f570d3c815"></script>
+<script src="src/scripts/mid.js?v=8baab6e9a6"></script>
+<script src="src/scripts/late.js?v=a63ee8b2c2"></script>
+<script src="src/scripts/extra.js?v=b2521c52a6"></script>
+<script src="src/game/share.js?v=955464f8e8"></script>
+<script src="src/game/social.js?v=0634860fa5"></script>
+<script src="src/game/lounge.js?v=c3ac50076a"></script>
+<script src="src/game/follower.js?v=8e068e0d23"></script>
+<script src="src/game/coop.js?v=57fb98ff25"></script>
+<script src="src/game/gift.js?v=051cc0dc3c"></script>
+<script src="src/game/friends.js?v=3331571b8a"></script>
+<script src="src/game/agentmenu.js?v=bddc5dbbe6"></script>
+<script src="src/game/wtp.js?v=4f05b92153"></script>
+<script src="src/game/savetransfer.js?v=97abb5d470"></script>
+<script src="src/game/glitches.js?v=4aa61b7eb1"></script>
+<script src="src/game/topbar.js?v=3bb41113b6"></script>
+<script src="src/game/touchpad.js?v=1bddd47354"></script>
+<script src="src/game/cloudsave.js?v=4a3f22fefc"></script>
+<script src="src/game/analytics.js?v=8ab0e2a289"></script>
+<script src="src/main.js?v=ab8a185f89"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"171844261f7e4aa39afc85e93bdff21a","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

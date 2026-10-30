@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <base href="https://refuge.tokyo/ai/games/monochrome/sonnet/index.html/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MONO GP — モノクローム市街地レース</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #fff; overflow: hidden; font-family: "Consolas", "Courier New", monospace; color: #000; user-select: none; }
+  canvas#view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #hud { position: fixed; inset: 0; pointer-events: none; }
+  .tag { position: absolute; background: #fff; border: 4px solid #000; padding: 4px 12px; font-weight: 900; letter-spacing: 1px; }
+  #speed { left: 20px; bottom: 20px; font-size: 44px; line-height: 1; }
+  #speed small { font-size: 16px; margin-left: 6px; }
+  #gear { left: 20px; bottom: 100px; font-size: 22px; }
+  #timing { right: 20px; top: 20px; font-size: 18px; line-height: 1.5; text-align: right; }
+  #pos { left: 20px; top: 20px; font-size: 22px; }
+  #mini { position: absolute; right: 20px; bottom: 20px; width: 232px; height: 200px; box-sizing: border-box; background: #fff; border: 4px solid #000; }
+  #wheelWrap { position: absolute; left: 50%; bottom: -12vh; width: min(52vw, 620px); transform: translateX(-50%); }
+  #wheel { width: 100%; display: block; transition: none; will-change: transform; }
+  #msg { position: absolute; left: 50%; top: 32%; transform: translate(-50%, -50%); font-size: 64px; font-weight: 900; text-align: center; -webkit-text-stroke: 3px #000; color: #fff; text-shadow: 4px 4px 0 #000; }
+  #overlay { position: fixed; inset: 0; background: #fff; display: flex; align-items: center; justify-content: center; z-index: 10; flex-direction: column; text-align: center; }
+  #overlay h1 { font-size: clamp(36px, 8vw, 96px); margin: 0; letter-spacing: 6px; -webkit-text-stroke: 4px #000; color: #fff; text-shadow: 6px 6px 0 #000; }
+  #overlay p { font-size: 16px; line-height: 1.8; margin: 12px 0; }
+  #go { margin-top: 18px; padding: 14px 44px; font: 900 24px "Consolas", monospace; background: #fff; border: 5px solid #000; cursor: pointer; }
+  #go:hover { background: #000; color: #fff; }
+  #go[disabled] { opacity: .4; cursor: wait; }
+  kbd { border: 3px solid #000; padding: 1px 8px; font-weight: 900; }
+  #back { position: absolute; right: 20px; bottom: 236px; width: 232px; box-sizing: border-box; background: #fff; border: 4px solid #000; padding: 6px 8px 8px; text-align: center; text-decoration: none; color: #000; pointer-events: auto; }
+  #back span { display: block; white-space: nowrap; font-size: 13px; font-weight: 900; letter-spacing: 1px; }
+  #back b { display: block; white-space: nowrap; font-size: 26px; line-height: 1.2; font-weight: 900; }
+  #back:hover { background: #000; color: #fff; }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="hud">
+  <div id="pos" class="tag">LAP 1/3</div>
+  <div id="timing" class="tag">TIME 0:00.00<br>LAST --<br>BEST --</div>
+  <div id="gear" class="tag">GEAR 1</div>
+  <div id="speed" class="tag"><span id="kmh">0</span><small>km/h</small></div>
+  <canvas id="mini" width="224" height="192"></canvas>
+  <div id="msg">LOADING...</div>
+  <a id="back" href="../monochrome.html"><span>Sonnet 5.5 Medium Ver.</span><b>Back to Select</b></a>
+
+  <div id="wheelWrap">
+    <svg id="wheel" viewBox="-300 -300 600 420" xmlns="http://www.w3.org/2000/svg">
+      <!-- ダッシュボード(固定) -->
+      <g stroke="#000" stroke-width="10" stroke-linejoin="round" fill="#fff">
+        <path d="M-300 120 L-300 40 Q-200 -10 -120 -20 L120 -20 Q200 -10 300 40 L300 120 Z"/>
+        <path d="M-120 -20 L-90 -80 L90 -80 L120 -20" />
+        <path d="M-70 -60 L70 -60" stroke-width="6"/>
+      </g>
+    </svg>
+    <svg id="wheelRot" viewBox="-300 -300 600 420" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:0;top:0;width:100%;">
+      <g id="wheelG" stroke="#000" stroke-width="12" stroke-linejoin="round" stroke-linecap="round" fill="#fff">
+        <!-- F1風ハンドル: 本体 -->
+        <path d="M-190 -60 Q-200 10 -160 60 Q-120 100 -70 92 L70 92 Q120 100 160 60 Q200 10 190 -60 Q170 -80 140 -66 L110 -20 Q60 -34 0 -34 Q-60 -34 -110 -20 L-140 -66 Q-170 -80 -190 -60 Z"/>
+        <!-- グリップ縞 -->
+        <path d="M-176 -20 L-140 -10 M-180 10 L-142 20 M-172 40 L-136 46 M176 -20 L140 -10 M180 10 L142 20 M172 40 L136 46" stroke-width="7"/>
+        <!-- ディスプレイ -->
+        <rect x="-62" y="-22" width="124" height="60" rx="8" stroke-width="8"/>
+        <path d="M-46 -6 H46 M-46 10 H46 M-46 26 H20" stroke-width="5"/>
+        <!-- ボタン -->
+        <circle cx="-95" cy="-2" r="12" stroke-width="6"/><circle cx="95" cy="-2" r="12" stroke-width="6"/>
+        <circle cx="-92" cy="42" r="10" stroke-width="6" fill="#000"/><circle cx="92" cy="42" r="10" stroke-width="6" fill="#000"/>
+        <!-- 12時位置マーカー -->
+        <path d="M0 -34 L0 -50" stroke-width="10"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<script src="three.min.js"></script>
+<script src="lib.js"></script>
+<script src="track.js"></script>
+<script src="city.js"></script>
+<script src="game.js"></script>
+<script src="game2.js"></script>
+</body>
+</html>

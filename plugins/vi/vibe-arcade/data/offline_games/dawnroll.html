@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+  <base href="https://dawnroll.vercel.app/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#1b1a44" />
+    <meta name="description" content="Dawnroll: um besouro rola-bosta de massinha num jardim em miniatura. Role seu solzinho, engula o jardim e enterre tudo na toca." />
+    <title>Dawnroll</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!--
+      Tela de carregamento: mora aqui (e não no JS) pra aparecer no primeiro
+      quadro, antes do download do jogo. É a madrugada do menu com o solzinho
+      rolando pelo horizonte, que é a própria barra de progresso (--p, 0..1).
+    -->
+    <style>html,body{background:#1b1a44;height:100%;margin:0}.boot{--p:.06;z-index:10;background:radial-gradient(120% 70% at 50% 118%, rgba(255, 190, 110, calc(.18 + var(--p) * .42)), #ffbe6e00 62%), radial-gradient(70% 55% at 10% 0%, #7868d259, #7868d200 70%), linear-gradient(180deg, #1b1a44 0%, #2b2a5e 58%, #4b3f86 100%);color:#fff3e2;place-items:center;font-family:ui-rounded,SF Pro Rounded,Nunito,Varela Round,Segoe UI,system-ui,sans-serif;transition:opacity .7s cubic-bezier(.22,1,.36,1),visibility 0s linear .7s;display:grid;position:fixed;inset:0;overflow:hidden}.boot.is-done{opacity:0;visibility:hidden;transition-delay:.22s,.92s}.boot.is-done .boot__center{opacity:0;transform:translateY(-12px)scale(.98)}.boot__stars{opacity:calc(1 - var(--p) * .7);background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff 50%,#0000 51%),radial-gradient(1px 1px at 27% 12%,#fff 50%,#0000 51%),radial-gradient(1.5px 1.5px at 44% 30%,#ffe9c4 50%,#0000 51%),radial-gradient(1px 1px at 63% 16%,#fff 50%,#0000 51%),radial-gradient(2px 2px at 78% 26%,#fff 50%,#0000 51%),radial-gradient(1px 1px at 88% 10%,#ffe9c4 50%,#0000 51%),radial-gradient(1.5px 1.5px at 6% 48%,#fff 50%,#0000 51%),radial-gradient(1px 1px at 93% 44%,#fff 50%,#0000 51%);transition:opacity .6s;animation:4s ease-in-out infinite alternate boot-twinkle;position:absolute;inset:0}.boot__center{text-align:center;justify-items:center;gap:28px;padding:24px;transition:opacity .24s ease-out,transform .24s ease-out;display:grid;position:relative}.boot__title{letter-spacing:-.035em;color:#fff3e2;text-shadow:0 .02em #ffe1b6,0 .045em #f0b577,0 .07em #b8733f,0 .095em #6e3f24,0 .2em .32em #0c0a248c;margin:0;font-size:clamp(56px,11vw,116px);font-weight:900;line-height:.9}.boot__horizon{background:#fff3e224;border-radius:999px;width:min(320px,72vw);height:10px;margin-top:18px;position:relative;box-shadow:inset 0 2px 3px #0c0a2459}.boot__fill{border-radius:inherit;transform:scaleX(var(--p));transform-origin:0;background:linear-gradient(90deg,#ffd27a,#ffb547 60%,#f39a2e);transition:transform .6s cubic-bezier(.22,1,.36,1);position:absolute;inset:0}.boot__sun{width:30px;height:30px;transform:translateX(calc(var(--p) * min(320px, 72vw)));margin-left:-15px;transition:transform .6s cubic-bezier(.22,1,.36,1);position:absolute;bottom:1px;left:0}.boot__ball{background:radial-gradient(circle at 30% 28%,#fff4d0 0 12%,#0000 13%),radial-gradient(circle at 64% 70%,#a85a1a8c 0 14%,#0000 15%),radial-gradient(circle at 36% 32%,#ffe7a3 0%,#ffb547 45%,#b8611d 100%);border-radius:50%;width:100%;height:100%;animation:1.6s linear infinite boot-roll;box-shadow:0 0 16px 3px #ffb54759,0 3px #b8611d}.boot__text{color:#ffd9a8;min-height:1.4em;margin:0;font-size:16px;font-weight:700}@keyframes boot-roll{to{transform:rotate(360deg)}}@keyframes boot-twinkle{to{filter:brightness(1.5)}}@media (prefers-reduced-motion:reduce){.boot__ball,.boot__stars{animation:none}}</style>
+    <script type="module" crossorigin src="/assets/index-DpNKFSxk.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-vwNVCuP_.css">
+  </head>
+  <body>
+    <canvas id="scene" aria-label="Dawnroll"></canvas>
+    <div id="ui"></div>
+    <div id="boot" class="boot" role="status" aria-live="polite">
+      <div class="boot__stars" aria-hidden="true"></div>
+      <div class="boot__center">
+        <h1 class="boot__title">Dawnroll</h1>
+        <div class="boot__horizon" aria-hidden="true">
+          <div class="boot__fill"></div>
+          <div class="boot__sun"><div class="boot__ball"></div></div>
+        </div>
+        <p class="boot__text" data-boot-text></p>
+      </div>
+    </div>
+    <script>
+      // Texto antes do jogo chegar (o dicionário do jogo ainda não carregou).
+      (function () {
+        var lang = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+        var el = document.querySelector('[data-boot-text]');
+        if (el) el.textContent = /^pt/i.test(lang) ? 'Amassando a massinha…' : 'Kneading the clay…';
+      })();
+    </script>
+    <noscript>Dawnroll needs JavaScript and WebGL. / O Dawnroll precisa de JavaScript e WebGL.</noscript>
+  </body>
+</html>

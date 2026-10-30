@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://Shiva78388789.github.io/Akhbar-Rush/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Akhbaar Rush</title>
+<meta name="description" content="Ride your cycle through India's galis, dodge cows, autos and potholes, and deliver every newspaper. A 16-bit game by Shiva Games.">
+<meta name="theme-color" content="#0b0f1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Akhbaar Rush">
+<meta property="og:title" content="Akhbaar Rush">
+<meta property="og:description" content="Deliver papers through Delhi, Mumbai and more. Beat my score!">
+<meta property="og:image" content="icons/og-image.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600&family=Hind:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app" id="app">
+<div id="stage">
+<canvas id="cv" width="380" height="176" aria-label="Game view"></canvas>
+
+<div id="splash" class="screen" hidden>
+<div class="studio" role="img" aria-label="Shiva Games"></div>
+<div class="late px" style="font-size:12px;letter-spacing:6px;color:var(--gold)">PRESENTS</div>
+</div>
+
+<div id="loading" class="screen" hidden>
+<div class="logo bob" style="margin-top:34px"></div>
+<div class="bar" style="margin-top:56px"><i id="loadbar"></i></div>
+<div class="px" style="margin-top:14px;font-size:11px;color:var(--gold)" data-t="printing">PRINTING TODAY'S EDITION…</div>
+<div class="muted" style="margin-top:10px;font-size:16px" data-t="tip">Tip: swipe up or down to change lanes, tap to jump.</div>
+</div>
+
+<div id="title" class="screen" hidden>
+<button id="titleTap" aria-label="Tap to start" style="position:absolute;inset:0;background:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;padding:0">
+<div class="logo bob" style="margin-top:12px"></div>
+<div style="margin-top:14px;padding:12px 22px;background:rgba(20,16,30,.75);border:3px solid var(--ink)"><div class="blink px" style="font-size:16px;letter-spacing:2px;color:var(--gold)" data-t="tapToStart">TAP TO START</div></div>
+</button>
+<div id="titleBest" style="position:absolute;left:14px;top:14px;display:flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;background:rgba(36,22,16,.8);border:3px solid var(--ink)"><span class="ico i-trophy"></span><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px" class="muted" data-t="bestRun">BEST SCORE</span><span class="px" id="bestVal" style="font-size:12px;color:var(--gold)">0</span></div></div>
+<button class="pbtn sq" style="position:absolute;right:14px;top:14px" aria-label="Settings" data-go="settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#241610" stroke-width="2.6" stroke-linecap="square"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+<div style="position:absolute;left:14px;bottom:12px;display:flex;gap:8px"><button id="btnInstall" class="pbtn cream" style="height:38px;font-size:9px" hidden>INSTALL APP</button><button id="btnShare" class="pbtn cream" style="height:38px;font-size:9px">INVITE FRIENDS</button></div>
+<div style="position:absolute;right:16px;bottom:10px;font-size:13px;text-shadow:0 2px 0 var(--ink)">v1.0.5 · Shiva Games</div>
+</div>
+
+<div id="name" class="screen" hidden>
+<div class="dim"></div>
+<form id="nameForm" class="panel" style="left:22px;top:26px;width:800px;height:346px;padding:0 20px 16px;display:flex;flex-direction:column" novalidate>
+<div class="ribbon" style="background:var(--blue)" data-t="whoRides">WHO'S DELIVERING TODAY?</div>
+<div style="margin-top:28px;display:flex;gap:22px;flex-grow:1">
+<div style="width:214px;display:flex;flex-direction:column;align-items:center;gap:10px">
+<span id="nmAv" class="av" role="img" aria-label="Your rider" style="width:96px;height:96px;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink)"></span>
+<span style="font-size:14px;color:#5a4a3a" data-t="pickCap">Pick your cap</span>
+<div id="nmCaps" class="grid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%"></div>
+</div>
+<div style="flex-grow:1;display:flex;flex-direction:column;gap:8px;min-width:0">
+<label for="pname" style="font-size:15px;font-weight:600" data-t="playerName">Player name</label>
+<div style="display:flex;gap:8px"><input id="pname" class="name" type="text" maxlength="12" autocomplete="off" placeholder="GALIRIDER"><button type="button" id="nmDice" class="pbtn sq" style="width:46px;height:46px;box-shadow:0 3px 0 var(--ink)" aria-label="Suggest a random name"><svg width="22" height="22" viewBox="0 0 22 22" shape-rendering="crispEdges"><path d="M2 2h18v18H2z" fill="#fff" stroke="#241610" stroke-width="2"/><path d="M5 5h3v3H5zM14 5h3v3h-3zM9.5 9.5h3v3h-3zM5 14h3v3H5zM14 14h3v3h-3z" fill="#241610"/></svg></button></div>
+<span id="nmHelp" style="font-size:13px;color:#5a4a3a" data-t="nameHelp">3–12 letters or numbers. Use a nickname, not your real full name.</span>
+<span style="margin-top:2px;font-size:15px;font-weight:600"><span data-t="homeCity">Home city</span> <span style="font-weight:400;font-size:13px;color:#5a4a3a" data-t="forRanks">– for your city leaderboard</span></span>
+<div id="nmCities" class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:6px"></div>
+</div>
+</div>
+<div style="display:flex;justify-content:flex-end;align-items:center;gap:16px">
+<span style="font-size:13px;color:#5a4a3a" data-t="changeLater">You can change this later from the menu.</span>
+<button type="submit" class="pbtn green" style="width:220px;height:50px;font-size:13px" data-t="letsRide">LET'S RIDE!</button>
+</div>
+</form>
+</div>
+
+<div id="howto" class="screen" hidden style="background:var(--navy)">
+<div style="position:absolute;left:0;top:14px;width:844px;text-align:center" class="px"><span style="font-size:16px;color:var(--gold);text-shadow:0 3px 0 #7a1f16" data-t="howRide">HOW TO RIDE</span></div>
+<div class="grid" style="position:absolute;left:32px;top:50px;width:780px;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px" id="howCards"></div>
+<div style="position:absolute;left:0;bottom:14px;width:844px;display:flex;justify-content:center;align-items:center;gap:22px">
+<button id="howGo" class="pbtn green pulse" style="width:220px;height:50px;font-size:14px" data-t="gotIt">GOT IT!</button>
+</div>
+</div>
+
+<div id="daily" class="screen" hidden>
+<div class="dim"></div>
+<div class="panel" style="left:112px;top:26px;width:620px;height:338px;display:flex;flex-direction:column;align-items:center;padding:0 20px 18px">
+<div class="ribbon" style="background:var(--red);text-shadow:0 3px 0 #7a1f16" data-t="dailyBonus">DAILY BONUS</div>
+<div style="margin-top:30px;display:flex;align-items:center;gap:8px;font-size:17px"><span class="ico i-flame"></span><span id="dStreak"></span></div>
+<div id="dTiles" class="grid" style="margin-top:14px;width:100%;grid-template-columns:repeat(7,minmax(0,1fr))"></div>
+<button id="dClaim" class="pbtn green pulse" style="margin-top:auto;width:250px;height:56px;font-size:14px"><span class="ico i-coin"></span><span id="dClaimTxt">CLAIM</span></button>
+</div>
+</div>
+
+<div id="menu" class="screen" hidden>
+<div style="position:absolute;left:0;top:0;width:844px;height:64px;background:rgba(18,22,40,.72)"></div>
+<div style="position:absolute;left:456px;top:64px;width:388px;height:326px;background:rgba(18,22,40,.62)"></div>
+<div style="position:absolute;left:12px;top:10px;display:flex;align-items:center;gap:10px">
+<div class="logo" style="width:110px;height:43px"></div>
+<div style="display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;align-items:center;gap:8px"><span class="px" id="mLv" style="font-size:10px;padding:3px 5px;background:var(--blue);border:2px solid var(--ink)">LV 1</span><button id="mName" style="display:flex;align-items:center;gap:5px;font-size:15px;font-weight:600;background:none;border:0;cursor:pointer;padding:0;color:var(--cream)" aria-label="Edit player name"><span id="mNameTxt">PLAYER</span><svg width="12" height="12" viewBox="0 0 12 12" shape-rendering="crispEdges"><path d="M8 1h2v1h1v2h-1v1H9v1H8v1H7v1H6v1H5v1H4v1H1V8h1V7h1V6h1V5h1V4h1V3h1V2h1z" fill="#ffd35a"/></svg></button></div>
+<div style="width:140px;height:10px;box-sizing:border-box;border:2px solid var(--ink);background:#0f1428"><div id="mXp" style="height:6px;background:#8ad07a;width:0"></div></div>
+</div></div>
+<div style="position:absolute;right:12px;top:10px;display:flex;align-items:center;gap:10px">
+<div class="chip"><span class="ico i-coin"></span><span class="mCoins">0</span></div>
+<div class="chip" style="color:#ffb44f"><span class="ico i-flame"></span><span id="mStreak">0</span></div>
+<button class="pbtn sq" aria-label="Settings" data-go="settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#241610" stroke-width="2.6" stroke-linecap="square"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+</div>
+<div style="position:absolute;left:476px;top:80px;width:348px;display:flex;flex-direction:column;gap:14px">
+<button id="mRoute" style="box-sizing:border-box;padding:10px 12px;background:var(--cream);color:var(--ink);border:3px solid var(--ink);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left">
+<div id="mThumb" class="pix" style="width:56px;height:48px;flex-shrink:0;border:2px solid var(--ink);background-size:960px 160px;background-position:-122px -6px"></div>
+<div style="display:flex;flex-direction:column;gap:4px;flex-grow:1;min-width:0"><span class="px" id="mRouteA" style="font-size:10px"></span><span id="mRouteB" style="font-size:17px;font-weight:600"></span><span id="mRouteC" style="font-size:14px;color:#5a4a3a"></span></div>
+</button>
+<button id="mStart" class="pbtn pulse" style="height:72px;font-size:16px;box-shadow:0 6px 0 var(--ink),inset 0 -6px 0 #e0a020"><span class="ico i-paper"></span><span data-t="startDelivery">START DELIVERY</span></button>
+<div class="grid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+<button class="pbtn cream" data-go="garage" style="height:68px;flex-direction:column;gap:5px;font-family:var(--body);font-size:14px;font-weight:600;padding:0"><span class="ico i-cycle"></span><span data-t="garage">Garage</span></button>
+<button class="pbtn cream" data-go="missions" style="height:68px;flex-direction:column;gap:5px;font-family:var(--body);font-size:14px;font-weight:600;padding:0"><span class="ico i-star"></span><span data-t="missions">Missions</span></button>
+<button class="pbtn cream" data-go="ranks" style="height:68px;flex-direction:column;gap:5px;font-family:var(--body);font-size:14px;font-weight:600;padding:0"><span class="ico i-trophy"></span><span data-t="ranks">Ranks</span></button>
+<button class="pbtn cream" data-go="daily" style="height:68px;flex-direction:column;gap:5px;font-family:var(--body);font-size:14px;font-weight:600;padding:0"><span class="ico i-gift"></span><span data-t="bonus">Bonus</span></button>
+</div>
+<button data-go="howto" style="align-self:center;font-size:15px;color:var(--gold);text-decoration:underline;background:none;border:0;cursor:pointer" data-t="howToPlay">How to play</button>
+</div>
+</div>
+
+<div id="missions" class="screen" hidden style="background:var(--navy)">
+<div class="topbar"><button class="pbtn sq cream" data-go="menu" aria-label="Back" style="width:40px;height:40px;box-shadow:0 3px 0 var(--ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#241610" stroke-width="4" stroke-linecap="square"><path d="M15 4l-8 8 8 8"/></svg></button><span class="title-h" style="flex-grow:1" data-t="missionsH">MISSIONS</span><div class="chip"><span class="ico i-star"></span><span id="msStars">0</span></div><div class="chip"><span class="ico i-coin"></span><span class="mCoins">0</span></div></div>
+<div id="msCities" style="position:absolute;left:12px;top:64px;width:160px;display:flex;flex-direction:column;gap:6px"></div>
+<div style="position:absolute;left:184px;top:64px;width:648px;height:172px;box-sizing:border-box;border:3px solid var(--ink);overflow:hidden">
+<div id="msStrip" class="stripv" style="position:absolute;inset:0;background-size:1920px 320px;background-position-y:-14px"></div>
+<div style="position:absolute;left:8px;bottom:8px;display:flex;flex-direction:column;gap:4px;padding:7px 10px;background:rgba(15,20,40,.86);border:2px solid var(--ink);max-width:460px"><span class="px" id="msRoute" style="font-size:10px;color:var(--gold)"></span><span id="msMarks" style="font-size:14px"></span></div>
+<div id="msLock" hidden style="position:absolute;inset:0;background:rgba(11,15,30,.74);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px"><svg width="34" height="38" viewBox="0 0 34 38" fill="none" stroke="#ffd35a" stroke-width="4"><rect x="4" y="16" width="26" height="19"/><path d="M10 16V10a7 7 0 0 1 14 0v6"/></svg><span class="px" id="msLockTxt" style="font-size:11px;color:var(--gold)"></span></div>
+</div>
+<div id="msLevels" class="grid" style="position:absolute;left:184px;top:246px;width:648px;grid-template-columns:repeat(10,minmax(0,1fr))"></div>
+<div style="position:absolute;left:184px;top:316px;width:470px;height:64px;box-sizing:border-box;background:var(--cream);color:var(--ink);border:3px solid var(--ink);padding:8px 12px;display:flex;flex-direction:column;justify-content:center;gap:5px">
+<div style="display:flex;align-items:center;gap:8px"><span class="px" id="msLvNo" style="font-size:10px"></span><span id="msTag" class="px" style="font-size:8px;padding:3px 5px;color:#fff;border:2px solid var(--ink)" hidden></span></div>
+<span id="msObj" style="font-size:15px;font-weight:600"></span>
+</div>
+<button id="msRide" class="pbtn pulse" style="position:absolute;left:666px;top:316px;width:166px;height:60px;font-size:14px" data-t="ride">RIDE!</button>
+</div>
+
+<div id="garage" class="screen" hidden style="background:var(--navy)">
+<div class="topbar"><button class="pbtn sq cream" data-go="menu" aria-label="Back" style="width:40px;height:40px;box-shadow:0 3px 0 var(--ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#241610" stroke-width="4" stroke-linecap="square"><path d="M15 4l-8 8 8 8"/></svg></button><span class="title-h" style="flex-grow:1" data-t="garageH">GARAGE</span><div class="chip"><span class="ico i-coin"></span><span class="mCoins">0</span></div></div>
+<div style="position:absolute;left:12px;top:64px;width:388px;height:316px;box-sizing:border-box;border:3px solid var(--ink);background:#2a3358;overflow:hidden">
+<div style="position:absolute;left:64px;top:20px;width:260px;height:200px;border-radius:50%;background:rgba(255,211,90,.12)"></div>
+<div style="position:absolute;left:0;top:196px;width:382px;height:14px;background:#3a4470;border-top:3px solid var(--ink)"></div>
+<div id="gBig" class="bikebig" style="position:absolute;left:96px;top:20px"></div>
+<div style="position:absolute;left:12px;top:10px;display:flex;flex-direction:column;gap:4px"><span class="px" id="gName" style="font-size:11px;color:var(--gold)"></span><span id="gTag" class="muted" style="font-size:14px;max-width:200px"></span></div>
+<div id="gStats" class="grid" style="position:absolute;left:12px;top:220px;width:358px;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px"></div>
+</div>
+<div style="position:absolute;left:414px;top:64px;display:flex;gap:8px" class="seg" id="gTabs"><button data-tab="cycles" class="sel" data-t="cycles">CYCLES</button><button data-tab="caps" data-t="caps">CAPS</button></div>
+<div id="gGrid" class="grid" style="position:absolute;left:414px;top:108px;width:418px"></div>
+<button id="gAct" class="pbtn" style="position:absolute;left:414px;top:330px;width:418px;height:50px;font-size:12px"></button>
+</div>
+
+<div id="ranks" class="screen" hidden style="background:var(--navy)">
+<div class="topbar"><button class="pbtn sq cream" data-go="menu" aria-label="Back" style="width:40px;height:40px;box-shadow:0 3px 0 var(--ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#241610" stroke-width="4" stroke-linecap="square"><path d="M15 4l-8 8 8 8"/></svg></button><span class="title-h" style="margin-right:12px" data-t="ranksH">RANKS</span><div class="seg" id="rTabs"><button data-rt="city" class="sel" id="rTabCity">CITY</button><button data-rt="india">INDIA</button></div><span class="muted" id="rReset" style="margin-left:auto;font-size:14px"></span></div>
+<div style="position:absolute;left:12px;top:64px;width:372px;height:316px;box-sizing:border-box;border:3px solid var(--ink);background:#2a3358;overflow:hidden">
+<div style="position:absolute;left:0;top:10px;width:366px;text-align:center;font-size:14px" class="muted" data-t="papersWeek">Papers delivered this week</div>
+<div id="rPodium" style="position:absolute;left:14px;bottom:0;width:338px;display:flex;align-items:flex-end;gap:8px"></div>
+</div>
+<div style="position:absolute;left:398px;top:64px;width:434px;display:flex;flex-direction:column;gap:6px">
+<div id="rList" style="display:flex;flex-direction:column;gap:6px"></div>
+<div id="rMe" class="lbrow" style="height:46px;background:var(--gold);box-shadow:0 4px 0 #0b0f1e"></div>
+<div id="rNote" class="muted" style="font-size:14px"></div>
+<button id="rShare" class="pbtn cream" style="height:40px;font-size:10px;align-self:flex-start">INVITE FRIENDS</button>
+</div>
+</div>
+
+<div id="settings" class="screen" hidden>
+<div class="dim"></div>
+<div class="panel" style="left:172px;top:18px;width:500px;height:354px;display:flex;flex-direction:column;padding:0 22px 16px">
+<div style="display:flex;align-items:center;justify-content:space-between;height:52px;margin:0 -22px 6px;padding:0 12px 0 22px;background:var(--blue);border-bottom:4px solid var(--ink)"><span class="px" style="font-size:15px;color:#fff;text-shadow:0 3px 0 #1a2b55" data-t="settingsH">SETTINGS</span><button class="pbtn sq red" id="sClose" aria-label="Close settings" style="width:38px;height:38px;box-shadow:0 3px 0 var(--ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="square"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
+<div class="row"><span data-t="music">Music</span><button class="tog" data-set="music" aria-label="Music"><i></i></button></div>
+<div class="row"><span data-t="sfx">Sound effects</span><button class="tog" data-set="sfx" aria-label="Sound effects"><i></i></button></div>
+<div class="row"><span data-t="vibration">Vibration</span><button class="tog" data-set="vib" aria-label="Vibration"><i></i></button></div>
+<div class="row"><span data-t="language">Language</span><div class="seg" id="sLang"><button data-v="en">EN</button><button data-v="hi" style="font-family:'Hind',sans-serif;font-size:16px;font-weight:700">हिंदी</button></div></div>
+<div class="row" style="border:0"><span data-t="controls">Controls</span><div class="seg" id="sCtl"><button data-v="swipe" data-t="swipe">SWIPE</button><button data-v="buttons" data-t="buttons">BUTTONS</button></div></div>
+<div style="margin-top:auto;display:flex;gap:10px"><button class="pbtn" style="flex:1;height:44px;font-size:10px" id="sName" data-t="changeName">CHANGE NAME</button><button class="pbtn" style="flex:1;height:44px;font-size:10px" data-go="howto" data-t="howToPlayU">HOW TO PLAY</button><button class="pbtn green" style="flex:1;height:44px;font-size:10px" id="sDone" data-t="done">DONE</button></div>
+</div>
+</div>
+
+<div id="hud" class="screen" hidden>
+<div class="score"><span class="px" style="font-size:8px" class="muted" data-t="scoreU">SCORE</span><span class="px" id="hScore" style="font-size:16px;color:var(--gold);text-shadow:0 2px 0 #7a1f16">0</span><div id="hHearts" style="display:flex;gap:4px"></div></div>
+<div class="combo pulse" id="hCombo" hidden>x2 COMBO</div>
+<div class="prog"><div style="display:flex;align-items:center;gap:8px;width:100%"><span class="av" id="hAv" style="width:18px;height:18px"></span><div class="track"><i id="hProg"></i></div><svg width="16" height="20" viewBox="0 0 8 10" shape-rendering="crispEdges" aria-label="Finish"><path d="M0 0h1v10H0z" fill="#241610"/><path d="M1 0h7v5H1z" fill="#fff"/><path d="M1 0h2v1H1zM5 0h2v1H5zM3 1h2v1H3zM7 1h1v1H7zM1 2h2v1H1zM5 2h2v1H5zM3 3h2v1H3zM7 3h1v1H7zM1 4h2v1H1zM5 4h2v1H5z" fill="#241610"/></svg></div>
+<span class="pill" id="hDeliv"></span><span class="lowwarn" id="hLow" hidden data-t="lowPapers">LOW ON PAPERS!</span></div>
+<div style="position:absolute;right:10px;top:10px;display:flex;align-items:flex-start;gap:8px">
+<div class="papers" id="hPapersBox"><span class="ico i-paper"></span><div style="display:flex;flex-direction:column;gap:2px"><span class="px" id="hPapers" style="font-size:14px">0</span><span class="px" style="font-size:7px" data-t="papersLeft">PAPERS LEFT</span></div></div>
+<div class="chip" style="height:44px"><span class="ico i-coin"></span><span id="hCoins">0</span></div>
+<button class="pbtn sq" id="hPause" aria-label="Pause"><svg width="16" height="18" viewBox="0 0 16 18" shape-rendering="crispEdges"><path d="M1 1h5v16H1zM10 1h5v16h-5z" fill="#241610"/></svg></button>
+</div>
+<div id="hBtns" hidden>
+<button class="ctl" id="bUp" aria-label="Move up a lane" style="left:14px;top:190px;width:64px;height:56px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#241610" stroke-width="5" stroke-linecap="square"><path d="M12 21V5M4 12l8-8 8 8"/></svg></button>
+<button class="ctl" id="bDown" aria-label="Move down a lane" style="left:14px;top:262px;width:64px;height:56px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#241610" stroke-width="5" stroke-linecap="square"><path d="M12 3v16M4 12l8 8 8-8"/></svg></button>
+<button class="ctl px" id="bJump" aria-label="Jump" style="right:24px;bottom:24px;width:92px;height:92px;border-radius:50%;background:rgba(255,211,90,.9);font-size:12px">JUMP</button>
+</div>
+<div id="fx" class="layer" style="pointer-events:none"></div>
+</div>
+
+<div id="countdown" class="screen" hidden>
+<div class="dim" style="background:rgba(18,22,40,.3)"></div>
+<div style="position:absolute;left:0;top:78px;width:844px;text-align:center" class="px outline"><span style="font-size:20px;color:#fff;letter-spacing:2px" data-t="getReady">GET READY!</span></div>
+<div id="cdNum" style="position:absolute;left:0;top:112px;width:844px;text-align:center"></div>
+<div id="cdGoal" class="pill" style="position:absolute;left:50%;top:238px;transform:translateX(-50%)"></div>
+<div id="cdHints" style="position:absolute;left:0;top:276px;width:844px;display:flex;justify-content:center;gap:10px;font-size:15px"></div>
+</div>
+
+<div id="pause" class="screen" hidden>
+<div class="dim"></div>
+<div class="panel" style="left:142px;top:18px;width:560px;height:354px;display:flex;flex-direction:column;padding:0 20px 16px">
+<div style="display:flex;align-items:center;justify-content:center;height:52px;margin:0 -20px 12px;background:var(--blue);border-bottom:4px solid var(--ink)"><span class="px" style="font-size:17px;color:#fff;letter-spacing:2px;text-shadow:0 3px 0 #1a2b55" data-t="paused">PAUSED</span></div>
+<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+<div id="pStats" style="display:flex;flex-direction:column;gap:7px"></div>
+<div id="pGoals" style="display:flex;flex-direction:column;gap:7px"></div>
+</div>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+<button class="pbtn green" id="pResume" style="height:52px;font-size:15px" data-t="resume">RESUME</button>
+<div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px"><button class="pbtn" id="pRestart" style="height:44px;font-size:10px" data-t="restart">RESTART</button><button class="pbtn cream" id="pSettings" style="height:44px;font-size:10px" data-t="settingsU">SETTINGS</button><button class="pbtn red" id="pQuit" style="height:44px;font-size:10px" data-t="quit">QUIT</button></div>
+</div>
+</div>
+</div>
+
+<div id="end" class="screen" hidden>
+<div class="dim"></div>
+<div class="panel" style="left:162px;top:26px;width:520px;height:338px;display:flex;flex-direction:column;align-items:center;padding:0 20px 16px">
+<div class="ribbon" id="eRibbon"></div>
+<div id="eStars" style="margin-top:32px;display:flex;gap:14px;height:48px;align-items:center"></div>
+<div id="eSub" style="margin-top:6px;font-size:16px;text-align:center"></div>
+<div id="eStats" class="grid" style="margin-top:12px;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 20px"></div>
+<div style="margin-top:auto;display:flex;gap:10px;width:100%">
+<button class="pbtn cream" id="eMenu" style="flex:1;height:48px;font-size:10px" data-t="menuU">MENU</button>
+<button class="pbtn" id="eAlt" style="flex:1;height:48px;font-size:10px"></button>
+<button class="pbtn green pulse" id="eMain" style="flex:1.3;height:48px;font-size:11px"></button>
+</div>
+</div>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+</div>
+</div>
+<div id="rotate"><svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M5 1h6v14H5z" fill="none" stroke="#ffd35a" stroke-width="1.5"/><path d="M7 13h2v1H7z" fill="#ffd35a"/></svg><div>TURN YOUR PHONE SIDEWAYS<br>TO RIDE</div></div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

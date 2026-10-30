@@ -6,7 +6,7 @@
   "description": "Multi-agent autonomous trading desk featuring dialectic bull-bear debates, 4 specialized analysts, 3 risk managers, portfolio gating, and zero-key sentiment streams.",
   "category": "Trading, Web3 & DeFi",
   "icon": "📈",
-  "hash": "17a860f46f5db59c",
+  "hash": "4a4a5f5c4ab9f2ca",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"

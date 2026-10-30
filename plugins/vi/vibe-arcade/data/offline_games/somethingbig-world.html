@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://somethingbig.ai/world/">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0e14" />
+    <meta name="color-scheme" content="dark" />
+    <title>New York</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230b0e14%27/%3E%3Crect x=%277%27 y=%2712%27 width=%275%27 height=%2714%27 fill=%27%23e8ecf1%27/%3E%3Crect x=%2714%27 y=%276%27 width=%275%27 height=%2720%27 fill=%27%23e8ecf1%27/%3E%3Crect x=%2721%27 y=%2715%27 width=%275%27 height=%2711%27 fill=%27%23e8ecf1%27/%3E%3C/svg%3E" />
+    <style>
+      html, body { margin: 0; background: #0b0e14; }
+      html.era-arriving, html.era-arriving body { background: #0b0906; }
+      html.era-arriving #loading { visibility: hidden; }
+    </style>
+    <script>
+      // Time-portal arrival (client/src/core/eraTravel.ts): keep the intertitle's black from the first paint.
+      try { var t = JSON.parse(sessionStorage.getItem('nycw.eraTravel') || 'null'); if (t && Date.now() - t.at < 90000) document.documentElement.classList.add('era-arriving'); } catch (e) {}
+    </script>
+    <script type="module" crossorigin src="/world/assets/index-SERd1wXq.js"></script>
+    <link rel="modulepreload" crossorigin href="/world/assets/determinism-D5G1544K.js">
+    <link rel="modulepreload" crossorigin href="/world/assets/quality-Nv4uDjEv.js">
+    <link rel="stylesheet" crossorigin href="/world/assets/index-DgLuVt7g.css">
+  </head>
+  <body>
+    <div id="ui"></div>
+    <div id="loading">
+      <div class="title">Loading New York…</div>
+      <div class="bar"><i id="loading-bar"></i></div>
+      <div class="sub" id="loading-sub">starting</div>
+    </div>
+    <div id="fatal"></div>
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"27a88be6cff149179415c1de9282b123","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://www.paperroute.lol/play/">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8ead8" />
+  <meta name="description" content="A quiet American morning. A bicycle, a bag of newspapers, and a little mischief. Play PaperRoute in your browser." />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta property="og:title" content="PaperRoute · The morning edition" />
+  <meta property="og:description" content="A quiet American morning. A bicycle, a bag of newspapers, and a little mischief. Play PaperRoute in your browser." />
+  <meta property="og:image" content="https://www.paperroute.lol/art/og.png" />
+  <meta property="og:url" content="https://www.paperroute.lol/play/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.paperroute.lol/art/og.png" />
+  <title>PaperRoute · The morning edition</title>
+  <link rel="preload" as="image" href="/art/brand/paperroute.svg" fetchpriority="high" />
+  <script type="module" crossorigin src="/assets/game-KJUQRvth.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
+  <link rel="modulepreload" crossorigin href="/assets/title-bootstrap-D2drVO23.js">
+  <link rel="stylesheet" crossorigin href="/assets/game-0xTyVm-o.css">
+</head>
+<body data-title="loading">
+  <canvas id="world" aria-label="PaperRoute neighbourhood, an interactive 3D bicycle delivery game"></canvas>
+  <section id="title-intro" aria-label="PaperRoute loading">
+    <img class="title-placeholder" src="/art/brand/paperroute.svg" width="916" height="590" alt="PaperRoute" fetchpriority="high" />
+    <canvas aria-hidden="true"></canvas>
+    <p role="status" aria-live="polite">Getting the morning route ready.</p>
+  </section>
+  <div class="paper-grain" aria-hidden="true"></div>
+  <div id="route-loading" class="route-loading" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <div class="route-loading-paper"><span class="route-loading-spinner" aria-hidden="true"></span><h2 id="route-loading-title"></h2><p>The next ride will start shortly.</p></div>
+  </div>
+  <div class="game-settings" role="group" aria-label="Game settings">
+    <button id="sound" class="quiet" aria-pressed="false" title="Toggle sound">Sound off</button>
+    <button id="pause" class="quiet" title="Pause game (Esc)" hidden>Pause</button>
+  </div>
+  <section id="day-intro" class="day-intro" aria-label="Today’s paper route" role="status" aria-live="polite" hidden>
+    <h2></h2><p></p>
+    <button id="skip-day-intro">Ride on <span aria-hidden="true">→</span></button>
+  </section>
+  <main>
+    <section id="player-entry" aria-labelledby="entry-title">
+      <div class="entry-paper">
+        <span class="eyebrow">Cedar Hollow · Carrier entry</span>
+        <h2 id="entry-title">Put your name on the route.</h2>
+        <p>Ride the week and see where you finish on the league table. No email required. Add your X username or leave it blank for a guest name.</p>
+        <form id="entry-form">
+          <label>X username (optional)<input name="handle" type="text" maxlength="16" pattern="@?[A-Za-z0-9_]{1,15}" autocomplete="nickname" autocapitalize="none" spellcheck="false" placeholder="@yourhandle" /></label>
+          <label class="entry-trap" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off" /></label>
+          <p class="entry-note">Your handle, run scores, riding times, grades and days reached are public. We do not collect your email or subscribe you to a mailing list. <a href="/leaderboard/#entry-privacy">About your entry</a></p>
+          <button id="entry-submit" type="submit">Join the route</button>
+          <p id="entry-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+    <section id="intro" class="newspaper-pages intro" hidden aria-labelledby="intro-title">
+      <div id="intro-sheet" class="paper-sheet" data-paper="brief"><p class="brief-name"><label for="player-name">Username</label><input id="player-name" type="text" maxlength="16" autocomplete="nickname" enterkeyhint="go" placeholder="@yourhandle" readonly /></p><ol id="best-runs" class="brief-bests" aria-label="Your best runs" hidden></ol>
+        <footer class="paper-footer">
+          <button id="start" disabled class="paper-action" aria-describedby="intro-page-status"><span class="paper-action-label">Start your route</span><svg class="paper-action-arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 16h24M17 5l11 11-11 11" /></svg></button>
+          <div class="paper-footer-line"><span>Good people. Great neighbourhoods.</span><span id="intro-page-status" class="paper-page-status" aria-live="polite">Page 1 of 3</span></div>
+        </footer>
+      </div>
+    </section>
+    <section id="hud" class="hud" aria-label="Route status" hidden>
+      <div class="score-block"><span class="score-caption"><span id="route-day">MONDAY</span><span id="streak"></span></span><strong id="score" aria-label="Points">00000</strong><span class="score-unit">POINTS</span><span id="speed-readout" class="speed-readout">27 km/h</span><span id="run-timer" class="run-timer">0:00 today · 0:00 week</span><span id="run-best" class="run-best"></span></div>
+      <div class="ride-status"><span id="lives" aria-label="3 lives remaining">● ● ●</span></div>
+      <div class="inventory"><span class="delivery-stock"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M5 9v12h14V9M10 21v-7h4v7" /></svg><span id="deliveries">0 / 10 delivered</span></span><div class="paper-stock"><img src="/art/hud/newspaper-roll.png" class="paper-roll" loading="lazy" width="901" height="618" alt="" decoding="async" /><strong id="papers-count">10 papers</strong></div></div>
+      <div class="route-insert" aria-label="Route progress"><span class="eyebrow">EASY STREET · ROUTE 01</span><div id="route-dots" class="route-dots" aria-label="Subscriber delivery map"></div><div class="route-progress"><div id="progress"></div></div><span class="route-legend">○ WAITING &nbsp; ● DELIVERED</span></div>
+    </section>
+    <aside id="route-radar" class="route-radar" aria-label="Upcoming delivery map" hidden>
+      <div class="radar-heading"><span>MAILBOXES</span><span>↑ AHEAD</span></div>
+      <canvas aria-label="Red envelopes mark waiting mailboxes. The green arrow is your rider." role="img"></canvas>
+      <div class="radar-next">Finding the next stop</div>
+    </aside>
+    <section id="pause-panel" class="newspaper-pages pause-paper" aria-labelledby="pause-title" hidden>
+      <div class="paper-sheet">
+        <div class="paper-content">
+          <header class="paper-header">
+            <div class="paper-edition"><span>Route paused</span><span id="pause-day">Monday</span><span id="pause-name"></span></div>
+            <img class="pause-masthead" loading="lazy" src="/art/newspapers/masthead.png" width="939" height="141" alt="The Daily Post" />
+            <p class="paper-motto">The papers can wait</p>
+          </header>
+          <h2 id="pause-title">Take a breather.</h2>
+          <p class="pause-deck">Your route will be here.</p>
+          <dl class="paper-stats pause-stats"><div><dt>Points</dt><dd id="pause-score">0</dd></div><div><dt>Riding time</dt><dd id="pause-time">0:00</dd></div></dl>
+          <div class="pause-guide"><p class="mobile-guide">Drag to steer · Up to pedal · Down to brake<br />Tap to deliver · Hold a second finger to smash</p><p class="desktop-guide">Arrows to ride · Space to deliver · X to smash</p></div>
+          <div class="run-record-details"><p id="run-local-record"></p><p id="run-storage-status"></p></div>
+        </div>
+        <footer class="paper-footer">
+          <button id="resume" class="paper-action"><span>Back on the bike</span><svg class="paper-action-arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 16h24M17 5l11 11-11 11" /></svg></button>
+          <div class="pause-secondary"><button id="retry-route" class="paper-replay">Replay this week’s route</button><button id="restart-paused" class="paper-replay">Start a fresh week</button></div>
+        </footer>
+      </div>
+    </section>
+    <section id="results" class="newspaper-pages results" aria-labelledby="headline" hidden>
+      <div id="result-sheet" class="paper-sheet" data-paper="good">
+        <footer class="paper-footer">
+          <div class="result-route-actions">
+            <button id="next" class="paper-action"><span class="paper-action-label">Ride again</span><svg class="paper-action-arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 16h24M17 5l11 11-11 11" /></svg></button>
+            <button id="replay" class="paper-outline">Start a fresh week</button>
+          </div>
+          <div class="result-social-actions">
+            <button id="share" class="paper-outline" aria-label="Share your score"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M5 12v9h14v-9" /></svg><span>Share</span></button>
+            <a id="league-link" class="paper-outline paper-league-link" href="/leaderboard/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21V10h8v11M2 21V15h6m8-2h6v8M9 5l3-3 3 3-3 3z" /></svg><span>View league table</span></a>
+          </div>
+          <p id="league-save" hidden><span id="league-save-status" role="status"></span> <button id="league-retry" type="button" hidden>Retry upload</button></p>
+        </footer>
+      </div>
+    </section>
+    <div class="hud-messages">
+    <div id="chase-warning" class="chase-warning" role="status" hidden>DOG IN PURSUIT · PEDAL ↑</div>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <div id="target-status" class="target-status" hidden>MAILBOX IN REACH <kbd>Space</kbd></div>
+    <div id="score-gain" class="score-gain" role="status" aria-live="polite" hidden></div>
+    </div>
+    <div id="touch-controls" class="touch-controls" hidden aria-label="Touch instructions">Drag to steer <span>·</span> Drag up to sprint <span>·</span> Drag down to brake <span>·</span> Tap to throw</div>
+    <section id="error" class="newspaper" role="alert" hidden><h2>The route couldn't load.</h2><p id="error-detail">Please use a browser with WebGL 2 enabled, then reload.</p><button onclick="location.reload()" class="primary">Try again</button></section>
+  </main>
+  <footer class="news-ticker"><b>LATEST EDITION</b><span id="footer-controls">A bicycle. A paper route. A little mischief.</span><span class="ticker-location">CEDAR HOLLOW POST</span></footer>
+</body>
+</html>

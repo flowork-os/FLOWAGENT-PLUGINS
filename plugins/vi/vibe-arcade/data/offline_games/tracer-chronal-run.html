@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://tracer.astra.demos.sulat.com/">
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#ece8d9" />
+    
+    
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='18' fill='%23ff7b26'/%3E%3Cpath d='M46 9 18 45h19l-4 26 30-39H44z' fill='%23fff8e8'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./assets/style.css" />
+  <title data-sulat-seo>Tracer — GPT 6 Astra one-shot demo | Sulat</title>
+<meta name="description" content="Explore Tracer, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="robots" content="index, follow, max-image-preview:large" data-sulat-seo>
+<link rel="canonical" href="https://tracer.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:type" content="website" data-sulat-seo>
+<meta property="og:locale" content="en_NZ" data-sulat-seo>
+<meta property="og:site_name" content="Sulat" data-sulat-seo>
+<meta property="og:title" content="Tracer — GPT 6 Astra" data-sulat-seo>
+<meta property="og:description" content="Explore Tracer, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta property="og:url" content="https://tracer.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:image" content="https://demos.sulat.com/openai/astra/tracer/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:secure_url" content="https://demos.sulat.com/openai/astra/tracer/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:type" content="image/jpeg" data-sulat-seo>
+<meta property="og:image:width" content="1200" data-sulat-seo>
+<meta property="og:image:height" content="630" data-sulat-seo>
+<meta property="og:image:alt" content="Tracer one-shot demo preview" data-sulat-seo>
+<meta name="twitter:card" content="summary_large_image" data-sulat-seo>
+<meta name="twitter:title" content="Tracer — GPT 6 Astra" data-sulat-seo>
+<meta name="twitter:description" content="Explore Tracer, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="twitter:url" content="https://tracer.astra.demos.sulat.com/" data-sulat-seo>
+<meta name="twitter:image" content="https://demos.sulat.com/openai/astra/tracer/thumbnail.jpg" data-sulat-seo>
+<meta name="twitter:image:alt" content="Tracer one-shot demo preview" data-sulat-seo>
+<!--
+Sulat content-use policy:
+User-initiated automated scraping, extraction, and bulk copying are not permitted.
+Search indexing and discovery crawlers may access this content.
+When citing, summarising, or reusing Sulat content, credit Sulat and link to this page's canonical URL.
+Preserve the original creator credits and source links shown on this page; do not attribute third-party work to Sulat.
+Canonical URL: https://tracer.astra.demos.sulat.com/
+--></head>
+  <body>
+    <div id="app">
+      <canvas
+        id="world"
+        aria-label="Three dimensional London rooftop game"
+      ></canvas>
+      <div id="vignette"></div>
+      <div id="flash"></div>
+      <header class="masthead">
+        <a class="brand" href="#" aria-label="Tracer Chronal Run home"
+          ><svg viewBox="0 0 35 35" aria-hidden="true">
+            <path d="M21 2 6 21h11l-2 12 15-20H19z" /></svg
+          ><span>TRACER<small>CHRONAL RUN</small></span></a
+        >
+        <div class="header-right">
+          <span class="session-label">OVERWATCH FAN ARCADE <i>01</i></span
+          ><button id="sound" class="icon-button" aria-label="Toggle sound">
+            SOUND ON <span>♪</span></button
+          ><button
+            id="help"
+            class="icon-button help-button"
+            aria-label="How to play"
+          >
+            ?</button
+          ><button
+            id="pause"
+            class="icon-button"
+            aria-label="Pause game"
+            hidden
+          >
+            Ⅱ
+          </button>
+        </div>
+      </header>
+      <section id="menu" class="menu" aria-labelledby="main-title">
+        <div class="intro-copy">
+          <div class="eyebrow">
+            <span></span> KING’S ROW, LONDON <em>21:07</em>
+          </div>
+          <h1 id="main-title">STEAL A<br /><span>SECOND.</span></h1>
+          <p class="dek">
+            The city needs a little more time.<br />Good thing you’ve got some
+            to spare.
+          </p>
+          <div class="mission-spec">
+            <div><b id="brief-time">95</b><span>SECONDS</span></div>
+            <div><b>03</b><span>CHRONAL CELLS</span></div>
+            <div><b>01</b><span>WAY HOME</span></div>
+          </div>
+          <p class="brief">
+            Crack the locks. Grab the cells. Get back to the glowing pad before
+            the clock runs out.
+          </p>
+          <div class="difficulty" aria-label="Difficulty">
+            <button data-level="tour">SIGHTSEEING</button
+            ><button data-level="runner" class="selected" aria-pressed="true">
+              RUNNER</button
+            ><button data-level="overclock">OVERCLOCK</button>
+          </div>
+          <button id="start" class="primary">LET’S GO! <span>↗</span></button>
+          <div class="start-note">
+            <span><kbd>WASD</kbd> / <kbd>↑←↓→</kbd> MOVE</span
+            ><span><kbd>MOUSE</kbd> AIM + FIRE</span>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="orbital orbital-one"></div>
+          <div class="orbital orbital-two"></div>
+          <div class="hero-number">01</div>
+          <canvas
+            id="showcase"
+            aria-label="Detailed animated Tracer hero model"
+          ></canvas>
+          <div class="chronal-tag">
+            <span class="status-dot"></span> CHRONAL ACCELERATOR<br /><strong
+              >TIME SYNC: STABLE</strong
+            >
+          </div>
+          <div class="hero-caption">
+            <span>LENA OXTON</span><b>“Cheers, love.”</b
+            ><small>TIME-JUMPING ADVENTURER</small>
+          </div>
+          <div class="map-location">
+            <span>↗ LONDON ROOFTOPS</span>
+            <div>BLINK. BORROW TIME. BRING IT HOME.</div>
+          </div>
+        </div>
+        <footer class="entry-footer">
+          <span>AN ORIGINAL THREE.JS MINIGAME</span
+          ><button id="about">FIELD GUIDE + CREDITS ↗</button
+          ><span id="best-label">PERSONAL BEST —</span>
+        </footer>
+      </section>
+      <section id="hud" hidden aria-label="Mission status">
+        <div class="top-hud">
+          <div class="mission-title">
+            <span id="phase-tag">01 / THE PICKUP</span
+            ><b id="objective">RECOVER THE CELLS</b
+            ><small id="objective-detail"
+              >Shoot orange locks, then run in to collect.</small
+            >
+          </div>
+          <div class="run-stats">
+            <div class="timer">
+              <span>TIME LEFT</span><b id="time">01:35</b>
+            </div>
+            <div>
+              <span>CELLS</span><b id="cells">0<em>/3</em></b>
+            </div>
+            <div class="score-stat">
+              <span>SCORE</span><b id="score">00000</b>
+            </div>
+          </div>
+        </div>
+        <div id="world-labels"></div>
+        <canvas
+          id="radar"
+          width="120"
+          height="120"
+          aria-label="Map of Tracer, cells, and home pad"
+        ></canvas>
+        <div id="toast" role="status">
+          <b id="toast-speaker">TRACER</b><span id="toast-text"></span>
+        </div>
+        <div class="bottom-hud">
+          <div class="vitals">
+            <div class="health-label">
+              <b>TRACER <span id="health">150</span><small>/150</small></b
+              ><span id="ammo">40 / 40</span>
+            </div>
+            <div class="health-track"><div id="health-fill"></div></div>
+            <div class="vital-caption">
+              <span>CHRONAL INTEGRITY</span
+              ><span id="reload-label">PULSE PISTOLS <kbd>R</kbd></span>
+            </div>
+          </div>
+          <div class="abilities">
+            <button id="blink" class="ability">
+              <span class="ability-symbol">»</span
+              ><span><b>BLINK</b><small id="blink-status">● ● ●</small></span
+              ><kbd>SHIFT</kbd></button
+            ><button id="recall" class="ability">
+              <span class="ability-symbol">↶</span
+              ><span
+                ><b>RECALL</b
+                ><small id="recall-status">3 SEC REWIND</small></span
+              ><kbd>E</kbd></button
+            ><button id="bomb" class="ability bomb">
+              <span class="ability-symbol">✦</span
+              ><span><b>PULSE BOMB</b><small id="bomb-status">0%</small></span
+              ><kbd>Q</kbd>
+            </button>
+          </div>
+          <div class="desktop-tip">
+            <kbd>WASD</kbd> / <kbd>ARROWS</kbd> MOVE &nbsp; · &nbsp; HOLD CLICK
+            TO FIRE &nbsp; · &nbsp; <kbd>SPACE</kbd> AUTO-AIM
+          </div>
+        </div>
+        <div id="touch-controls">
+          <div class="dpad" aria-label="Movement controls">
+            <button data-key="KeyW" class="up" aria-label="Move up">↑</button
+            ><button data-key="KeyA" class="left" aria-label="Move left">
+              ←</button
+            ><button data-key="KeyS" class="down" aria-label="Move down">
+              ↓</button
+            ><button data-key="KeyD" class="right" aria-label="Move right">
+              →
+            </button>
+          </div>
+          <button id="touch-fire" aria-label="Hold to fire at nearest target">
+            ◎<span>FIRE</span></button
+          ><button id="touch-reload" aria-label="Reload pulse pistols">
+            ↻
+          </button>
+        </div>
+      </section>
+      <section id="overlay" class="overlay" hidden>
+        <div class="overlay-card">
+          <div class="eyebrow" id="overlay-kicker">CHRONAL LINK PAUSED</div>
+          <h2 id="overlay-title">TAKE A<br /><span>SECOND.</span></h2>
+          <p id="overlay-copy">Even time-jumpers need a breather.</p>
+          <div id="result-stats" hidden></div>
+          <button id="overlay-primary" class="primary">
+            BACK TO IT <span>↗</span></button
+          ><button id="restart" class="secondary">RESTART RUN</button
+          ><button id="return-menu" class="text-button">
+            BACK TO BRIEFING
+          </button>
+        </div>
+      </section>
+      <dialog id="guide">
+        <button id="close-guide" class="close" aria-label="Close field guide">
+          ×
+        </button>
+        <div class="eyebrow">FIELD GUIDE / LENA OXTON</div>
+        <h2>TIME IS<br /><span>ON YOUR SIDE.</span></h2>
+        <p>
+          London’s lights are running low. Recover three stolen chronal cells
+          from rooftop security and bring them home.
+        </p>
+        <ol class="guide-steps">
+          <li>
+            <b>01 / CRACK & COLLECT</b
+            ><span
+              >Aim at an orange cell lock and hold the mouse button. When its
+              shield breaks, run into the cell.</span
+            >
+          </li>
+          <li>
+            <b>02 / KEEP MOVING</b
+            ><span
+              >Drones mark their next shot with a red line. Change direction or
+              Blink out of danger. Every cell raises the alarm.</span
+            >
+          </li>
+          <li>
+            <b>03 / BRING IT HOME</b
+            ><span
+              >After all three cells, return to the cyan HOME pad. Remaining
+              time and health boost your final score.</span
+            >
+          </li>
+        </ol>
+        <div class="control-grid">
+          <div><kbd>WASD / ARROWS</kbd><b>Move across the screen</b></div>
+          <div><kbd>MOUSE / CLICK</kbd><b>Aim / hold to fire</b></div>
+          <div>
+            <kbd>SHIFT</kbd><b>Blink in your move direction</b
+            ><small>3 charges · 3s recharge</small>
+          </div>
+          <div>
+            <kbd>E</kbd><b>Recall your last 3 seconds</b
+            ><small
+              >Earlier position + health · refill pistols · 10s cooldown</small
+            >
+          </div>
+          <div>
+            <kbd>Q</kbd><b>Throw Pulse Bomb</b
+            ><small>Charge with hits and cells</small>
+          </div>
+          <div>
+            <kbd>R / SPACE / ESC</kbd><b>Reload / auto-aim fire / pause</b>
+          </div>
+        </div>
+        <p class="guide-note">
+          Recall rewinds you; collected cells stay collected. On touch screens,
+          hold the arrows to move and FIRE to target the nearest lock or drone.
+          Ability buttons work directly.
+        </p>
+        <div class="credits">
+          Original fan-made minigame. Tracer and Overwatch belong to Blizzard
+          Entertainment. Hero, world and audio are built for this experience.
+          <a
+            href="https://overwatch.blizzard.com/en-us/heroes/tracer/"
+            target="_blank"
+            rel="noreferrer"
+            >OFFICIAL HERO REFERENCE ↗</a
+          >
+        </div>
+      </dialog>
+      <div id="load-error" hidden>
+        <h2>Let’s get time moving.</h2>
+        <p>
+          Your browser could not start WebGL. Try a current browser with
+          graphics acceleration enabled.
+        </p>
+        <button onclick="location.reload()">TRY AGAIN</button>
+      </div>
+    </div>
+    <script type="module" src="./assets/game.js"></script>
+  <link rel="stylesheet" href="/.well-known/sulat-demo-overlay-v12.css" data-sulat-demo-overlay-asset="styles-v12">
+<details id="sulat-demo-referral-overlay" data-model="astra" data-experiment="tracer" data-storage-scope="astra.demos.sulat.com" data-deal-id="oneshot-websites" data-has-deal="true" data-collapsed="true">
+  <summary data-overlay-toggle aria-label="Expand demo links" aria-expanded="false" title="Expand demo links"></summary>
+  <div class="sulat-demo-overlay__actions">
+    <div class="sulat-demo-overlay__primary">
+      <details class="sulat-demo-overlay__share" data-overlay-share>
+        <summary aria-label="Share this demo" title="Share this demo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M12 15.75v-12m0 0L7.5 8.25M12 3.75l4.5 4.5M5.25 13.5v5.25h13.5V13.5"/></svg><span class="sulat-demo-overlay__share-label">Share</span></summary>
+        <nav class="sulat-demo-overlay__share-menu" aria-label="Share this demo">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Ftracer.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Ftracer.astra.demos.sulat.com%2F&t=Tracer%20%E2%80%94%20GPT%206%20Astra%20demo" target="_blank" rel="noopener noreferrer">Hacker News</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Ftracer.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text=Tracer%20%E2%80%94%20GPT%206%20Astra%20demo&url=https%3A%2F%2Ftracer.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Twitter</a>
+        </nav>
+      </details>
+      <a class="sulat-demo-overlay__catalogue" data-overlay-catalogue href="https://astra.demos.sulat.com/" aria-label="More demos"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>More demos</a>
+      <a class="sulat-demo-overlay__next" data-overlay-next href="https://demos.sulat.com/surprise" aria-label="Open another random demo" title="Open another random demo"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 4 12 8-12 8z"/></svg>Next demo</a>
+    </div>
+    <a class="sulat-demo-overlay__deal" data-overlay-deal href="https://github.com/jpcaparas/skills#oneshot-websites" target="_blank" rel="sponsored noopener noreferrer" aria-label="Create your own one-shots (opens in a new tab)">Create your own one-shots</a>
+  </div>
+</details>
+<script src="/.well-known/sulat-demo-overlay-v12.js" defer data-sulat-demo-overlay-asset="script-v12"></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ecb2b94d4b63450a9e0af42e304662ed","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5278482bd5acec3',t:'MTc5MzMzMjg3NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5278482bd5acec3',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

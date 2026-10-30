@@ -22,13 +22,16 @@ from dynamic_cartoonist import DynamicCartoonist
 POSES_CATALOG = [
     'talk', 'think', 'shrug', 'point', 'celebrate', 'sad', 'angry', 'surprised',
     'run', 'read', 'listen', 'rest', 'panic_look', 'cough_fail', 'chair_drag',
-    'blame_friend', 'zoom_mic_shock', 'outro_clap'
+    'blame_friend', 'zoom_mic_shock', 'outro_clap',
+    'kneel_crying', 'holding_photo', 'reaching_out', 'walking_cold', 'running_chase',
+    'peeking_heartbreak', 'cafe_reflecting', 'heartbreak_clutch', 'stargazing_rooftop', 'peaceful_sunrise'
 ]
 
 PROPS_CATALOG = [
     'alert', 'battery', 'book', 'brain', 'broken_heart', 'bulb', 'chart_down', 'chart_up',
     'clock', 'eyes', 'heart', 'house', 'lock', 'magnifier', 'mask', 'people', 'phone',
-    'question', 'scale', 'target', 'coffee', 'boxing_glove', 'money_bag', 'megaphone'
+    'question', 'scale', 'target', 'coffee', 'boxing_glove', 'money_bag', 'megaphone',
+    'photo_frame', 'umbrella', 'fading_silhouette', 'speedlines', 'couple_silhouette', 'coffee_steam', 'shooting_star', 'sunrise_rays'
 ]
 
 EMOTIONS_CATALOG = [
@@ -36,7 +39,8 @@ EMOTIONS_CATALOG = [
 ]
 
 BACKGROUNDS_CATALOG = [
-    'office_meeting', 'speedlines_panic', 'cyber_grid', 'podcast_studio', 'courtroom', 'living_room'
+    'office_meeting', 'speedlines_panic', 'cyber_grid', 'podcast_studio', 'courtroom', 'living_room',
+    'raining_street', 'bedroom_night', 'dream_void', 'motion_street', 'park_bench', 'cafe_interior', 'rooftop_stars', 'sunrise_hill'
 ]
 
 
@@ -155,7 +159,57 @@ def derive_stickman_choreography(text, beat_idx, total_beats, has_video=False):
         prop = 'heart'
         bg = 'cyber_grid'
         meme_fx = ['sparkle']
-    # Semantic Keyword Intelligence
+    # Semantic Keyword Intelligence: Song Lyrics & Theatrical Music Story Acting
+    elif any(k in t_lower for k in ['menangis', 'tangis', 'air mata', 'cried', 'tears', 'crying', 'weep', 'sakit hati']):
+        pose = 'kneel_crying'
+        emotion = 'sad'
+        prop = 'broken_heart'
+        bg = 'raining_street'
+        meme_fx = ['tears']
+    elif any(k in t_lower for k in ['foto', 'kenangan', 'bayangmu', 'memori', 'teringat', 'photograph', 'memories', 'masa lalu']):
+        pose = 'holding_photo'
+        emotion = 'sad'
+        prop = 'photo_frame'
+        bg = 'bedroom_night'
+    elif any(k in t_lower for k in ['pergi', 'tinggalkan', 'jangan pergi', 'ku mohon', 'stay', 'leave', 'goodbye', 'fading']):
+        pose = 'reaching_out'
+        emotion = 'sad'
+        prop = 'fading_silhouette'
+        bg = 'dream_void'
+    elif any(k in t_lower for k in ['hujan', 'gerimis', 'dingin', 'malam dingin', 'rain', 'storm', 'cold night']):
+        pose = 'walking_cold'
+        emotion = 'sad'
+        prop = 'umbrella'
+        bg = 'raining_street'
+    elif any(k in t_lower for k in ['kejar', 'mengejar', 'chasing', 'running after', 'find you']):
+        pose = 'running_chase'
+        emotion = 'surprised'
+        prop = 'speedlines'
+        bg = 'motion_street'
+        meme_fx = ['speedlines']
+    elif any(k in t_lower for k in ['kau dengannya', 'dia bersamamu', 'with someone else', 'replaced', 'duaan']):
+        pose = 'peeking_heartbreak'
+        emotion = 'sad'
+        prop = 'couple_silhouette'
+        bg = 'park_bench'
+    elif any(k in t_lower for k in ['sesak', 'dada', 'perih', 'hancur dadaku', 'chest hurts', 'bleeding heart']):
+        pose = 'heartbreak_clutch'
+        emotion = 'sad'
+        prop = 'broken_heart'
+        bg = 'speedlines_panic'
+        meme_fx = ['sweat']
+    elif any(k in t_lower for k in ['bintang', 'rembulan', 'stars', 'night sky', 'moonlight']):
+        pose = 'stargazing_rooftop'
+        emotion = 'neutral'
+        prop = 'shooting_star'
+        bg = 'rooftop_stars'
+    elif any(k in t_lower for k in ['ikhlas', 'merelakan', 'mentari', 'fajar', 'sunrise', 'new dawn', 'peace']):
+        pose = 'peaceful_sunrise'
+        emotion = 'happy'
+        prop = 'sunrise_rays'
+        bg = 'sunrise_hill'
+        meme_fx = ['sparkle']
+    # General Parody Triggers
     elif any(k in t_lower for k in ['hancur', 'rusak', 'bangkrut', 'rugi', 'turun', 'drop', 'minus', 'fail', 'batal', 'hilang', 'crash']):
         pose = 'panic_look'
         emotion = 'surprised'
@@ -201,11 +255,11 @@ def derive_stickman_choreography(text, beat_idx, total_beats, has_video=False):
         emotion = 'neutral'
         prop = 'clock'
         bg = 'office_meeting'
-    elif any(k in t_lower for k in ['kopi', 'santai', 'nongkrong', 'kafe', 'istirahat', 'chill', 'tenang']):
-        pose = 'rest'
+    elif any(k in t_lower for k in ['kopi', 'santai', 'nongkrong', 'kafe', 'istirahat', 'chill', 'tenang', 'cafe']):
+        pose = 'cafe_reflecting' if 'kafe' in t_lower or 'kopi' in t_lower else 'rest'
         emotion = 'happy'
         prop = 'coffee'
-        bg = 'living_room'
+        bg = 'cafe_interior' if 'kafe' in t_lower or 'kopi' in t_lower else 'living_room'
     elif any(k in t_lower for k in ['server', 'code', 'coding', 'python', 'bug', 'error', 'database', 'ai', 'prompt', 'api']):
         pose = 'think'
         emotion = 'happy'
@@ -227,7 +281,7 @@ def derive_stickman_choreography(text, beat_idx, total_beats, has_video=False):
     }
 
 
-def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_duration=90.0):
+def slice_video_beats(input_path, output_dir, target_beat_seconds=3.0, max_duration=300.0):
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input file not found: {input_path}")
 

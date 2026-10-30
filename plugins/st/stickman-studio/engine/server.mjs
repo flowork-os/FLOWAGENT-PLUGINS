@@ -10,6 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execFile, spawn } from 'child_process';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,8 +19,9 @@ const GUI_DIR = path.join(APP_ROOT, 'gui');
 const DATA_DIR = path.join(APP_ROOT, 'data');
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 const EXPORTS_DIR = path.join(DATA_DIR, 'exports');
+const BACKGROUNDS_DIR = path.join(DATA_DIR, 'backgrounds');
 
-[DATA_DIR, UPLOADS_DIR, EXPORTS_DIR].forEach(dir => {
+[DATA_DIR, UPLOADS_DIR, EXPORTS_DIR, BACKGROUNDS_DIR].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
@@ -66,7 +68,7 @@ function pickFolderNative() {
   return new Promise((resolve) => {
     execFile('zenity', ['--file-selection', '--directory', '--title=Select Destination Folder'], (err, stdout) => {
       if (!err && stdout.trim()) return resolve(stdout.trim());
-      execFile('kdialog', ['--getexistingdirectory', process.env.HOME || '/home/mrflow'], (kErr, kStdout) => {
+      execFile('kdialog', ['--getexistingdirectory', process.env.HOME || os.homedir() || '/tmp'], (kErr, kStdout) => {
         if (!kErr && kStdout.trim()) return resolve(kStdout.trim());
         const pyScript = `import tkinter as tk, tkinter.filedialog as fd, os; root=tk.Tk(); root.withdraw(); p=fd.askdirectory(initialdir=os.path.expanduser('~')); print(p if p else '')`;
         execFile('python3', ['-c', pyScript], (pyErr, pyStdout) => {
@@ -136,7 +138,7 @@ const server = http.createServer(async (req, res) => {
     // -------------------------------------------------------------
     if (pathname === '/api/voice/profiles' && req.method === 'GET') {
       const profiles = [
-        { id: 'kids', name: 'Cute Kids / Bocil', description: 'Bright, high pitch formant with lively child voice', pitch: 1.45, speed: 1.05 },
+        { id: 'kids', name: 'Cute Kid / Youth', description: 'Bright, high pitch formant with lively child voice', pitch: 1.45, speed: 1.05 },
         { id: 'cartoon', name: 'Wacky Cartoon', description: 'Expressive cartoon character with pitch oscillation', pitch: 1.6, speed: 1.1 },
         { id: 'chipmunk', name: 'High-Speed Chipmunk', description: 'Classic Alvin chipmunk ultra-high pitch', pitch: 1.85, speed: 1.25 },
         { id: 'robot', name: 'Cybernetic Robot', description: 'Flanged robotic modular vocoder voice', pitch: 0.95, speed: 1.0 },
@@ -173,11 +175,14 @@ const server = http.createServer(async (req, res) => {
         }
         try {
           const result = JSON.parse(stdout);
+          result.output_url = `/exports/${outName}`;
+          result.audio_url = `/exports/${outName}`;
+          result.output_path = outputPath;
           res.writeHead(200, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify(result));
         } catch (e) {
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ success: true, output_path: outputPath }));
+          return res.end(JSON.stringify({ success: true, output_path: outputPath, output_url: `/exports/${outName}`, audio_url: `/exports/${outName}` }));
         }
       });
       return;
@@ -298,17 +303,79 @@ const server = http.createServer(async (req, res) => {
       const writeStream = fs.createWriteStream(targetFile);
       req.pipe(writeStream);
       writeStream.on('finish', () => {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: true,
-          path: targetFile,
-          filename: path.basename(targetFile),
-          size: fs.statSync(targetFile).size
-        }));
+        // Auto-detect and normalize video format (e.g. AV1, VP9, HEVC -> H.264) for universal playback and OpenCV decoding
+        const probeArgs = ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name', '-of', 'default=noprint_wrappers=1:nokey=1', targetFile];
+        execFile('ffprobe', probeArgs, (probeErr, probeOut) => {
+          const videoCodec = (probeOut || '').trim().toLowerCase();
+          if (videoCodec && videoCodec !== 'h264') {
+            const normFile = `${targetFile}.norm.mp4`;
+            const transcodeArgs = ['-y', '-i', targetFile, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '22', '-c:a', 'aac', '-b:a', '128k', '-pix_fmt', 'yuv420p', normFile];
+            execFile('ffmpeg', transcodeArgs, (transErr) => {
+              if (!transErr && fs.existsSync(normFile)) {
+                try {
+                  fs.unlinkSync(targetFile);
+                  fs.renameSync(normFile, targetFile);
+                } catch (_) {}
+              }
+              const stats = fs.statSync(targetFile);
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                success: true,
+                path: targetFile,
+                filename: path.basename(targetFile),
+                url: `/uploads/${path.basename(targetFile)}`,
+                size: stats.size
+              }));
+            });
+          } else {
+            const stats = fs.statSync(targetFile);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              success: true,
+              path: targetFile,
+              filename: path.basename(targetFile),
+              url: `/uploads/${path.basename(targetFile)}`,
+              size: stats.size
+            }));
+          }
+        });
       });
       writeStream.on('error', (err) => {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
+      });
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // 5e2. Custom Background Upload (POST /api/backgrounds/upload)
+    // -------------------------------------------------------------
+    if (pathname === '/api/backgrounds/upload' && req.method === 'POST') {
+      let rawHeader = parsedUrl.searchParams.get('filename') || req.headers['x-filename'] || `bg_${Date.now()}.jpg`;
+      let origName = rawHeader;
+      try { origName = decodeURIComponent(rawHeader); } catch (_) {}
+      const cleanName = origName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+      const filename = `user_bg_${Date.now()}_${cleanName}`;
+      const targetFile = path.join(BACKGROUNDS_DIR, filename);
+
+      const writeStream = fs.createWriteStream(targetFile);
+      req.pipe(writeStream);
+
+      writeStream.on('finish', () => {
+        const stats = fs.statSync(targetFile);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          success: true,
+          filename: filename,
+          background_url: `/api/backgrounds/${filename}`,
+          background_path: targetFile,
+          size_bytes: stats.size
+        }));
+      });
+
+      writeStream.on('error', (err) => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
       });
       return;
     }
@@ -329,7 +396,7 @@ const server = http.createServer(async (req, res) => {
       const outDir = path.join(DATA_DIR, 'beats_' + Date.now());
       fs.mkdirSync(outDir, { recursive: true });
 
-      const maxDur = body.max_duration !== undefined ? String(body.max_duration) : '90.0';
+      const maxDur = body.max_duration !== undefined ? String(body.max_duration) : '300.0';
       const args1 = [beatsScript, media_path, outDir, String(target_seconds || 3.0), maxDur];
       execFile('python3', args1, { maxBuffer: 10 * 1024 * 1024 }, (err1, stdout1, stderr1) => {
         if (err1) {
@@ -359,6 +426,32 @@ const server = http.createServer(async (req, res) => {
         });
       });
       return;
+    }
+
+    // -------------------------------------------------------------
+    // 5f2. Get latest generated beats manifest (GET /api/beats/latest)
+    // -------------------------------------------------------------
+    if (pathname === '/api/beats/latest' && req.method === 'GET') {
+      try {
+        const beatDirs = fs.readdirSync(DATA_DIR).filter(d => d.startsWith('beats_'));
+        beatDirs.sort().reverse();
+        for (const bd of beatDirs) {
+          const mPath = path.join(DATA_DIR, bd, 'beats_manifest.json');
+          if (fs.existsSync(mPath)) {
+            const manifest = JSON.parse(fs.readFileSync(mPath, 'utf8'));
+            res.writeHead(200, {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache, no-store, must-revalidate'
+            });
+            return res.end(JSON.stringify({ success: true, manifest }));
+          }
+        }
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'No generated beats found' }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
     }
 
     // -------------------------------------------------------------
@@ -493,6 +586,83 @@ const server = http.createServer(async (req, res) => {
     }
 
     // -------------------------------------------------------------
+    // 5h2. AI Cartoon Background Generator (POST /api/backgrounds/generate)
+    // -------------------------------------------------------------
+    if (pathname === '/api/backgrounds/generate' && req.method === 'POST') {
+      const body = await parseBody(req);
+      const prompt = body.prompt || 'modern podcast recording studio';
+      const theme = body.theme || '';
+
+      const scriptPath = path.join(__dirname, 'ai_background_generator.py');
+      const args = [scriptPath, prompt, theme];
+
+      execFile('python3', args, { maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+        if (err) {
+          console.error('[AI Background Error]', stderr || err.message);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: stderr || err.message }));
+        }
+        try {
+          const result = JSON.parse(stdout);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({
+            success: true,
+            method: result.method,
+            prompt: result.prompt,
+            enhanced_prompt: result.enhanced_prompt,
+            background_url: `/api/backgrounds/${result.filename}`,
+            background_path: result.image_path,
+            filename: result.filename,
+            size_bytes: result.size_bytes,
+            elapsed_seconds: result.elapsed_seconds
+          }));
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Failed to parse AI background response', raw: stdout }));
+        }
+      });
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // 5h3. Background Presets (GET /api/backgrounds/presets)
+    // -------------------------------------------------------------
+    if (pathname === '/api/backgrounds/presets' && req.method === 'GET') {
+      const presets = [
+        { id: 'podcast_studio', name: '🎙️ Podcast Studio', theme: 'podcast_studio', prompt: 'modern neon podcast recording studio' },
+        { id: 'classroom', name: '🏫 Classroom', theme: 'classroom', prompt: 'cartoon school classroom with blackboard and wooden desks' },
+        { id: 'courtroom', name: '⚖️ Courtroom', theme: 'courtroom', prompt: 'cartoon judge courtroom with scales of justice and dark wood panels' },
+        { id: 'breaking_news', name: '📺 Breaking News', theme: 'breaking_news', prompt: 'high tech breaking news broadcast studio with glowing digital world map' },
+        { id: 'living_room', name: '🛋️ Living Room', theme: 'living_room', prompt: 'cozy cartoon retro living room interior with wallpaper and framed pictures' },
+        { id: 'cyber_grid', name: '🚀 Cyber Grid', theme: 'cyber_grid', prompt: 'neon synthwave cyber grid with futuristic skyline and glowing horizon' },
+        { id: 'cafe', name: '☕ Coffee Shop', theme: 'cafe', prompt: 'warm aesthetic cartoon coffee shop cafe interior with counter and chalkboard menu' },
+        { id: 'street', name: '🏙️ City Street', theme: 'street', prompt: 'colorful 2D cartoon city street sidewalk with storefronts' }
+      ];
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ success: true, presets }));
+    }
+
+    // -------------------------------------------------------------
+    // 5h4. Static Background Serving (GET /api/backgrounds/:filename)
+    // -------------------------------------------------------------
+    if (pathname.startsWith('/api/backgrounds/')) {
+      const bgFilename = path.basename(pathname);
+      const bgPath = path.join(BACKGROUNDS_DIR, bgFilename);
+      if (fs.existsSync(bgPath)) {
+        res.writeHead(200, {
+          'Content-Type': 'image/jpeg',
+          'Cache-Control': 'public, max-age=86400',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Private-Network': 'true'
+        });
+        return fs.createReadStream(bgPath).pipe(res);
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Background image not found' }));
+      }
+    }
+
+    // -------------------------------------------------------------
     // 5i. 3D Model Vault Registry & Inspection (GET /api/vault/3d)
     // -------------------------------------------------------------
     if (pathname === '/api/vault/3d' && req.method === 'GET') {
@@ -562,10 +732,14 @@ const server = http.createServer(async (req, res) => {
         audio_path,
         video_path,
         render_mode,
+        staging_style,
         beats,
         title,
         background,
+        background_path,
         character_style,
+        framing_mode,
+        aspect_ratio,
         resolution,
         fps,
         voice_profile,
@@ -576,6 +750,9 @@ const server = http.createServer(async (req, res) => {
       const outVideo = `stickman_${Date.now()}.mp4`;
       const outputVideoPath = path.join(EXPORTS_DIR, outVideo);
 
+      const targetRatio = aspect_ratio || (resolution?.includes('1280x720') || resolution?.includes('1920x1080') ? '16:9' : '9:16');
+      const targetRes = resolution || (targetRatio === '16:9' ? '1280x720' : '720x1280');
+
       const jobRecord = {
         id: jobId,
         type: 'render_video',
@@ -584,14 +761,18 @@ const server = http.createServer(async (req, res) => {
         stage: 'initializing',
         created_at: new Date().toISOString(),
         params: {
-          audio_path: audio_path || video_path || 'voice_kids.mp3',
+          audio_path: audio_path || video_path || null,
           video_path: video_path || null,
           render_mode: render_mode || 'full_stickman',
+          staging_style: staging_style || 'stick_hub_storyteller',
           beats: beats || [],
-          title: title || 'Stickman Parody Short',
+          title: title || 'Stickman Story',
           background: background || 'podcast_studio',
+          background_path: background_path || null,
           character_style: character_style || 'classic',
-          resolution: resolution || '720x1280',
+          framing_mode: framing_mode || 'auto',
+          aspect_ratio: targetRatio,
+          resolution: targetRes,
           fps: fps || 24,
           voice_profile: voice_profile || 'kids',
           destination_dir: destination_dir || null
@@ -697,12 +878,18 @@ const server = http.createServer(async (req, res) => {
     }
 
     // -------------------------------------------------------------
-    // Static GUI Server & Asset Delivery
+    // Static GUI Server & Asset Delivery (with HTTP 206 Range Streaming)
     // -------------------------------------------------------------
     let filePath = path.join(GUI_DIR, pathname === '/' ? 'index.html' : pathname);
 
     if (pathname.startsWith('/exports/')) {
       filePath = path.join(EXPORTS_DIR, pathname.replace('/exports/', ''));
+    } else if (pathname.startsWith('/uploads/')) {
+      filePath = path.join(UPLOADS_DIR, pathname.replace('/uploads/', ''));
+    } else if (pathname.startsWith('/data/uploads/')) {
+      filePath = path.join(UPLOADS_DIR, pathname.replace('/data/uploads/', ''));
+    } else if (pathname.startsWith('/data/')) {
+      filePath = path.join(DATA_DIR, pathname.replace('/data/', ''));
     }
 
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
@@ -714,12 +901,39 @@ const server = http.createServer(async (req, res) => {
         '.json': 'application/json',
         '.png': 'image/png',
         '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
         '.svg': 'image/svg+xml',
         '.wav': 'audio/wav',
         '.mp3': 'audio/mpeg',
-        '.mp4': 'video/mp4'
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm'
       };
-      res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
+      const totalSize = fs.statSync(filePath).size;
+      const range = req.headers.range;
+
+      if (range && (ext === '.mp4' || ext === '.mp3' || ext === '.wav' || ext === '.webm')) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+        const chunkSize = (end - start) + 1;
+        res.writeHead(206, {
+          'Content-Range': `bytes ${start}-${end}/${totalSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunkSize,
+          'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Private-Network': 'true'
+        });
+        return fs.createReadStream(filePath, { start, end }).pipe(res);
+      }
+
+      res.writeHead(200, {
+        'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+        'Accept-Ranges': 'bytes',
+        'Content-Length': totalSize,
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Private-Network': 'true'
+      });
       return fs.createReadStream(filePath).pipe(res);
     }
 
@@ -755,13 +969,39 @@ function executeRenderJob(jobId) {
   const tempConfigPath = path.join(DATA_DIR, `cfg_${jobId}.json`);
   const progressPath = path.join(DATA_DIR, `prog_${jobId}.json`);
 
+  let resolvedAudio = job.params.audio_path;
+  if (!resolvedAudio && Array.isArray(job.params.beats) && job.params.beats.length > 0) {
+    const b0 = job.params.beats[0];
+    if (b0.batch_id) {
+      const bAudio = path.join(DATA_DIR, b0.batch_id, 'audio.mp3');
+      if (fs.existsSync(bAudio)) resolvedAudio = bAudio;
+    }
+    if (!resolvedAudio && b0.keyframe_path) {
+      const p1 = path.join(path.dirname(b0.keyframe_path), 'audio.mp3');
+      const p2 = path.join(path.dirname(path.dirname(b0.keyframe_path)), 'audio.mp3');
+      if (fs.existsSync(p1)) resolvedAudio = p1;
+      else if (fs.existsSync(p2)) resolvedAudio = p2;
+    }
+  }
+
   const cfg = {
-    audio_path: job.params.audio_path ? (job.params.audio_path.startsWith('/') ? job.params.audio_path : path.join(APP_ROOT, job.params.audio_path)) : undefined,
+    audio_path: resolvedAudio ? (resolvedAudio.startsWith('/') ? resolvedAudio : path.join(APP_ROOT, resolvedAudio)) : undefined,
     video_path: job.params.video_path ? (job.params.video_path.startsWith('/') ? job.params.video_path : path.join(APP_ROOT, job.params.video_path)) : undefined,
     render_mode: job.params.render_mode || 'full_stickman',
+    staging_style: job.params.staging_style || 'stick_hub_storyteller',
+    destination_dir: job.params.destination_dir || undefined,
     beats: job.params.beats || [],
     title: job.params.title || 'Stickman Story',
-    background: job.params.background || 'podcast_studio'
+    background: job.params.background || 'podcast_studio',
+    character_style: job.params.character_style || 'classic',
+    framing_mode: job.params.framing_mode || 'auto',
+    aspect_ratio: job.params.aspect_ratio || (job.params.resolution?.includes('1280x720') || job.params.resolution?.includes('1920x1080') ? '16:9' : '9:16'),
+    resolution: job.params.resolution || (job.params.aspect_ratio === '16:9' ? '1280x720' : '720x1280'),
+    fps: job.params.fps || 24,
+    background_path: job.params.background_path ? (job.params.background_path.startsWith('/') ? job.params.background_path : path.join(APP_ROOT, job.params.background_path)) : undefined,
+    voice_profile: job.params.voice_profile || undefined,
+    custom_pitch: job.params.custom_pitch || undefined,
+    custom_speed: job.params.custom_speed || undefined
   };
 
   fs.writeFileSync(tempConfigPath, JSON.stringify(cfg, null, 2), 'utf-8');
@@ -821,3 +1061,22 @@ function executeRenderJob(jobId) {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`[Stickman Studio Engine] Sovereign Canvas Host listening on http://127.0.0.1:${PORT}`);
 });
+
+// Auxiliary Multi-Port Bridge: ensure browser tabs open on legacy/alternate ports (e.g. 34469, 18040) never fail
+const AUX_PORTS = [34469, 18040].filter(p => p !== PORT);
+for (const auxPort of AUX_PORTS) {
+  try {
+    const auxServer = http.createServer((req, res) => {
+      server.emit('request', req, res);
+    });
+    auxServer.on('error', (err) => {
+      console.warn(`[Stickman Studio Engine] Aux port ${auxPort} unavailable (${err.code}), continuing on primary port ${PORT}`);
+    });
+    auxServer.listen(auxPort, '127.0.0.1', () => {
+      console.log(`[Stickman Studio Engine] Auxiliary port bridge active on http://127.0.0.1:${auxPort} -> primary port ${PORT}`);
+    });
+  } catch (e) {
+    console.warn(`[Stickman Studio Engine] Could not bind aux port ${auxPort}:`, e.message);
+  }
+}
+

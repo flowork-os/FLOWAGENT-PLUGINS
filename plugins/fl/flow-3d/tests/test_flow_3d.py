@@ -69,7 +69,7 @@ class TestFlow3DStudio(unittest.TestCase):
 
     def test_04_security_zero_path_leaks(self):
         """Verify zero illegal hardcoded paths in application logic."""
-        forbidden = ["/home/mrflow/flowork/apps", "/home/mrflow/flowork/system"]
+        forbidden = ["/home/" + "mrflow/flowork/apps", "/home/" + "mrflow/flowork/system"]
         scanned_count = 0
 
         for root, dirs, files in os.walk(APP_DIR):

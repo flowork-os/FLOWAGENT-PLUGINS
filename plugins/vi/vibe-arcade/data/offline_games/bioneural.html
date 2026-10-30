@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://bioneural.de/">
+<meta charset="utf-8">
+<script>
+// This host sends no cache headers, so a browser may keep an old copy of this page and mix old and new game files.
+// If the live page has moved on, load it fresh - every time a stale copy turns up (not only once per session: a browser
+// can hand out the old page again and again). The version goes into the address (?r=), so it can never loop: a page
+// already reloaded for exactly that version stops.
+(function () {
+  var mine = 'js/main.js?v=tn15';
+  // (older pages remembered "reloaded once already" for the whole session - and an old copy still in a browser's cache
+  // would then stay old: this page forgets that, so such a copy moves on to this one every time it turns up)
+  try { for (var i = sessionStorage.length - 1; i >= 0; i--) { var k = sessionStorage.key(i); if (k && k.indexOf('fresh:') === 0) sessionStorage.removeItem(k); } } catch (e) {}
+  try {
+    fetch(location.pathname + '?cb=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) {
+      var m = t.match(/js\/main\.js\?v=\w+/);
+      if (!m || m[0] === mine) return;
+      var want = m[0].split('=')[1];
+      if (new URLSearchParams(location.search).get('r') === want) return;
+      var u = new URL(location.href); u.searchParams.set('r', want); location.replace(u.href);
+    }).catch(function () {});
+  } catch (e) {}
+})();
+</script>
+<script>
+// OLD iPADS (iPadOS 17 and older - every iPad Pro 2nd gen and older is stuck there): the menu without its moving effects
+// (css: html.calm). Measured on the user's iPad Pro 2nd gen, iOS 17.6.1 (2026-10-02, the TEST diagnostic): with them, opening
+// HOW TO PLAY or SETTINGS froze the picture for up to a minute in every run (Safari's graphics process stopped answering - its
+// 15 s limit, again and again); without them 55-60 fps and not one freeze. Known by what it is, not by guessing the model: an
+// iPad (it may say it's a Mac - but a Mac has no touch screen) whose Safari is 17 or older (Safari 18 is the first to know
+// backdrop-filter without its -webkit- prefix). Every other device: as before. ?calm / ?nocalm: forced on / off (checks).
+(function () {
+  try {
+    var q = location.search, ua = navigator.userAgent, ipad = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    var v = +((ua.match(/Version\/(\d+)/) || [])[1] || 0), old = (v > 0 && v <= 17) || !(window.CSS && CSS.supports && CSS.supports('backdrop-filter', 'blur(1px)'));
+    if (/[?&]calm\b/.test(q) || (ipad && old && !/[?&]nocalm\b/.test(q))) document.documentElement.classList.add('calm');
+  } catch (e) {}
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BIONEURAL">
+<meta name="theme-color" content="#070b16">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+<title>BIONEURAL — online multiplayer FPS</title>
+<meta name="description" content="BIONEURAL: free online multiplayer FPS in your browser, no download. 8 maps - an erupting volcano, a city you can blow apart, a tsunami island, desert trains and a sandworm, a castle siege, floating islands. Bots always, real players worldwide, leaderboards.">
+<!-- the link card when the game is shared (Discord, WhatsApp, X, Reddit, Facebook): the picture and the words -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BIONEURAL">
+<meta property="og:title" content="BIONEURAL — free multiplayer FPS in your browser">
+<meta property="og:description" content="Jump in, no download: a first-person shooter with a city you can blow apart, a tsunami island, desert trains and cars, a castle siege, floating islands, nukes.">
+<meta property="og:url" content="https://bioneural.de/">
+<meta property="og:locale" content="en_US">
+<link rel="canonical" href="https://bioneural.de/">
+<link rel="alternate" hreflang="en" href="https://bioneural.de/">
+<link rel="alternate" hreflang="x-default" href="https://bioneural.de/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"BIONEURAL","url":"https://bioneural.de/",
+"description":"Free online multiplayer first-person shooter in your browser, no download: destructible city, tsunami island, desert trains, castle siege, floating islands, 5v5 competitive. Players from all over the world, bots always.",
+"image":"https://bioneural.de/assets/og.jpg","genre":["First-person shooter","Action","Multiplayer"],"gamePlatform":["Web browser","PC","Mobile"],
+"applicationCategory":"Game","operatingSystem":"Any","inLanguage":"en","playMode":["MultiPlayer","SinglePlayer"],"isAccessibleForFree":true,
+"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","availability":"https://schema.org/InStock"}}</script>
+<meta property="og:image" content="https://bioneural.de/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BIONEURAL — free multiplayer FPS in your browser">
+<meta name="twitter:description" content="Jump in, no download: a city you can blow apart, a tsunami island, desert trains and cars, a castle siege, floating islands, nukes.">
+<meta name="twitter:image" content="https://bioneural.de/assets/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=tn15">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 30 16 16 30 2 16Z' fill='%2340e0ff'/%3E%3Cpath d='M16 9 23 16 16 23 9 16Z' fill='%23ff4d6d'/%3E%3C/svg%3E">
+<script>
+// Loading bar: main.js reports real milestones via __boot(pct, text); between them the bar creeps
+// forward slowly so it never looks frozen.
+(function () {
+  var shown = 0, target = 4, cap = 38, label = 'Loading 3D engine…', done = false;
+  window.__boot = function (pct, text) { target = Math.max(target, pct); cap = Math.min(99, pct + 12); if (text) label = text; if (pct >= 100) done = true; };
+  function step() {
+    var bar = document.getElementById('boot-bar');
+    if (bar) {
+      if (target < cap) target += (cap - target) * 0.004;
+      shown += (target - shown) * 0.2;
+      if (done && target - shown < 0.5) shown = 100;
+      var p = Math.floor(shown);
+      bar.style.width = shown + '%';
+      document.getElementById('boot-pct').textContent = p + '%';
+      document.getElementById('boot-text').textContent = done && p >= 100 ? 'Ready — press PLAY' : label;
+      document.getElementById('boot').setAttribute('aria-valuenow', p);
+      if (done && p >= 100) { const b = document.getElementById('boot'); b.classList.add('done'); clearInterval(timer); setTimeout(() => { b.style.display = 'none'; }, 2200); }   // (gone after its fade: the menu gets the room back)
+    }
+  }
+  var timer = setInterval(step, 33);
+  // Safety net: if the game code has not started (a download stalled or failed), say so and offer a retry;
+  // the first time, retry automatically.
+  var t0 = Date.now(), failed = false;
+  function started() { return target >= 40; }
+  function showRetry(msg) {
+    if (started() || document.getElementById('boot-retry')) return;
+    label = msg;
+    var b = document.createElement('button');
+    b.id = 'boot-retry'; b.className = 'btn ghost'; b.textContent = '↻ Retry';
+    b.onclick = retry;
+    document.querySelector('#boot .boot-top').insertBefore(b, document.getElementById('boot-pct'));
+  }
+  function retry() {
+    var u = new URL(location.href);
+    u.searchParams.set('t', Date.now().toString(36));
+    location.replace(u.href);
+  }
+  window.__bootFail = function () {
+    if (started() || failed) return;
+    failed = true;
+    var tried = false;
+    try { tried = sessionStorage.getItem('bn_retry') === '1'; sessionStorage.setItem('bn_retry', '1'); } catch (e) { tried = true; }
+    if (!tried) { label = 'Loading failed — retrying…'; setTimeout(retry, 800); }
+    else showRetry('Loading failed — check your connection and retry');
+  };
+  addEventListener('error', function (e) { if (!started() && e && (e.target && e.target.tagName === 'SCRIPT' || /import|export|module/i.test(String(e.message)))) window.__bootFail(); }, true);
+  var watch = setInterval(function () {
+    if (started()) { clearInterval(watch); try { sessionStorage.removeItem('bn_retry'); } catch (e) {} return; }
+    var s = (Date.now() - t0) / 1000;
+    if (s > 12 && s < 25) label = 'Slow connection — still loading the 3D engine…';
+    if (s > 25) { clearInterval(watch); window.__bootFail(); }
+  }, 1000);
+})();
+</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- ============ MENU ============ -->
+<div id="menu" class="screen nm v3">
+  <div id="nm-reel" class="nm-reel" aria-hidden="true"></div>
+  <div class="nm-fx" aria-hidden="true"><i class="nm-vig"></i><i class="nm-scan"></i><i class="nm-dim"></i></div>
+  <div class="nm-top"><nav class="nm-tabs" aria-label="Main menu"><button id="nm-tab-play" class="nm-tab on" type="button">PLAY</button><button id="nm-shop" class="nm-tab" type="button" title="Everything you wear: characters, gun skins, hats, body skins, trails, titles, car paints - looks only">SKINS</button><div class="nm-dd"><button class="nm-tab" type="button" data-dd="social" aria-haspopup="true" aria-expanded="false">SQUAD<i aria-hidden="true">▾</i></button><div class="nm-ddm hidden" data-ddm="social" role="menu"><button type="button" data-fire="nm-friends" role="menuitem">Friends<small>who is online · invite</small></button><button id="nm-clans" type="button" role="menuitem" title="Your clan: a name, a tag, a motto, an emblem - up to 5 pilots">Clans<span id="cl-badge" class="nm-badge"></span><small>a name, a tag, an emblem · up to 5</small></button></div></div><div class="nm-dd"><button class="nm-tab" type="button" data-dd="career" aria-haspopup="true" aria-expanded="false">CAREER<i aria-hidden="true">▾</i></button><div class="nm-ddm hidden" data-ddm="career" role="menu"><button id="nm-profile" type="button" role="menuitem">Profile<small>your level, XP and medals</small></button><button id="nm-board" type="button" role="menuitem">Leaderboard<small>the top pilots · 5v5</small></button></div></div></nav><div class="nm-icons"><button id="nm-pilot" class="nm-pilot" type="button" aria-expanded="false" title="Your pilot: name, colour, country"><b id="nm-pilot-lv">1</b><span id="nm-pilot-n">PILOT</span><img id="nm-pilot-cc" class="flag" alt=""><i aria-hidden="true">▾</i></button><button id="nm-friends" class="nm-ico" type="button" title="Friends"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1M16 3.1a4 4 0 0 1 0 7.8M22 21v-1a6 6 0 0 0-4-5.7"/></svg><span id="fr-count" class="nm-badge"></span></button><button class="nm-ico" type="button" data-open="news" id="nm-news-ico" title="News: what changed, update by update"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5a2 2 0 1 1 4 0 7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg><i class="nm-dot"></i></button><button class="nm-ico" type="button" data-open="howto" title="How to play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 1c0 1.8-2.5 2.2-2.5 3.8M12 17.2v.1"/></svg></button><button class="nm-ico" type="button" data-open="settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 4.3c.4-1.7 3-1.7 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 0 0-1 2.5c.9 1.6-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1.1c-.4 1.7-3 1.7-3.4 0a1.7 1.7 0 0 0-2.6-1.1c-1.5.9-3.3-.8-2.4-2.4a1.7 1.7 0 0 0-1-2.5c-1.8-.5-1.8-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-.9-1.6.9-3.3 2.4-2.4a1.7 1.7 0 0 0 2.6-1.1z"/><circle cx="12" cy="12" r="3"/></svg></button><a id="nm-discord" class="nm-discord" href="https://discord.gg/uKv9ZdqR4n" target="_blank" rel="noopener" title="The official BIONEURAL Discord: find players, squads, news"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg><span>DISCORD</span></a><button id="snd-btn" type="button" title="Music"><span class="ic">🔊</span><span class="tx">Music on</span></button></div></div>
+  <!-- THE MAIN MENU (2026-10): the banner on the left (the logo, the menu), your pilot on the stage (js/menustage.js),
+       your pilot's plate on the right (level, name, colour, country) - the leaderboard is a window of its own now -->
+  <aside class="nm-rail">
+    <div class="nm-brand">
+      <div class="nm-kicker"><i></i>FAST · LOUD · MULTIPLAYER</div>
+      <div class="logo nm-logo" data-text="BIONEURAL">BIO<span>NEURAL</span></div><span class="nm-art-logo" aria-hidden="true"></span><div id="nm-hero" class="nm-hero" aria-hidden="true"></div>
+      <p class="tag">Online multiplayer FPS. Rooftops, subways, back alleys — hunt or hide.</p>
+    </div>
+    <nav class="nm-nav" id="nm-nav" aria-label="Play">
+      <div class="nm-mode-wrap">
+        <div id="nm-mode-pick" class="nm-mode-pick hidden" role="menu" aria-label="Choose a mode">
+          <button type="button" role="menuitemradio" data-mode="online"><b>ONLINE ARENA</b><small>The live arena · real pilots and bots · the maps go round</small></button>
+          <button type="button" role="menuitemradio" data-mode="comp"><b>5v5 COMPETITIVE</b><small>Five against five on DUST · plant or defuse the bomb</small></button>
+          <button type="button" role="menuitemradio" data-mode="gg" data-go="nm-gg" data-btn="play"><b>GUN GAME</b><small>Every kill hands you the next gun · a knife kill on the last step wins</small></button>
+          <button type="button" role="menuitemradio" data-mode="tn" data-go="nm-tn" data-btn="play"><b>TUNNELER</b><small>Dig through the dark rock · find them by the noise · hang lamps</small></button>
+          <button type="button" role="menuitemradio" data-mode="prac"><b>PRACTICE</b><small>Just you against bots · pick the map and how hard they fight</small></button>
+          <button type="button" role="menuitemradio" data-mode="spit" data-go="nm-spit" data-btn="play-off"><b>SPITTING GAME</b><small>Spit on the wrong people · defend the apartment · solo or 4 player co-op</small></button>
+        </div>
+        <button id="nm-mode" class="nm-item nm-modecard" type="button" aria-haspopup="true" aria-expanded="false" title="Choose how you play"><small>MODE</small><b id="nm-mode-n">ONLINE ARENA</b><em id="nm-mode-s">Real pilots and bots · the maps go round</em><i aria-hidden="true">▴</i></button>
+      </div>
+      <div class="nm-go">
+        <button id="nm-play" class="nm-item nm-main" type="button" disabled>LOADING…</button>
+        <button id="nm-servers" class="nm-item nm-srv" type="button" title="Every game server: who is on it, pick one and join"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01M11 7.5h6M11 16.5h6"/></svg><span>SERVER<br>BROWSER</span></button>
+      </div>
+      <!-- THE OTHER TWO GAMES (2026-10-10): a tile each, key art behind (city/home3play.py) -->
+      <div class="nm-games">
+        <button id="nm-g-tn" class="nm-item nm-game" type="button" data-fire="nm-tn" disabled style="--acc: #ffb347; background-image: linear-gradient(95deg, rgba(5,7,12,0.94) 0%, rgba(5,7,12,0.7) 42%, rgba(5,7,12,0.12) 100%), url(assets/menu/key_tn.webp?v=tn1)"><i class="nm-g-new">NEW</i><small>PLAY</small><b>TUNNELER</b><em>Dig · listen · hunt in the dark</em></button>
+        <button id="nm-g-gg" class="nm-item nm-game" type="button" data-fire="nm-gg" disabled style="--acc: #ff5a5a; background-image: linear-gradient(95deg, rgba(5,7,12,0.94) 0%, rgba(5,7,12,0.7) 42%, rgba(5,7,12,0.12) 100%), url(assets/menu/key_gg.webp?v=gg1)"><i class="nm-g-new">NEW</i><small>PLAY</small><b>GUN GAME</b><em>Kill · next gun · knife wins</em></button>
+        <button id="nm-g-spit" class="nm-item nm-game" type="button" data-fire="nm-spit" disabled style="--acc: #7cff6b; background-image: linear-gradient(95deg, rgba(5,7,12,0.94) 0%, rgba(5,7,12,0.7) 42%, rgba(5,7,12,0.12) 100%), url(assets/menu/key_spit.webp?v=cat7)"><i class="nm-g-new">NEW</i><small>PLAY</small><b>SPITTING GAME</b><em>Spit · defend the flat</em></button>
+      </div>
+      <div class="nm-quick">
+        <button id="nm-q-prac" class="nm-item nm-q" type="button" data-fire="nm-prac" title="You against bots - any map, any difficulty" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4"/></svg><span>PRACTICE</span></button>
+        <button id="nm-q-comp" class="nm-item nm-q" type="button" data-fire="nm-comp" title="Five against five on DUST - plant or defuse the bomb" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg><span>5v5</span></button>
+        <button id="nm-q-opt" class="nm-item nm-q" type="button" data-open="settings" title="Graphics, sound, controls"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 4.3c.4-1.7 3-1.7 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 0 0-1 2.5c.9 1.6-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1.1c-.4 1.7-3 1.7-3.4 0a1.7 1.7 0 0 0-2.6-1.1c-1.5.9-3.3-.8-2.4-2.4a1.7 1.7 0 0 0-1-2.5c-1.8-.5-1.8-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-.9-1.6.9-3.3 2.4-2.4a1.7 1.7 0 0 0 2.6-1.1z"/><circle cx="12" cy="12" r="3"/></svg><span>OPTIONS</span></button>
+      </div>
+      <button id="nm-comp" class="hidden" type="button" tabindex="-1" disabled>PLAY 5v5</button>
+      <button id="nm-prac" class="hidden" type="button" tabindex="-1">PRACTICE WITH BOTS</button>
+      <button id="nm-spit" class="hidden" type="button" tabindex="-1">SPITTING GAME</button>
+      <button id="nm-gg" class="hidden" type="button" tabindex="-1">GUN GAME</button>
+      <button id="nm-tn" class="hidden" type="button" tabindex="-1">TUNNELER</button>
+      <button id="nm-cat" class="hidden" type="button" tabindex="-1">HOW TO CAT</button>
+    </nav>
+    <div class="platforms" aria-label="Play on">
+    <span class="pf-t">PLAY ON</span>
+    <div class="pf" title="PC: mouse + keyboard (or a controller)"><svg viewBox="0 0 48 48"><rect x="5" y="7" width="38" height="25" rx="3"/><path d="M19 38h10M24 32v6M15 41h18"/></svg><b>PC</b></div>
+    <div class="pf" title="Laptop / Mac / Chromebook"><svg viewBox="0 0 48 48"><rect x="10" y="10" width="28" height="19" rx="2"/><path d="M5 35h38l-3 4H8z"/></svg><b>Laptop</b></div>
+    <div class="pf" title="Phones: touch controls - hold it sideways"><svg viewBox="0 0 48 48"><rect x="15" y="4" width="18" height="40" rx="4"/><path d="M21 8h6M22 39h4"/></svg><b>Phone</b></div>
+    <div class="pf" title="Tablets: touch controls, or a mouse / controller"><svg viewBox="0 0 48 48"><rect x="8" y="6" width="32" height="36" rx="4"/><path d="M22 37h4"/></svg><b>Tablet</b></div>
+    <div class="pf" title="Samsung DeX: phone on a monitor with mouse + keyboard"><svg viewBox="0 0 48 48"><rect x="4" y="6" width="30" height="21" rx="2"/><path d="M14 32h10M19 27v5"/><rect x="33" y="18" width="11" height="22" rx="2.5"/><path d="M37 36h3"/></svg><b>DeX</b></div>
+    <div class="pf" title="Smart TV / TV box browser, with a controller"><svg viewBox="0 0 48 48"><rect x="4" y="8" width="40" height="26" rx="3"/><path d="M16 41h16M20 34l-2 7M28 34l2 7"/></svg><b>TV</b></div>
+    <div class="pf" title="Consoles with a web browser (Xbox) - with the controller"><svg viewBox="0 0 48 48"><path d="M14 16h20c5 0 8 4 9 9l1.5 8c.6 3.2-3.4 5-5.5 2.6L34 31H14l-5 4.6C7 38 3 36.2 3.5 33L5 25c1-5 4-9 9-9z"/><path d="M13 21v6M10 24h6"/><circle cx="32" cy="22" r="1.4"/><circle cx="36" cy="26" r="1.4"/></svg><b>Console</b></div>
+    <div class="pf" title="Controllers: Xbox, PlayStation, Switch Pro... plug in and play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><path d="M24 12v6M24 30v6M12 24h6M30 24h6"/><circle cx="24" cy="24" r="3"/></svg><b>Controller</b></div>
+  </div>
+    <div id="boot" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="boot-top"><span id="boot-text">Starting…</span><b id="boot-pct">0%</b></div>
+    <div class="boot-track"><div id="boot-bar"></div></div>
+  </div>
+  </aside>
+  <!-- PLAY: how do you want to play? (the cards are the game's own buttons - #play, #play-comp, #party-make, #play-off) -->
+  <section id="nm-modes" class="nm-modes hidden" aria-label="Choose how you play">
+    <div class="nm-modes-h"><span><i></i>SELECT MODE</span><button id="nm-modes-x" class="nm-modes-x" type="button">BACK <kbd>ESC</kbd></button></div>
+    <div class="nm-cards">
+      <button id="play" class="nm-mode" style="--acc: #40e0ff; --i: 0" disabled><span class="m-art" style="background-image: url(assets/maps/city.jpg)"></span><span class="m-k">01</span><span class="m-tag">LIVE</span><b class="m-t">Online</b><small class="m-s">The live arena · real pilots and bots · the maps go round one after another</small><i class="m-go">▶</i></button>
+      <button id="play-comp" class="nm-mode" style="--acc: #ffa640; --i: 1" disabled><span class="m-art" style="background-image: url(assets/maps/d2.jpg)"></span><span class="m-k">02</span><span class="m-tag">RANKED</span><b class="m-t">Competitive 5v5</b><small class="m-s">Five against five on DUST · plant or defuse the bomb · its own leaderboard</small><i class="m-go">▶</i></button>
+      <button id="party-make" class="nm-mode" style="--acc: #c86bff; --i: 2" disabled><span class="m-art" style="background-image: url(assets/maps/tsunami.jpg)"></span><span class="m-k">03</span><span class="m-tag">PARTY</span><b class="m-t">With friends</b><small class="m-s">Send a party link · your friends join your side in a 5v5 match</small><i class="m-go">▶</i></button>
+      <button id="play-off" class="nm-mode" style="--acc: #5cff8a; --i: 3" disabled><span class="m-art" style="background-image: url(assets/maps/castle.jpg)"></span><span class="m-k">04</span><span class="m-tag">NO INTERNET</span><b class="m-t">Offline</b><small class="m-s">Just you against bots · pick the map and how hard they fight</small><i class="m-go">▶</i></button>
+    </div>
+    <button id="spectate" class="nm-spec" disabled title="Fly around and watch">👁 Just watch — <b>SPECTATE</b> a live match</button>
+  </section>
+  <h1 class="nm-h1"><b>Bioneural</b> - free FPS browser game</h1>
+  <section class="nm-side" aria-label="Your pilot">
+    <div class="nm-side-h">YOUR PILOT</div>
+    <button id="prof-card" type="button" data-open="locker" title="Your level, XP and medals"><b id="prof-lv">LV 1</b><span id="prof-title">ROOKIE</span><s><u id="prof-bar"></u></s><em>🎖 PROFILE</em></button>
+    <div id="online" class="online off hidden"><i></i><span></span></div>
+    <label class="lbl" for="name">Pilot name</label>
+    <input id="name" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Enter your name">
+    <div class="lbl">Color</div>
+    <div id="swatches" class="swatches"></div>
+    <label class="lbl" for="country">Country</label>
+    <div class="country-row"><img id="cc-flag" class="flag big" alt=""><select id="country"></select></div>
+    <div id="party-box" class="hidden">
+      <div class="party-head">👥 PARTY <b id="party-code"></b> <small>competitive 5v5 · same side</small><button id="party-leave" type="button" title="Leave the party">✖ leave</button></div>
+      <div class="party-link"><input id="party-url" readonly><button id="party-copy" class="btn ghost">COPY LINK</button></div>
+      <ul id="party-list"></ul>
+      <button id="party-ready" class="btn comp-btn">✔ I'M READY — LET'S ROLL</button>
+      <div id="party-note">Send the link to your friends. When everyone in the party is ready, you all join one match on the same side (random players or bots fill the rest).</div>
+    </div>
+    <p id="mobile-note" class="note hidden">BIONEURAL needs a keyboard and mouse. Open it on a desktop or laptop.</p>
+  </section>
+  <button id="nm-newscard" class="nm-newscard" type="button" data-open="news" title="Patch notes"><i class="nm-dot"></i><small>WHAT'S NEW</small><b id="nm-news-t">UPDATE</b><em id="nm-news-s">Everything that changed</em></button>
+  <footer class="nm-foot">
+    <p class="credits">Game free for all. Made by <b>CrazyDude</b>. Want some more maps or features? Drop me a message: <a href="mailto:game@bioneural.de">game@bioneural.de</a></p>
+  </footer>
+</div>
+<script>
+// THE MENU'S LAYOUT from the first moment - while the game's code still loads (a slow phone connection), the same choice
+// main.js makes (uiScale): touch or not, its size (--ui), and which of the four layouts fits this screen
+(function () {
+  try {
+    var touch = (navigator.maxTouchPoints > 0 || 'ontouchstart' in window) && matchMedia('(pointer: coarse)').matches;
+    if (touch) document.body.classList.add('touch');
+    var w = innerWidth, h = innerHeight, k = touch || w < 861 ? 1 : Math.max(0.85, Math.min(2.5, h / 1040, (w - 48) / 860));
+    var cw = w / k, lay = w / h < 0.9 || w < 560 ? 'stack' : h < 560 || cw < 1000 ? 'short' : cw < 1320 ? 'mid' : 'wide';
+    var r = document.documentElement.style, m = document.getElementById('menu');
+    r.setProperty('--ui', k.toFixed(3));
+    r.setProperty('--mz', (lay === 'stack' ? Math.min(1.45, Math.max(1, w / 440)) : 1).toFixed(3));
+    m.classList.add('lay-' + lay);
+    if (lay === 'short' && cw < 820) m.classList.add('lay-tiny');
+  } catch (e) { /* (main.js sets it anyway) */ }
+})();
+</script>
+
+<!-- THE LEADERBOARD (was the second card on the menu): all-time top, competitive top 25, friends -->
+<div id="board-modal" class="modal hidden">
+  <div class="menu-card board-card nm-board">
+    <div class="st-head"><h2>Leaderboard</h2><button class="st-x" data-close aria-label="Close" title="Close">✕</button></div>
+    <div class="bc-tabs"><button id="tab-top" class="on" type="button" title="All-time top pilots">TOP</button><button id="tab-cmp" type="button" title="Competitive 5v5: the top 25">5v5</button></div>
+    <div id="top-panel">
+    <div id="lb-podium"></div>
+    <div class="lb-scroll"><table><thead><tr><th>#</th><th>Pilot</th><th>Kills</th><th>Deaths</th><th>K/D</th></tr></thead><tbody id="lb-body"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+    <div id="lb-me" class="lb-you"></div>
+    <div id="world-stats" class="hidden"></div>
+    </div>
+    <div id="cmp-panel" class="hidden">
+    <div id="cmp-podium"></div>
+    <div class="lb-scroll"><table><thead><tr><th>#</th><th>Pilot</th><th title="Matches won">Wins</th><th>Kills</th><th>K/D</th></tr></thead><tbody id="cmp-body"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+    <div id="cmp-me" class="lb-you"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CLANS (2026-10-03, js/clans.js): create one or join by code; the clan's page - emblem, tag, motto, members, invite -->
+<div id="clans" class="modal hidden">
+  <div class="menu-card board-card nm-board cl-card">
+    <div class="st-head"><h2>Clans</h2><button class="st-x" data-close aria-label="Close" title="Close">✕</button></div>
+    <div id="cl-body" class="cl-body"><div class="sv-empty">Loading…</div></div>
+  </div>
+</div>
+
+<!-- THE SERVER LIST (2026-10-03): PLAY ONLINE's lobbies and the 5v5 servers on the game server machine - who is on them, join one -->
+<div id="servers" class="modal hidden">
+  <div class="menu-card board-card nm-board sv-card">
+    <div class="st-head"><h2>Servers</h2><button class="st-x" data-close aria-label="Close" title="Close">✕</button></div>
+    <p class="sv-sub">Pick a server and jump in. <b>PLAY</b> and <b>PLAY 5v5</b> do it for you: the server with the most pilots that still has a seat.</p>
+    <div id="sv-list" class="sv-list"><div class="sv-empty">Looking for servers…</div></div>
+    <p id="sv-note" class="note"></p>
+  </div>
+</div>
+
+<div id="rotate-hint">📱↻ Turn your phone sideways to play</div>
+<!-- THE LOADING SCREEN: connecting, then the map - its name, its picture, what is happening, a bar (main.js: loadSet) -->
+<div id="loading" class="screen hidden connecting" aria-live="polite"><img id="ld-img" alt=""><div class="ld-box"><div class="spinner"></div><small id="ld-kicker">CONNECTING</small><b id="ld-map"></b><p id="loading-text">Connecting…</p><div id="ld-bar"><i></i></div></div></div>
+
+<!-- ============ PAUSE ============ -->
+<div id="pause" class="screen hidden">
+  <div class="menu-card small">
+    <h2>PAUSED</h2>
+    <p id="pause-why" class="pause-why">Click anywhere to play</p>
+    <button id="resume" class="btn primary">RESUME</button>
+    <button class="btn ghost" data-open="settings">Settings</button>
+    <button class="btn ghost" data-open="howto">How to play</button>
+    <button id="switch-mode" class="btn ghost">👁 Spectate</button>
+    <button id="pause-friends" class="btn ghost">👥 Friends</button>
+    <button id="pause-votekick" class="btn ghost">🗳 Vote kick</button>
+    <button id="leave" class="btn ghost danger">Leave game</button>
+    <p class="note pause-note">Other pilots can still hit you while paused.</p>
+  </div>
+</div>
+
+<!-- ============ MODALS ============ -->
+<!-- FRIENDS: its own window (the main menu's FRIENDS, the pause menu's Friends) - the list on the left, your code and
+     the add box on the right; js/friends.js draws what's in it -->
+<div id="fr-modal" class="modal hidden">
+  <div class="menu-card fr-modal-card">
+    <div class="st-head"><h2>Friends<small id="fr-sum"></small></h2><button class="st-x" id="fr-modal-close" aria-label="Close" title="Close">✕</button></div>
+    <div id="fr-modal-body"><div id="fr-panel"></div></div>
+  </div>
+</div>
+<!-- THE SHOP: characters, gun skins, hats - looks only; bought with credits (js/main.js renderShop, js/showcase.js) -->
+<div id="shop" class="modal hidden">
+  <div class="menu-card small locker-card lk-wide shop-card">
+    <div class="st-head"><h2>Skins</h2><button class="st-x" data-close aria-label="Close" title="Close">✕</button></div>
+    <div class="sh-top"><p>Everything you wear: bought, earned or free to try. <b>Looks only</b> — nothing here makes you stronger.</p>
+      <div class="sh-wallet"><span id="shop-bal"></span><button type="button" class="btn ghost" data-sv="packs">GET CREDITS</button></div></div>
+    <div class="lk-tabs" id="shop-tabs"></div>
+    <div id="shop-event" class="sh-event hidden">⭐ <b>SPECIAL EVENT</b> · All skins are free to <b>TRY</b> for a limited time.</div>
+    <div id="shop-note" class="sh-note hidden"></div>
+    <div id="shop-body"></div>
+  </div>
+</div>
+<div id="locker" class="modal hidden">
+  <div class="menu-card small locker-card">
+    <h2>Profile</h2>
+    <div id="locker-head"></div>
+    <div id="locker-body"></div>
+    <div id="lk-code-box">
+      <div class="lkc-head"><b>Profile code</b><small>Your level, unlocks and stats on any device or browser. Keep it secret — whoever has it has your profile.</small></div>
+      <div class="lkc-row"><code id="lk-code">••••-••••-••••-••••-••••-••••-••••-••••</code><button id="lk-show" type="button">Show</button><button id="lk-copy" type="button">Copy</button></div>
+      <div class="lkc-row"><input id="lk-in" type="text" maxlength="48" placeholder="Paste a profile code to use it here" autocomplete="off" spellcheck="false"><button id="lk-use" type="button">Use it</button></div>
+      <p id="lk-msg" class="note"></p>
+    </div>
+    <button class="btn primary" data-close>Back</button>
+  </div>
+</div>
+<div id="offline" class="modal hidden">
+  <div class="menu-card off-card">
+    <div class="st-head"><h2>Practice</h2><button class="st-x" data-close aria-label="Close" title="Close">✕</button></div>
+    <p class="off-sub">You against bots, no internet needed. Practice games don't count toward your level, medals or the leaderboard.</p>
+    <div class="off-h">Mode</div>
+    <div class="hx-seg off-mode" id="off-mode"><button data-m="ffa">FREE FOR ALL</button><button data-m="gg">GUN GAME</button><button data-m="tn">TUNNELER</button></div>
+    <div class="off-h">Map</div>
+    <div class="off-maps" id="off-maps"></div>
+    <div class="off-h">Bot difficulty</div>
+    <div class="hx-seg off-diff" id="off-diff"><button data-d="easy"><s><i></i><i></i><i></i></s>EASY</button><button data-d="normal"><s><i></i><i></i><i></i></s>NORMAL</button><button data-d="hard"><s><i></i><i></i><i></i></s>HARD</button></div>
+    <p class="off-note" id="off-diff-note"></p>
+    <div class="st-foot"><button id="off-start" class="btn primary">START</button></div>
+  </div>
+</div>
+<div id="settings" class="modal hidden">
+  <div class="menu-card settings-card">
+    <div class="st-head">
+      <h2>Options</h2>
+      <button class="st-x" data-close aria-label="Close" title="Close">✕</button>
+    </div>
+    <div class="st-body">
+      <div class="st-col">
+        <section class="st-sec">
+          <div class="st-h3row"><h3>Mouse &amp; aim</h3><button id="sens-reset" class="st-mini" type="button" title="Sensitivity back to the default: 1.00 at 800 DPI (everything typed above is replaced)">↺ Default</button></div>
+          <label class="set">Sensitivity <output id="sens-v"></output><input id="sens" type="range" min="0.02" max="3" step="0.01"></label>
+          <div class="sens-exact">
+            <label>Exact <input id="sens-num" type="number" min="0.005" max="10" step="0.001" inputmode="decimal"></label>
+            <label title="Counter-Strike 1.6 / CS2 sensitivity - the same turn per mouse movement as there">CS sens <input id="cssens" type="number" min="0.01" max="50" step="0.01" inputmode="decimal"></label>
+            <label>cm / 360° <input id="cm360" type="number" min="1" max="500" step="0.1" inputmode="decimal"></label>
+            <label>Mouse DPI <input id="dpi" type="number" min="100" max="32000" step="50" inputmode="numeric"></label>
+          </div>
+          <p class="st-hint">Set your mouse DPI, then type your cm/360° or CS sensitivity - the rest follows.</p>
+          <label class="st-check"><input id="invert" type="checkbox"> Invert mouse Y</label>
+        </section>
+        <section class="st-sec">
+          <h3>Controls</h3>
+          <label class="st-check" title="Phones / tablets: the move stick on the right, the buttons on the left. Keyboard: move with I J K L (or the arrows); jump: Right Ctrl or Numpad 0; weapons: Numpad 1-8; reload: Numpad . / End"><input id="lefty" type="checkbox"> Left-handed controls</label>
+          <p class="st-hint lefty-note">Keyboard: move <b>I J K L</b> or <b>arrows</b> · jump <b>Right Ctrl</b> / <b>Num 0</b> · dash <b>Right Shift</b> · weapons <b>Num 1-8</b> · reload <b>Num .</b> / <b>End</b>. Touch: stick on the right, buttons on the left.</p>
+        </section>
+        <section class="st-sec">
+          <h3>Display</h3>
+          <label class="set">Graphics
+            <select id="quality"><option value="ultra">Ultra (ambient occlusion, dense grass)</option><option value="high">High (bloom + shadows)</option><option value="low">Low (faster)</option></select></label>
+          <label class="set">Frame rate
+            <select id="fpslimit"><option value="smooth">Smooth — in step with your screen (recommended)</option><option value="240">240 FPS max</option><option value="165">165 FPS max</option><option value="144">144 FPS max</option><option value="120">120 FPS max</option><option value="60">60 FPS max</option><option value="unlimited">Unlimited (not recommended in a browser)</option></select></label>
+          <p class="st-hint" id="fps-note"></p>
+          <label class="set">Field of view <output id="fov-v"></output><input id="fov" type="range" min="70" max="115" step="1"></label>
+        </section>
+      </div>
+      <div class="st-col">
+        <section class="st-sec xhair-set">
+          <h3>Crosshair</h3>
+          <div class="xh-top">
+            <span id="xh-preview"></span>
+            <label class="set">Style
+              <select id="xh-style"><option value="weapon">By weapon (default)</option><option value="cross">Cross</option><option value="crossdot">Cross + dot</option><option value="t">T</option><option value="dot">Dot</option><option value="circle">Circle</option><option value="circledot">Circle + dot</option></select></label>
+          </div>
+          <div class="xh-opts">
+            <label class="set">Length <output id="xh-len-v"></output><input id="xh-len" type="range" min="2" max="20" step="1"></label>
+            <label class="set">Gap <output id="xh-gap-v"></output><input id="xh-gap" type="range" min="0" max="16" step="1"></label>
+            <label class="set">Thickness <output id="xh-thick-v"></output><input id="xh-thick" type="range" min="1" max="6" step="1"></label>
+            <div class="xh-row">
+              <label class="st-check xh-col">Colour <input id="xh-color" type="color"></label>
+              <label class="st-check"><input id="xh-outline" type="checkbox"> Black outline</label>
+            </div>
+          </div>
+        </section>
+        <section class="st-sec">
+          <h3>Sound &amp; voice</h3>
+          <label class="set">Sound effects <output id="vol-v"></output><input id="vol" type="range" min="0" max="1" step="0.05"></label>
+          <label class="set">Music <output id="mvol-v"></output><input id="mvol" type="range" min="0" max="0.6" step="0.02"></label>
+          <label class="set">Voice chat
+            <select id="voicemode"><option value="ptt">Push to talk (hold V)</option><option value="open">Open mic</option><option value="off">Off</option></select></label>
+          <label class="set">Voice volume <output id="vvol-v"></output><input id="vvol" type="range" min="0" max="2" step="0.05"></label>
+        </section>
+      </div>
+    </div>
+    <div class="st-foot"><button class="btn primary" data-close>Done</button></div>
+  </div>
+</div>
+<div id="howto" class="modal hidden">
+  <div class="menu-card howto hx">
+    <div class="hx-head">
+      <div>
+        <h2>How to play</h2>
+        <p>Free-for-all on huge destructible maps. <b>First to 40 kills</b> — or the best score after <b>6 minutes</b> — wins the round.</p>
+      </div>
+      <button class="st-x" data-close aria-label="Close" title="Close">✕</button>
+    </div>
+    <div class="hx-main">
+      <nav class="hx-nav" role="tablist">
+        <button class="on" data-hx="basics"><i>🎯</i><span>Basics</span></button>
+        <button data-hx="controls"><i>🎮</i><span>Controls</span></button>
+        <button data-hx="weapons"><i>🔫</i><span>Weapons</span></button>
+        <button data-hx="maps"><i>🗺</i><span>Maps</span></button>
+        <button data-hx="comp"><i>💣</i><span>5v5 DUST</span></button>
+        <button data-hx="tunnel"><i>⛏</i><span>Tunneler</span></button>
+        <button data-hx="gg"><i>🔪</i><span>Gun Game</span></button>
+        <button data-hx="social"><i>👥</i><span>Spectate &amp; friends</span></button>
+        <button class="btn primary hx-ok" data-close>Got it</button>
+      </nav>
+      <div class="hx-body">
+
+        <!-- ============================================================ BASICS -->
+        <section class="hx-pane on" data-pane="basics">
+          <div class="hx-hero">
+            <div class="hx-stat"><b>40</b><span>kills wins the round</span></div>
+            <div class="hx-stat"><b>6:00</b><span>round time</span></div>
+            <div class="hx-stat"><b>18</b><span>pilots a server - bots fill every empty place</span></div>
+            <div class="hx-stat"><b>8</b><span>maps, a new one every round</span></div>
+          </div>
+          <div class="hx-grid">
+            <div class="hx-card"><i>💥</i><b>Everything breaks</b><p>Buildings, towers, bridges, rides, trees and lamps can all be blown apart — cut the supports and it comes down on whoever is below.</p></div>
+            <div class="hx-card"><i>🗺</i><b>Map vote</b><p>A new map every round. Online, everyone votes at the end of a round: the next in the order or one of two others. Nobody votes? The next in the order.</p></div>
+            <div class="hx-card"><i>🟢</i><b>Jump pads</b><p>Green pads launch you onto rooftops, towers and cliffs — the fastest way up (and out of trouble).</p></div>
+            <div class="hx-card"><i>➕</i><b>Pickups</b><p>Green crosses heal <b>50 HP</b>. Purple <b>Overcharge</b> doubles your damage for 15 s.</p></div>
+            <div class="hx-card"><i>✈</i><b>Airstrike</b><p>Grab the orange bomb on a tower roof (or earn it with a kill streak), aim and press <kbd>G</kbd>.</p></div>
+            <div class="hx-card hot"><i>☢</i><b>Nuke</b><p><b>5 kills in a row</b> without dying earns a NUKE. Aim and press <kbd>N</kbd>: 4 s of sirens, then it flattens everything within ~55 m.</p></div>
+            <div class="hx-card"><i>🤸</i><b>Knockback</b><p>Hits push enemies back — the lower their health, the further they fly. Knock them off roofs and cliffs.</p></div>
+            <div class="hx-card"><i>🏆</i><b>Your stats</b><p>All-time kills and deaths go on the leaderboard with your country flag; levels, medals and cosmetics are saved with your key.</p></div>
+          </div>
+        </section>
+
+        <!-- ============================================================ CONTROLS -->
+        <section class="hx-pane" data-pane="controls">
+          <div class="hx-seg" role="tablist">
+            <button class="on" data-dev="kb">Keyboard &amp; mouse</button>
+            <button data-dev="touch">Phone / tablet</button>
+            <button data-dev="pad">Controller</button>
+          </div>
+          <div class="hx-dev on" data-devpane="kb">
+            <div class="hx-keys">
+              <div><span class="k"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Move</span></div>
+              <div><span class="k"><kbd>Mouse</kbd></span><span>Aim</span></div>
+              <div><span class="k"><kbd>Left click</kbd></span><span>Fire</span></div>
+              <div><span class="k"><kbd>Space</kbd></span><span>Jump — again in mid-air</span></div>
+              <div><span class="k"><kbd>Shift</kbd><kbd>C</kbd></span><span>Dash</span></div>
+              <div><span class="k"><kbd>1</kbd>–<kbd>6</kbd></span><span>Weapons (or mouse wheel)</span></div>
+              <div><span class="k"><kbd>R</kbd></span><span>Reload</span></div>
+              <div><span class="k"><kbd>Right click</kbd></span><span>Railgun zoom 3× / 5×</span></div>
+              <div><span class="k"><kbd>E</kbd></span><span>Drive a car · take a boat's helm</span></div>
+              <div><span class="k"><kbd>G</kbd></span><span>Airstrike</span></div>
+              <div><span class="k"><kbd>N</kbd></span><span>Nuke</span></div>
+              <div><span class="k"><kbd>V</kbd></span><span>Hold to talk</span></div>
+              <div><span class="k"><kbd>Enter</kbd></span><span>Chat</span></div>
+              <div><span class="k"><kbd>Tab</kbd></span><span>Scoreboard</span></div>
+              <div><span class="k"><kbd>Esc</kbd></span><span>Menu · spectate</span></div>
+            </div>
+            <p class="hx-note"><b>Left-handed?</b> Settings → Controls: move with <kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> or the arrows, jump <kbd>Right Ctrl</kbd>, weapons on the numpad.</p>
+          </div>
+          <div class="hx-dev" data-devpane="touch">
+            <div class="hx-keys">
+              <div><span class="k"><kbd>Left thumb</kbd></span><span>Move</span></div>
+              <div><span class="k"><kbd>Right thumb</kbd></span><span>Look / aim</span></div>
+              <div><span class="k"><kbd>FIRE</kbd></span><span>Hold to shoot (drag to aim)</span></div>
+              <div><span class="k"><kbd>JUMP</kbd><kbd>DASH</kbd></span><span>Jump · dash</span></div>
+              <div><span class="k"><kbd>⟳</kbd></span><span>Reload</span></div>
+              <div><span class="k"><kbd>⇄</kbd></span><span>Next weapon</span></div>
+              <div><span class="k"><kbd>✈</kbd></span><span>Airstrike (lights up when ready)</span></div>
+              <div><span class="k"><kbd>E</kbd></span><span>Drive · take the helm (when near)</span></div>
+              <div><span class="k"><kbd>🎙</kbd></span><span>Hold to talk</span></div>
+              <div><span class="k"><kbd>💬</kbd></span><span>Chat</span></div>
+              <div><span class="k"><kbd>☷</kbd></span><span>Hold for the scoreboard</span></div>
+              <div><span class="k"><kbd>☰</kbd></span><span>Menu · spectate</span></div>
+            </div>
+            <p class="hx-note">Hold the phone sideways. <b>Left-handed?</b> Settings → Controls swaps the sides (stick right, buttons left).</p>
+          </div>
+          <div class="hx-dev" data-devpane="pad">
+            <div class="hx-keys">
+              <div><span class="k"><kbd>Left stick</kbd></span><span>Move</span></div>
+              <div><span class="k"><kbd>Right stick</kbd></span><span>Look</span></div>
+              <div><span class="k"><kbd>RT</kbd></span><span>Fire</span></div>
+              <div><span class="k"><kbd>LT</kbd></span><span>Railgun scope (other guns: dash)</span></div>
+              <div><span class="k"><kbd>A</kbd></span><span>Jump</span></div>
+              <div><span class="k"><kbd>B</kbd></span><span>Dash</span></div>
+              <div><span class="k"><kbd>X</kbd></span><span>Reload</span></div>
+              <div><span class="k"><kbd>Y</kbd><kbd>RB</kbd></span><span>Next weapon</span></div>
+              <div><span class="k"><kbd>LB</kbd></span><span>Previous weapon</span></div>
+              <div><span class="k"><kbd>▲</kbd></span><span>Airstrike</span></div>
+              <div><span class="k"><kbd>▶</kbd></span><span>Nuke</span></div>
+            </div>
+            <p class="hx-note">Xbox, PlayStation, Switch Pro… — plug it in and press any button.</p>
+          </div>
+        </section>
+
+        <!-- ============================================================ WEAPONS -->
+        <section class="hx-pane" data-pane="weapons">
+          <div class="hx-weapons">
+            <div class="hx-w" style="--wc:#40e0ff"><div class="wn"><kbd>1</kbd><b>Pulse Rifle</b></div><p>Fast and accurate. Headshots hurt.</p><div class="chips"><span>30 rounds</span><span>full auto</span><span>headshot ×1.6</span></div></div>
+            <div class="hx-w" style="--wc:#ffa640"><div class="wn"><kbd>2</kbd><b>Scattergun</b></div><p>Ten pellets — devastating up close, with a huge push.</p><div class="chips"><span>6 shells</span><span>close range</span><span>big knockback</span></div></div>
+            <div class="hx-w" style="--wc:#ff4d6d"><div class="wn"><kbd>3</kbd><b>Rocket Launcher</b></div><p>Splash damage and massive knockback. Fire at your feet to <b>rocket-jump</b>.</p><div class="chips"><span>5 rockets</span><span>splash</span><span>breaks walls</span></div></div>
+            <div class="hx-w" style="--wc:#ff8a3d"><div class="wn"><kbd>4</kbd><b>Dynamite</b></div><p><b>Hold</b> fire to light the 5 s fuse, <b>release</b> to throw. Cook it so it blows as it lands — hold too long and it goes off in your hand!</p><div class="chips"><span>3 sticks per life</span><span>huge blast</span></div></div>
+            <div class="hx-w" style="--wc:#ff3df0"><div class="wn"><kbd>5</kbd><b>Railgun</b></div><p>A bolt that <b>travels</b> — everyone sees it coming, a quick jump dodges it. It punches <b>through one wall</b> and burns a hole in it. <b>Headshot kills</b>, a body hit takes 75, a graze 28. Right-click zooms 3× → 5×.</p><div class="chips"><span>3 shots</span><span>through a wall</span><span>headshot = kill</span></div></div>
+            <div class="hx-w" style="--wc:#b9c6d2"><div class="wn"><kbd>6</kbd><b>Smoke grenade</b></div><p>Bounces, rolls and pops into a thick cloud for 18 s — nobody sees through it, bots neither. Cross a street under cover.</p><div class="chips"><span>1 per life</span><span>18 s cloud</span></div></div>
+          </div>
+        </section>
+
+        <!-- ============================================================ MAPS -->
+        <section class="hx-pane" data-pane="maps">
+          <div class="hx-maps">
+            <button class="hx-map" data-map="island"><img data-src="assets/maps/island.jpg" alt=""><b>VOLCANO</b><small>Geysers, lava, eruptions</small></button>
+            <button class="hx-map" data-map="tsunami"><img data-src="assets/maps/tsunami.jpg" alt=""><b>TSUNAMI</b><small>A wave every 2½ minutes. Sharks.</small></button>
+            <button class="hx-map" data-map="city"><img data-src="assets/maps/city.jpg" alt=""><b>NEON CITY</b><small>Rooftops, bridges, subway tunnels</small></button>
+            <button class="hx-map" data-map="sinai"><img data-src="assets/maps/sinai.jpg" alt=""><b>DUNE</b><small>Trains, cars, sandworms, zeppelins</small></button>
+            <button class="hx-map" data-map="sky"><img data-src="assets/maps/sky.jpg" alt=""><b>SKYREACH</b><small>Floating islands and the Leviathan</small></button>
+            <button class="hx-map" data-map="castle"><img data-src="assets/maps/castle.jpg" alt=""><b>CASTLE</b><small>Room to room, under siege</small></button>
+            <button class="hx-map" data-map="zoo"><img data-src="assets/maps/zoo.jpg" alt=""><b>ZOO</b><small>Stampedes, tigers, a fun park</small></button>
+            <button class="hx-map" data-map="sakura"><img data-src="assets/maps/sakura.jpg" alt=""><b>SAKURA</b><small>A temple town built for ambushes</small></button>
+            <button class="hx-map" data-map="d2"><img data-src="assets/maps/d2.jpg" alt=""><span class="tag comp">5v5</span><b>DUST</b><small>Competitive · de_dust2</small></button>
+          </div>
+          <p class="hx-note">The order, round after round: VOLCANO → TSUNAMI → NEON CITY → DUNE → SKYREACH → CASTLE → ZOO → SAKURA → again. Online, everyone votes at the end of a round: the next in this order or one of two others. Click a map for its page.</p>
+
+          <!-- a map's own page (filled from the map's template below) -->
+          <div class="hx-mapview hidden">
+            <button class="hx-back">← All maps</button>
+            <div class="hx-mv-hero"><img alt=""><div class="hx-mv-title"><b></b><span></span></div></div>
+            <div class="hx-mv-body"></div>
+          </div>
+
+          <template data-mapinfo="wh"><p class="lead">The White House at its true size at dusk — three floors of state rooms, the Oval Office in the West Wing, the lawns inside the fence — and <b>every wall, floor, picture and carpet breaks</b>. In the garden: <b>THE WHITE KNUCKLE</b>, a roller coaster round the whole south grounds.</p>
+            <div class="hx-feat"><div><i>🎢</i><b>The roller coaster</b><p>The train waits at the station below the south portico. <kbd>E</kbd> beside a car and you're in your seat — shoot from it, <kbd>E</kbd> again to get off. Up the chain lift to <b>36 m</b>, the big drop, two hills, a helix over the pool. You can walk the track too.</p></div>
+            <div><i>💥</i><b>Shoot the rails</b><p>A piece of track takes <b>8 direct rockets</b> (or two nukes). Shoot one out and the train jumps the gap — if it lands on track it rolls on, if not it crashes and a new train appears at the station.</p></div>
+            <div><i>🎯</i><b>The toys</b><p>Orange pads are <b>trampolines</b>, violet pads <b>teleporters</b> (fence corners → the roofs), red pads <b>cannons</b> that fire you wherever you face. Green pads jump you onto the roof, the wings and the coaster's crests.</p></div>
+            <div><i>🏛</i><b>The house</b><p>Grand stair, Cross Hall, East Room, Blue Room, the kitchen and the bowling lane downstairs, the Lincoln Bedroom and the penthouse above. Blow the walls out — the porticos and colonnades fall when their columns go.</p></div>
+            <div><i>🐎</i><b>Animals</b><p>Horses and zebras on the north lawn, gazelles, donkeys and ostriches on the south lawn, flamingos at the pond — they stampede when the shooting starts. The President's dogs and cats are about too.</p></div>
+            <div><i>🛢</i><b>Explosives</b><p>Barrels in the kitchen, the machine rooms, Marine One on the lawn, at the coaster's towers; the motorcade on the drives.</p></div></div></template>
+          <template data-mapinfo="tsunami"><p class="lead">A mountain island on a moonlit night. Every <b>2½ minutes</b> the sea draws back… then a wall of water floods the island and <b>wrecks everything it reaches</b> — trees, houses, all of it.</p>
+            <div class="hx-feat"><div><i>🌊</i><b>The wave</b><p>Sirens and a warning bar first. Get high — the ridge and the summit stay dry — or get on a boat or the liner. The last wave comes in the final minute.</p></div>
+            <div><i>🏊</i><b>Swimming</b><p>Caught by the water you swim: no weapons, the crest throws you about. Jump out onto a boat, a quay or a rock.</p></div>
+            <div><i>🦈</i><b>Sharks</b><p>They patrol the coast and come in with every wave. A bite is <b>25 HP</b>. Shoot them — from the land too (300 HP).</p></div>
+            <div><i>⛵</i><b>Boats</b><p><kbd>E</kbd> at the helm (in front of the wheelhouse): <kbd>W</kbd><kbd>S</kbd> throttle, <kbd>A</kbd><kbd>D</kbd> steer. Everyone aboard rides along and can shoot. Shoot a boat full of holes and it sinks — a new one turns up on a far beach.</p></div>
+            <div><i>🚢</i><b>The liner</b><p>A great liner moored at the east quay: the ballroom and grand staircase, the engine bay, the bridge. Players can sink it too.</p></div>
+            <div><i>🚡</i><b>Cable car</b><p>Two cabins shuttle between the liner's quay and the summit — ride up and shoot out of the open sides.</p></div>
+            <div><i>🔦</i><b>The summit tunnel</b><p>A rock portal behind the liner's quay leads up inside the mountain to the summit — pitch dark, your flashlight comes on by itself. It stays dry when the sea comes in.</p></div>
+            <div><i>🔥</i><b>Fire</b><p>An explosion can set a tree alight; fire spreads through the forest and burns whoever stands in it — until the wave puts it out. The lighthouse on the summit shows the way up (shoot its lamp and the light goes out).</p></div></div></template>
+          <template data-mapinfo="city"><p class="lead">The classic: a whole city to fight through — inside the buildings, across the rooftops, over the bridges and down in the subway tunnels.</p>
+            <div class="hx-feat"><div><i>🏙</i><b>Explore</b><p>Enter any building, climb to the roofs, cross the bridges, sneak through the tunnels.</p></div>
+            <div><i>💥</i><b>Bring it down</b><p>Every building, tower and bridge can be blown apart — cut the supports and it falls.</p></div>
+            <div><i>✈</i><b>Rooftop airstrike</b><p>The orange bomb waits on a tower roof — take the jump pads up.</p></div></div></template>
+          <template data-mapinfo="sinai"><p class="lead">One huge desert map — the biggest of them all, with <b>30 bots</b>.</p>
+            <div class="hx-feat"><div><i>🚂</i><b>Trains</b><p>Steam trains run a loop of stations and two through lines, with no warning but the whistle — stand on the tracks and you're gone. Ride a wagon; when two trains meet on a crossing they crash.</p></div>
+            <div><i>🚗</i><b>Cars</b><p><kbd>E</kbd> by any car, lorry, racer, motorbike, bus or armoured car to drive it: <kbd>W</kbd><kbd>S</kbd> gas / brake, <kbd>A</kbd><kbd>D</kbd> steer, <kbd>Space</kbd> handbrake, <kbd>F</kbd> view, <kbd>H</kbd> horn. One rocket sets a car on fire, two blow it up.</p></div>
+            <div><i>🐪</i><b>Animals</b><p>Camels, giraffes, zebras, horses, gazelles, ostriches and flamingos stampede when something scares them.</p></div>
+            <div><i>🪱</i><b>The sandworm</b><p>It hears explosions — when the sand starts to move, RUN. Three rockets drive it off.</p></div>
+            <div><i>🎈</i><b>Zeppelin raid</b><p>Airships bomb the whole map — shoot them down.</p></div></div>
+            <p class="hx-credit">Landscape (the middle): <a href="https://sketchfab.com/3d-models/battlefield-1-desert-map-bc2ddc5210464711b074a22957a3360f" target="_blank" rel="noopener">“Battlefield 1 - Desert Map”</a> by <a href="https://sketchfab.com/vrchris" target="_blank" rel="noopener">vrchris</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY-4.0</a>; textures from <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0).</p></template>
+          <template data-mapinfo="sky"><p class="lead">Floating islands above a sea of clouds, a fortress at each end, bridges nobody can break (you can still be blown off them).</p>
+            <div class="hx-feat"><div><i>🐋</i><b>The Leviathan</b><p>A colossal sky whale circles the islands: ride a wind column up a Sky Pier, jump onto its back and grab the airstrike from its shrine.</p></div>
+            <div><i>🎯</i><b>Sky cannons</b><p>They fling you across the whole map. Updrafts lift you to the Spire under the crystal.</p></div>
+            <div><i>🌀</i><b>Gravity storm</b><p>When it hits, every jump becomes a flight.</p></div></div></template>
+          <template data-mapinfo="castle"><p class="lead">Fight room to room: the ballroom with its galleries and imperial staircase, the throne room, chapel, library, armory, bedchambers, the attic treasury and the battlements.</p>
+            <div class="hx-feat"><div><i>🪨</i><b>The siege</b><p>Giant trebuchets on the hills hurl flaming boulders through the roof — get inside!</p></div>
+            <div><i>🕯</i><b>Chandeliers</b><p>Shoot a chandelier's chain and it crashes onto whoever stands below. Powder kegs in the armory!</p></div>
+            <div><i>👻</i><b>The Ghost King</b><p>When the candles blow out, only the torches stay lit… and the king drifts through the walls back to his throne.</p></div>
+            <div><i>🧱</i><b>Flank</b><p>Blast a hole through the outer wall and come in from the garden.</p></div></div></template>
+          <template data-mapinfo="zoo"><p class="lead">A zoo and a fun park — with animals that fight back.</p>
+            <div class="hx-feat"><div><i>🐘</i><b>Stampede</b><p>Explode something near the elephants and the herd charges through fences and buildings. 3 rockets bring an elephant down.</p></div>
+            <div><i>🐅</i><b>Tigers</b><p>Break the tiger valley glass and the tigers come hunting.</p></div>
+            <div><i>🎡</i><b>Fun park</b><p>Walk the roller coaster track, snipe from the Sky Drop and the lookout tower, topple the Ferris wheel.</p></div></div></template>
+          <template data-mapinfo="sakura"><p class="lead">A Japanese temple town built for ambushes.</p>
+            <div class="hx-feat"><div><i>🎋</i><b>Bamboo loops</b><p>Circle round through the bamboo forest and lurk under the canal bridges.</p></div>
+            <div><i>🔔</i><b>The bell tower</b><p>The sniper's spot over the whole town.</p></div>
+            <div><i>🏯</i><b>The pagoda</b><p>Take the jump pad in the garden pit up the pagoda for the Overcharge.</p></div></div></template>
+          <template data-mapinfo="island"><p class="lead">A tropical island with a live volcano in the middle. Don't touch the lava.</p>
+            <div class="hx-feat"><div><i>♨</i><b>Steam geysers</b><p>They launch you across the island and up the volcano.</p></div>
+            <div><i>🌋</i><b>Eruption</b><p>Every few minutes the volcano ERUPTS and rains lava bombs on everything.</p></div>
+            <div><i>⛽</i><b>Fuel depot</b><p>Hit it and it chain-explodes.</p></div></div></template>
+          <template data-mapinfo="hq"><p class="lead">The company headquarters: atrium, offices, labs and the server room.</p>
+            <div class="hx-feat"><div><i>🚀</i><b>Up to the roof</b><p>Jump pads and lift shafts shoot you up to the roof.</p></div>
+            <div><i>🔦</i><b>Lights out</b><p>When the power fails only the red emergency lights, the muzzle flashes and your flashlight are left.</p></div></div></template>
+          <template data-mapinfo="d2"><p class="lead">The 5v5 competitive map: de_dust2 itself, 1:1 — long A, catwalk, mid doors, the tunnels, B site. Walls can't be broken. Rules in the <b>5v5 DUST</b> tab.</p>
+            <p class="hx-credit">Map model: <a href="https://sketchfab.com/3d-models/de-dust2-cs-map-056008d59eb849a29c0ab6884c0c3d87" target="_blank" rel="noopener">“de_dust2 - CS map”</a> by <a href="https://sketchfab.com/vrchris" target="_blank" rel="noopener">vrchris</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY-4.0</a>.</p></template>
+        </section>
+
+        <!-- ============================================================ 5v5 DUST -->
+        <!-- ============================================================ TUNNELER -->
+        <section class="hx-pane" data-pane="tunnel">
+          <p class="hx-lead"><b>50 pilots</b> in one dark world of solid rock, 350 by 350 metres. You start in a steel base of your own and dig your way to the others. <b>First to 50 kills</b> - or the most kills after <b>10 minutes</b> - wins. Play it from the <b>TUNNELER</b> tile, the <b>SERVERS</b> list, or alone in PRACTICE.</p>
+          <div class="hx-grid two">
+            <div class="hx-card hot"><i>⛏</i><b>Digging</b><ul>
+              <li><kbd>1</kbd> the <b>drill</b>: hold fire and walk into the rock - it cuts a tunnel 4 m wide.</li>
+              <li>Tunnels only go sideways: the floor and the ceiling stay.</li>
+              <li>Rockets and dynamite blow craters in the rock too.</li>
+              <li>The drill hurts whoever stands right in front of it.</li></ul></div>
+            <div class="hx-card"><i>💡</i><b>The dark</b><ul>
+              <li>Your gun has a light. <kbd>5</kbd> hangs a <b>lamp</b> on the wall - as many as you like.</li>
+              <li>Everybody sees a lamp's light - it can give you away.</li>
+              <li>Big caverns and old passages are hidden in the rock.</li></ul></div>
+            <div class="hx-card"><i>👂</i><b>Listen</b><ul>
+              <li>You <b>hear</b> a drill only close up: a whisper at 15 m, loud right next to you. The <b>DRILLING · m</b> arrow shows drilling far off.</li>
+              <li>The bots hear you only <b>5 m</b> away - and run when two or more come at them.</li></ul></div>
+            <div class="hx-card"><i>🗺</i><b>The map</b> <kbd>M</kbd><ul>
+              <li>Top left: what you have seen. <b>M</b> or a tap opens the big one.</li>
+              <li>Your tunnels, <b>somebody else's</b> in orange (you are told when you break into one), old caves, the bases.</li>
+              <li>The <b>drilling machines</b> in yellow - an arrow on the small map points to the nearest.</li></ul></div>
+            <div class="hx-card"><i>🔋</i><b>Energy and your base</b><ul>
+              <li>Drilling, moving and shooting use <b>energy</b>. Empty: no drill, no guns, half speed.</li>
+              <li>Only <b>your base</b> fills it - and your health (nothing heals outside). The <b>BASE · m</b> arrow shows the way home.</li>
+              <li>In somebody else's base energy fills at a third, health not at all.</li>
+              <li>You always come back to life in your base.</li></ul></div>
+            <div class="hx-card hot"><i>🚜</i><b>Drilling machines</b><ul>
+              <li>Six stand in the big caverns. <kbd>E</kbd> climbs in (and out); <kbd>F</kbd> looks from outside.</li>
+              <li>It digs <b>8 m wide and 6.8 m high</b>. Driving costs nothing - drilling eats energy three times as fast.</li>
+              <li>Empty, it goes on at half speed: refuel it at your base's <b>MACHINE CHARGING STATION</b> - the glowing signs beside the doorways; park anywhere near them.</li>
+              <li><b>No guns inside</b>: the cutter and the tracks are its weapons. <b>8 rockets</b> wreck one.</li></ul></div>
+          </div>
+        </section>
+
+        <!-- ============================================================ GUN GAME -->
+        <section class="hx-pane" data-pane="gg">
+          <p class="hx-lead">Every kill hands you the next gun. Climb the whole ladder and win with the knife. Play it from the <b>GUN GAME</b> tile on the home screen, or alone in PRACTICE.</p>
+          <div class="hx-grid two">
+            <div class="hx-card hot"><i>🪜</i><b>The ladder</b><ul>
+              <li><b>Rocket launcher</b> (2 kills) → <b>railgun</b> → <b>pulse rifle</b> → <b>scattergun</b> → <b>pistol</b> → <b>knife</b>.</li>
+              <li>A <b>knife kill on the last step</b> wins the round. 7 kills in all.</li>
+              <li>The bots climb the ladder too.</li></ul></div>
+            <div class="hx-card"><i>🔪</i><b>The knife</b><ul>
+              <li>Everyone carries one all the time.</li>
+              <li>Get <b>knifed</b> and you <b>lose a level</b>.</li></ul></div>
+            <div class="hx-card"><i>💎</i><b>Rare things</b><ul>
+              <li>The <b>Karambit</b> and the <b>Butterfly Knife</b>, the <b>Fade</b> and <b>Crimson Web</b> gun skins.</li>
+              <li>Never sold, never free to try: you <b>earn</b> them in Gun Game - SKINS → KNIVES and GUN SKINS tell you how.</li></ul></div>
+          </div>
+        </section>
+
+        <section class="hx-pane" data-pane="comp">
+          <p class="hx-lead">Counter-Strike 1.6 rules on de_dust2. <b>PLAY 5v5</b> in the main menu puts you in a 5 v 5 match right away — empty places are filled with bots, and real players who join take a bot's place. <b>SERVERS</b> lists the 5v5 servers: pick one, and your side.</p>
+          <div class="hx-grid two">
+            <div class="hx-card hot"><i>💣</i><b>How a round is won</b><ul>
+              <li><b style="color:#ffb347">Terrorists</b> (orange, south): plant the bomb on <b>A</b> or <b>B</b> — or eliminate every CT.</li>
+              <li><b style="color:#6fb7ff">Counter-terrorists</b> (blue, north): defuse it — or eliminate every T before the plant — or hold out: <b>time up = CTs win</b>.</li>
+              <li>After the plant the bomb decides it: it explodes or it's defused.</li>
+              <li>Both teams wiped out at once: a draw.</li></ul></div>
+            <div class="hx-card"><i>⏱</i><b>Match &amp; rounds</b><ul>
+              <li><b>One life per round</b> — the dead watch a teammate.</li>
+              <li>15 s <b>freeze time</b> (buy, no moving), then <b>1:45</b> to play.</li>
+              <li><b>16 rounds (MR8)</b>: first to <b>9</b> wins; 8–8 is a draw.</li>
+              <li>After round 8 the teams <b>switch sides</b> (everyone back to $800).</li></ul></div>
+            <div class="hx-card hot"><i>💣</i><b>The bomb</b><ul>
+              <li>One Terrorist carries it; if he dies it drops — any T picks it up.</li>
+              <li><b>Plant</b>: hold <kbd>E</kbd> on a site for <b>3 s</b>. <kbd>G</kbd> drops it for a teammate.</li>
+              <li>It explodes <b>35 s</b> later (~20 m blast, both teams).</li>
+              <li><b>Defuse</b>: hold <kbd>E</kbd> — <b>10 s</b>, or <b>5 s</b> with a kit.</li></ul></div>
+            <div class="hx-card"><i>💰</i><b>Money</b><ul>
+              <li>Start <b>$800</b> · max <b>$16,000</b></li>
+              <li>Win: <b>$3,250</b> (elimination / time) · <b>$3,500</b> (bomb)</li>
+              <li>Loss: <b>$1,400</b> +$500 per loss in a row (max $3,400); Ts +$800 if they planted</li>
+              <li>Plant / defuse <b>+$300</b> · kill <b>$300</b></li></ul></div>
+            <div class="hx-card"><i>🛒</i><b>Buy menu</b> <kbd>B</kbd><ul>
+              <li><kbd>1</kbd> Rifle <b>$2,500</b> (T) / <b>$3,100</b> (CT) · <kbd>2</kbd> Scattergun <b>$1,700</b> · <kbd>3</kbd> Railgun <b>$4,750</b></li>
+              <li><kbd>4</kbd> Dynamite <b>$300</b> · <kbd>5</kbd> Flashbang <b>$200</b> · <kbd>6</kbd> Smoke <b>$300</b></li>
+              <li><kbd>7</kbd> Kevlar + helmet <b>$1,000</b> · <kbd>8</kbd> Defuse kit <b>$200</b></li>
+              <li>Everyone always has the Pistol.</li></ul></div>
+            <div class="hx-card"><i>🎯</i><b>Damage</b><ul>
+              <li>Rifle: <b>5 body shots or 2 headshots</b>. Pistol 22 (×2 head).</li>
+              <li>Railgun: a direct hit only — headshot kills, body 75, <b>not</b> through walls here.</li>
+              <li><b>No friendly fire</b> (the bomb hurts everyone), no Overcharge.</li>
+              <li>Kevlar takes a third off everything but the rifle, railgun and bomb.</li></ul></div>
+            <div class="hx-card"><i>🔫</i><b>Guns on the ground · flashbangs</b><ul>
+              <li>The dead drop their main gun — walk over it to take it; <kbd>G</kbd> drops yours first.</li>
+              <li>A flashbang blinds whoever looks at it 1.6 s after the throw — look away.</li></ul></div>
+            <div class="hx-card"><i>⌨</i><b>Keys</b><ul>
+              <li><kbd>B</kbd> buy · <kbd>E</kbd> plant / defuse · <kbd>G</kbd> drop · <kbd>1</kbd> main · <kbd>2</kbd> pistol · <kbd>3</kbd> TNT · <kbd>4</kbd> flash · <kbd>5</kbd> smoke</li>
+              <li><b>Vote kick</b>: Esc → 🗳 Vote kick, or <kbd>/votekick name</kbd>; <kbd>F1</kbd> yes / <kbd>F2</kbd> no.</li>
+              <li>Teammates have a <b>▼</b> over their heads; enemy names are red.</li></ul></div>
+          </div>
+        </section>
+
+        <!-- ============================================================ SPECTATE & FRIENDS -->
+        <section class="hx-pane" data-pane="social">
+          <div class="hx-grid two">
+            <div class="hx-card"><i>👁</i><b>Spectate</b><p>Press <b>SPECTATE</b> in the main menu (or <kbd>Esc</kbd> → <b>👁 Spectate</b> in a game). Spectators are invisible, don't take a player slot and can chat.</p>
+              <div class="hx-keys mini">
+                <div><span class="k"><kbd>Click</kbd></span><span>Next player</span></div>
+                <div><span class="k"><kbd>Right click</kbd></span><span>Free camera</span></div>
+                <div><span class="k"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Fly</span></div>
+                <div><span class="k"><kbd>Space</kbd><kbd>C</kbd></span><span>Up / down</span></div>
+                <div><span class="k"><kbd>Shift</kbd></span><span>Fly fast</span></div>
+                <div><span class="k"><kbd>J</kbd></span><span>Join the game</span></div>
+              </div></div>
+            <div class="hx-card"><i>🤝</i><b>Friends</b><p>Add friends from the menu (FRIENDS) or in a game: hold <kbd>Tab</kbd>, right mouse button, right-click a player — then <b>Invite</b> them into your game.</p></div>
+            <div class="hx-card"><i>🎙</i><b>Proximity voice</b><p>Hold <kbd>V</kbd> to talk — players near you hear you, and voices fade with distance. Push-to-talk, open mic or off in Settings.</p></div>
+            <div class="hx-card"><i>🌍</i><b>Servers</b><p>Everyone plays on the BIONEURAL game server: up to 6 lobbies of 30 players, and PLAY always puts you in the fullest one with room — people play together. When every seat is taken you wait in the queue and drop in the moment one frees up. Bots fill the empty places (20, DUNE 30); every player who joins takes a bot's place.</p></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NEWS: patch notes ============ -->
+<div id="news" class="modal hidden">
+  <div class="menu-card howto hx nw">
+    <div class="hx-head">
+      <div>
+        <h2>News &amp; patch notes</h2>
+        <p>Everything that changed in BIONEURAL, update by update. Newest first.</p>
+      </div>
+      <button class="st-x" data-close aria-label="Close" title="Close">✕</button>
+    </div>
+    <div class="hx-main">
+      <nav class="hx-nav nw-nav" role="tablist">
+        <button class="on" data-nw="u111"><i>⛏</i><span>1.11 <em>Tunneler</em><small>Oct 25, 2026</small></span><b class="nw-new">LATEST</b></button>
+        <button data-nw="u110"><i>🔪</i><span>1.10 <em>Gun Game</em><small>Oct 23, 2026</small></span></button>
+        <button data-nw="u19"><i>🐈</i><span>1.9 <em>Two new games</em><small>Oct 10, 2026</small></span></button>
+        <button data-nw="u18"><i>🛒</i><span>1.8 <em>The Shop</em><small>Oct 4, 2026</small></span></button>
+        <button data-nw="u17"><i>⚔</i><span>1.7 <em>Clans &amp; 5v5 servers</em><small>Oct 3, 2026</small></span></button>
+        <button data-nw="u16"><i>★</i><span>1.6 <em>The White House</em><small>Oct 3, 2026</small></span></button>
+        <button data-nw="u15"><i>⚡</i><span>1.5 <em>Dedicated servers</em><small>Oct 2, 2026</small></span></button>
+        <button data-nw="u14"><i>▣</i><span>1.4 <em>The new front end</em><small>Oct 1, 2026</small></span></button>
+        <button data-nw="u13"><i>🌊</i><span>1.3 <em>Tsunami</em><small>Sep 30, 2026</small></span></button>
+        <button data-nw="u12"><i>🏜</i><span>1.2 <em>Dune &amp; progression</em><small>Sep 28, 2026</small></span></button>
+        <button data-nw="u11"><i>🏰</i><span>1.1 <em>Skyreach, Castle, Dust</em><small>Sep 27, 2026</small></span></button>
+        <button data-nw="u10"><i>🚀</i><span>1.0 <em>Launch</em><small>Sep 26, 2026</small></span></button>
+        <button class="btn primary hx-ok" data-close>Close</button>
+      </nav>
+      <div class="hx-body nw-body">
+
+        <!-- ============================================================ 1.11 -->
+        <section class="hx-pane on" data-nwpane="u111">
+          <div class="nw-rel"><span>UPDATE 1.11 · BUILD 77</span><b>TUNNELER</b><small>October 25, 2026</small></div>
+          <p class="nw-lead">Remember <b>Tunneler</b> from the MS-DOS days? Here it is for <b>fifty players</b> on our own server: a dark world of solid rock, 350 by 350 metres, and everybody starts alone somewhere inside it.</p>
+          <h4 class="nw-t new">⛏ TUNNELER</h4>
+          <ul>
+            <li><b>Your base:</b> a steel room of your own with two doorways - you always come back to it. Only there do your <b>energy</b> and your health fill up again - in somebody else's base your energy still fills, at a third of the speed.</li>
+            <li><b>Energy</b> runs down as you drill, move and shoot (slowly - a full bar drills a long way). Run out and the drill and the guns stop - crawl home (the arrow shows the way).</li>
+            <li><b>Dig your way</b> with the big two-handed rock drill (key 1) - two metres of engine and auger - through wide tunnels. Rockets blow craters in the rock too.</li>
+            <li><b>It is dark.</b> Your gun has a light, and you can hang as many <b>lamps</b> (key 5) on the walls as you like - but everybody sees their light.</li>
+            <li><b>The map</b> (top left, or M / tap it for the big one) shows what you have seen: your tunnels, <b>somebody else's</b> in orange (you are told when you break into one), old caves - and your lamps.</li>
+            <li><b>Listen.</b> A drill is heard only close up (15 m) - the arrow on your screen shows drilling far off.</li>
+            <li>Big caverns and old passages are hidden in the rock. The bots are diggers: they drill all over the rock, follow the sound of drilling - and run when two or more come at them.</li>
+            <li><b>Drilling machines:</b> six of them stand in the big caverns - the map shows where (yellow; on the small map an arrow to the nearest). Press <b>E</b> to climb in and drive into the rock - it digs tunnels twice as wide and twice as high. No guns inside: the cutter and its tracks are the weapons. You drive it from the top of the cab (F: from outside). Drilling eats your energy three times as fast - driving costs nothing; empty, it goes on at half speed: refuel it at your base's MACHINE CHARGING STATION (the glowing signs by the doorways). Eight rockets wreck one.</li>
+            <li>First to <b>50 kills</b> wins - or the most kills when the 10 minutes are up.</li>
+            <li>Play it online from the <b>TUNNELER</b> tile on the home screen, or alone in PRACTICE.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.10 -->
+        <section class="hx-pane" data-nwpane="u110">
+          <div class="nw-rel"><span>UPDATE 1.10 · BUILD 76</span><b>GUN GAME</b><small>October 23, 2026</small></div>
+          <p class="nw-lead">A player asked for it, so here it is: <b>GUN GAME</b>. Every kill hands you the next gun - and the last one is a knife.</p>
+          <h4 class="nw-t new">🔪 GUN GAME</h4>
+          <ul>
+            <li><b>Climb the ladder:</b> rocket launcher, railgun, pulse rifle, scattergun, pistol - then the <b>knife</b>. A knife kill on the last step wins the round.</li>
+            <li>Everyone carries a knife all the time. Get knifed and you <b>lose a level</b>.</li>
+            <li>The bots climb the ladder too. Play it online from the <b>GUN GAME</b> tile on the home screen, or alone in PRACTICE.</li>
+          </ul>
+          <h4 class="nw-t new">💎 RARE KNIVES AND SKINS</h4>
+          <ul>
+            <li>Three knives, made in 3D: the <b>Combat Knife</b> for everyone, and the rare <b>Karambit</b> and <b>Butterfly Knife</b>.</li>
+            <li>Two rare gun skins: <b>Fade</b> and <b>Crimson Web</b>.</li>
+            <li>Rare things are never sold and never free to try - you <b>earn</b> them in Gun Game. See SKINS → KNIVES and GUN SKINS for how.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.9 -->
+        <section class="hx-pane" data-nwpane="u19">
+          <div class="nw-rel"><span>UPDATE 1.9 · BUILD 69</span><b>TWO NEW GAMES</b><small>October 10, 2026</small></div>
+          <p class="nw-lead">BIONEURAL is two games now: the FPS you know and <b>THE SPITTING GAME</b>, with its own PLAY on the home screen - alone or with friends. (HOW TO CAT has grown into a game of its own, MAKE ME RICH, for PC.)</p>
+
+          <h4 class="nw-t new">🐈 HOW TO CAT</h4>
+          <ul>
+            <li><b>Breed the weirdest cats in town.</b> Two cats in a cage make a kitten. Related parents make inbred kittens, and inbreeding makes <b>FREAKS</b> - twelve of them, each worse than the last.</li>
+            <li><b>YOUR LAB</b> grows from the KITCHEN TABLE to MAD SCIENCE on DNA from every kitten, freak and present. Each stage opens new edits (coats, faces, voices, extra legs, cyclops eyes...), and you buy more cages there.</li>
+            <li><b>Let them out.</b> Your cats wreck the town, jump on people's heads, whirl up into a <b>CATNADO</b> and hunt in packs: ten cats catch a person and carry them home in a cage, as a present.</li>
+            <li><b>The portable cage</b> (G) holds fifteen cats: catch strays, carry them home, or throw them at people - and at other players.</li>
+            <li><b>A six-level run</b> on THE SERVER and in rooms with friends: up to eight teams, houses spread over a big London-style town with a cathedral, sixteen landmarks, jobs and town events. Every level the cordon tightens - the last one is one street, rivals across the road.</li>
+            <li>A living town: neighbours who say hello, dogs, pigeons, celebrity cats and Auntie Brenda on the phone.</li>
+          </ul>
+
+          <h4 class="nw-t new">💦 THE SPITTING GAME</h4>
+          <ul>
+            <li><b>Spit on the wrong people</b> from your balcony, then defend the apartment when they come for you: the street, the police, SWAT, the Mayor, the bulldozer.</li>
+            <li>Five kinds of spit, an armory, furniture to throw, traps and fortifications, SHOUT and OVERSCREAM - alone or with up to three friends.</li>
+            <li>The people talk now - real words and gibberish, mixed - and they no longer all talk at once.</li>
+            <li>Day one is kinder: the landlord lets the rent slide once.</li>
+          </ul>
+
+          <h4 class="nw-t imp">Improved</h4>
+          <ul>
+            <li><b>The home screen:</b> PLAY BIONEURAL (the online arena) and PLAY SPITTING GAME - PRACTICE, 5v5 and OPTIONS right under them.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.8 -->
+        <section class="hx-pane" data-nwpane="u18">
+          <div class="nw-rel"><span>UPDATE 1.8 · BUILD 52</span><b>THE SHOP</b><small>October 4, 2026</small></div>
+          <p class="nw-lead">Eight characters, six gun skins and six hats - and to start with, a special event: all of them are free to TRY.</p>
+
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>SHOP</b> in the main menu: characters, gun skins and hats. Looks only - nothing in it makes you stronger.</li>
+            <li><b>Eight characters</b> to play as: Uncle Gus, Cousin Earlene, Grandpappy Zeke, Possum, Skeeter, Big Hoss, Hog and Mama Bertha. Everybody in the match sees them, each one exactly as tall as the standard body.</li>
+            <li><b>Gun skins</b> - Dragonscale, Magma, Royal Gold, Neon Circuit, Glacier and Damascus. Each of your guns wears its own: pick the gun at the top of the shop, then its skin.</li>
+            <li><b>Hats</b> - Traffic Cone, Viking Helmet, Beer Helmet, The Chicken, UFO and Crown of Fire.</li>
+            <li><b>Special event: everything is free to TRY.</b> For a limited time every character, gun skin and hat can be worn for nothing. They are not free forever: when the event ends they go back to their prices.</li>
+            <li><b>Six new songs</b> for the playlist, and the main menu greets you with a different one each time.</li>
+          </ul>
+
+          <h4 class="nw-t imp">Improved</h4>
+          <ul>
+            <li>On High or Ultra graphics the characters, hats and gun skins look in a match the way they look in the shop: the detailed models, the sharp textures, the studio light.</li>
+            <li><b>PROFILE</b> (was PROFILE · LOCKER) and the shop keep one window size on every tab; on a phone the tabs are one row to swipe.</li>
+            <li>The skins of PROFILE (Camo, Gold, Chrome ...) are for the standard body; a character always keeps his own look.</li>
+            <li>Terms of Service and Privacy Policy, linked at the bottom of SHOP → GET CREDITS.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.7 -->
+        <section class="hx-pane" data-nwpane="u17">
+          <div class="nw-rel"><span>UPDATE 1.7</span><b>CLANS &amp; 5v5 SERVERS</b><small>October 3, 2026</small></div>
+          <p class="nw-lead">Competitive 5v5 is back — on its own dedicated servers — with a server list to pick your game from, and clans to play it with.</p>
+
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>PLAY 5v5</b> is back in the main menu, right under PLAY. One press puts you in a five-against-five match on DUST, on the 5v5 server with the most pilots that still has a place. Empty places are filled with bots; a real player who joins takes a bot's place.</li>
+            <li><b>Dedicated 5v5 servers.</b> Three 5v5 servers run around the clock in Frankfurt, 10 pilots each. An empty server waits with a fresh match: the first pilot in starts at 0 – 0, and the first round waits until he stands at his spawn.</li>
+            <li><b>SERVERS</b> — a server list in the main menu. Every PLAY server (30 pilots each) and every 5v5 server: its map, its pilots, and for 5v5 the round, the score and the places left on each side. JOIN a PLAY server, or pick your side on a 5v5 server with JOIN T / JOIN CT.</li>
+            <li><b>CLANS.</b> Create a clan with a name, a tag of 2–4 letters or digits, a motto and an emblem — or join one with its invite link or code. Up to 5 members. The clan's tag stands before your name on the scoreboard. The leader can change the motto and the emblem and remove members.</li>
+            <li><b>Emblem maker.</b> 6 shapes, 24 icons, and 12 colours each for the shape and the icon. No pictures to upload.</li>
+            <li><b>PLAY TOGETHER.</b> On your clan's page, press PLAY or PLAY 5v5: you go in on a server with room for every clanmate who is in the menu, and their places are held for one minute — in 5v5 on your side. Every clanmate who is online gets a note with a JOIN button, in the menu or in the middle of another match; for 5v5 it names the server and the side. The clan's page also shows where every member is right now, with a JOIN button next to anyone who is playing.</li>
+          </ul>
+
+          <h4 class="nw-t imp">Improved</h4>
+          <ul>
+            <li><b>HOW TO PLAY</b> has its <b>5v5 DUST</b> page again, with the rules of the match.</li>
+            <li>The menu's windows have slim scrollbars in the game's colours instead of the browser's own.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.6 -->
+        <section class="hx-pane" data-nwpane="u16">
+          <div class="nw-hero"><img src="assets/maps/wh.jpg" alt=""><div><span>UPDATE 1.6 · BUILD 51</span><b>THE WHITE HOUSE</b><small>October 3, 2026</small></div></div>
+          <p class="nw-lead">A new map built at true scale, a roller coaster round its grounds and three new kinds of jump pad. This is the biggest content update since launch.</p>
+
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>New map — WHITE HOUSE.</b> The residence at 1:1 scale with three floors, the Oval Office, the Cabinet Room, the East Room, the Blue Room, the press room, the kitchens and the machine rooms — fully furnished, pictures on the walls, chandeliers, drapes and carpets. Both wings, the porticos, two fountains, Marine One on the South Lawn, the motorcade, the pool and the tennis court. Every wall, floor and ceiling is destructible; carpets and chandeliers go with the floor that holds them.</li>
+            <li><b>THE WHITE KNUCKLE.</b> A full-size roller coaster round the south grounds. Press <kbd>E</kbd> at the station to take a seat, <kbd>E</kbd> again to bail out. The train runs the lift, the drops, the crests and the loops on its own physics — and keeps going when the track is shot away: it jumps the gap and lands on the next piece if it can, or crashes, and a fresh train rolls out of the station. Track pieces take only direct rocket hits (and nukes: 60 % per nuke, the second one finishes it). You can walk the whole track.</li>
+            <li><b>New toys.</b> Trampolines (bounce pads that send you straight up), teleporters (step on, come out elsewhere) and aim cannons (fire you along the direction you face). Four roof pads, three coaster-crest pads, wing and penthouse pads.</li>
+            <li><b>More to blow up.</b> 21 cars, 77 barrels and 23 crates on the grounds; herds of horses, gazelles, donkeys, ostriches, zebras and flamingos at the pond; dogs and cats on the lawns.</li>
+            <li><b>PRACTICE WITH BOTS</b> is back in the main menu: pick any map and the bots' difficulty, play offline.</li>
+          </ul>
+
+          <h4 class="nw-t imp">Improved</h4>
+          <ul>
+            <li><b>Oak trees</b> with round crowns among the pines on the grounds and the avenues; every tree falls to a single rocket blast.</li>
+            <li>The grounds have a city skyline and hills behind the avenues; the coaster's towers are steel lattice.</li>
+          </ul>
+
+          <h4 class="nw-t fix">Fixed</h4>
+          <ul>
+            <li><b>NEON CITY:</b> the road's centre-line dashes no longer hang in the air over the subway stairs.</li>
+            <li><b>RAILGUN:</b> the black scorch mark it stamped on every wall and floor it hit is gone; the sparks and the smoke stay.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.5 -->
+        <section class="hx-pane" data-nwpane="u15">
+          <div class="nw-rel"><span>UPDATE 1.5 · BUILD 49–50</span><b>DEDICATED SERVERS</b><small>October 2, 2026</small></div>
+          <p class="nw-lead">PLAY ONLINE moved from player-hosted rooms to persistent dedicated game servers in Frankfurt. Always on, 30 pilots per server — when one fills up, the next one opens automatically.</p>
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>Dedicated game server</b> (play.bioneural.de). The world runs on the server, not on somebody's phone — no more host hand-overs, no more lobbies dying when the host leaves. Servers hold 30 pilots each and a new one opens as soon as one is full, so there is always a game to join.</li>
+            <li><b>Round rules: first to 40 kills or 7 minutes.</b> Rounds were 25 kills / 5 minutes.</li>
+            <li><b>Leaderboard shows who's online:</b> playing / watching now and distinct pilots in the last 24 hours.</li>
+            <li>Bots fill the lobby: 20 on every map (30 on DUNE), one bot leaves for every human who joins.</li>
+          </ul>
+          <h4 class="nw-t imp">Improved</h4>
+          <ul>
+            <li><b>Phone HUD.</b> Measured on 21 phone sizes: the clock and score line respect the notch, the kill feed no longer overlaps DASH on short screens, the scoreboard button moved under the menu button, event bars (TSUNAMI, DUNE) sit clear of the buttons.</li>
+            <li><b>Older iPads (iOS 17 and below)</b> get a calm menu: the moving effects that froze Safari's GPU process for 11–55 s are switched off on those devices only.</li>
+            <li>Joining a round no longer shows the PAUSED card at every new round on PC; the mouse is re-captured automatically.</li>
+            <li>Joining on DUNE: no more "Respawning" freeze on arrival — the loading screen now waits for the first smooth frames and you spawn with a fresh shield.</li>
+          </ul>
+          <h4 class="nw-t fix">Fixed</h4>
+          <ul>
+            <li>TSUNAMI: a 2-second stall when the sunken liner was hidden or the lighthouse lamp was shot out (lights inside hidden groups rebuilt every shader).</li>
+            <li>Competitive 5v5 and party invites are out of the menu for now while online play runs on the dedicated server.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.4 -->
+        <section class="hx-pane" data-nwpane="u14">
+          <div class="nw-rel"><span>UPDATE 1.4</span><b>THE NEW FRONT END</b><small>October 1, 2026</small></div>
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>New main menu.</b> Real in-engine moments play behind the menu (a nuke, a firefight, the sandworm, the tsunami, the sky whale); your pilot card with level, name, colour and country; LEADERBOARD, FRIENDS, PROFILE · LOCKER, SETTINGS and HOW TO PLAY as their own screens; JOIN DISCORD up top.</li>
+            <li><b>Menu music.</b> Its own track in the menu, the game's music in the match.</li>
+            <li><b>FRIENDS window:</b> your friend list, your code, add by code, invites while playing.</li>
+            <li><b>HOW TO PLAY</b> rewritten: basics, controls for your device (keyboard, touch, controller), weapons, a map gallery with a page per map.</li>
+          </ul>
+          <h4 class="nw-t bal">Balance</h4>
+          <ul>
+            <li><b>Nothing comes back mid-round.</b> Wrecked cars stay wrecked, destroyed buildings stay down until the next round. The only exception: TSUNAMI's boats respawn on a beach.</li>
+          </ul>
+          <h4 class="nw-t fix">Fixed</h4>
+          <ul>
+            <li>Car wrecks climbed into the sky on DUNE (a wreck's own collider counted as ground under it).</li>
+            <li>The DUNE house roofs flickered.</li>
+            <li>Echo removed from every map's sound.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.3 -->
+        <section class="hx-pane" data-nwpane="u13">
+          <div class="nw-rel"><span>UPDATE 1.3 · BUILD 42–43</span><b>TSUNAMI</b><small>September 30, 2026</small></div>
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>New map — TSUNAMI.</b> A wooded island under a Tatras-style ridge (summit 86 m) with a fishing village, a lighthouse with a turning beam, a cable car and a tunnel from the quay up inside the mountain to the summit. Every couple of minutes the siren sounds, the sea draws back and a wall of water rolls over the island, flooding it to 63 m — it destroys everything it reaches and it stays destroyed. Caught in it you swim — no weapons in the water, the crest flings you about — so climb out onto a boat, the hills or the liner before the sharks come.</li>
+            <li><b>Boats and the liner.</b> Five fishing boats you can drive (<kbd>E</kbd> at the helm) and a docked ocean liner with a ballroom, a grand staircase, an engine bay and the bridge — they float up with the flood and save whoever is aboard. Shoot a boat enough and it burns and sinks.</li>
+            <li><b>Sharks</b> patrol the coast and hunt swimmers; more arrive with each wave. 300 HP, killable from land.</li>
+            <li>Lightning strikes the peaks during the storm; a moonlit night sky with a storm cloud on the ridge.</li>
+          </ul>
+          <h4 class="nw-t imp">Improved — bots</h4>
+          <ul>
+            <li><b>Bot navigation overhaul.</b> Bots no longer push against the map boundary, walk into holes where a walkway was blown away, pace at stair corners or stand on a ledge shooting at someone they could walk down to. Floating maps: longer ground look-ahead, no rescue jumps off the island. Measured on CASTLE: stuck episodes 11 → 2, kills 72 → 94 in four minutes. Aim, targeting, personalities and difficulty are untouched.</li>
+            <li>Bots climb TSUNAMI's mountain (the walk graph now accepts slopes up to 3.8 m per step on that map).</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.2 -->
+        <section class="hx-pane" data-nwpane="u12">
+          <div class="nw-rel"><span>UPDATE 1.2 · BUILD 36</span><b>DUNE &amp; PROGRESSION</b><small>September 28–29, 2026</small></div>
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>New map — DUNE.</b> A desert town with photo-textured plaster and stone, a railway with running trains, a sandworm that hunts across the dunes, zeppelins overhead, an oasis with a lake, camels, gazelles, zebras, giraffes and flamingos. 10-minute rounds, 30 bots.</li>
+            <li><b>Progression.</b> XP for every kill (nukes included), animals, cars and destruction; levels up to 1000 on a progressive curve; medals; cosmetic unlocks — skins, trails, titles and vehicle paints in your LOCKER.</li>
+            <li><b>Stakes.</b> A bounty on the round leader; the final minute counts double and brings one last big event.</li>
+            <li><b>Recognition.</b> Play of the round replay and the MVP card at the end of every round.</li>
+          </ul>
+          <h4 class="nw-t imp">Improved</h4>
+          <ul>
+            <li>Settings: sensitivity in cm/360, crosshair styles, left-handed layout.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.1 -->
+        <section class="hx-pane" data-nwpane="u11">
+          <div class="nw-rel"><span>UPDATE 1.1 · BUILD 16–21</span><b>SKYREACH, IRONHOLD CASTLE, SANDSTORM &amp; DUST</b><small>September 27, 2026</small></div>
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>SKYREACH.</b> Floating islands linked by indestructible bridges, massive jumps, updraft columns, sky cannons, waterfalls into the void — and THE LEVIATHAN, a colossal sky whale you can ride, with a deck, a shrine and an airstrike pickup. The GRAVITY STORM lowers gravity for 20 seconds.</li>
+            <li><b>IRONHOLD CASTLE.</b> Mostly indoors: spired towers, gatehouse, keep, a coffered ballroom, the throne room. THE SIEGE — four trebuchets on the hills punch flaming boulders through the roof. When the candles blow out, THE GHOST KING walks the halls.</li>
+            <li><b>SANDSTORM.</b> A walled, tactical lane map with two bomb sites. THE BOMB is planted every 150 s — stand on it to defuse, or watch the site go.</li>
+            <li><b>DUST, 1:1</b> — a faithful recreation built from the real navigation mesh — with <b>COMPETITIVE 5v5</b>: one life per round, buy time, plant and defuse, 16 rounds, first to 9, sides swap at half-time, party links for friends.</li>
+            <li><b>RAILGUN.</b> A hitscan sniper laser that punches player-sized holes through every wall on the map.</li>
+            <li>Map styles and a decoration system; every map's buildings and walls are destructible.</li>
+          </ul>
+          <h4 class="nw-t imp">Improved</h4>
+          <ul>
+            <li><b>Anti-cheat.</b> Every hit, blast and airstrike needs proof from the attacker's own broadcasts; the server bans only on proof (impossible damage, health or position) and never bans good players for being good.</li>
+            <li><b>Server-counted leaderboard.</b> Kills and deaths are counted by the server from relayed hits, rate-capped — nothing a client claims counts on its own.</li>
+            <li>Nobody falls under a map any more: bedrock under the subway, solid stairs, pads lifted out of the terrain, and physics that ends every step above the ground.</li>
+          </ul>
+          <h4 class="nw-t fix">Fixed</h4>
+          <ul>
+            <li>A nuke or airstrike held over a round change gave a free second nuke. New rounds clear streaks; the server relays a nuke only after four server-proven kills.</li>
+            <li>Nuke kills no longer count towards the frag limit.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ 1.0 -->
+        <section class="hx-pane" data-nwpane="u10">
+          <div class="nw-rel"><span>1.0 · BUILD 7–12</span><b>LAUNCH</b><small>September 26, 2026</small></div>
+          <p class="nw-lead">BIONEURAL goes live: fast, loud, free-for-all on fully destructible maps, in the browser, on PC, phone, tablet and controller.</p>
+          <h4 class="nw-t new">New</h4>
+          <ul>
+            <li><b>NEON CITY</b> — rooftops, subways and back alleys; every building comes down.</li>
+            <li><b>ZOO &amp; FUN PARK</b> — elephants that stampede, tigers that break out, rides that run.</li>
+            <li><b>DUST TRAIN</b> — a freight line through the map; the trains never stop.</li>
+            <li><b>SAKURA</b> — three lanes through a bamboo forest, a pagoda over a sunken garden, a bell tower, a wooden village, red bridges over the canal, the volcano on the horizon.</li>
+            <li><b>VOLCANO ISLAND</b> — a jungle temple, obsidian fields, geysers that launch you, and a lava river to the sea.</li>
+            <li><b>BIONEURAL HQ</b> — an office block, its garden and a guard tower; the blackout turns the lights off.</li>
+            <li><b>THE NUKE</b> on a 5-kill streak (<kbd>N</kbd>), airstrikes at 3 and 8, dynamite, smoke and flash.</li>
+            <li>Spectator mode with chat, 20 bots in every lobby, a top-250 all-time leaderboard, music through Web Audio on phones.</li>
+          </ul>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div id="scope-ov"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><b></b><em></em></div>  <!-- (the railgun scope: full screen - never inside a blurred panel, that pins 'fixed' to the panel) -->
+  <div id="crosshair" class="w0"><i></i><i></i><i></i><i></i><b></b></div>
+  <div id="hitmarker"><i></i><i></i><i></i><i></i></div>
+  <div id="reload-ring"></div>
+  <div id="dmg-dirs"></div>
+  <div id="damage-vignette"></div>
+
+  <div id="top-bar">
+    <div id="timer">6:00</div>
+    <div id="score-line"></div>
+  </div>
+  <div id="killfeed"></div>
+  <div id="center-msg"></div>
+  <div id="sub-msg"></div>
+  <div id="over-timer"></div>
+  <div id="prot-msg">SPAWN SHIELD</div>
+  <div id="strike-msg"></div>
+  <div id="nuke-msg"></div>
+
+  <div id="hp-box">
+    <div class="hp-label">HEALTH</div>
+    <div class="hp-row"><span id="hp-num">100</span><div class="hp-bar"><div id="hp-fill"></div></div></div>
+    <div class="dash-row"><span>DASH</span><div class="dash-bar"><div id="dash-fill"></div></div></div>
+  </div>
+  <div id="ammo-box">
+    <div id="weapon-name">Pulse Rifle</div>
+    <div class="ammo-row"><span id="ammo">30</span><span id="ammo-max">/30</span></div>
+    <div id="weapons"></div>
+  </div>
+
+  <div id="chat-log"></div>
+  <div id="chat-box"><input id="chat-input" maxlength="140" autocomplete="off" placeholder="Say something… (Enter to send, Esc to cancel)"></div>
+  <div id="net-info"></div>
+  <div id="voice-ind">🎙 TALKING</div>
+  <div id="speakers"></div>
+  <div id="offline-banner">OFFLINE — not connected to other players. Reconnecting automatically…</div>
+
+  <div id="scoreboard">
+    <div class="sb-col">
+      <h3>SCOREBOARD</h3>
+      <table><thead><tr><th>#</th><th>Pilot</th><th title="Points: a kill is 1, in the final minute 2, the bounty +2">Score</th><th>Deaths</th><th>Ping</th></tr></thead><tbody id="board-body"></tbody></table>
+    </div>
+    <div class="sb-col">
+      <h3 class="sub">ALL-TIME TOP 10</h3>
+      <table><thead><tr><th>#</th><th>Pilot</th><th>Kills</th><th>Deaths</th><th>K/D</th></tr></thead><tbody id="alltime-body"></tbody></table>
+      <p id="alltime-me" class="note"></p>
+    </div>
+  </div>
+  <div id="death-screen"><div id="death-by"></div><div id="death-count"></div></div>
+  <!-- THE BREAK between rounds (hud.js roundEnd): the result, the board, the chat, the map vote -->
+  <div id="round-end">
+    <div class="ix-shell">
+      <div class="ix-panel ix-head">
+        <div class="ix-titles"><div class="ix-kicker" id="ix-kicker"></div><h2 class="ix-title" id="round-winner"></h2></div>
+        <div class="ix-clock"><div id="ix-clock-l"></div><div class="ix-ring" id="ix-ring"><span id="ix-ring-n"></span></div></div>
+      </div>
+      <div class="ix-panel ix-res">
+        <div id="round-mvp"></div>
+        <div class="ix-h">SCOREBOARD <em id="ix-count"></em></div>
+        <div class="ix-board-wrap"><table class="ix-board"><thead><tr><th>#</th><th>Pilot</th><th title="Points: a kill is 1, in the final minute 2, the bounty +2">Score</th><th>Deaths</th><th>Ping</th></tr></thead><tbody id="round-board"></tbody></table></div>
+        <div id="round-xp" style="display:none"></div>
+      </div>
+      <div class="ix-panel ix-chat" id="ix-chat">
+        <div class="ix-h">CHAT <em>everyone in the match</em></div>
+        <div class="ix-lines" id="ix-lines"></div>
+        <div class="ix-quick" id="ix-quick"><button type="button" data-say="GG">GG</button><button type="button" data-say="Nice one!">Nice one!</button><button type="button" data-say="Rematch?">Rematch?</button><button type="button" data-say="😂">😂</button><button type="button" data-say="🔥">🔥</button></div>
+        <div class="ix-say" id="ix-say"><button type="button" class="ix-hint" id="ix-hint"></button></div>
+      </div>
+      <div class="ix-panel ix-vote" id="ix-vote">
+        <div class="ix-h"><span id="ix-vote-t"></span><em id="ix-vote-h"></em><div class="ix-timer" id="ix-timer"><u></u></div></div>
+        <div class="ix-cards" id="round-pick"></div>
+      </div>
+      <p id="round-next" class="ix-sr"></p>
+    </div>
+  </div>
+</div>
+
+<!-- THE QUEUE: every seat on the game server taken - the player's place in line, and they drop in by themselves (js/main.js) -->
+<div id="queue" class="hidden" role="dialog" aria-modal="true" aria-labelledby="q-title" aria-live="polite">
+  <div class="q-card">
+    <div class="q-radar" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+    <div class="q-kicker"><i></i>PLAY ONLINE · <span id="q-sv">6 servers</span></div>
+    <h2 class="q-title" id="q-title">ALL SERVERS FULL</h2>
+    <p class="q-sub">You're in the queue — you'll drop into the action by yourself the moment a seat frees up.</p>
+    <div class="q-pos"><small>YOUR PLACE IN LINE</small><b><span class="q-hash">#</span><span id="q-pos">1</span></b><em id="q-of">you're next</em></div>
+    <div class="q-stats"><div><small>PILOTS PLAYING</small><b id="q-n">180 / 180</b></div><div><small>WAITING</small><b id="q-time">0:00</b></div></div>
+    <button id="q-leave" class="btn ghost q-leave" type="button">LEAVE QUEUE</button>
+  </div>
+</div>
+
+<noscript><div class="screen"><p>BIONEURAL needs JavaScript.</p></div></noscript>
+<script type="module" src="js/main.js?v=tn15" onerror="window.__bootFail && window.__bootFail()"></script>
+</body>
+</html>

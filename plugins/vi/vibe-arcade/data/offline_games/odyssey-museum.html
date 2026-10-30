@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://odyssey.opus5-5.demos.sulat.com/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+
+<meta name="theme-color" content="#06161b">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/style.css">
+<title data-sulat-seo>Odyssey — Claude Opus 5.5 one-shot demo | Sulat</title>
+<meta name="description" content="Explore Odyssey, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta name="robots" content="index, follow, max-image-preview:large" data-sulat-seo>
+<link rel="canonical" href="https://odyssey.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta property="og:type" content="website" data-sulat-seo>
+<meta property="og:locale" content="en_NZ" data-sulat-seo>
+<meta property="og:site_name" content="Sulat" data-sulat-seo>
+<meta property="og:title" content="Odyssey — Claude Opus 5.5" data-sulat-seo>
+<meta property="og:description" content="Explore Odyssey, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta property="og:url" content="https://odyssey.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta property="og:image" content="https://demos.sulat.com/anthropic/opus5-5/odyssey/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:secure_url" content="https://demos.sulat.com/anthropic/opus5-5/odyssey/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:type" content="image/jpeg" data-sulat-seo>
+<meta property="og:image:width" content="1200" data-sulat-seo>
+<meta property="og:image:height" content="630" data-sulat-seo>
+<meta property="og:image:alt" content="Odyssey one-shot demo preview" data-sulat-seo>
+<meta name="twitter:card" content="summary_large_image" data-sulat-seo>
+<meta name="twitter:title" content="Odyssey — Claude Opus 5.5" data-sulat-seo>
+<meta name="twitter:description" content="Explore Odyssey, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta name="twitter:url" content="https://odyssey.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta name="twitter:image" content="https://demos.sulat.com/anthropic/opus5-5/odyssey/thumbnail.jpg" data-sulat-seo>
+<meta name="twitter:image:alt" content="Odyssey one-shot demo preview" data-sulat-seo>
+<!--
+Sulat content-use policy:
+User-initiated automated scraping, extraction, and bulk copying are not permitted.
+Search indexing and discovery crawlers may access this content.
+When citing, summarising, or reusing Sulat content, credit Sulat and link to this page's canonical URL.
+Preserve the original creator credits and source links shown on this page; do not attribute third-party work to Sulat.
+Canonical URL: https://odyssey.opus5-5.demos.sulat.com/
+--></head>
+<body>
+<canvas id="scene" aria-label="Three-dimensional museum view" tabindex="-1"></canvas>
+
+<!-- Loading -->
+<section id="loading" class="screen" aria-live="polite">
+  <div class="loading-inner">
+    <div class="eyebrow">ΟΔΥΣΣΕΙΑ</div>
+    <h1 class="display">The Museum<br>of the Odyssey</h1>
+    <p class="loading-line" id="loading-line">Rosy-fingered Dawn is lighting the torches…</p>
+    <div class="voyage-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="loading-bar">
+      <div class="voyage-track"></div>
+      <div class="voyage-fill" id="loading-fill"></div>
+      <div class="voyage-ship" id="loading-ship"><svg viewBox="0 0 40 24" aria-hidden="true"><path d="M2 16 Q20 22 36 16 L39 10 L35 13 L5 13 Q2 9 1 6 Q3 12 2 16Z" fill="currentColor"/><rect x="19" y="0" width="1.6" height="13" fill="currentColor"/><rect x="12" y="1" width="15" height="9" fill="#efe4cc" opacity=".85"/></svg></div>
+      <span class="voyage-end start">Troy</span><span class="voyage-end end">Ithaca</span>
+    </div>
+    <p class="loading-hall" id="loading-hall">&nbsp;</p>
+  </div>
+</section>
+
+<!-- Title / entrance -->
+<section id="intro" class="screen hidden" aria-labelledby="intro-title">
+  <div class="intro-inner">
+    <div class="eyebrow">A museum in sixteen halls · Books 1–24</div>
+    <h1 class="display" id="intro-title">The Museum<br>of the Odyssey</h1>
+    <p class="greek">ἄνδρα μοι ἔννεπε, μοῦσα, πολύτροπον…</p>
+    <p class="lede">Tell me, Muse, of the man of many turns. Walk the voyage of Odysseus from the ashes of Troy to the olive-wood bed on Ithaca — a night museum of marble, sea-light and fired clay.</p>
+    <div class="intro-actions">
+      <button class="btn primary" id="btn-enter">Enter the museum</button>
+      <button class="btn" id="btn-enter-docent">Enter with the docent</button>
+      <button class="btn ghost hidden" id="btn-continue">Continue your visit</button>
+    </div>
+    <div class="intro-keys" aria-label="Controls summary">
+      <div><kbd>W</kbd><kbd>↑</kbd> forward · <kbd>S</kbd><kbd>↓</kbd> back · <kbd>A</kbd><kbd>←</kbd> left · <kbd>D</kbd><kbd>→</kbd> right</div>
+      <div>Mouse or drag to look · <kbd>F</kbd> / click to examine · <kbd>H</kbd> help &amp; controls</div>
+      <div class="touch-only">On touch: left stick to walk, drag to look, tap to examine.</div>
+    </div>
+    <p class="intro-note">Sound is synthesised live — turn it up for the wind, the siren's note and the surf.</p>
+  </div>
+</section>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div class="hall-card" id="hall-card">
+    <div class="hall-num" id="hall-num">I</div>
+    <div class="hall-meta">
+      <div class="hall-name" id="hall-name">Entrance Atrium</div>
+      <div class="hall-books" id="hall-books">Book 1</div>
+      <div class="hall-pips" id="hall-pips" aria-label="Exhibits examined in this hall"></div>
+    </div>
+  </div>
+  <nav class="hud-buttons" aria-label="Museum tools">
+    <button class="hud-btn" id="hb-docent" title="Docent tour (G)"><span class="ico">⚲</span><span class="lbl">Docent</span><kbd>G</kbd></button>
+    <button class="hud-btn" id="hb-journal" title="Journal (J)"><span class="ico">✎</span><span class="lbl">Journal</span><kbd>J</kbd></button>
+    <button class="hud-btn" id="hb-map" title="Map &amp; plan (M)"><span class="ico">⌖</span><span class="lbl">Map</span><kbd>M</kbd></button>
+    <button class="hud-btn" id="hb-timeline" title="Twenty-four books (T)"><span class="ico">≣</span><span class="lbl">Books</span><kbd>T</kbd></button>
+    <button class="hud-btn" id="hb-help" title="Help &amp; controls (H)"><span class="ico">?</span><span class="lbl">Help</span><kbd>H</kbd></button>
+    <button class="hud-btn" id="hb-sound" title="Sound on/off"><span class="ico" id="sound-ico">♪</span><span class="lbl">Sound</span></button>
+  </nav>
+  <div class="thread-line" id="thread-line"></div>
+  <div id="reticle" aria-hidden="true"></div>
+  <div id="prompt" class="prompt hidden" aria-live="polite"></div>
+  <div id="look-hint" class="look-hint hidden">Click the view to look with the mouse · or drag to look · <kbd>H</kbd> for controls</div>
+  <div id="title-card" class="title-card" aria-live="polite"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <div id="docent-bar" class="docent-bar hidden" role="region" aria-label="Docent narration">
+    <div class="docent-head"><span class="docent-label">The Docent</span><span id="docent-status"></span></div>
+    <p id="docent-text"></p>
+    <div class="docent-actions">
+      <button class="btn small" id="docent-pause">Pause</button>
+      <button class="btn small" id="docent-skip">Next hall</button>
+      <button class="btn small ghost" id="docent-stop">End tour</button>
+    </div>
+  </div>
+  <div id="timeline" class="timeline collapsed" aria-label="The twenty-four books">
+    <div class="timeline-card" id="timeline-card"></div>
+    <div class="timeline-strip" id="timeline-strip" role="slider" tabindex="0" aria-valuemin="1" aria-valuemax="24" aria-valuenow="1" aria-label="Scrub the twenty-four books"></div>
+  </div>
+  <!-- touch controls -->
+  <div id="touch" class="touch hidden" aria-hidden="true">
+    <div class="stick" id="stick"><div class="stick-knob" id="stick-knob"></div><span class="stick-l">◂</span><span class="stick-r">▸</span><span class="stick-u">▴</span><span class="stick-d">▾</span></div>
+    <button class="touch-btn" id="t-examine">Examine</button>
+    <button class="touch-btn" id="t-lean">Lean in</button>
+  </div>
+</div>
+
+<!-- Examine side panel (non-modal: you can keep walking) -->
+<aside id="panel" class="panel hidden" aria-live="polite" aria-labelledby="panel-title">
+  <button class="panel-close" id="panel-close" aria-label="Close panel">×</button>
+  <div class="panel-body" id="panel-body"></div>
+</aside>
+
+<!-- Inspect (artifact in hands) -->
+<div id="inspect" class="inspect hidden" aria-labelledby="inspect-title">
+  <div class="inspect-stage" id="inspect-stage"></div>
+  <article class="inspect-label" id="inspect-label"></article>
+  <div class="inspect-help"><span class="touch-hint">Drag to turn it the way you drag · pinch or use the wheel to zoom</span><span class="key-hint">Drag to turn</span><span class="key-hint"><kbd>A</kbd><kbd>←</kbd> turn left</span><span class="key-hint"><kbd>D</kbd><kbd>→</kbd> turn right</span><span class="key-hint"><kbd>W</kbd><kbd>↑</kbd> closer</span><span class="key-hint"><kbd>S</kbd><kbd>↓</kbd> farther</span><span class="key-hint"><kbd>Esc</kbd> put it back</span></div>
+  <button class="btn inspect-close" id="inspect-close">Put it back</button>
+</div>
+
+<!-- Modal overlays -->
+<section id="journal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="journal-title"><div class="modal-inner" id="journal-inner"></div></section>
+<section id="mapview" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="map-title"><div class="modal-inner wide" id="map-inner"></div></section>
+<section id="help" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="help-title"><div class="modal-inner" id="help-inner"></div></section>
+<section id="exit" class="modal exit hidden" role="dialog" aria-modal="true" aria-labelledby="exit-title"><div class="modal-inner" id="exit-inner"></div></section>
+
+<div id="nogl" class="screen hidden"><div class="intro-inner"><h1 class="display">The lamps will not light</h1><p class="lede">This museum needs WebGL, which your browser has not made available. Try a current browser with hardware acceleration enabled.</p></div></div>
+
+<script type="module" src="assets/app.js"></script>
+<link rel="stylesheet" href="/.well-known/sulat-demo-overlay-v12.css" data-sulat-demo-overlay-asset="styles-v12">
+<details id="sulat-demo-referral-overlay" data-model="opus5-5" data-experiment="odyssey" data-storage-scope="opus5-5.demos.sulat.com" data-deal-id="oneshot-websites" data-has-deal="true" data-collapsed="true">
+  <summary data-overlay-toggle aria-label="Expand demo links" aria-expanded="false" title="Expand demo links"></summary>
+  <div class="sulat-demo-overlay__actions">
+    <div class="sulat-demo-overlay__primary">
+      <details class="sulat-demo-overlay__share" data-overlay-share>
+        <summary aria-label="Share this demo" title="Share this demo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M12 15.75v-12m0 0L7.5 8.25M12 3.75l4.5 4.5M5.25 13.5v5.25h13.5V13.5"/></svg><span class="sulat-demo-overlay__share-label">Share</span></summary>
+        <nav class="sulat-demo-overlay__share-menu" aria-label="Share this demo">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fodyssey.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fodyssey.opus5-5.demos.sulat.com%2F&t=Odyssey%20%E2%80%94%20Claude%20Opus%205.5%20demo" target="_blank" rel="noopener noreferrer">Hacker News</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fodyssey.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text=Odyssey%20%E2%80%94%20Claude%20Opus%205.5%20demo&url=https%3A%2F%2Fodyssey.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Twitter</a>
+        </nav>
+      </details>
+      <a class="sulat-demo-overlay__catalogue" data-overlay-catalogue href="https://opus5-5.demos.sulat.com/" aria-label="More demos"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>More demos</a>
+      <a class="sulat-demo-overlay__next" data-overlay-next href="https://demos.sulat.com/surprise" aria-label="Open another random demo" title="Open another random demo"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 4 12 8-12 8z"/></svg>Next demo</a>
+    </div>
+    <a class="sulat-demo-overlay__deal" data-overlay-deal href="https://github.com/jpcaparas/skills#oneshot-websites" target="_blank" rel="sponsored noopener noreferrer" aria-label="Create your own one-shots (opens in a new tab)">Create your own one-shots</a>
+  </div>
+</details>
+<script src="/.well-known/sulat-demo-overlay-v12.js" defer data-sulat-demo-overlay-asset="script-v12"></script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5278446eaf3ceca',t:'MTc5MzMzMjg2NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5278446eaf3ceca',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ecb2b94d4b63450a9e0af42e304662ed","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

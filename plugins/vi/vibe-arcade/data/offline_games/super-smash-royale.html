@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://smashroyale.io/">
+  <meta charset="utf-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#163e57">
+  <!-- share-metadata:start -->
+  <title>Super Smash Royale</title>
+  <meta name="description" content="Choose your fighter, drop onto the island, and survive the storm. Play solo or invite your friends to a private battle royale.">
+  <link rel="canonical" href="https://smashroyale.io/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Super Smash Royale">
+  <meta property="og:title" content="Super Smash Royale">
+  <meta property="og:description" content="Choose your fighter, drop onto the island, and survive the storm. Play solo or invite your friends to a private battle royale.">
+  <meta property="og:url" content="https://smashroyale.io/">
+  <meta property="og:image" content="https://smashroyale.io/assets/social/smashroyale-island-1200x630.png">
+  <meta property="og:image:secure_url" content="https://smashroyale.io/assets/social/smashroyale-island-1200x630.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Super Smash Royale island with smashroyale.io across the sky.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Super Smash Royale">
+  <meta name="twitter:description" content="Choose your fighter, drop onto the island, and survive the storm. Play solo or invite your friends to a private battle royale.">
+  <meta name="twitter:image" content="https://smashroyale.io/assets/social/smashroyale-island-1200x630.png">
+  <meta name="twitter:image:alt" content="Super Smash Royale island with smashroyale.io across the sky.">
+  <!-- share-metadata:end -->
+  <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48 256x256">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192x192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="assets/icons/apple-touch-icon-167x167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/apple-touch-icon-152x152.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="combat-reticle.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+<link rel="stylesheet" href="approved-film.css"><link rel="stylesheet" href="typography.css"><link rel="stylesheet" href="device-gallery.css"><link rel="stylesheet" href="private-lobby.css">
+  <link rel="stylesheet" href="replay.css">
+  <link rel="stylesheet" href="spotlight.css">
+  <link rel="stylesheet" href="controls-dialog.css">  <link rel="stylesheet" href="./leaderboard-menu.css">
+  <script type="module" src="./js/leaderboard-menu.js"></script>
+  <link rel="stylesheet" href="map-selection.css">
+  <link rel="stylesheet" href="menu-layout.css">
+</head>
+<body>
+  <canvas id="world" aria-label="Super Smash Royale island battlefield"></canvas>
+  <main id="menu" class="screen deployment ssr-interim">
+    <div id="approved-film" class="approved-film" aria-hidden="true"><img class="approved-film-poster" src="art/gameplay-loading-poster-v5.jpg" alt=""></div>
+    <header class="deployment-heading"><h1><span>Super</span><span>Smash</span><span>Royale</span></h1><p>Battle Royale</p></header>
+    <section id="entry-gate" class="entry-gate" aria-labelledby="entry-title">
+      <h2 id="entry-title">Choose how you play.</h2>
+      <button id="enter" class="primary" aria-busy="true" disabled>Loading island…</button>
+      <button id="host-private-lobby" type="button" aria-busy="true" disabled>Host private lobby</button>
+      <button id="entry-fullscreen" type="button" hidden>Go full screen</button>
+      <button id="entry-settings" type="button" disabled>Settings</button>
+      <button id="entry-feedback" type="button" data-feedback-open>Feedback</button>
+      <p id="loading" role="status">Loading the island and its surroundings.</p>
+    </section>
+    <p class="project-credit entry-project-credit">This is a non-commercial fan-made project just for fun. All original rights and IP belong to their original creators and owners. Made by <a href="https://x.com/@0xRishi" target="_blank" rel="noopener noreferrer">@0xRishi</a> from <a href="https://vesper.inc" target="_blank" rel="noopener noreferrer">Vesper</a> (DBA <a href="https://opengame.io" target="_blank" rel="noopener noreferrer">OpenGame</a>).</p>
+    <aside id="community-spotlight" aria-labelledby="spotlight-title" hidden>
+      <header class="spotlight-heading">
+        <div><span class="spotlight-kicker"><span aria-hidden="true">✦</span> Making waves</span><h2 id="spotlight-title">Around the island</h2></div>
+        <button type="button" class="spotlight-pause" aria-label="Pause spotlight" aria-pressed="false"><span aria-hidden="true">Ⅱ</span></button>
+      </header>
+      <div class="spotlight-grid" aria-live="off"></div>
+      <p class="spotlight-hint">Press + player reactions <span>Hover to hold</span></p>
+    </aside>
+    <section id="deployment-controls" class="deployment-dock" hidden aria-label="Deployment">
+      <div class="deployment-brief"><h2>Drop into the island.</h2><p>Find gear. Take the high ground.<br>Outlast the closing storm.</p></div>
+      <div class="deployment-actions"><div id="selected-fighter" class="selected-fighter" hidden><img id="selected-fighter-image" alt="" width="56" height="64"><div><small>Selected fighter</small><strong id="selected-fighter-name"></strong></div></div><label class="player-identity" for="player-username"><span>Username</span><input id="player-username" type="text" maxlength="40" autocomplete="nickname" spellcheck="false" aria-describedby="username-status" dir="auto"></label><p id="username-status" class="username-status" role="status">Saved on this device.</p><p id="roster-status" role="status" hidden></p><button id="play" class="primary" aria-busy="false" disabled>START</button><button id="menu-fullscreen" type="button" hidden>Go full screen</button><button id="fighters">Choose fighter</button></div>
+      <p class="project-credit">This is a non-commercial fan-made project just for fun. All original rights and IP belong to their original creators and owners. Made by <a href="https://x.com/@0xRishi" target="_blank" rel="noopener noreferrer">@0xRishi</a> from <a href="https://vesper.inc" target="_blank" rel="noopener noreferrer">Vesper</a> (DBA <a href="https://opengame.io" target="_blank" rel="noopener noreferrer">OpenGame</a>).</p>
+      <div class="deployment-options"><button id="mute" aria-pressed="false">Sound on</button><button id="menu-settings">Settings</button><button id="menu-feedback" type="button" data-feedback-open>Feedback</button><span id="menu-audio-status" role="status"></span><span id="menu-settings-status" role="status"></span><button id="menu-controls" type="button">Controls</button><p id="controller-controls" hidden></p></div>
+    </section>
+  </main>
+  <section id="map-loading" class="screen map-loading" hidden role="dialog" aria-modal="true" aria-labelledby="map-loading-title">
+    <div class="map-loading-copy"><p class="map-kicker">YOUR EXPEDITION IS ABOUT TO BEGIN</p><h2 id="map-loading-title">Riftwild Kingdom</h2><p id="map-loading-status" role="status">Assembling your fighters…</p><progress aria-label="Preparing the match"></progress><p class="map-loading-tip">Find gear. Read the terrain. Stay ahead of the storm.</p><button id="map-loading-cancel" type="button">Back to menu</button></div>
+  </section>
+  <section id="fighter-picker" class="screen picker-screen" hidden aria-label="Choose your fighter"><header><button id="picker-close">Back to menu</button><span id="picker-status" role="status">Choose your fighter to continue.</span><button id="picker-mute" aria-pressed="false">Sound on</button></header><div id="picker-host"></div></section>
+  <div id="hud" hidden>
+    <div id="storm-exposure" hidden aria-hidden="true"></div>
+    <div id="storm-warning" hidden><strong role="status">IN THE STORM</strong><span>Get to safety · <b id="storm-damage-rate"></b></span><span class="storm-escape"><i id="storm-escape-bearing" aria-hidden="true">↑</i><span id="storm-escape-distance"></span></span></div>
+    <div class="compass" aria-label="Heading"><div id="compass-tape" aria-hidden="true"></div><span id="heading">000</span></div>
+    <div id="solo-roster-fill" hidden aria-label="Solo player roster"><strong id="solo-roster-count">1 / 32 PLAYERS</strong><span id="solo-roster-note">You’ll be able to deploy in a few seconds</span></div>
+    <div id="healing-notice" hidden role="status"><strong></strong><span></span><progress max="1" value="0" aria-label="Supply progress"></progress></div>
+    <div class="topline"><span id="fps-badge" title="Frames per second, smoothed" data-tier="none">-- FPS</span><span id="phase">Insertion</span><span id="rule-pills" class="rule-pills" hidden aria-label="Match rules"><b id="rule-god-mode" class="rule-pill" data-rule="godMode" hidden>GOD MODE</b><b id="rule-respawn" class="rule-pill" data-rule="respawn" hidden>RESPAWN ON</b></span></div>
+    <section class="tactical-panel" aria-label="Match and storm"><div class="map-frame"><canvas id="map" aria-label="Island map. Solid violet circle marks the storm boundary; dashed white circle marks the next safe zone."></canvas><span id="map-location"></span></div><span id="radar-status" hidden>Final fighters · red dots show opponents</span><div class="match-count"><span class="match-symbol" aria-hidden="true">✦</span><span id="remaining">Fighters remaining</span><span id="eliminations" aria-label="Eliminations">0 KOs</span></div><div id="storm"><span id="storm-phase">Storm forming</span><strong id="storm-clock"></strong><span id="storm-radius"></span></div></section>
+    <div id="crosshair" aria-hidden="true"></div>
+    <div id="scope" hidden aria-hidden="true"><div class="scope-lens"><svg viewBox="0 0 100 100" focusable="false"><path d="M0 50H44M56 50H100M50 0V44M50 56V100M30 48V52M40 48V52M60 48V52M70 48V52M48 30H52M48 40H52M48 60H52M47 66H53M46 72H54M45 78H55M44 84H56"/><circle cx="50" cy="50" r=".55"/></svg></div><span class="scope-zoom" id="scope-zoom">4×</span></div>
+    <div id="hit-feedback" hidden aria-hidden="true"></div>
+    <ol id="elimination-feed" aria-label="Elimination feed" aria-live="off"></ol>
+    <div id="damage-numbers" aria-hidden="true"></div><div id="elimination-confirm" class="elimination-confirm" hidden role="status"><span>ELIMINATED</span><strong></strong></div>
+    <div id="incoming-hit" hidden aria-hidden="true"><div class="incoming-bearing"><i></i></div><span class="incoming-label"></span></div>
+    <section id="respawn-countdown" class="respawn-countdown" hidden role="status" aria-live="polite" aria-label="Redeploy countdown"><span class="respawn-eyebrow">Eliminated · Respawn is on</span><strong>Redeploying in <b id="respawn-seconds">3</b></strong><small>You drop in from the sky above a safe spot inside the storm.</small></section>
+    <p id="interact-prompt" hidden></p>
+    <p id="notice" role="status"></p>
+    <section class="vitals" aria-label="Fighter status"><div class="fighter-portrait"><img id="fighter-hud-portrait" alt="" hidden><span class="hud-player-tag">P1</span></div><div class="fighter-status"><div class="fighter-hud" id="fighter-hud-name">Fighter</div><label>Shield <span id="shield-number">0</span><meter id="shield" min="0" max="100" value="0"></meter></label><label>Health <span id="hp-number">100</span><meter id="hp" min="0" max="100" value="100"></meter></label></div></section>
+    <div class="equipment"><div class="ammo-panel"><strong id="weapon">Find a weapon</strong><span id="ammo"></span><div id="reload-state"></div></div><div id="weapon-slots" aria-label="Equipped weapons"></div><span id="supplies"></span><div id="consumable-actions" aria-label="Use supplies"></div><small id="consumable-help" hidden></small><small id="equipment-controls">E aim · F collect · R reload · H med kit · J shield · Q cycle / 1–3 weapon</small></div>
+  </div>
+  <section id="pause" class="screen scrim" hidden aria-labelledby="pause-title"><div class="dialog"><h2 id="pause-title">Match paused</h2><p>Return to keep playing. Leaving ends this match.</p><button id="back" class="primary">Return to island</button><button id="pause-fullscreen" type="button" hidden>Go full screen</button><button id="pause-settings">Settings</button><button id="pause-feedback" type="button" data-feedback-open>Feedback</button><button id="pause-controls" type="button">Controls</button><div id="pause-controls-panel" hidden></div><button id="quit">Leave match</button><p id="pause-settings-status" role="status"></p></div></section>
+<!-- Add data-feedback-open to native buttons in menu and pause. -->
+<section id="feedback" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="fb-title" aria-describedby="fb-intro">
+  <div id="fb-backdrop" class="fb-backdrop" aria-hidden="true"></div>
+  <div class="fb-card">
+    <div class="fb-head"><h2 id="fb-title">Send feedback</h2><button id="btn-fb-close" type="button" aria-label="Close feedback">×</button></div>
+    <p id="fb-intro">Found a bug or have an idea? Tell us what happened.</p>
+    <form id="fb-form" novalidate>
+      <fieldset class="fb-types"><legend>Feedback type</legend>
+        <label><input type="radio" name="fb-type" value="General" checked><span>General</span></label>
+        <label><input type="radio" name="fb-type" value="Bug"><span>Bug</span></label>
+        <label><input type="radio" name="fb-type" value="Feature Request"><span>Feature request</span></label>
+      </fieldset>
+      <label class="fb-field" for="fb-message">Message <span id="fb-count"></span></label>
+      <textarea id="fb-message" name="message" rows="5" maxlength="10000" required placeholder="Share your feedback…" aria-describedby="fb-status"></textarea>
+      <label class="fb-field" for="fb-email">Email <span>Optional</span></label>
+      <input id="fb-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="For a reply" aria-describedby="fb-status">
+      <p id="fb-status" role="status" aria-live="polite"></p>
+      <div class="fb-actions"><button id="btn-fb-send" type="submit" class="primary">Send feedback</button><button id="btn-fb-cancel" type="button">Cancel</button></div>
+    </form>
+    <div id="fb-sent" hidden><h3>Thanks for the feedback.</h3><p>Your message has been received.</p><button id="btn-fb-done" type="button" class="primary">Done</button></div>
+    <p id="fb-context"></p>
+  </div>
+</section>
+
+  <section id="settings" class="screen scrim settings-screen" hidden aria-labelledby="settings-title">
+    <form id="settings-form" class="settings-sheet">
+      <header><h2 id="settings-title">Settings</h2><p id="settings-status" role="status">Changes take effect when you apply them.</p></header>
+      <div class="settings-columns">
+        <fieldset><legend>Sound</legend>
+          <label class="setting-range" for="setting-masterVolume"><span>Master volume</span><output id="setting-masterVolume-value" for="setting-masterVolume">70%</output><input id="setting-masterVolume" type="range" min="0" max="100" step="1" value="70"></label>
+          <label class="setting-range" for="setting-musicVolume"><span>Music</span><output id="setting-musicVolume-value" for="setting-musicVolume">30%</output><input id="setting-musicVolume" type="range" min="0" max="100" step="1" value="30" aria-describedby="music-note"></label>
+          <p id="music-note" class="setting-note">Menu music is capped at 30% before master volume.</p>
+          <label class="setting-range" for="setting-effectsVolume"><span>Effects and interface</span><output id="setting-effectsVolume-value" for="setting-effectsVolume">75%</output><input id="setting-effectsVolume" type="range" min="0" max="100" step="1" value="75"></label>
+          <label class="setting-range" for="setting-voiceVolume"><span>Announcer</span><output id="setting-voiceVolume-value" for="setting-voiceVolume">65%</output><input id="setting-voiceVolume" type="range" min="0" max="100" step="1" value="65" aria-describedby="voice-note"></label>
+          <p id="voice-note" class="setting-note">Countdown, storm and match announcements.</p>
+          <label class="setting-check"><input id="setting-muted" type="checkbox"><span>Mute all sound</span></label>
+        </fieldset>
+        <fieldset><legend>Look and camera</legend>
+          <label class="setting-range" for="setting-sensitivity"><span>Mouse / touch sensitivity</span><output id="setting-sensitivity-value" for="setting-sensitivity">1.00×</output><input id="setting-sensitivity" type="range" min="0.2" max="3" step="0.05" value="1" aria-describedby="sensitivity-note"></label>
+          <p id="sensitivity-note" class="setting-note">Scoped aim uses a lower sensitivity.</p>
+          <label class="setting-check"><input id="setting-invertY" type="checkbox"><span>Invert mouse / touch vertical look</span></label>
+          <label class="setting-check"><input id="setting-aimAssist" type="checkbox" checked><span>Aim assist</span></label>
+          <label class="setting-check"><input id="setting-alwaysRadar" type="checkbox"><span>Always show radar</span></label>
+          <label class="setting-check"><input id="setting-showFps" type="checkbox" checked><span>Show FPS</span></label>
+        </fieldset>
+        <fieldset><legend>Match rules</legend>
+          <label class="setting-check"><input id="setting-godMode" type="checkbox" aria-describedby="rules-note"><span>God mode · weapons can’t hurt you</span></label>
+          <label class="setting-check"><input id="setting-respawn" type="checkbox" aria-describedby="rules-note"><span>Respawn · redeploy from the sky after you’re eliminated</span></label>
+          <p id="rules-note" class="setting-note">Solo matches only; both are off by default. In god mode the storm still hurts. Respawns end when 5 or fewer opponents remain. Changes apply from your next match: a match in progress keeps the rules it started with. Private lobbies choose their own rules in the lobby.</p>
+        </fieldset>
+        <fieldset><legend>Controller</legend>
+          <label class="setting-check"><input id="setting-gamepadEnabled" type="checkbox" checked><span>Enable controller</span></label>
+          <label class="setting-select" for="setting-gamepadLayout"><span>Button layout</span><select id="setting-gamepadLayout"><option value="default">Default</option><option value="tactical">Tactical</option></select></label>
+          <p class="setting-note">Tactical swaps crouch / slide and prone between the right stick click and the right face button.</p>
+          <p id="controller-status" class="setting-note">Connect a controller, then press a button.</p>
+          <label class="setting-range" for="setting-gamepadSensitivity"><span>Look sensitivity</span><output id="setting-gamepadSensitivity-value" for="setting-gamepadSensitivity">4.0 / 10</output><input id="setting-gamepadSensitivity" type="range" min="1" max="10" step="0.5" value="4"></label>
+          <label class="setting-range" for="setting-gamepadDeadzone"><span>Stick deadzone</span><output id="setting-gamepadDeadzone-value" for="setting-gamepadDeadzone">12%</output><input id="setting-gamepadDeadzone" type="range" min="0" max="40" step="1" value="12"></label>
+          <label class="setting-check"><input id="setting-gamepadInvertY" type="checkbox"><span>Invert controller vertical look</span></label>
+          <label class="setting-check"><input id="setting-gamepadVibration" type="checkbox" checked><span>Controller vibration</span></label>
+          <p class="setting-note">D-pad or left stick navigates. Select a slider to edit; bumpers also adjust it. Scoped sensitivity follows the lens.</p>
+        </fieldset>
+      </div>
+      <footer class="settings-actions"><button id="settings-reset" type="button">Reset defaults</button><button id="settings-cancel" type="button">Cancel</button><button id="settings-apply" class="primary" type="submit">Apply settings</button></footer>
+    </form>
+  </section>
+  <section id="result" class="screen scrim" hidden aria-labelledby="result-title"><div class="dialog"><h2 id="result-title">Match over</h2><p id="result-detail"></p><button id="again" class="primary">Drop again</button><button id="home">Back to menu</button></div></section>
+  <p id="controller-hint" hidden></p>
+  <script type="module" src="js/device-entry.js"></script>
+  <script type="module" src="js/community-spotlight.js"></script>
+</body>
+</html>

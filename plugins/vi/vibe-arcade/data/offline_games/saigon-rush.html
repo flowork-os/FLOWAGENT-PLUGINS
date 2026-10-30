@@ -1,0 +1,25 @@
+<!doctype html><html lang="vi"><head>
+  <base href="https://saigonrush.tkvy.dev/"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#1D1B4A">
+<title>Sài Gòn Vội Vã</title><link rel="canonical" href="https://saigonvoiva.com/">
+<script>
+(() => {
+  const here = new URL(location.href);
+  if (navigator.standalone === true || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) {
+    here.searchParams.set('stay', '1');
+    return location.replace(here.pathname + here.search);
+  }
+  const to = new URL(here.pathname + here.search, 'https://saigonvoiva.com');
+  try {
+    const d = JSON.parse(localStorage.getItem('ram-brawl.v1') || 'null');
+    if (d && /^[a-f0-9]{32}$/.test(d.key)) {
+      for (const k of ['installed', 'installAsks', 'installLater']) delete d[k];   // the new address can be installed again
+      to.hash = 'move=' + btoa(unescape(encodeURIComponent(JSON.stringify(d)))).replace(/+/g, '-').replace(///g, '_').replace(/=+$/, '');
+    }
+  } catch (e) {}
+  location.replace(to.href);
+})();
+</script>
+<noscript><meta http-equiv="refresh" content="0;url=https://saigonvoiva.com/"></noscript>
+</head><body style="background:#1D1B4A"><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"189395f8dee743fa89e2578743e90dd2","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body></html>

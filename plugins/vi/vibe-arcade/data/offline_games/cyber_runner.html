@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber Runner 2099 - Vibe Arcade Offline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #070913; color: #fff; font-family: 'Courier New', monospace; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    #gameCanvas { background: #0a0d1a; border: 2px solid #00e5ff; box-shadow: 0 0 25px rgba(0, 229, 255, 0.4); border-radius: 8px; }
+    .hud { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 30px; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px #00e5ff; pointer-events: none; }
+    .controls { position: absolute; bottom: 16px; color: #94a3b8; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div>SCORE: <span id="scoreVal" style="color:#00ff88;">0</span></div>
+    <div>SPEED: <span id="speedVal" style="color:#00e5ff;">100</span> MPH</div>
+    <div>LIVES: <span id="livesVal" style="color:#ff3366;">♥♥♥</span></div>
+  </div>
+  <canvas id="gameCanvas" width="800" height="500"></canvas>
+  <div class="controls">Controls: [← / A] Move Left • [→ / D] Move Right • [SPACE] Boost Drive</div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let playerX = 400;
+    let playerY = 420;
+    let score = 0;
+    let speed = 8;
+    let lives = 3;
+    let keys = {};
+    let obstacles = [];
+    let particles = [];
+    let stars = [];
+    let gameOver = false;
+
+    for (let i = 0; i < 80; i++) {
+      stars.push({ x: Math.random() * 800, y: Math.random() * 250, sz: Math.random() * 2 + 1 });
+    }
+
+    window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+    function spawnObstacle() {
+      if (gameOver) return;
+      const lane = Math.floor(Math.random() * 5);
+      const laneX = 180 + lane * 88;
+      obstacles.push({ x: laneX, y: 220, w: 20, h: 10, scale: 0.2, color: Math.random() > 0.5 ? '#ff007f' : '#a855f7' });
+    }
+    setInterval(spawnObstacle, 750);
+
+    function tick() {
+      if (!gameOver) {
+        if ((keys['arrowleft'] || keys['a']) && playerX > 180) playerX -= 7;
+        if ((keys['arrowright'] || keys['d']) && playerX < 620) playerX += 7;
+        const boosting = keys[' '] || keys['spacebar'];
+        const currentSpeed = boosting ? speed * 1.5 : speed;
+        score += Math.round(currentSpeed * 0.1);
+
+        document.getElementById('scoreVal').textContent = score;
+        document.getElementById('speedVal').textContent = Math.round(currentSpeed * 14);
+
+        // Update Obstacles
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.y += currentSpeed * (obs.y / 180);
+          obs.scale += 0.015;
+          const currW = 30 * obs.scale * 2.5;
+          const currH = 15 * obs.scale * 2.5;
+
+          // Collision Check
+          if (obs.y > 390 && obs.y < 450 && Math.abs(obs.x - playerX) < (currW / 2 + 25)) {
+            obstacles.splice(i, 1);
+            lives--;
+            document.getElementById('livesVal').textContent = '♥'.repeat(Math.max(0, lives));
+            for (let p = 0; p < 20; p++) {
+              particles.push({ x: playerX, y: playerY, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12, life: 1, col: '#ff0055' });
+            }
+            if (lives <= 0) {
+              gameOver = true;
+            }
+            continue;
+          }
+
+          if (obs.y > 520) obstacles.splice(i, 1);
+        }
+      }
+
+      // Render
+      ctx.fillStyle = '#0a0d1a';
+      ctx.fillRect(0, 0, 800, 500);
+
+      // Stars
+      ctx.fillStyle = '#ffffff';
+      stars.forEach(s => {
+        ctx.fillRect(s.x, s.y, s.sz, s.sz);
+      });
+
+      // Neon Horizon Line
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 220); ctx.lineTo(800, 220);
+      ctx.stroke();
+
+      // Perspective Grid Lines
+      const horizonY = 220;
+      const vpX = 400;
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.3)';
+      for (let x = -200; x <= 1000; x += 60) {
+        ctx.beginPath();
+        ctx.moveTo(vpX, horizonY);
+        ctx.lineTo(x, 500);
+        ctx.stroke();
+      }
+
+      // Moving Grid Horizontal Lines
+      const lineOffset = (Date.now() * 0.2) % 35;
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+      for (let y = horizonY + lineOffset; y < 500; y += 35) {
+        ctx.beginPath();
+        ctx.moveTo(0, y); ctx.lineTo(800, y);
+        ctx.stroke();
+      }
+
+      // Obstacles
+      obstacles.forEach(o => {
+        const w = 30 * o.scale * 2.5;
+        const h = 15 * o.scale * 2.5;
+        ctx.fillStyle = o.color;
+        ctx.shadowColor = o.color;
+        ctx.shadowBlur = 15;
+        ctx.fillRect(o.x - w / 2, o.y - h, w, h);
+        ctx.shadowBlur = 0;
+      });
+
+      // Player Cyber Vehicle
+      ctx.save();
+      ctx.translate(playerX, playerY);
+      ctx.fillStyle = '#00e5ff';
+      ctx.shadowColor = '#00e5ff';
+      ctx.shadowBlur = 18;
+      // Body
+      ctx.beginPath();
+      ctx.moveTo(0, -25);
+      ctx.lineTo(24, 20);
+      ctx.lineTo(14, 25);
+      ctx.lineTo(0, 16);
+      ctx.lineTo(-14, 25);
+      ctx.lineTo(-24, 20);
+      ctx.closePath();
+      ctx.fill();
+      // Cockpit
+      ctx.fillStyle = '#ff007f';
+      ctx.fillRect(-6, -6, 12, 14);
+      // Thruster Flame
+      ctx.fillStyle = (Math.random() > 0.5) ? '#ffcc00' : '#ff3300';
+      ctx.beginPath();
+      ctx.moveTo(-10, 24); ctx.lineTo(0, 36 + Math.random() * 10); ctx.lineTo(10, 24);
+      ctx.fill();
+      ctx.restore();
+
+      // Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+        ctx.fillStyle = p.col;
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillRect(p.x, p.y, 4, 4);
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+      ctx.globalAlpha = 1.0;
+
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(0, 0, 800, 500);
+        ctx.font = 'bold 36px Courier New';
+        ctx.fillStyle = '#ff0055';
+        ctx.textAlign = 'center';
+        ctx.fillText('CRASH DETECTED', 400, 230);
+        ctx.font = '16px Courier New';
+        ctx.fillStyle = '#00e5ff';
+        ctx.fillText(`FINAL SCORE: ${score} • PRESS [R] TO REBOOT`, 400, 275);
+
+        if (keys['r']) {
+          lives = 3; score = 0; obstacles = []; gameOver = false;
+          document.getElementById('livesVal').textContent = '♥♥♥';
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>

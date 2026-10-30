@@ -14,7 +14,7 @@ description: Triggers autonomous 2D stickman parody short generation, ~3s micro-
   {
     "video_path": "/path/to/clip.mp4",
     "render_mode": "split_pip",
-    "destination_dir": "/home/mrflow/Downloads",
+    "destination_dir": "/path/to/downloads",
     "fps": 30
   }
   ```

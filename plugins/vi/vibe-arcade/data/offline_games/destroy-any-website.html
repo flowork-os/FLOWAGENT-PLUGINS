@@ -1,0 +1,3211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://destroy.spritefusion.com/">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Destroy Any Website - Sprite Fusion</title>
+    <meta name="description" content="Type any website's address and fight your way through it: its text, images and boxes become a destructible pixel-art level. Play solo or with friends. Free, in your browser." />
+    <meta name="theme-color" content="#272727" />
+        <link rel="canonical" href="https://destroy.spritefusion.com/" />
+    <link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/_app/favicon-jqv269pb.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/_app/favicon-16x16-4phv4t4f.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/_app/favicon-32x32-ehn2ggpe.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/_app/favicon-n9zy1r36.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/_app/apple-touch-icon-b67mbd2s.png" />
+        <link rel="manifest" href="/_app/manifest-9pcxw6bv.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Destroy" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sprite Fusion" />
+    <meta property="og:title" content="Destroy Any Website" />
+    <meta property="og:description" content="Type an address, break everything. Any website becomes a destructible pixel-art level, solo or with friends." />
+    <meta property="og:url" content="https://destroy.spritefusion.com/" />
+    <meta property="og:image" content="https://destroy.spritefusion.com/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A pixel-art stickman shredding the title of the Wikipedia article &quot;Stick figure&quot; with an SMG." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@HugoDuprez" />
+    <meta name="twitter:creator" content="@HugoDuprez" />
+    <meta name="twitter:title" content="Destroy Any Website" />
+    <meta name="twitter:description" content="Type an address, break everything. Any website becomes a destructible pixel-art level, solo or with friends." />
+    <meta name="twitter:image" content="https://destroy.spritefusion.com/og.png" />
+    <meta name="twitter:image:alt" content="A pixel-art stickman shredding the title of the Wikipedia article &quot;Stick figure&quot; with an SMG." />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "@id": "https://destroy.spritefusion.com/#game",
+        "name": "Destroy Any Website",
+        "url": "https://destroy.spritefusion.com/",
+        "image": "https://destroy.spritefusion.com/og.png",
+        "description": "Type any website's address and fight your way through it: its text, images and boxes become a destructible pixel-art level. Play solo or with friends.",
+        "genre": ["Action", "Shooter", "Platformer"],
+        "gamePlatform": "Web browser",
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "playMode": ["SinglePlayer", "MultiPlayer"],
+        "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 6 },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "datePublished": "2026-09-28",
+        "author": { "@type": "Person", "@id": "https://destroy.spritefusion.com/#author", "name": "Hugo Duprez", "url": "https://x.com/HugoDuprez" },
+        "publisher": { "@type": "Organization", "@id": "https://destroy.spritefusion.com/#publisher", "name": "Sprite Fusion", "url": "https://www.spritefusion.com" },
+        "sameAs": ["https://www.spritefusion.com/games/destroy-any-website", "https://x.com/HugoDuprez/status/2104579137575018827", "https://news.ycombinator.com/item?id=49880601"],
+        "subjectOf": { "@type": "AboutPage", "@id": "https://destroy.spritefusion.com/about", "url": "https://destroy.spritefusion.com/about" }
+      }
+    </script>
+    <style>
+      
+      @font-face {
+        font-family: "chevyray";
+        src: url("/assets/fonts/chevyray.ttf");
+        font-display: block;
+      }
+      @font-face {
+        font-family: "chevyray-oeuf";
+        src: url("/assets/fonts/chevyray-oeuf.ttf");
+        font-display: block;
+      }
+      :root {
+        --white: #ededed;
+        --light-gray: #5b5b5b;
+        --medium-gray: #474747;
+        --black: #272727;
+        --pure-black: #000000;
+        --blue: #556ad9;
+        --orange: #f97316; 
+        --orange-light: #fdba74; 
+        --orange-error: #fb923c; 
+        --track-height: 8px; 
+        --thumb-height: 24px;
+        --thumb-width: 16px;
+        --shadow-button: 0px 2px 0px 0px #5b5b5b inset, 0px -2px 0px 0px #5b5b5b inset, -2px 0px 0px 0px #5b5b5b inset,
+          2px 0px 0px 0px #5b5b5b inset, 0px 2px 0px 0px #1e1e1e, 2px 0px 0px 0px #191919, -2px 0px 0px 0px #191919,
+          0px -2px 0px 0px #191919, 0px 4px 0px 0px rgba(25, 25, 25, 0.8);
+        --shadow-window-body: 4px 6px 0px 0px rgba(30, 30, 30, 0.2), -2px 0px 0px 0px #1e1e1e, 2px 0px 0px 0px #1e1e1e,
+          0px -2px 0px 0px #1e1e1e, 0px 2px 0px 0px #1e1e1e, 0px 4px 0px 0px #1e1e1e, 0px -2px 0px 0px #5b5b5b inset,
+          0px 2px 0px 0px #5b5b5b inset, -2px 0px 0px 0px #5b5b5b inset, 2px 0px 0px 0px #5b5b5b inset;
+        --shadow-window-head: 0px 2px 0px 0px #5b5b5b inset, -2px 0px 0px 0px #5b5b5b inset, 2px 0px 0px 0px #5b5b5b inset;
+        --shadow-input: -2px 0px 0px 0px #1e1e1e, 2px 0px 0px 0px #1e1e1e, 0px -2px 0px 0px #1e1e1e, 0px 2px 0px 0px #1e1e1e;
+        --shadow-inner-pannel: -2px 0px 0px 0px #0f0f0f, 2px 0px 0px 0px #0f0f0f, 0px -2px 0px 0px #0f0f0f, 0px 2px 0px 0px #0f0f0f,
+          0px -2px 0px 0px #1e1e1e inset, 0px 2px 0px 0px #1e1e1e inset, -2px 0px 0px 0px #1e1e1e inset, 2px 0px 0px 0px #1e1e1e inset;
+        --shadow-blue: -2px 0px 0px 0px #191919, 2px 0px 0px 0px #191919, 0px -2px 0px 0px #191919, 0px 2px 0px 0px #191919,
+          -2px 0px 0px 0px #697bdd inset, 2px 0px 0px 0px #697bdd inset, 0px -2px 0px 0px #697bdd inset, 0px 2px 0px 0px #697bdd inset;
+      }
+      
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        border: 0 solid;
+      }
+      img,
+      svg,
+      canvas {
+        display: block;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+        background: transparent;
+        letter-spacing: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+        text-decoration: inherit;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: chevyray, ui-monospace, monospace;
+        font-size: 16px;
+        line-height: 20.48px;
+        color: var(--white);
+        background: var(--pure-black);
+        overflow: hidden;
+        user-select: none;
+      }
+      
+      p {
+        padding-top: 4px;
+      }
+
+      
+      .app {
+        height: 100%;
+        display: flex;
+      }
+      .window {
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--black);
+        box-shadow: var(--shadow-window-body);
+      }
+      .window-head {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 6px 8px;
+        background: var(--medium-gray);
+        box-shadow: var(--shadow-window-head);
+      }
+      .window-body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        padding: 6px;
+      }
+      .head-left,
+      .head-right {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+      }
+      .head-title {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-weight: normal;
+        font-size: 16px;
+      }
+      .head-title .name {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 24px;
+        line-height: 1;
+        
+        position: relative;
+        top: 2px;
+      }
+      .head-title .by {
+        color: #a0a0a0;
+      }
+      .head-title a {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-thickness: 2px;
+      }
+      .head-title a.name {
+        text-decoration: none; 
+      }
+      .head-title a:hover {
+        color: #ffffff;
+      }
+
+      
+      .btn {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        padding: 6px 8px;
+        background: var(--medium-gray);
+        box-shadow: var(--shadow-button);
+      }
+      .btn:hover {
+        background: var(--light-gray);
+      }
+      .btn:focus {
+        outline: none;
+      }
+      .btn > span {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn img {
+        width: 20px;
+        height: 20px;
+        image-rendering: pixelated;
+      }
+      a.btn {
+        color: inherit;
+        text-decoration: none;
+      }
+      .btn img.discord {
+        width: 20px;
+        height: 15px; 
+      }
+      
+      #btn-discord {
+        align-self: stretch;
+      }
+      
+      .tag {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px;
+        font-size: 14px;
+        box-shadow: var(--shadow-input);
+      }
+      .tag:hover {
+        background: var(--medium-gray);
+      }
+      .tag > span {
+        margin-top: 3px;
+      }
+
+      
+      .stage {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      #game {
+        position: absolute;
+        left: 2px;
+        top: 2px;
+        image-rendering: pixelated;
+      }
+      
+      .stage.playing:not(.waiting),
+      .stage.playing:not(.waiting) * {
+        cursor: none !important;
+      }
+      #ui {
+        position: absolute;
+        inset: 2px;
+        pointer-events: none;
+      }
+      
+      .title-video {
+        position: absolute;
+        inset: 2px;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .title-video.on {
+        opacity: 1;
+      }
+      .title-video video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .title-video::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(39, 39, 39, 0.4);
+      }
+      .screen {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.15s ease;
+      }
+      .screen.hidden,
+      .hidden {
+        opacity: 0;
+        pointer-events: none !important;
+      }
+      .screen.hidden * {
+        pointer-events: none !important;
+      }
+      
+      .more-link {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        color: var(--white);
+      }
+      
+      body.touch #title .embed-open {
+        display: none;
+      }
+      
+      .join-link {
+        margin-left: 0;
+        gap: 6px;
+        align-items: baseline; 
+      }
+      .join-link img.discord {
+        width: 18px;
+        height: 13.5px; 
+        position: relative;
+        top: 3px; 
+      }
+      body.touch #title .keys-row {
+        justify-content: space-between;
+      }
+      .more-link p {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-thickness: 2px;
+      }
+      
+      .made-on {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .made-on a {
+        color: var(--white);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-thickness: 2px;
+      }
+      .art-strip {
+        display: flex;
+        align-items: flex-start; 
+        justify-content: space-evenly;
+      }
+      .art-strip canvas {
+        image-rendering: pixelated;
+      }
+      
+      .pack-promo {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        container-type: inline-size;
+      }
+      .pack-promo-body {
+        align-self: flex-start; 
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .pack-promo-buy:empty {
+        display: none;
+      }
+      .pack-promo-buy .btn {
+        width: 100%;
+        max-width: none;
+        padding: 6px 12px;
+      }
+      
+      #pause .gray,
+      #complete .gray,
+      #vs-over .gray {
+        color: #a0a0a0;
+      }
+      .menu-card [hidden] {
+        display: none !important;
+      }
+      .more-link:hover {
+        color: #ffffff;
+      }
+      .overlay {
+        background: rgba(0, 0, 0, 0.55);
+      }
+
+      
+      .sfwin {
+        pointer-events: auto;
+        display: flex;
+        flex-direction: column;
+        background: var(--black);
+        box-shadow: var(--shadow-window-body);
+      }
+      .sfwin > .window-head {
+        gap: 16px;
+      }
+      .sfwin > .window-head button img {
+        width: 20px;
+        height: 20px;
+      }
+      .sfwin-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+      }
+      .gray {
+        color: var(--light-gray);
+      }
+      .muted {
+        color: #a0a0a0;
+      }
+      
+      .legal {
+        font-size: 12px;
+        color: #a0a0a0;
+      }
+      .legal a {
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .legal a:hover {
+        color: #ffffff;
+      }
+      
+      .home-legal {
+        margin-top: 16px;
+        text-align: center;
+        pointer-events: auto; 
+      }
+      body:not(.touch) .home-legal {
+        color: #000000;
+      }
+      body:not(.touch) .home-legal a:hover {
+        color: #555555;
+      }
+
+      
+      .title-card {
+        width: min(620px, calc(100% - 32px));
+      }
+      
+      .title-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 16px;
+        width: 100%;
+      }
+      .featured-card {
+        width: 280px;
+      }
+      .featured-card[hidden] {
+        display: none;
+      }
+      .featured-card .window-head p {
+        overflow-wrap: anywhere; 
+      }
+      .featured-img {
+        display: block;
+        width: 100%;
+        height: auto;
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      
+      #title {
+        container-type: inline-size;
+      }
+      @container (min-width: 1212px) {
+        .title-row {
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+        }
+        .title-row > .title-card {
+          grid-column: 2;
+          width: 620px;
+        }
+        #title .title-row > .featured-card {
+          grid-column: 3;
+          justify-self: start;
+          width: 280px;
+        }
+      }
+      .hero-title {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-weight: normal;
+        font-size: 48px;
+        line-height: 1.1;
+      }
+      .url-row {
+        display: flex;
+        gap: 8px;
+      }
+      
+      .input-wrap .proto.label {
+        margin-right: 8px;
+      }
+      .input-wrap {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        
+        padding: 4px 8px 6px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+        cursor: text;
+      }
+      .input-wrap:focus-within {
+        box-shadow: var(--shadow-blue);
+      }
+      .input-wrap .proto {
+        color: var(--light-gray);
+        padding-top: 4px;
+      }
+      .input-wrap input {
+        flex: 1;
+        min-width: 0;
+        outline: none;
+        padding-top: 4px;
+      }
+      .input-wrap input::placeholder {
+        color: var(--light-gray);
+      }
+      
+      .picks {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .picks.col {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .picks.col > p {
+        color: #a0a0a0;
+      }
+      .picks.col > .url-row {
+        align-self: stretch;
+      }
+      .pick-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .install-row[hidden] {
+        display: none !important;
+      }
+      
+      body.embed .xp-strip,
+      body.embed .pack-promo,
+      body.embed .install-row {
+        display: none !important;
+      }
+      
+      body.embed #embed {
+        justify-content: center;
+        padding: 0;
+      }
+      
+      #embed .title-card {
+        width: min(480px, calc(100% - 32px));
+      }
+      body.embed #embed .title-card {
+        width: min(400px, calc(100% - 32px));
+        margin: auto 0 12vh;
+      }
+      
+      body.landing:not(.ready) #title {
+        display: none;
+      }
+      body.landing:not(.ready) #embed {
+        opacity: 1;
+      }
+      body.landing:not(.ready) .title-video {
+        opacity: 1;
+      }
+      
+      body.landing .title-video {
+        background: url("/assets/video/title.jpg") center / cover;
+      }
+      #embed .hero-title em {
+        font-style: italic;
+        color: var(--orange);
+      }
+      #embed-form {
+        flex-direction: column;
+      }
+      .picks > p {
+        color: #a0a0a0; 
+      }
+      .err {
+        color: var(--orange-error);
+      }
+      
+      .err:empty {
+        display: none;
+      }
+      #title .err {
+        display: block;
+        min-height: 24px;
+      }
+      .keys-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        color: #a0a0a0;
+      }
+      .keys-row > span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .keys-row img {
+        height: 17px;
+        width: auto;
+        image-rendering: pixelated;
+      }
+      kbd {
+        font: inherit;
+        font-size: 14px;
+        color: var(--white);
+        background: var(--medium-gray);
+        padding: 2px 5px 0;
+        box-shadow: var(--shadow-input);
+      }
+
+      
+      .load-card {
+        width: min(420px, calc(100% - 32px));
+      }
+      .load-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .load-bar {
+        position: relative;
+        display: flex;
+        height: 12px;
+        width: 100%;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+      }
+      .load-bar i {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 12px;
+        width: 0;
+        background: var(--orange);
+        transition: width 0.25s linear;
+      }
+
+      
+      #hud {
+        position: absolute;
+        inset: 0;
+        transition: opacity 0.15s ease;
+      }
+      
+      .hud-progress {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        width: 256px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+        background: var(--medium-gray);
+        box-shadow: var(--shadow-window-body);
+      }
+      .hud-progress .meter {
+        flex: 1;
+      }
+      .hud-progress p {
+        min-width: 40px; 
+        text-align: right;
+      }
+      .meter-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 8px;
+      }
+      .meter {
+        position: relative;
+        display: flex;
+        height: 12px;
+        width: 100%;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+      }
+      .meter i,
+      .meter b {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 12px;
+        width: 0;
+      }
+      .meter b {
+        background: var(--white);
+        opacity: 0.85;
+      }
+      .meter i {
+        background: var(--orange);
+      }
+      .hud-weapons {
+        position: absolute;
+        left: 50%;
+        bottom: 12px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        padding: 8px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      .slot {
+        position: relative;
+        width: 76px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--black);
+        box-shadow: var(--shadow-button);
+      }
+      .slot.on {
+        background: var(--medium-gray);
+      }
+      .slot canvas {
+        image-rendering: pixelated;
+      }
+      .slot .key {
+        position: absolute;
+        left: 6px;
+        top: 3px;
+        font-size: 14px;
+        color: var(--light-gray);
+      }
+      .slot.on .key {
+        color: var(--white);
+      }
+      .slot.alt {
+        width: 60px;
+      }
+      .wname {
+        position: absolute;
+        left: 50%;
+        bottom: 92px;
+        transform: translateX(-50%);
+        padding: 6px 8px;
+        background: var(--black);
+        box-shadow: var(--shadow-input);
+        white-space: nowrap;
+        transition: opacity 0.15s ease;
+      }
+      .hud-hint {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        max-width: 380px;
+        transition: opacity 0.15s ease;
+      }
+      
+      .slot .charge,
+      .tbtn-alt .charge {
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        bottom: 4px;
+        height: 3px;
+        background: var(--black);
+        box-shadow: var(--shadow-input);
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+      .slot .charge i,
+      .tbtn-alt .charge i {
+        display: block;
+        height: 100%;
+        background: var(--white);
+      }
+      .slot .charge.on,
+      .tbtn-alt .charge.on {
+        opacity: 1;
+      }
+      .hud-hint .sfwin-body {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      
+      .menu-card {
+        width: min(500px, calc(100% - 32px));
+      }
+      .menu-card .row {
+        display: flex;
+        gap: 8px;
+      }
+      .menu-card .row .btn {
+        flex: 1;
+      }
+      
+      .slot.off {
+        display: none;
+      }
+      .inner {
+        padding: 8px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      .keys {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 16px;
+        color: #a0a0a0;
+      }
+      .keys > p:nth-child(odd) {
+        color: var(--white);
+      }
+      .seg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .seg .btn {
+        flex: 1 0 auto;
+        background: var(--black);
+      }
+      .seg .btn.on,
+      .seg .btn:hover {
+        background: var(--medium-gray);
+      }
+      
+      input[type="range"] {
+        appearance: none;
+        background: transparent;
+        width: 100%;
+        cursor: pointer;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        background: var(--medium-gray);
+        height: var(--track-height);
+        box-shadow: var(--shadow-button);
+      }
+      input[type="range"]::-moz-range-track {
+        background: var(--medium-gray);
+        height: var(--track-height);
+        box-shadow: var(--shadow-button);
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        background: var(--medium-gray);
+        width: var(--thumb-width);
+        height: var(--thumb-height);
+        margin-top: calc((var(--track-height) / 2) - (var(--thumb-height) / 2));
+        box-shadow: var(--shadow-button);
+      }
+      input[type="range"]::-moz-range-thumb {
+        appearance: none;
+        background: var(--medium-gray);
+        width: var(--thumb-width);
+        height: var(--thumb-height);
+        border: 3px solid var(--light-gray);
+        border-radius: 0;
+        box-shadow: var(--shadow-button);
+      }
+      input[type="range"]:focus {
+        outline: none;
+      }
+      .sfx-vol {
+        display: block;
+        height: var(--thumb-height); 
+        margin-top: 8px;
+      }
+      
+      #vs-winner {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 32px;
+        line-height: 1.2;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px 16px;
+        color: #a0a0a0;
+      }
+      .stats .v {
+        color: var(--white);
+        text-align: right;
+      }
+      
+      .xp-strip {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .xp-track {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .xp-strip {
+        container-type: inline-size;
+      }
+      
+      @container (max-width: 430px) {
+        .xp-track {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-areas: "now next" "mid mid";
+          gap: 8px 12px;
+        }
+        .xp-end {
+          grid-area: now;
+          justify-self: start;
+        }
+        .xp-end.xp-next-end {
+          grid-area: next;
+          justify-self: end;
+        }
+        .xp-mid {
+          grid-area: mid;
+        }
+      }
+      .xp-end {
+        flex: none;
+        width: 104px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        text-align: center;
+      }
+      .xp-end .insignia {
+        width: 64px;
+        height: 64px;
+      }
+      .xp-end p {
+        font-size: 14px;
+        line-height: 16px;
+      }
+      .xp-next-end.top .insignia {
+        visibility: hidden; 
+      }
+      .xp-mid {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .xp-say {
+        min-height: 18px;
+        line-height: 18px;
+        text-align: center;
+        color: #a0a0a0;
+      }
+      .xp-say span {
+        color: var(--orange-light);
+      }
+      
+      .xp-bar {
+        position: relative;
+        align-self: stretch;
+        height: 14px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      .xp-bar i {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        background: var(--orange);
+      }
+      .xp-bar i.xp-gain {
+        background: var(--orange-light);
+      }
+      
+      .xp-count,
+      #rank-card-xp {
+        font-size: 12px;
+        line-height: 14px;
+      }
+      .xp-note {
+        text-align: center;
+      }
+      .xp-note:empty {
+        display: none;
+      }
+      
+      button.link {
+        background: none;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        color: var(--white);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-thickness: 2px;
+        cursor: pointer;
+      }
+      .xp-strip.promoted .xp-now {
+        position: relative;
+        animation: xp-pop 0.45s ease-out;
+      }
+      
+      .xp-strip.promoted .xp-now::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, transparent 42%, rgba(255, 255, 255, 0.42) 42% 58%, transparent 58%) 100% 100% / 300% 300% no-repeat;
+        -webkit-mask: url("/assets/ranks/insignia.png") calc((var(--r, 1) - 1) * 100% / 21) 0 / 2200% 100% no-repeat;
+        mask: url("/assets/ranks/insignia.png") calc((var(--r, 1) - 1) * 100% / 21) 0 / 2200% 100% no-repeat;
+        animation: insignia-shine 3s linear infinite;
+      }
+      @keyframes insignia-shine {
+        22%,
+        to {
+          background-position: 0 0;
+        }
+      }
+      
+      .rank-card {
+        width: min(620px, calc(100% - 32px));
+      }
+      .rank-card > .sfwin-body {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+      }
+      #rank-card-insignia {
+        width: 48px;
+        height: 48px;
+      }
+      
+      .insignia {
+        display: block;
+        flex: none;
+        width: 32px;
+        height: 32px;
+        background: url("/assets/ranks/insignia.png") calc((var(--r, 1) - 1) * 100% / 21) 0 / 2200% 100% no-repeat;
+        image-rendering: pixelated;
+      }
+      .rank-card-mid {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .rank-card-top {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        min-height: 1lh; 
+      }
+      .rank-card-top #rank-card-xp {
+        margin-left: auto;
+      }
+      .rank-card .xp-bar {
+        height: 10px;
+      }
+      
+      .rank-card {
+        container-type: inline-size;
+      }
+      @container (max-width: 480px) {
+        .rank-card-mid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          grid-template-areas: "name xp" "bar signin";
+          align-items: center;
+          gap: 6px 12px;
+        }
+        .rank-card-top {
+          display: contents;
+        }
+        #rank-card-name {
+          grid-area: name;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .rank-card-top #rank-card-xp {
+          grid-area: xp;
+          margin-left: 0;
+          white-space: nowrap;
+        }
+        #rank-card-signin {
+          grid-area: signin;
+          white-space: nowrap;
+        }
+        .rank-card .xp-bar {
+          grid-area: bar;
+          align-self: stretch; 
+          height: auto;
+          min-height: 10px;
+        }
+        .rank-card-mid:not(:has(#rank-card-signin:not([hidden]))) .xp-bar {
+          grid-column: 1 / -1;
+        }
+      }
+      @keyframes xp-pop {
+        0% {
+          transform: scale(0.6);
+        }
+        60% {
+          transform: scale(1.18);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      
+      #ui.versus .sp-only,
+      #ui:not(.versus) .vs-only {
+        display: none !important;
+      }
+      
+      #ui:not(.boss) .boss-only,
+      #ui:not(.solo-boss) .boss-solo,
+      #ui.solo-boss .room-only,
+      #ui.boss .vs-top {
+        display: none !important;
+      }
+      #adv {
+        justify-content: flex-start;
+        align-items: stretch;
+        pointer-events: none;
+      }
+      .adv-back {
+        position: absolute;
+        left: 16px;
+        top: 16px;
+        pointer-events: auto;
+      }
+      
+      .adv-card {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: min(420px, calc(100% - 32px));
+        overflow-y: auto;
+      }
+      .adv-card.hidden {
+        display: none;
+      }
+      
+      .adv-reward {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+      }
+      .adv-reward.hidden {
+        display: none;
+      }
+      .adv-reward-pic {
+        flex: none;
+        width: 88px;
+        height: 88px;
+      }
+      .adv-reward-pic canvas {
+        width: 88px;
+        height: 88px;
+        image-rendering: pixelated;
+      }
+      .adv-reward-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+      .adv-reward-name {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 24px;
+        line-height: 1.1;
+        color: #c8e070;
+      }
+      .adv-challenge {
+        color: #c8e070;
+      }
+      .adv-reward-act:empty {
+        display: none;
+      }
+      .adv-card .row {
+        display: flex;
+        gap: 8px;
+      }
+      .adv-card .row .btn {
+        flex: 1;
+      }
+      .adv-name {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 40px;
+        line-height: 1.1;
+        font-weight: normal;
+        color: #c8e070;
+        text-shadow: 0 3px 0 #000;
+      }
+      .boss-hud {
+        position: absolute;
+        left: 50%;
+        top: 10px;
+        transform: translateX(-50%);
+        width: min(560px, 56vw);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        pointer-events: none;
+      }
+      .boss-name {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 24px;
+        line-height: 1.1;
+        text-shadow: 0 2px 0 #000;
+        color: #e8e0c0;
+      }
+      .boss-bar {
+        position: relative;
+        width: 100%;
+        height: 14px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+      }
+      .boss-bar i,
+      .boss-bar b {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+      .boss-bar b {
+        background: #f0e6c8;
+        opacity: 0.55;
+      }
+      .boss-bar i {
+        background: #9cc83a;
+      }
+      
+      .boss-lives {
+        position: absolute;
+        left: 12px;
+        bottom: 40px; 
+        display: flex;
+        gap: 4px;
+        pointer-events: none;
+      }
+      .boss-lives i {
+        width: 32px;
+        height: 32px;
+        background: url("/assets/sprites/heart.png") 0 0 / 100% 100%;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 3px 0 #000);
+      }
+      .boss-lives i.gone {
+        filter: grayscale(1) brightness(0.32) drop-shadow(0 3px 0 #000);
+        animation: heart-lose 0.65s ease-out;
+      }
+      @keyframes heart-lose {
+        0% {
+          transform: scale(1);
+          filter: brightness(1) drop-shadow(0 3px 0 #000);
+        }
+        14% {
+          transform: scale(1.4);
+          filter: brightness(3) drop-shadow(0 3px 0 #000);
+        }
+        34% {
+          transform: scale(1.1) rotate(-10deg);
+          filter: brightness(1.2) drop-shadow(0 3px 0 #000);
+        }
+        55% {
+          transform: scale(0.92) rotate(6deg);
+        }
+        100% {
+          transform: none;
+          filter: grayscale(1) brightness(0.32) drop-shadow(0 3px 0 #000);
+        }
+      }
+      body:is(.touch, .embed) .boss-lives {
+        position: static;
+        flex: none;
+      }
+      body:is(.touch, .embed) .boss-lives i {
+        width: 20px;
+        height: 20px;
+      }
+      
+      body:is(.touch, .embed) #ui.boss .vs-topbar {
+        right: calc(50% + 6px);
+      }
+      body:is(.touch, .embed) .boss-hud {
+        top: 8px;
+        left: calc(50% + 6px);
+        right: 44px;
+        width: auto;
+        height: 20px;
+        transform: none;
+        flex-direction: row;
+        gap: 8px;
+      }
+      body:is(.touch, .embed) .boss-name {
+        flex: none;
+        font-size: 16px;
+      }
+      body:is(.touch, .embed) .boss-bar {
+        flex: 1;
+        height: 8px;
+      }
+      
+      .boss-intro {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 30%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        pointer-events: none;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.6) 20%, rgba(0, 0, 0, 0.6) 80%, transparent);
+        padding: 24px 0;
+      }
+      .boss-intro.hidden {
+        display: none;
+      }
+      .boss-intro h2 {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-weight: normal;
+        font-size: clamp(56px, 10vw, 112px);
+        line-height: 1;
+        color: #c8e070;
+        text-shadow: 0 6px 0 #000;
+        letter-spacing: 0.04em;
+      }
+      .boss-intro p {
+        font-size: 20px;
+        color: #e8e0c0;
+        text-shadow: 0 2px 0 #000;
+      }
+      .boss-intro.on {
+        animation: boss-intro 3.2s ease both;
+      }
+      @keyframes boss-intro {
+        0% {
+          opacity: 0;
+          transform: translateX(-12%);
+        }
+        12% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        80% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(12%);
+        }
+      }
+      .code-row {
+        display: flex;
+        gap: 8px;
+      }
+      .input-wrap.code {
+        flex: none;
+        width: 132px;
+      }
+      .input-wrap.code input {
+        text-transform: uppercase;
+      }
+      .input-wrap.code input::placeholder {
+        text-transform: none;
+      }
+      
+      
+      #mobile.hidden {
+        display: none; 
+      }
+      .mobile-body {
+        align-items: center;
+        text-align: center;
+      }
+      .mobile-icon {
+        image-rendering: pixelated;
+      }
+      .mobile-body .hero-title {
+        font-size: 32px;
+      }
+      .mobile-hero {
+        width: 100%;
+        max-width: 512px;
+        height: auto;
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      .btn.shine {
+        width: 100%;
+        max-width: 512px;
+        padding: 6px 64px;
+        font-family: chevyray-oeuf, chevyray, monospace;
+        background: linear-gradient(110deg, #000, 45%, #cbcbcb, 55%, #000);
+        background-size: 220% 100%;
+        animation: background-shine 2.5s linear infinite;
+      }
+      @keyframes background-shine {
+        from {
+          background-position: -20% 0;
+        }
+        to {
+          background-position: -200% 0;
+        }
+      }
+
+      
+      .mobile .head-title .by,
+      .mobile .head-title a:not(.name),
+      .mobile #btn-share,
+      .mobile #btn-mp {
+        display: none !important; 
+      }
+      @media (max-width: 640px) {
+        .head-title .name {
+          font-size: 18px;
+        }
+        #btn-discord p {
+          display: none;
+        }
+        
+        .adv-card .row {
+          flex-direction: column;
+        }
+        .adv-card .row .btn {
+          flex: none;
+        }
+      }
+
+      
+      body:not(.touch) .touch-only,
+      body.touch .kb-only {
+        display: none !important;
+      }
+      body.touch {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+      }
+      body.touch button,
+      body.touch a {
+        touch-action: manipulation; 
+      }
+      
+      body:is(.touch, .embed) .app {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+      body:is(.touch, .embed) .window > .window-head {
+        display: none;
+      }
+      body:is(.touch, .embed) .window-body {
+        padding: 0;
+      }
+      
+      body.touch .stage:is(.playing, .map) {
+        touch-action: none;
+      }
+      
+      body:is(.touch, .embed) .screen {
+        justify-content: flex-start;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 8px 0;
+      }
+      
+      body:is(.touch, .embed) #title,
+      body:is(.touch, .embed) #mp,
+      body:is(.touch, .embed) #lobby,
+      body:is(.touch, .embed) #loading {
+        padding-top: 76px;
+      }
+      body:is(.touch, .embed) .screen:not(.hidden) {
+        pointer-events: auto;
+      }
+      
+      body:not(.ios-safari) .ios-only {
+        display: none !important;
+      }
+      body:is(.touch, .embed) .screen > .sfwin,
+      body:is(.touch, .embed) .screen > .title-row {
+        flex-shrink: 0;
+        margin: auto 0;
+      }
+      body.touch .featured-card {
+        width: min(620px, calc(100% - 32px));
+      }
+      body:is(.touch, .embed) .sfwin-body {
+        gap: 10px;
+        padding: 12px;
+      }
+      
+      body:is(.touch, .embed) .done-links {
+        align-items: stretch; 
+      }
+      body:is(.touch, .embed) .done-links > :is(.tag, .install-row) {
+        flex: 1 1 calc(50% - 4px); 
+        display: flex;
+      }
+      body:is(.touch, .embed) .done-links .tag {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+      body:is(.touch, .embed) .done-links .more-link {
+        flex-basis: 100%;
+        justify-content: center;
+        margin: 0;
+      }
+      body:is(.touch, .embed) .hero-title {
+        font-size: 30px;
+      }
+      
+      body:is(.touch, .embed) #hud .sfwin,
+      #hud.hidden * {
+        pointer-events: none !important;
+      }
+      
+      body:is(.touch, .embed) #hud-progress {
+        left: 8px;
+        top: 8px;
+        width: 150px;
+        gap: 6px;
+        padding: 3px 6px;
+        background: rgba(0, 0, 0, 0.35);
+        box-shadow: none;
+      }
+      body:is(.touch, .embed) #hud-progress p {
+        min-width: 0;
+        font-size: 13px;
+        line-height: 14px;
+      }
+      body:is(.touch, .embed) #hud-progress .meter {
+        flex: 1;
+        box-shadow: none;
+        background: rgba(255, 255, 255, 0.15);
+      }
+      body:is(.touch, .embed) #hud-progress .meter,
+      body:is(.touch, .embed) #hud-progress .meter i,
+      body:is(.touch, .embed) #hud-progress .meter b {
+        height: 4px;
+      }
+      body:is(.touch, .embed) .hud-weapons {
+        bottom: 6px;
+        gap: 4px;
+        padding: 4px;
+        background: none; 
+        box-shadow: none;
+        pointer-events: auto;
+      }
+      body:is(.touch, .embed) .slot {
+        width: 50px; 
+        height: 34px;
+      }
+      body:is(.touch, .embed) .slot .key,
+      body:is(.touch, .embed) .slot.alt {
+        display: none;
+      }
+      
+      body:is(.touch, .embed) .wname {
+        bottom: 52px;
+        padding: 3px 6px;
+        font-size: 12px;
+      }
+      body:is(.touch, .embed) .hud-hint {
+        left: 50%;
+        top: 8px;
+        bottom: auto;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: calc(100% - 440px);
+        font-size: 14px;
+      }
+      body:is(.touch, .embed) .hud-hint .sfwin-body {
+        padding: 6px 10px;
+      }
+      body:is(.touch, .embed) .vs-feed {
+        top: 40px;
+        right: 6px;
+      }
+      
+      body.touch.portrait .hud-weapons {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: max-content;
+        max-width: calc(100% - 120px);
+      }
+      body.touch.portrait .slot {
+        width: 48px;
+      }
+      body.touch.portrait .tstick {
+        top: calc(100% - 190px);
+      }
+      body.touch.portrait .hud-hint {
+        top: 40px;
+        max-width: calc(100% - 24px);
+      }
+      
+      .tstick {
+        position: absolute;
+        left: 84px;
+        top: calc(100% - 84px);
+        width: 104px;
+        height: 104px;
+        margin: -52px 0 0 -52px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.35);
+        background: rgba(0, 0, 0, 0.18);
+        opacity: 0.45;
+        pointer-events: none;
+      }
+      .tstick.on {
+        opacity: 1;
+      }
+      
+      .tstick.taim {
+        left: calc(100% - 84px);
+      }
+      body.touch:not(.portrait) .tstick.taim {
+        left: calc(100% - 124px); 
+      }
+      .tstick i {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 44px;
+        height: 44px;
+        margin: -22px 0 0 -22px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
+      }
+      
+      .tbtn {
+        position: absolute;
+        pointer-events: auto;
+        touch-action: none;
+      }
+      .tbtn-alt {
+        right: 10px;
+        bottom: 10px;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      .tbtn-alt canvas {
+        width: 32px;
+        height: 32px;
+        image-rendering: pixelated;
+      }
+      .tbtn-alt.dive canvas {
+        width: 16px;
+        height: 16px;
+      }
+      .tbtn-alt p {
+        display: none;
+        font-size: 12px;
+        line-height: 12px;
+      }
+      .tbtn-alt.dive p {
+        display: block;
+      }
+      .tbtn-pause {
+        right: 6px;
+        top: 6px;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        gap: 4px;
+      }
+      .tbtn-pause i {
+        width: 4px;
+        height: 10px;
+        background: var(--white);
+      }
+      
+      .rotate {
+        display: none;
+      }
+      body.touch.turn .rotate {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 24px;
+        text-align: center;
+        background: var(--black);
+      }
+      .rotate img {
+        image-rendering: pixelated;
+      }
+
+      
+      .badge-preview {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        background: #1e1e1e;
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      .badge-preview.light {
+        background: #ededed;
+      }
+      .badge-preview img:not(.on) {
+        display: none;
+      }
+      #badge .seg {
+        margin-top: 0;
+      }
+      .badge-code {
+        margin: 0;
+        font: 14px/20px chevyray, ui-monospace, monospace;
+        color: #a0a0a0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere; 
+        user-select: text;
+      }
+      .link-box {
+        flex: 1;
+        min-width: 0;
+        padding: 4px 8px 6px; 
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+        overflow: hidden;
+        user-select: text;
+      }
+      .link-box p {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .players {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .pl {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        flex: none;
+        box-shadow: var(--shadow-input);
+      }
+      .pl .tag-me {
+        color: var(--light-gray);
+      }
+      
+      .vs-topbar {
+        display: contents;
+      }
+      .vs-top {
+        position: absolute;
+        left: 50%;
+        top: 12px;
+        transform: translateX(-50%);
+        font-size: 24px;
+        line-height: 1.2;
+        text-shadow: 0 2px 0 #000;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      
+      .vs-top .ch {
+        display: inline-block;
+        width: 0.556em;
+        text-align: center;
+      }
+      .vs-top .ch.colon {
+        width: 0.222em;
+      }
+      
+      .vs-life {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        width: 320px;
+        height: 20px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+        pointer-events: none;
+      }
+      .vs-life i {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        background: #e5383b;
+        transition: width 0.12s ease-out;
+      }
+      .vs-life.low i {
+        animation: life-low 0.8s ease-in-out infinite alternate;
+      }
+      @keyframes life-low {
+        to {
+          background: #ff8a8a;
+        }
+      }
+      #ui.versus .hud-hint {
+        bottom: 46px;
+      }
+      #ui.boss .hud-hint {
+        bottom: 86px; 
+      }
+      
+      body:is(.touch, .embed) .vs-topbar {
+        position: absolute;
+        left: 8px;
+        right: 44px;
+        top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        pointer-events: none;
+      }
+      body:is(.touch, .embed) .vs-top {
+        position: static;
+        transform: none;
+        flex: none;
+        font-size: 18px;
+      }
+      body:is(.touch, .embed) .vs-life {
+        position: relative; 
+        inset: auto; 
+        flex: 1;
+        align-self: center; 
+        min-width: 40px;
+        width: auto;
+        height: 8px;
+      }
+      body:is(.touch, .embed) #ui.versus .hud-hint {
+        top: 36px;
+        bottom: auto;
+      }
+      .vs-feed {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+      }
+      .vs-feed p {
+        padding: 4px 8px;
+        background: var(--black);
+        box-shadow: var(--shadow-input);
+        white-space: nowrap;
+      }
+      .vs-center {
+        position: absolute;
+        left: 50%;
+        top: 34%;
+        transform: translate(-50%, -50%);
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 32px;
+        text-shadow: 0 3px 0 #000;
+        white-space: nowrap;
+        transition: opacity 0.15s ease;
+      }
+      
+      .vs-center.respawn {
+        font-size: clamp(44px, 7vw, 72px);
+        text-shadow: 0 4px 0 #000;
+      }
+      
+      .vs-next {
+        position: absolute;
+        left: 50%;
+        top: max(16px, env(safe-area-inset-top));
+        transform: translateX(-50%);
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 32px;
+        line-height: 1.2;
+        text-shadow: 0 3px 0 #000;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .vs-next:empty {
+        display: none;
+      }
+      
+      body:is(.touch, .embed) .vs-next {
+        position: static;
+        transform: none;
+        margin-bottom: 8px;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        text-shadow: 0 2px 0 #000;
+      }
+      .vs-board {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: min(440px, calc(100% - 32px));
+      }
+      .board {
+        display: grid;
+        grid-template-columns: auto auto 1fr auto auto;
+        gap: 6px 16px;
+        align-items: center;
+        color: #a0a0a0;
+      }
+      .board .n {
+        color: var(--white);
+      }
+      
+      
+      .maps {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+        gap: 6px;
+        width: 100%;
+      }
+      .map-tile {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 4px 4px 6px;
+        box-shadow: var(--shadow-input);
+        text-align: left;
+      }
+      .map-tile:hover,
+      .map-tile:focus-visible {
+        background: var(--medium-gray);
+        outline: none;
+      }
+      .map-tile img,
+      .map-tile .any {
+        width: 100%;
+        height: 60px;
+        object-fit: cover;
+        object-position: top;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      .map-tile .any {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 39px;
+        line-height: 1;
+        padding: 10px 0 0 4px;
+        color: var(--orange);
+      }
+      .map-tile p {
+        font-size: 14px;
+        line-height: 16px;
+      }
+      .map-tile.random {
+        background: var(--medium-gray);
+      }
+      .map-tile.random:hover {
+        background: var(--light-gray);
+      }
+      body.touch .map-tile img,
+      body.touch .map-tile .any {
+        height: 64px;
+      }
+      
+      
+      .skins-shelf {
+        width: min(620px, calc(100% - 32px));
+      }
+      #title,
+      #mp {
+        justify-content: flex-start;
+        overflow-y: auto;
+        padding: 24px 0;
+      }
+      #mp > .title-card {
+        flex-shrink: 0;
+        margin: auto 0 16px;
+      }
+      #mp > .skins-shelf {
+        flex-shrink: 0;
+        margin: 0 0 auto;
+      }
+      
+      .skins-shelf > .sfwin-body.daily {
+        flex-direction: column; 
+        align-items: stretch;
+        gap: 8px;
+        padding-top: 0;
+      }
+      #daily[hidden] {
+        display: none;
+      }
+      .daily-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        font-size: 14px;
+        line-height: 16px;
+      }
+      .daily-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr)); 
+        gap: 8px;
+      }
+      @container (max-width: 520px) {
+        .daily-list {
+          grid-template-columns: 1fr;
+        }
+      }
+      .daily-row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-inner-pannel);
+      }
+      .daily-what {
+        font-size: 14px;
+        line-height: 16px;
+        min-height: 32px; 
+      }
+      .daily-bar {
+        height: 6px;
+      }
+      .daily-meta {
+        margin-top: auto; 
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 12px;
+        line-height: 14px;
+      }
+      .daily-xp {
+        color: var(--orange);
+        white-space: nowrap;
+      }
+      .daily-row.done .daily-what {
+        color: #a0a0a0;
+      }
+      
+      .pass-title {
+        font-size: 14px;
+        line-height: 16px;
+      }
+      .pass-bar i.pass-ghost {
+        background: var(--orange-light);
+        opacity: 0.4;
+      }
+      #title > .title-row {
+        flex-shrink: 0;
+        margin: auto 0 16px;
+      }
+      #title > .rank-card {
+        flex-shrink: 0;
+        margin: 0 0 auto;
+      }
+      
+      body.touch #title > .title-row {
+        order: 1;
+        margin: auto 0 16px;
+      }
+      body.touch #title > .rank-card {
+        order: 2;
+        margin: 0 0 auto;
+      }
+      body.touch #title > .home-legal {
+        order: 3;
+      }
+      
+      .skins-shelf {
+        container-type: inline-size;
+      }
+      .skins-shelf > .sfwin-body {
+        flex-direction: row;
+        align-items: center;
+      }
+      .skins-shelf-skins {
+        flex: none;
+      }
+      
+      .skins-shelf-skins,
+      .pack-promo-skins {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 88px);
+        gap: 6px;
+      }
+      .skins-shelf-skins .skin-tile,
+      .pack-promo-skins .skin-tile {
+        padding: 0;
+        min-width: 0;
+      }
+      .skins-shelf-skins .skin-tile canvas,
+      .pack-promo-skins .skin-tile canvas {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+      }
+      
+      .skins-shelf-side {
+        flex: 1;
+        min-width: 0;
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .skins-shelf-side .btn {
+        width: 100%;
+        max-width: none;
+        padding: 6px 12px;
+      }
+      @container (max-width: 560px) {
+        .skins-shelf > .sfwin-body {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .skins-shelf-skins {
+          justify-content: center;
+        }
+      }
+      #skins-shelf-sale[hidden],
+      #skins-pass[hidden] {
+        display: none;
+      }
+      
+      .skins-shelf > .skins-pass {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .pass-grid {
+        --col-ideal: 104px;
+        display: grid;
+        grid-template-columns: repeat(var(--n, 4), minmax(var(--col, var(--col-ideal)), 1fr));
+        row-gap: 6px;
+        justify-items: center;
+        text-align: center;
+      }
+      .pass-grid > .skin-tile {
+        grid-row: 1;
+        width: min(88px, calc(100% - 8px));
+        padding: 0;
+      }
+      .pass-grid > .skin-tile canvas {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+      }
+      .pass-name {
+        grid-row: 2;
+        font-size: 14px;
+        line-height: 16px;
+      }
+      .pass-bar {
+        grid-row: 3;
+        grid-column: 1 / -1;
+        align-self: center;
+        justify-self: stretch;
+        height: 10px;
+      }
+      .pass-node {
+        grid-row: 3;
+        z-index: 1;
+        background-color: var(--black);
+        box-shadow: var(--shadow-input);
+        filter: grayscale(1) brightness(0.55);
+      }
+      .pass-node.reached {
+        filter: none;
+      }
+      .pass-rank {
+        grid-row: 4;
+        padding: 0 4px;
+        font-size: 12px;
+        line-height: 14px;
+      }
+      .pass-act {
+        grid-row: 5;
+        width: 100%;
+        padding: 0 4px;
+      }
+      .pass-act .btn {
+        width: 100%;
+        max-width: none;
+        padding: 6px 8px;
+      }
+      .pass-line {
+        text-align: center;
+      }
+      
+      .pass-scroll {
+        --fade: 40px;
+        overflow-x: auto;
+        scroll-padding-inline: var(--fade);
+        overscroll-behavior-x: contain;
+        padding-block: 3px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--medium-gray) transparent;
+      }
+      body.touch .pass-scroll {
+        scrollbar-width: none;
+      }
+      .pass-scroll.more-right {
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--fade)), transparent);
+        mask-image: linear-gradient(to right, #000 calc(100% - var(--fade)), transparent);
+      }
+      .pass-scroll.more-left {
+        -webkit-mask-image: linear-gradient(to left, #000 calc(100% - var(--fade)), transparent);
+        mask-image: linear-gradient(to left, #000 calc(100% - var(--fade)), transparent);
+      }
+      .pass-scroll.more-left.more-right {
+        -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+        mask-image: linear-gradient(to right, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+      }
+      
+      body.touch .pass-rank {
+        display: none;
+      }
+      .pass-line:empty {
+        display: none;
+      }
+      
+      .pack-promo-pass {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .pass-grid.lite {
+        --col-ideal: 84px;
+      }
+      .pack-promo-pass .pass-scroll {
+        --fade: 28px;
+      }
+      .pass-grid.lite > .skin-tile {
+        width: min(64px, calc(100% - 8px));
+      }
+      .pass-grid.lite > .pass-bar,
+      .pass-grid.lite > .pass-node {
+        grid-row: 2;
+      }
+      .pass-grid.lite > .pass-rank {
+        grid-row: 3;
+      }
+      .pass-line.lite {
+        font-size: 14px;
+        line-height: 16px;
+      }
+      
+      .skin-tile.locked canvas {
+        filter: grayscale(0.85) brightness(0.55);
+      }
+      #skins-actions:empty {
+        display: none;
+      }
+      
+      #skins-actions .btn {
+        width: 160px;
+        max-width: 100%;
+        padding: 6px 12px;
+        white-space: nowrap;
+      }
+      
+      .text-link {
+        font-size: 14px;
+        line-height: 16px;
+        color: #a0a0a0;
+        text-align: left;
+      }
+      .text-link p {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .text-link:hover,
+      .text-link:focus-visible {
+        color: #ffffff;
+        outline: none;
+      }
+      
+      .window-head > .text-link {
+        margin-left: auto;
+      }
+      
+      .skins-top {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .skins-preview {
+        width: 150px;
+        height: 150px;
+        flex: none;
+        padding: 0;
+        background: var(--medium-gray);
+        image-rendering: pixelated;
+      }
+      .skins-about {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 8px;
+        min-width: 0;
+      }
+      .skins-name {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 26px;
+        line-height: 1.1;
+      }
+      
+      .skins-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+        gap: 6px;
+      }
+      
+      .skin-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 0 0 6px;
+        background: var(--medium-gray);
+        box-shadow: var(--shadow-input);
+      }
+      .skin-tile canvas {
+        display: block;
+        width: 88px;
+        height: 88px;
+        image-rendering: pixelated;
+      }
+      .skin-tile p {
+        font-size: 14px;
+        line-height: 16px;
+      }
+      button.skin-tile:hover,
+      button.skin-tile:focus-visible,
+      .skin-tile.on {
+        background: var(--light-gray);
+        outline: none;
+      }
+      
+      .skin-tile.worn {
+        box-shadow: -2px 0 0 0 var(--orange), 2px 0 0 0 var(--orange), 0 -2px 0 0 var(--orange), 0 2px 0 0 var(--orange);
+      }
+      .skin-tile.worn::after {
+        content: "Worn";
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0 3px 1px 4px;
+        font-size: 11px;
+        line-height: 12px;
+        background: var(--orange);
+        color: var(--pure-black);
+        pointer-events: none;
+      }
+      body.touch .skins-preview {
+        width: 120px;
+        height: 120px;
+      }
+      
+      #party {
+        justify-content: center;
+      }
+      .party-card {
+        width: min(420px, calc(100% - 32px));
+      }
+      .party-body {
+        align-items: center;
+        text-align: center;
+        gap: 14px;
+      }
+      .party-when {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .party-count {
+        font-family: chevyray-oeuf, chevyray, monospace;
+        font-size: 64px;
+        line-height: 1;
+      }
+      .party-count:empty {
+        display: none;
+      }
+      .party-status {
+        color: #a0a0a0;
+      }
+      
+      .party-find {
+        position: relative;
+        width: 160px;
+        height: 8px;
+        overflow: hidden;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+      }
+      .party-find i {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0; 
+        width: 40px;
+        background: var(--orange);
+        animation: party-find 1.2s linear infinite;
+      }
+      @keyframes party-find {
+        from {
+          transform: translateX(-40px);
+        }
+        to {
+          transform: translateX(160px);
+        }
+      }
+      
+      .hidden .party-find i,
+      .party-find.hidden i {
+        animation: none;
+      }
+      
+      body.quick .tbtn-pause:not(.tbtn-leave),
+      body.quick .esc-key,
+      body:not(.quick) .tbtn-leave,
+      body:not(.quick) .esc-leave {
+        display: none !important;
+      }
+      .tbtn-leave img {
+        width: 12px;
+        height: 12px;
+      }
+      #leave-q {
+        justify-content: center;
+      }
+      .leave-card {
+        width: min(340px, calc(100% - 32px));
+      }
+      
+      .leave-body {
+        display: flex;
+        gap: 8px;
+      }
+      .leave-sound {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .leave-sound .sfx-vol {
+        flex: 1;
+        margin-top: 0;
+      }
+      .leave-body .btn {
+        flex: 1;
+      }
+      .leave-body #leave-no {
+        flex: 2;
+      }
+      
+      .lobby-waiting {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .lobby-waiting p {
+        color: #a0a0a0;
+      }
+      .lobby-waiting.hidden,
+      .lobby-alone.hidden {
+        display: none;
+      }
+      .party-online {
+        color: #a0a0a0;
+        font-size: 14px;
+      }
+      .party-online:empty {
+        display: none;
+      }
+      .party-who {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .party-n {
+        font-size: 22px;
+        line-height: 24px;
+      }
+      .party-players {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+      }
+      .party-players .chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 8px 4px;
+        background: var(--pure-black);
+        box-shadow: var(--shadow-input);
+      }
+      
+      #hud.party-hidden {
+        opacity: 0;
+      }
+      #hud.party-hidden * {
+        pointer-events: none !important;
+      }
+      
+      @media (max-height: 520px) {
+        .party-card {
+          width: min(560px, calc(100% - 32px));
+        }
+        .party-body {
+          flex-direction: row;
+          justify-content: center;
+          gap: 24px;
+        }
+        .party-count {
+          font-size: 48px;
+        }
+      }
+      .board .v {
+        color: var(--white);
+        text-align: right;
+      }
+    </style>
+  <script type="module" crossorigin src="/_app/index-10gpprx9.js"></script></head>
+  <body>
+        <script>
+      if (matchMedia("(pointer: coarse)").matches && navigator.maxTouchPoints > 0) document.body.classList.add("touch");
+      if (location.pathname === "/play") document.body.classList.add("embed"); // (the game in an X post: main.ts EMBED)
+      if (location.pathname === "/play" || location.pathname === "/x") document.body.classList.add("landing"); // (its first screen, from the first paint: #embed)
+    </script>
+    <div class="app">
+      <div class="window">
+        <header class="window-head">
+          <div class="head-left">
+            <h1 class="head-title">
+              <a class="name" href="/">Destroy Any Website</a>
+              <span class="by">made with</span>
+              <a href="https://www.spritefusion.com/pixel-art-generator" target="_blank" rel="noopener noreferrer">Sprite Fusion</a>
+            </h1>
+          </div>
+          <div class="head-right">
+            <button class="btn" type="button" id="btn-share"><span><p>Share</p></span></button>
+            <button class="btn" type="button" id="btn-mp" style="display: none"><span><p>Multiplayer</p></span></button>
+            <a class="btn" id="btn-discord" href="https://discord.gg/GtrvggBEmv" target="_blank" rel="noopener noreferrer"><span><img class="discord" src="/_app/discordIcon-j08ja80d.svg" alt="" /><p>Discord</p></span></a>
+            <a class="btn" id="btn-about" href="/about"><span><p>About</p></span></a>
+          </div>
+        </header>
+        <div class="window-body">
+          <div class="stage" id="stage">
+            <canvas id="game"></canvas>
+                        <div id="title-video" class="title-video"><video muted loop playsinline preload="none" aria-hidden="true"></video></div>
+            <div id="ui">
+              <section id="title" class="screen">
+                                <div class="title-row">
+                  <div class="sfwin title-card">
+                    <div class="window-head"><p>Sprite Fusion Presents</p></div>
+                    <div class="sfwin-body">
+                      <h1 class="hero-title">Destroy Any Website</h1>
+                      <p class="muted">Type an address, break everything.</p>
+                      <form id="urlform" class="url-row" autocomplete="off">
+                        <label class="input-wrap">
+                          <span class="proto">https://</span>
+                          <input id="url" name="url" spellcheck="false" value="en.wikipedia.org/wiki/Stick_figure" placeholder="wikipedia.org" aria-label="Website address" />
+                        </label>
+                        <button class="btn" type="submit"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Destroy</p></span></button>
+                      </form>
+                      <div class="picks col">
+                        <p>Multiplayer</p>
+                                                <div class="pick-row">
+                          <button class="btn" type="button" id="mp-open"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Play online</p></span></button>
+                          <button class="tag embed-open" type="button"><span>Embed to your website</span></button>
+                          <div class="install-row" hidden><button class="tag" type="button"><span>Install on your phone</span></button></div>
+                        </div>
+                      </div>
+                                            <div class="picks col">
+                        <p>Boss fight</p>
+                        <div class="pick-row">
+                          <button class="btn" type="button" id="adv-open"><span><p>World map</p></span></button>
+                        </div>
+                      </div>
+                      <p class="muted ios-only">Install on your phone: tap Share, then Add to Home Screen.</p>
+                      <p class="err" id="err"></p>
+                      <div class="keys-row">
+                        <span class="kb-only"><kbd>A</kbd><kbd>D</kbd><p>run</p></span>
+                        <span class="kb-only"><img src="/_app/spaceBarIcon-3zzb4qy0.svg" alt="Space" /><p>jump - hold to fly</p></span>
+                        <span class="kb-only"><img src="/_app/mouseLeftIcon-47ae7rmd.svg" alt="Left click" /><p>shoot</p></span>
+                        <span class="kb-only"><img src="/_app/mouseRightIcon-spccm0mv.svg" alt="Right click" /><p>grenade</p></span>
+                        <a class="more-link join-link touch-only" id="btn-join" href="https://discord.gg/GtrvggBEmv" target="_blank" rel="noopener noreferrer"><img class="discord" src="/_app/discordIcon-j08ja80d.svg" alt="" /><p>Join</p></a>
+                                                <a class="more-link join-link touch-only" id="title-share" href="/"><p>Share</p></a>
+                        <a class="more-link" data-link="more experiments" href="https://www.spritefusion.com/blog" target="_blank" rel="noopener noreferrer"><p>More experiments</p></a>
+                      </div>
+                    </div>
+                  </div>
+                                    <div class="sfwin featured-card" id="featured" hidden>
+                    <div class="window-head"><p id="featured-title"></p></div>
+                    <div class="sfwin-body">
+                      <img class="featured-img" id="featured-img" alt="" />
+                      <p id="featured-line"></p>
+                      <button class="btn" type="button" id="featured-go"><span><p id="featured-go-label"></p></span></button>
+                      <p class="legal"><span id="featured-sponsored">Sponsored - </span><a id="featured-book" href="https://buy.stripe.com/4gM9AV5KD5B9c6I8GD1Fe09" target="_blank" rel="noopener noreferrer">Your site here</a></p>
+                    </div>
+                  </div>
+                </div>
+                                <div class="sfwin rank-card">
+                  <div class="sfwin-body">
+                    <i class="insignia" id="rank-card-insignia" aria-hidden="true"></i>
+                    <div class="rank-card-mid">
+                      <div class="rank-card-top">
+                        <p id="rank-card-name"></p>
+                        <p class="muted" id="rank-card-xp"></p>
+                        <button class="text-link" type="button" id="rank-card-signin"><p>Sign in</p></button>
+                      </div>
+                      <div class="xp-bar"><i id="rank-card-fill"></i></div>
+                    </div>
+                  </div>
+                </div>
+                                <p class="legal home-legal"><a href="/about">About</a> - Copyright 2026 Sprite Fusion. All rights reserved - <a href="mailto:contact@spritefusion.com">contact@spritefusion.com</a></p>
+              </section>
+
+                            <section id="embed" class="screen hidden">
+                <div class="sfwin title-card">
+                  <div class="window-head"><p>Sprite Fusion Presents</p></div>
+                  <div class="sfwin-body">
+                    <h1 class="hero-title">Destroy Any Website<br /><em>Online</em></h1>
+                    <form id="embed-form" class="url-row" autocomplete="off">
+                      <label class="input-wrap"><span class="proto label">Name</span><input id="embed-name" maxlength="16" spellcheck="false" aria-label="Your name" /></label>
+                      <button class="btn" type="submit"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Play online</p></span></button>
+                    </form>
+                  </div>
+                </div>
+              </section>
+              <section id="mobile" class="screen hidden">
+                <div class="sfwin title-card">
+                  <div class="window-head"><p>Sprite Fusion Presents</p></div>
+                  <div class="sfwin-body mobile-body">
+                    <img class="mobile-icon" src="/_app/monitorIcon-tkqvd2hx.svg" alt="" width="48" height="48" />
+                    <h1 class="hero-title">Destroy Any Website</h1>
+                    <p class="muted">Make the window wider to play, or open it on a bigger screen!</p>
+                    <img class="mobile-hero" src="/_app/og-rz7phhgb.png" alt="The stickman shooting the title of Wikipedia's Stick figure article to pieces" width="1200" height="630" loading="lazy" />
+                    <button class="btn shine" type="button" id="mobile-copy"><span><p>Copy link for later</p></span></button>
+                    <p class="legal">Copyright 2026 Sprite Fusion. All rights reserved - <a href="mailto:contact@spritefusion.com">contact@spritefusion.com</a></p>
+                  </div>
+                </div>
+              </section>
+
+              <section id="badge" class="screen hidden">
+                <div class="sfwin title-card">
+                  <div class="window-head">
+                    <p>Embed to your website</p>
+                    <button type="button" id="badge-close" aria-label="Close"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+                  </div>
+                  <div class="sfwin-body">
+                    <p class="muted">Put it on your website to let your users smash your website. In the code, replace YOUR_WEBSITE_URL with your website's address.</p>
+                    <div class="badge-preview" id="badge-preview">
+                      <img data-look="dark" src="/_app/badge-s8jyv0vp.svg" alt="Destroy this website" width="180" height="40" />
+                      <img data-look="light" src="/_app/badge-light-cza4m21j.svg" alt="Destroy this website" width="180" height="40" />
+                    </div>
+                    <div class="seg" id="badge-seg">
+                      <button class="btn on" type="button" data-look="dark"><span><p>Dark</p></span></button>
+                      <button class="btn" type="button" data-look="light"><span><p>Light</p></span></button>
+                    </div>
+                    <pre class="inner badge-code" id="badge-code"></pre>
+                    <button class="btn" type="button" id="badge-copy"><span><p>Copy code</p></span></button>
+                  </div>
+                </div>
+              </section>
+
+                            <section id="skins" class="screen hidden">
+                <div class="sfwin title-card">
+                  <div class="window-head">
+                    <p>Skins</p>
+                    <button type="button" class="text-link" id="skins-restore" hidden><p>Restore purchase</p></button>
+                    <button type="button" id="skins-close" aria-label="Close"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+                  </div>
+                  <div class="sfwin-body">
+                    <div class="skins-top">
+                      <canvas id="skins-preview" class="skins-preview inner"></canvas>
+                      <div class="skins-about">
+                        <p class="skins-name" id="skins-name"></p>
+                        <p class="muted" id="skins-note"></p>
+                        <div class="pick-row" id="skins-actions"></div>
+                      </div>
+                    </div>
+                    <div class="skins-grid" id="skins-grid"></div>
+                    <p class="err" id="skins-err"></p>
+                  </div>
+                </div>
+              </section>
+
+                            <section id="mp" class="screen hidden">
+                <div class="sfwin title-card">
+                  <div class="window-head">
+                    <p>Multiplayer</p>
+                    <button type="button" id="mp-close" aria-label="Back"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+                  </div>
+                  <div class="sfwin-body">
+                    <div class="url-row">
+                      <label class="input-wrap"><span class="proto label">Name</span><input id="mp-name" maxlength="16" spellcheck="false" aria-label="Your name" /></label>
+                    </div>
+                    <div class="picks col">
+                      <p>Quick match</p>
+                      <div class="maps" id="mp-maps"></div>
+                    </div>
+                    <div class="picks col">
+                      <p>With friends</p>
+                      <div class="pick-row">
+                        <button class="btn" type="button" id="vs-create"><span><p>Invite friends</p></span></button>
+                        <form id="vs-joinform" class="code-row" autocomplete="off">
+                          <label class="input-wrap code"><input id="vs-code" maxlength="6" spellcheck="false" placeholder="Room code" aria-label="Room code" /></label>
+                          <button class="btn" type="submit"><span><p>Join</p></span></button>
+                        </form>
+                      </div>
+                    </div>
+                    <p class="err" id="mp-err"></p>
+                  </div>
+                </div>
+                                <div class="sfwin skins-shelf">
+                  <div class="window-head">
+                    <p id="skins-shelf-title">Progress</p>
+                    <button type="button" class="text-link" id="skins-shelf-restore" hidden><p>Restore purchase</p></button>
+                  </div>
+                                    <div class="sfwin-body" id="skins-shelf-sale" hidden>
+                    <div class="skins-shelf-skins" id="skins-shelf"></div>
+                    <div class="skins-shelf-side" id="skins-shelf-side"></div>
+                  </div>
+                                    <div class="sfwin-body skins-pass" id="skins-pass" hidden></div>
+                                    <div class="sfwin-body daily" id="daily" hidden>
+                    <div class="daily-head"><p class="muted">Daily challenges</p><p class="muted" id="daily-ends"></p></div>
+                    <div class="daily-list" id="daily-list"></div>
+                  </div>
+                </div>
+              </section>
+
+                            <section id="adv" class="screen hidden">
+                <button class="btn adv-back" type="button" id="adv-close"><span><p>Back</p></span></button>
+                <div class="sfwin adv-card hidden" id="adv-card">
+                  <div class="window-head">
+                    <p>Lair</p>
+                    <button type="button" id="adv-card-close" aria-label="Close"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+                  </div>
+                  <div class="sfwin-body">
+                    <div>
+                      <h2 class="adv-name" id="adv-name"></h2>
+                      <p class="gray" id="adv-title"></p>
+                    </div>
+                    <p id="adv-lore"></p>
+                    <p class="muted" id="adv-players"></p>
+                    <p class="muted" id="adv-status"></p>
+                                        <p class="adv-challenge hidden" id="adv-challenge"></p>
+                                        <div class="adv-reward" id="adv-reward">
+                      <div class="adv-reward-pic" id="adv-reward-pic"></div>
+                      <div class="adv-reward-text">
+                        <p class="gray">Reward skin</p>
+                        <p class="adv-reward-name" id="adv-reward-name"></p>
+                        <p class="muted" id="adv-reward-line"></p>
+                        <div class="adv-reward-act" id="adv-reward-act"></div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <button class="btn" type="button" id="adv-friends"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Fight with friends</p></span></button>
+                      <button class="btn" type="button" id="adv-solo"><span><p>Fight alone</p></span></button>
+                    </div>
+                    <p class="err" id="adv-err"></p>
+                  </div>
+                </div>
+              </section>
+
+              <section id="lobby" class="screen hidden">
+                <div class="sfwin title-card">
+                  <div class="window-head">
+                    <p>Multiplayer - <span id="lobby-code"></span></p>
+                    <button type="button" data-act="leave" aria-label="Leave the room"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+                  </div>
+                  <div class="sfwin-body">
+                    <div class="url-row">
+                      <label class="input-wrap"><span class="proto label">Name</span><input id="lobby-name" maxlength="16" spellcheck="false" aria-label="Your name" /></label>
+                    </div>
+                    <div class="picks col">
+                      <p>Invite friends</p>
+                      <div class="url-row">
+                        <div class="link-box" aria-label="Invite link"><p id="lobby-link"></p></div>
+                        <button class="btn" type="button" id="lobby-copy"><span><p>Copy invite</p></span></button>
+                      </div>
+                                            <div class="lobby-waiting hidden" id="lobby-waiting"><div class="party-find"><i></i></div><p>Waiting for friends</p></div>
+                    </div>
+                    <div class="inner players" id="lobby-players"></div>
+                                        <div class="picks col lobby-alone hidden" id="lobby-alone">
+                      <p>Or play now</p>
+                      <div class="pick-row">
+                        <button class="btn" type="button" data-act="lobby-quick"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Play now</p></span></button>
+                        <p class="muted">with players online</p>
+                      </div>
+                    </div>
+                                        <div class="picks col lobby-boss" id="lobby-boss" style="display: none">
+                      <p>The fight - <span id="lobby-boss-name"></span></p>
+                      <p class="muted" id="lobby-boss-line"></p>
+                      <div class="pick-row">
+                        <button class="btn" type="button" id="lobby-boss-go"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Fight</p></span></button>
+                      </div>
+                    </div>
+                                        <div id="lobby-host" class="players">
+                      <div class="picks col">
+                        <p>Pick a map</p>
+                        <div class="maps" id="lobby-maps"></div>
+                      </div>
+                      <div class="picks col">
+                        <p>Or any website</p>
+                        <form id="lobby-form" class="url-row" autocomplete="off">
+                          <label class="input-wrap">
+                            <span class="proto">https://</span>
+                            <input id="lobby-url" spellcheck="false" placeholder="wikipedia.org" aria-label="Website to fight on" />
+                          </label>
+                          <button class="btn" type="submit"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Start</p></span></button>
+                        </form>
+                      </div>
+                    </div>
+                    <p class="muted" id="lobby-wait">Waiting for the host to pick a website or a map.</p>
+                    <p class="err" id="lobby-err"></p>
+                  </div>
+                </div>
+              </section>
+
+              <section id="loading" class="screen hidden">
+                <div class="sfwin load-card">
+                  <div class="window-head"><p id="load-host"></p></div>
+                  <div class="sfwin-body" style="gap: 8px">
+                    <div class="load-row"><p id="load-msg"></p><p id="load-pct" class="muted">0%</p></div>
+                    <div class="load-bar"><i id="load-fill"></i></div>
+                  </div>
+                </div>
+              </section>
+
+              <div id="hud" class="hidden">
+                                <div class="vs-topbar vs-only">
+                  <p class="vs-top" id="vs-top"><span id="vs-clock"></span><span id="vs-rest"></span></p>
+                  <div class="vs-life" id="vs-life" role="meter" aria-label="Health"><i id="vs-lifebar"></i></div>
+                  <div class="boss-lives boss-only" id="boss-lives" role="img"></div>
+                </div>
+                                <div class="boss-hud boss-only">
+                  <p class="boss-name" id="boss-name"></p>
+                  <div class="boss-bar"><b id="boss-ghost"></b><i id="boss-fill"></i></div>
+                </div>
+                <div class="boss-intro boss-only hidden" id="boss-intro">
+                  <h2 id="boss-intro-name"></h2>
+                  <p id="boss-intro-title"></p>
+                </div>
+                <div class="vs-feed vs-only" id="vs-feed"></div>
+                <div class="vs-center vs-only" id="vs-center"></div>
+                <div class="sfwin vs-board vs-only hidden" id="vs-board">
+                  <div class="window-head"><p id="vs-board-title">Score</p></div>
+                  <div class="sfwin-body"><div class="board" id="vs-board-rows"></div></div>
+                </div>
+                <div class="hud-progress sp-only" id="hud-progress" aria-label="Destroyed">
+                  <div class="meter"><b id="hud-meter-ghost"></b><i id="hud-meter"></i></div>
+                  <p id="hud-pct">0%</p>
+                </div>
+                <div class="wname" id="wname"><p></p></div>
+                <div class="hud-weapons" id="hud-weapons"></div>
+                <div class="sfwin hud-hint" id="hud-hint">
+                  <div class="sfwin-body">
+                    <div class="keys-row kb-only">
+                      <span><kbd>A</kbd><kbd>D</kbd><p>run</p></span>
+                      <span><img src="/_app/spaceBarIcon-3zzb4qy0.svg" alt="Space" /><p>jump - tap to flip - hold to fly</p></span>
+                      <span><kbd>S</kbd><p>drop</p></span>
+                      <span><img src="/_app/mouseLeftIcon-47ae7rmd.svg" alt="Left click" /><p>shoot</p></span>
+                      <span><img src="/_app/mouseRightIcon-spccm0mv.svg" alt="Right click" /><p>grenade</p></span>
+                      <span><kbd>1-0</kbd><p>weapons</p></span>
+                      <span class="esc-key"><img src="/_app/escIcon-ep4tszws.svg" alt="Esc" /><p>pause</p></span>
+                      <span class="esc-leave"><img src="/_app/escIcon-ep4tszws.svg" alt="Esc" /><p>leave</p></span>
+                      <span class="vs-only"><kbd>Tab</kbd><p>score</p></span>
+                    </div>
+                    <div class="keys-row touch-only">
+                      <span><p>Left thumb, bottom left: run - push up to jump, hold to fly - down to drop</p></span>
+                      <span class="sp-only"><p>Touch the page: aim and shoot</p></span>
+                      <span class="vs-only"><p>Right thumb, bottom right: aim - push to shoot</p></span>
+                    </div>
+                  </div>
+                </div>
+                                <div class="tstick touch-only" id="tstick"><i id="tknob"></i></div>
+                <div class="tstick taim touch-only vs-only" id="taim"><i id="taimknob"></i></div>
+                <button class="btn tbtn tbtn-alt touch-only" type="button" id="tbtn-alt" data-tap aria-label="Grenade"><p>Dive</p></button>
+                <button class="btn tbtn tbtn-pause touch-only" type="button" id="tbtn-pause" data-tap aria-label="Pause"><i></i><i></i></button>
+                <button class="btn tbtn tbtn-pause tbtn-leave touch-only" type="button" id="tbtn-leave" data-tap aria-label="Leave the match"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+              </div>
+
+                                          <section id="party" class="screen hidden">
+                <div class="sfwin party-card" id="party-card" data-tap>
+                  <div class="window-head">
+                    <p id="party-title"></p>
+                    <button type="button" data-act="leave" aria-label="Leave"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+                  </div>
+                  <div class="sfwin-body party-body">
+                    <div class="party-when">
+                      <div class="party-count" id="party-count"></div>
+                      <p class="party-status" id="party-status"></p>
+                      <div class="party-find hidden" id="party-find"><i></i></div>
+                      <p class="party-online" id="party-online"></p>
+                    </div>
+                    <div class="party-who">
+                      <p class="party-n" id="party-n"></p>
+                      <div class="party-players" id="party-players"></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+                            <section id="leave-q" class="screen hidden">
+                <div class="sfwin leave-card" data-tap>
+                  <div class="window-head"><p>Leave this match?</p></div>
+                  <div class="sfwin-body">
+                    <div class="leave-body">
+                      <button class="btn" type="button" id="leave-yes"><span><p>Leave</p></span></button>
+                      <button class="btn" type="button" id="leave-no"><span><p>Keep playing</p></span></button>
+                    </div>
+                    <div class="leave-sound">
+                      <p class="gray">Sound</p>
+                      <input class="sfx-vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Sound volume" />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="pause" class="screen overlay hidden">
+                <div class="sfwin menu-card">
+                  <div class="window-head">
+                    <p>Paused - <span id="pause-site"></span></p>
+                    <button type="button" data-act="resume" aria-label="Resume"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+                  </div>
+                  <div class="sfwin-body">
+                    <div class="row">
+                      <button class="btn" type="button" data-act="resume"><span><p>Resume</p></span></button>
+                      <button class="btn sp-only" type="button" data-act="restart"><span><p>Restart site</p></span></button>
+                      <button class="btn sp-only" type="button" data-act="new"><span><p>New website</p></span></button>
+                      <button class="btn boss-solo" type="button" data-act="boss-again"><span><p>Restart fight</p></span></button>
+                      <button class="btn boss-solo" type="button" data-act="boss-map"><span><p>World map</p></span></button>
+                      <button class="btn vs-only room-only" type="button" data-act="leave"><span><p>Leave room</p></span></button>
+                    </div>
+                                        <div class="row touch-only"><button class="btn" type="button" id="pause-share"><span><p>Share this map</p></span></button></div>
+                    <p class="muted vs-only room-only">The match goes on while this menu is open.</p>
+                    <div class="inner board vs-only room-only" id="pause-board"></div>
+                    <div class="pack-promo" hidden>
+                      <p class="gray pack-promo-name">Halloween Skin Pack</p>
+                      <div class="inner pack-promo-body"><div class="pack-promo-skins"></div><div class="pack-promo-buy"></div></div>
+                    </div>
+                    <div class="made-on pack-alt">
+                      <p class="gray">Made on <a href="https://www.spritefusion.com/pixel-art-generator" data-link="made on" target="_blank" rel="noopener noreferrer">Sprite Fusion</a></p>
+                      <div class="inner art-strip"></div>
+                    </div>
+                    <div>
+                      <p class="gray">Background</p>
+                      <div class="seg bg-seg"></div>
+                    </div>
+                    <div>
+                      <p class="gray">Sound</p>
+                      <input class="sfx-vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Sound volume" />
+                    </div>
+                    <div class="inner keys kb-only">
+                      <p>A D / arrows</p><p>run</p>
+                      <p>Space / W</p><p>jump - tap again to flip - hold to fly</p>
+                      <p>S</p><p>drop through - hold to fall through</p>
+                      <p>Mouse</p><p>aim, click to shoot</p>
+                      <p>Right click</p><p>throw a grenade</p>
+                      <p>1-0 / wheel</p><p>switch weapon</p>
+                    </div>
+                    <div class="inner keys touch-only">
+                      <p>Left thumb, bottom left</p><p>run - push up to jump, again to flip, hold to fly - pull down to drop</p>
+                      <p>Touch the page</p><p>aim and shoot - hold to keep firing</p>
+                      <p>Grenade button</p><p>throw a grenade - dive-bomb with the drone</p>
+                      <p>Weapons</p><p>tap one to switch</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="complete" class="screen overlay hidden">
+                <div class="sfwin menu-card">
+                  <div class="window-head">
+                    <p>Website destroyed</p>
+                    <button type="button" data-act="keep" aria-label="Keep destroying"><img src="/_app/closeIcon-cwde2hjm.svg" alt="" /></button>
+                  </div>
+                  <div class="sfwin-body">
+                                        <div class="xp-strip">
+                      <div class="xp-track">
+                        <div class="xp-end">
+                          <i class="insignia xp-now" aria-hidden="true"></i>
+                          <p class="xp-now-name" aria-live="polite"></p>
+                        </div>
+                        <div class="xp-mid">
+                          <p class="xp-say"></p>
+                          <div class="xp-bar"><i class="xp-gain"></i><i class="xp-fill"></i></div>
+                          <p class="muted xp-count"></p>
+                        </div>
+                        <div class="xp-end xp-next-end">
+                          <i class="insignia xp-next" aria-hidden="true"></i>
+                          <p class="xp-next-name"></p>
+                        </div>
+                      </div>
+                      <p class="muted xp-note"></p>
+                    </div>
+                    <div class="inner stats" id="done-stats"></div>
+                    <div class="pack-promo" hidden>
+                      <p class="gray pack-promo-name">Halloween Skin Pack</p>
+                      <div class="inner pack-promo-body"><div class="pack-promo-skins"></div><div class="pack-promo-buy"></div></div>
+                    </div>
+                    <div class="made-on pack-alt">
+                      <p class="gray">Made on <a href="https://www.spritefusion.com/pixel-art-generator" data-link="made on" target="_blank" rel="noopener noreferrer">Sprite Fusion</a></p>
+                      <div class="inner art-strip"></div>
+                    </div>
+                    <div class="row">
+                      <button class="btn" type="button" data-act="keep"><span><p>Keep destroying</p></span></button>
+                      <button class="btn" type="button" data-act="new"><span><p>Destroy another</p></span></button>
+                    </div>
+                    <div class="row"><button class="btn" type="button" data-act="online"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Play online</p></span></button></div>
+                                        <div class="pick-row done-links">
+                      <button class="tag" type="button" id="done-share"><span>Share</span></button>
+                      <div class="install-row" hidden><button class="tag" type="button"><span>Install on your phone</span></button></div>
+                      <a class="more-link" data-link="make your game" href="https://www.spritefusion.com/pixel-art-generator" target="_blank" rel="noopener noreferrer"><p>Make your game with Sprite Fusion</p></a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section id="vs-over" class="screen overlay hidden">
+                                <p class="vs-next" id="vs-next" aria-live="polite"></p>
+                <div class="sfwin menu-card">
+                  <div class="window-head"><p>Match over - <span id="vs-over-site"></span></p></div>
+                  <div class="sfwin-body">
+                    <div id="vs-winner"></div>
+                                        <div class="xp-strip">
+                      <div class="xp-track">
+                        <div class="xp-end">
+                          <i class="insignia xp-now" aria-hidden="true"></i>
+                          <p class="xp-now-name" aria-live="polite"></p>
+                        </div>
+                        <div class="xp-mid">
+                          <p class="xp-say"></p>
+                          <div class="xp-bar"><i class="xp-gain"></i><i class="xp-fill"></i></div>
+                          <p class="muted xp-count"></p>
+                        </div>
+                        <div class="xp-end xp-next-end">
+                          <i class="insignia xp-next" aria-hidden="true"></i>
+                          <p class="xp-next-name"></p>
+                        </div>
+                      </div>
+                      <p class="muted xp-note"></p>
+                    </div>
+                    <div class="inner board" id="vs-over-rows"></div>
+                    <div class="row" id="vs-over-host">
+                      <button class="btn" type="button" data-act="rematch"><span><p>Rematch</p></span></button>
+                      <button class="btn" type="button" data-act="vs-new"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>New match</p></span></button>
+                    </div>
+                    <p class="muted" id="vs-over-wait">Waiting for the host to start the next match.</p>
+                    <div class="row" id="vs-over-room"><button class="btn" type="button" data-act="leave"><span><p>Leave room</p></span></button></div>
+                                        <div class="row" id="vs-over-pub">
+                      <button class="btn" type="button" data-act="again"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Play again</p></span></button>
+                      <button class="btn" type="button" data-act="leave"><span><p>Leave</p></span></button>
+                    </div>
+                                        <div class="pack-promo" hidden>
+                      <p class="gray pack-promo-name">Halloween Skin Pack</p>
+                      <div class="inner pack-promo-body"><div class="pack-promo-skins"></div><div class="pack-promo-buy"></div></div>
+                    </div>
+                    <div class="made-on pack-alt"><p class="gray">Made on <a href="https://www.spritefusion.com/pixel-art-generator" data-link="made on" target="_blank" rel="noopener noreferrer">Sprite Fusion</a></p></div>
+                                        <div class="pick-row install-row" hidden><button class="tag" type="button"><span>Install on your phone</span></button></div>
+                  </div>
+                </div>
+              </section>
+                            <section id="boss-over" class="screen overlay hidden">
+                <div class="sfwin menu-card">
+                  <div class="window-head"><p id="boss-over-title"></p></div>
+                  <div class="sfwin-body">
+                    <p id="boss-over-line"></p>
+                                        <div class="xp-strip">
+                      <div class="xp-track">
+                        <div class="xp-end">
+                          <i class="insignia xp-now" aria-hidden="true"></i>
+                          <p class="xp-now-name" aria-live="polite"></p>
+                        </div>
+                        <div class="xp-mid">
+                          <p class="xp-say"></p>
+                          <div class="xp-bar"><i class="xp-gain"></i><i class="xp-fill"></i></div>
+                          <p class="muted xp-count"></p>
+                        </div>
+                        <div class="xp-end xp-next-end">
+                          <i class="insignia xp-next" aria-hidden="true"></i>
+                          <p class="xp-next-name"></p>
+                        </div>
+                      </div>
+                      <p class="muted xp-note"></p>
+                    </div>
+                    <div class="inner stats" id="boss-over-stats"></div>
+                    <div class="adv-reward" id="boss-over-reward">
+                      <div class="adv-reward-pic" id="boss-over-reward-pic"></div>
+                      <div class="adv-reward-text">
+                        <p class="gray">Reward skin</p>
+                        <p class="adv-reward-name" id="boss-over-reward-name"></p>
+                        <p class="muted" id="boss-over-reward-line"></p>
+                        <div class="adv-reward-act" id="boss-over-reward-act"></div>
+                      </div>
+                    </div>
+                                        <div class="row" id="boss-over-social">
+                      <button class="btn" type="button" id="boss-over-share"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Share victory stats</p></span></button>
+                      <button class="btn" type="button" id="boss-over-help"><span><img src="/_app/boltIcon-v9dmn2sh.svg" alt="" /><p>Ask a friend for help</p></span></button>
+                    </div>
+                    <div class="row">
+                      <button class="btn" type="button" id="boss-over-again" data-act="boss-again"><span><p>Fight again</p></span></button>
+                      <button class="btn" type="button" id="boss-over-map" data-act="boss-map"><span><p>World map</p></span></button>
+                      <button class="btn" type="button" id="boss-over-leave" data-act="boss-leave"><span><p>Leave room</p></span></button>
+                    </div>
+                    <p class="muted" id="boss-over-wait">Waiting for the host to start the next fight.</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+        <div class="rotate" id="rotate">
+      <img src="/_app/monitorIcon-tkqvd2hx.svg" alt="" width="48" height="48" />
+      <p id="rotate-msg">Turn your phone sideways to play</p>
+    </div>
+    
+  </body>
+</html>

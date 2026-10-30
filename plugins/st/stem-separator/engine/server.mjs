@@ -1,9 +1,10 @@
+// [FL_INDEX: pick_folder_native, cross_platform_directory_selector, folder_browser_dialog, zenity_kdialog_osascript, stem_destination_folder | COT: Implement robust native cross-platform directory picker for choosing custom stem output folder| AT: 2026-10-30T02:21:45Z]
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+import { spawn, execFile } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -87,6 +88,8 @@ function parseBinaryBody(req) {
 function pickNativeFile() {
   return new Promise(resolve => {
     const platform = process.platform;
+    const env = { ...process.env };
+    if (!env.DISPLAY) env.DISPLAY = ':0';
     let proc;
 
     if (platform === 'linux') {
@@ -94,13 +97,13 @@ function pickNativeFile() {
         '--file-selection',
         '--title=Select Audio File for Stem Separation',
         '--file-filter=Audio Files (mp3, wav, flac, ogg, m4a, aac)|*.mp3 *.wav *.flac *.ogg *.m4a *.aac *.opus *.wma'
-      ]);
+      ], { env });
     } else if (platform === 'darwin') {
       const script = 'choose file of type {"mp3", "wav", "flac", "ogg", "m4a", "aac"} with prompt "Select Audio File for Stem Separation"';
-      proc = spawn('osascript', ['-e', script]);
+      proc = spawn('osascript', ['-e', script], { env });
     } else if (platform === 'win32') {
       const ps = `Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.OpenFileDialog; $f.Filter = "Audio Files|*.mp3;*.wav;*.flac;*.ogg;*.m4a;*.aac"; if($f.ShowDialog() -eq 'OK'){Write-Output $f.FileName}`;
-      proc = spawn('powershell', ['-NoProfile', '-Command', ps]);
+      proc = spawn('powershell', ['-NoProfile', '-Command', ps], { env });
     } else {
       return resolve(null);
     }
@@ -115,6 +118,51 @@ function pickNativeFile() {
       }
     });
     proc.on('error', () => resolve(null));
+  });
+}
+
+function pickFolderNative() {
+  return new Promise((resolve) => {
+    const platform = process.platform;
+    const env = { ...process.env };
+    if (!env.DISPLAY) env.DISPLAY = ':0';
+
+    if (platform === 'linux') {
+      execFile('zenity', ['--file-selection', '--directory', '--title=Select Output Destination Folder for Stems'], { env }, (err, stdout) => {
+        if (!err && stdout && stdout.trim()) {
+          return resolve(stdout.trim());
+        }
+        // User clicked Cancel or closed the window
+        if (err && err.code === 1) {
+          return resolve(null);
+        }
+        // Fallback to kdialog
+        execFile('kdialog', ['--getexistingdirectory', process.env.HOME || os.homedir() || '/tmp'], { env }, (kerr, kstdout) => {
+          if (!kerr && kstdout && kstdout.trim()) return resolve(kstdout.trim());
+          if (kerr && kerr.code === 1) return resolve(null);
+          // Fallback to Python tkinter
+          const pyscript = `import tkinter as tk, tkinter.filedialog as fd, os; root=tk.Tk(); root.withdraw(); p=fd.askdirectory(initialdir=os.path.expanduser('~')); print(p if p else '')`;
+          execFile('python3', ['-c', pyscript], { env }, (pyerr, pystdout) => {
+            if (!pyerr && pystdout && pystdout.trim()) return resolve(pystdout.trim());
+            return resolve(null);
+          });
+        });
+      });
+    } else if (platform === 'darwin') {
+      const script = 'POSIX path of (choose folder with prompt "Select Output Destination Folder for Stems")';
+      execFile('osascript', ['-e', script], (err, stdout) => {
+        if (!err && stdout && stdout.trim()) return resolve(stdout.trim());
+        return resolve(null);
+      });
+    } else if (platform === 'win32') {
+      const ps = `Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description = "Select Destination Folder for Stems"; if($f.ShowDialog() -eq 'OK'){Write-Output $f.SelectedPath}`;
+      execFile('powershell', ['-NoProfile', '-Command', ps], (err, stdout) => {
+        if (!err && stdout && stdout.trim()) return resolve(stdout.trim());
+        return resolve(null);
+      });
+    } else {
+      resolve(null);
+    }
   });
 }
 
@@ -156,6 +204,22 @@ const server = http.createServer(async (req, res) => {
           filePath,
           fileName: path.basename(filePath),
           size: stats.size
+        });
+      }
+      return sendJson(res, 200, { success: false, reason: 'canceled_or_unsupported' });
+    } catch (err) {
+      return sendJson(res, 500, { error: err.message });
+    }
+  }
+
+  // Native OS Folder Picker (Choose Destination Directory)
+  if (pathname === '/api/pick-folder' && (req.method === 'POST' || req.method === 'GET')) {
+    try {
+      const folderPath = await pickFolderNative();
+      if (folderPath && fs.existsSync(folderPath)) {
+        return sendJson(res, 200, {
+          success: true,
+          folderPath
         });
       }
       return sendJson(res, 200, { success: false, reason: 'canceled_or_unsupported' });
@@ -216,6 +280,7 @@ const server = http.createServer(async (req, res) => {
     try {
       const params = await parseJsonBody(req);
       const inputPath = params.filePath;
+      const customOutputDir = (params.destinationFolder || '').trim();
 
       if (!inputPath || !fs.existsSync(inputPath)) {
         return sendJson(res, 400, { error: `Input audio file not found: ${inputPath}` });
@@ -266,6 +331,43 @@ const server = http.createServer(async (req, res) => {
           }
 
           result.zipDownloadUrl = `/api/download/${jobId}/${result.zip_filename}`;
+
+          // If user specified custom output directory, copy stems and zip there
+          if (customOutputDir) {
+            try {
+              if (!fs.existsSync(customOutputDir)) {
+                fs.mkdirSync(customOutputDir, { recursive: true });
+              }
+
+              const rawBase = path.basename(inputPath, path.extname(inputPath)).replace(/^\d+_/, '');
+              const songDirName = `${rawBase}_stems`;
+              const targetStemFolder = path.join(customOutputDir, songDirName);
+              if (!fs.existsSync(targetStemFolder)) {
+                fs.mkdirSync(targetStemFolder, { recursive: true });
+              }
+
+              for (const key of Object.keys(result.stems)) {
+                const srcPath = result.stems[key].filepath || result.stems[key].path;
+                if (srcPath && fs.existsSync(srcPath)) {
+                  const dstPath = path.join(targetStemFolder, result.stems[key].filename);
+                  fs.copyFileSync(srcPath, dstPath);
+                  result.stems[key].exportedPath = dstPath;
+                }
+              }
+
+              if (result.zip_path && fs.existsSync(result.zip_path)) {
+                const dstZip = path.join(targetStemFolder, result.zip_filename);
+                fs.copyFileSync(result.zip_path, dstZip);
+                result.exportedZipPath = dstZip;
+              }
+
+              result.saved_to_custom = targetStemFolder;
+              console.log(`[Engine] Stems automatically saved to custom folder: ${targetStemFolder}`);
+            } catch (copyErr) {
+              console.error('[Engine] Failed to copy to custom directory:', copyErr);
+            }
+          }
+
           return sendJson(res, 200, { success: true, data: result });
         } catch (jsonErr) {
           return sendJson(res, 500, {
@@ -279,6 +381,108 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 500, { error: err.message });
     }
     return;
+  }
+
+  // Export Stems on-demand to designated Output Folder
+  if (pathname === '/api/export' && req.method === 'POST') {
+    try {
+      const body = await parseJsonBody(req);
+      const { jobId, stemKey, originalName } = body;
+      let targetFolder = (body.destinationFolder || '').trim();
+
+      if (!targetFolder) {
+        const musicDir = path.join(os.homedir(), 'Music');
+        targetFolder = fs.existsSync(musicDir)
+          ? path.join(musicDir, 'Flowork_Stems')
+          : path.join(os.homedir(), 'Downloads', 'Flowork_Stems');
+      }
+
+      if (originalName) {
+        const cleanSongName = path.basename(originalName, path.extname(originalName)).replace(/[^a-zA-Z0-9._-]/g, '_');
+        if (!targetFolder.endsWith(`${cleanSongName}_stems`)) {
+          targetFolder = path.join(targetFolder, `${cleanSongName}_stems`);
+        }
+      }
+
+      if (!fs.existsSync(targetFolder)) {
+        fs.mkdirSync(targetFolder, { recursive: true });
+      }
+
+      const safeJobId = path.basename(jobId || '');
+      const jobDir = path.join(TEMP_DIR, safeJobId);
+      if (!fs.existsSync(jobDir)) {
+        return sendJson(res, 404, { error: `Job ${jobId} not found or expired from temporary cache.` });
+      }
+
+      let sourceDir = jobDir;
+      const subdirs = fs.readdirSync(jobDir).filter(f => fs.statSync(path.join(jobDir, f)).isDirectory());
+      if (subdirs.includes('htdemucs_6s')) {
+        sourceDir = path.join(jobDir, 'htdemucs_6s');
+      } else if (subdirs.includes('htdemucs')) {
+        sourceDir = path.join(jobDir, 'htdemucs');
+      }
+
+      const exportedFiles = [];
+      const allFiles = fs.readdirSync(sourceDir);
+
+      if (!stemKey || stemKey === 'all' || stemKey === 'zip') {
+        for (const file of allFiles) {
+          const srcFile = path.join(sourceDir, file);
+          if (fs.statSync(srcFile).isFile()) {
+            const dstFile = path.join(targetFolder, file);
+            fs.copyFileSync(srcFile, dstFile);
+            exportedFiles.push({ filename: file, path: dstFile, size: fs.statSync(dstFile).size });
+          }
+        }
+      } else {
+        const match = allFiles.find(f => {
+          const baseName = path.basename(f, path.extname(f)).toLowerCase();
+          return baseName === stemKey.toLowerCase() || f.toLowerCase() === stemKey.toLowerCase();
+        });
+
+        if (match) {
+          const srcFile = path.join(sourceDir, match);
+          const dstFile = path.join(targetFolder, match);
+          fs.copyFileSync(srcFile, dstFile);
+          exportedFiles.push({ filename: match, path: dstFile, size: fs.statSync(dstFile).size });
+        } else {
+          return sendJson(res, 404, { error: `Stem ${stemKey} not found in job output.` });
+        }
+      }
+
+      return sendJson(res, 200, {
+        success: true,
+        message: `Exported ${exportedFiles.length} file(s) to ${targetFolder}`,
+        folder: targetFolder,
+        folderName: path.basename(targetFolder),
+        exportedFiles
+      });
+    } catch (err) {
+      console.error('[Engine Export Error]', err);
+      return sendJson(res, 500, { error: err.message });
+    }
+  }
+
+  // Open folder in OS native file explorer
+  if (pathname === '/api/open-folder' && req.method === 'POST') {
+    try {
+      const body = await parseJsonBody(req);
+      const targetDir = body.folderPath;
+      if (targetDir && fs.existsSync(targetDir)) {
+        const platform = process.platform;
+        if (platform === 'linux') {
+          spawn('xdg-open', [targetDir], { detached: true, stdio: 'ignore' }).unref();
+        } else if (platform === 'darwin') {
+          spawn('open', [targetDir], { detached: true, stdio: 'ignore' }).unref();
+        } else if (platform === 'win32') {
+          spawn('explorer.exe', [targetDir], { detached: true, stdio: 'ignore' }).unref();
+        }
+        return sendJson(res, 200, { success: true, folder: targetDir });
+      }
+      return sendJson(res, 400, { error: 'Folder does not exist' });
+    } catch (err) {
+      return sendJson(res, 500, { error: err.message });
+    }
   }
 
   // Download Endpoint (safely scoped to jobId)

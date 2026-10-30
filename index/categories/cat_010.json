@@ -13,7 +13,7 @@
       "icon": "📹",
       "shard": "index/yt/do/yt_downloader.json",
       "source_path": "plugins/yt/yt-downloader",
-      "hash": "c4612d66084ac7d6"
+      "hash": "cef509b28b1f9fc7"
     },
     {
       "id": "flow-studio",
@@ -49,7 +49,7 @@
       "icon": "🤺",
       "shard": "index/st/ic/stickman_studio.json",
       "source_path": "plugins/st/stickman-studio",
-      "hash": "d3eb06cde159abd9"
+      "hash": "30207c1208b5a68c"
     }
   ]
 }

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://crazy-taxi.astra.demos.sulat.com/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ffce14"><link rel="icon" href="./favicon.svg"><link rel="stylesheet" href="./style.css"><title data-sulat-seo>Crazy Taxi — GPT 6 Astra one-shot demo | Sulat</title>
+<meta name="description" content="Explore Crazy Taxi, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="robots" content="index, follow, max-image-preview:large" data-sulat-seo>
+<link rel="canonical" href="https://crazy-taxi.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:type" content="website" data-sulat-seo>
+<meta property="og:locale" content="en_NZ" data-sulat-seo>
+<meta property="og:site_name" content="Sulat" data-sulat-seo>
+<meta property="og:title" content="Crazy Taxi — GPT 6 Astra" data-sulat-seo>
+<meta property="og:description" content="Explore Crazy Taxi, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta property="og:url" content="https://crazy-taxi.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:image" content="https://demos.sulat.com/openai/astra/crazy-taxi/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:secure_url" content="https://demos.sulat.com/openai/astra/crazy-taxi/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:type" content="image/jpeg" data-sulat-seo>
+<meta property="og:image:width" content="1200" data-sulat-seo>
+<meta property="og:image:height" content="630" data-sulat-seo>
+<meta property="og:image:alt" content="Crazy Taxi one-shot demo preview" data-sulat-seo>
+<meta name="twitter:card" content="summary_large_image" data-sulat-seo>
+<meta name="twitter:title" content="Crazy Taxi — GPT 6 Astra" data-sulat-seo>
+<meta name="twitter:description" content="Explore Crazy Taxi, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="twitter:url" content="https://crazy-taxi.astra.demos.sulat.com/" data-sulat-seo>
+<meta name="twitter:image" content="https://demos.sulat.com/openai/astra/crazy-taxi/thumbnail.jpg" data-sulat-seo>
+<meta name="twitter:image:alt" content="Crazy Taxi one-shot demo preview" data-sulat-seo>
+<!--
+Sulat content-use policy:
+User-initiated automated scraping, extraction, and bulk copying are not permitted.
+Search indexing and discovery crawlers may access this content.
+When citing, summarising, or reusing Sulat content, credit Sulat and link to this page's canonical URL.
+Preserve the original creator credits and source links shown on this page; do not attribute third-party work to Sulat.
+Canonical URL: https://crazy-taxi.astra.demos.sulat.com/
+--></head>
+<body>
+<canvas id="game" aria-label="Third-person taxi driving through Bay City"></canvas>
+<div class="vignette"></div><div id="speed-lines"></div><div id="impact-flash"></div>
+<div id="loading"><span class="load-taxi">TAXI</span><b>WARMING UP THE ENGINE</b><span>Next stop: a little chaos.</span></div>
+<div class="utility"><button id="mute" class="icon-button" aria-label="Mute sound" title="Mute sound (M)"><svg id="sound-icon" viewBox="0 0 24 24"><path d="M11 4 5 9H2v6h3l6 5V4Z"/><path class="sound-wave" d="M15 8q5 4 0 8m3-11q8 7 0 14"/></svg></button><button id="pause" class="icon-button game-only" aria-label="Pause game" title="Pause (Esc)"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button></div>
+<main id="title-screen" class="screen">
+ <div class="title-top"><span class="checker"></span><span>BAY CITY ARCADE</span><span class="title-edition">EST. 1999 ENERGY</span></div>
+ <div class="title-content"><div class="eyebrow"><span class="live-dot"></span> YOUR SHIFT STARTS NOW</div><h1><span>CRAZY</span><span>TAXI<span class="logo-star">★</span></span></h1><p class="tagline">TIME IS MONEY.<br>DRIVE LIKE IT.</p><p class="title-description">One city. No speed limit. Pick up fares,<br>break a few rules, and chase the big money.</p><div class="mode-picker" role="group" aria-label="Run duration"><button class="selected" data-duration="90">ARCADE <small>90 SEC</small></button><button data-duration="180">LONG SHIFT <small>3 MIN</small></button></div><button id="start" class="button primary">LET’S RIDE <span>↗</span></button><button id="instructions" class="text-button">HOW TO PLAY <span>→</span></button><div class="title-keys"><span>WASD / ARROWS</span> DRIVE <i>·</i> <span>SPACE</span> DRIFT <i>·</i> <span>SHIFT</span> BOOST</div></div>
+ <div class="title-sticker"><span>THE CITY<br>IS YOURS.</span><svg viewBox="0 0 90 30"><path d="m2 14 80 0-17-11m17 11-17 12"/></svg></div>
+ <footer class="title-footer"><span>SUNSHINE. SHORTCUTS. QUESTIONABLE DRIVING.</span><span id="best-title">LOCAL BEST $0</span></footer>
+</main>
+<div id="hud" class="hidden">
+ <div class="time-block"><span class="hud-label">TIME LEFT</span><div><strong id="time">90</strong><span class="seconds">SEC</span></div></div>
+ <div class="cash-block"><span class="hud-label">TOTAL EARNED</span><strong id="cash">$0.00</strong><span id="fare-count">0 CUSTOMERS DELIVERED</span></div>
+ <div id="navigation"><div class="nav-arrow-wrap"><svg id="nav-arrow" viewBox="0 0 100 100"><path d="M50 3 92 49H66v44H34V49H8Z"/></svg></div><div id="nav-distance">36 m</div><div id="nav-target">PICK UP A CUSTOMER</div></div>
+ <div id="fare-card"><div class="fare-top"><div id="portrait"><span>☺</span></div><div><span id="fare-kicker">HEY, TAXI!</span><strong id="fare-title">Find your first fare</strong></div><span id="patience"></span></div><div id="patience-track"><div id="patience-fill"></div></div><p id="fare-hint">Stop inside a green circle to pick up.</p><div id="trip-meter" class="hidden"><span>FARE <b id="trip-value">$135</b></span><span>TIPS <b id="trip-tips">+$0</b></span></div></div>
+ <div class="map-wrap"><div class="map-heading"><span>BAY CITY</span><span>N ↑</span></div><canvas id="minimap" width="320" height="320" aria-label="City map showing taxi, customers and destination"></canvas><span id="district">DOWNTOWN</span></div>
+ <div class="bottom-hint" id="bottom-hint"><span class="keycap">W A S D</span> / <span class="keycap">↑ ← ↓ →</span><span>DRIVE</span><i></i><span class="keycap">SPACE</span> DRIFT<i></i><span class="keycap">SHIFT</span> BOOST<i></i><span class="keycap">R</span> RECOVER</div>
+ <div class="speed-block"><div><span id="gear">D</span><strong id="speed">0</strong><span class="mph">MPH</span></div><div class="boost-label"><span>CRAZY BOOST</span><b id="boost-status">READY</b></div><div class="boost-track"><div id="boost-fill"></div></div></div>
+ <div id="touch-controls"><div class="touch-left"><button data-drive="drift" class="touch-extra">DRIFT</button><div class="steering"><button data-drive="left" aria-label="Steer left">←</button><button data-drive="right" aria-label="Steer right">→</button></div></div><div class="touch-right"><button data-drive="boost" class="touch-extra boost-touch">BOOST ↗</button><div class="pedals"><button data-drive="backward" aria-label="Brake and reverse"><span>↓</span><small>BRAKE / R</small></button><button data-drive="forward" aria-label="Accelerate forward"><span>↑</span><small>GAS</small></button></div></div><button id="touch-recover" aria-label="Recover taxi">↺</button></div>
+</div>
+<div id="announcement" role="status" aria-live="polite"><strong></strong><span></span></div><div id="tip-toast"><strong></strong><span></span></div>
+<div id="countdown" class="hidden"><span>READY TO MAKE SOME</span><strong>3</strong><b>CRAZY MONEY?</b></div>
+<div id="modal" class="hidden"><section id="help-panel" class="panel hidden" aria-label="How to play"><span class="eyebrow">THE DRIVER’S HANDBOOK</span><h2>MAKE IT<br><em>A CRAZY RIDE.</em></h2><div class="how-steps"><div><b>01</b><p><strong>SEE A HAND? STOP.</strong>Brake inside a customer’s green circle. They’ll hop in automatically.</p></div><div><b>02</b><p><strong>FOLLOW THE BIG GREEN ARROW.</strong>Get to the destination before your passenger loses patience.</p></div><div><b>03</b><p><strong>STOP. GET PAID. GO AGAIN.</strong>Brake in the drop-off zone. Fast fares earn more cash and +12 seconds.</p></div></div><div class="controls-grid"><span><kbd>W</kbd><kbd>↑</kbd> Accelerate</span><span><kbd>S</kbd><kbd>↓</kbd> Brake / reverse</span><span><kbd>A D</kbd><kbd>← →</kbd> Steer</span><span><kbd>SPACE</kbd> Hold to drift</span><span><kbd>SHIFT</kbd> Boost</span><span><kbd>R</kbd> Recover <small>−3 sec</small></span><span><kbd>H</kbd> Horn</span><span><kbd>ESC</kbd> Pause</span></div><p class="help-tip">Close calls and controlled drifts earn tips. Collisions cost passenger patience. Keep that combo going.</p><button id="help-close" class="button primary">GOT IT. LET’S GO <span>→</span></button></section>
+ <section id="pause-panel" class="panel compact hidden" aria-label="Game paused"><span class="eyebrow">TAKE A BREATHER</span><h2>ON A<br><em>COFFEE BREAK.</em></h2><p>The meter’s stopped. The city can wait.</p><button id="resume" class="button primary">BACK TO THE STREETS <span>→</span></button><button id="pause-help" class="button secondary">CONTROLS & TIPS</button><button id="quit" class="text-button">END THIS SHIFT</button></section>
+ <section id="results-panel" class="panel results hidden" aria-label="Run results"><span class="eyebrow">SHIFT COMPLETE</span><div class="results-header"><h2>THAT’S<br><em>A WRAP!</em></h2><div class="rank"><span>LICENSE</span><b id="rank">C</b></div></div><span class="result-label">YOU BROUGHT HOME</span><strong id="result-cash">$0.00</strong><p id="result-comment">The city’s got more fares with your name on them.</p><div class="result-stats"><div><b id="result-fares">0</b><span>DELIVERED</span></div><div><b id="result-tips">$0</b><span>CRAZY TIPS</span></div><div><b id="result-best">$0</b><span>LOCAL BEST</span></div></div><div id="new-best" class="hidden">★ NEW PERSONAL BEST ★</div><button id="restart" class="button primary">ONE MORE RIDE <span>↗</span></button><button id="back-title" class="text-button">BACK TO TITLE</button></section>
+</div>
+<div id="fatal" class="hidden"><h2>ENGINE TROUBLE</h2><p>This game needs WebGL. Try a current browser with graphics acceleration enabled.</p><button onclick="location.reload()">TRY AGAIN</button></div>
+<script type="module" src="./game.js"></script>
+<link rel="stylesheet" href="/.well-known/sulat-demo-overlay-v12.css" data-sulat-demo-overlay-asset="styles-v12">
+<details id="sulat-demo-referral-overlay" data-model="astra" data-experiment="crazy-taxi" data-storage-scope="astra.demos.sulat.com" data-deal-id="oneshot-websites" data-has-deal="true" data-collapsed="true">
+  <summary data-overlay-toggle aria-label="Expand demo links" aria-expanded="false" title="Expand demo links"></summary>
+  <div class="sulat-demo-overlay__actions">
+    <div class="sulat-demo-overlay__primary">
+      <details class="sulat-demo-overlay__share" data-overlay-share>
+        <summary aria-label="Share this demo" title="Share this demo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M12 15.75v-12m0 0L7.5 8.25M12 3.75l4.5 4.5M5.25 13.5v5.25h13.5V13.5"/></svg><span class="sulat-demo-overlay__share-label">Share</span></summary>
+        <nav class="sulat-demo-overlay__share-menu" aria-label="Share this demo">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fcrazy-taxi.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fcrazy-taxi.astra.demos.sulat.com%2F&t=Crazy%20Taxi%20%E2%80%94%20GPT%206%20Astra%20demo" target="_blank" rel="noopener noreferrer">Hacker News</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcrazy-taxi.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text=Crazy%20Taxi%20%E2%80%94%20GPT%206%20Astra%20demo&url=https%3A%2F%2Fcrazy-taxi.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Twitter</a>
+        </nav>
+      </details>
+      <a class="sulat-demo-overlay__catalogue" data-overlay-catalogue href="https://astra.demos.sulat.com/" aria-label="More demos"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>More demos</a>
+      <a class="sulat-demo-overlay__next" data-overlay-next href="https://demos.sulat.com/surprise" aria-label="Open another random demo" title="Open another random demo"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 4 12 8-12 8z"/></svg>Next demo</a>
+    </div>
+    <a class="sulat-demo-overlay__deal" data-overlay-deal href="https://github.com/jpcaparas/skills#oneshot-websites" target="_blank" rel="sponsored noopener noreferrer" aria-label="Create your own one-shots (opens in a new tab)">Create your own one-shots</a>
+  </div>
+</details>
+<script src="/.well-known/sulat-demo-overlay-v12.js" defer data-sulat-demo-overlay-asset="script-v12"></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ecb2b94d4b63450a9e0af42e304662ed","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a52784456e9eced2',t:'MTc5MzMzMjg2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a52784456e9eced2',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>

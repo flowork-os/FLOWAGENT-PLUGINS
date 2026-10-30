@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updated_at": "2026-10-29T07:36:53Z",
+  "updated_at": "2026-10-30T14:50:27Z",
   "repo": "flowork-os/apps",
   "plugins": [
     {
@@ -32,7 +32,7 @@
       "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
       "category": "Media, Creative Writing & Journalism",
       "icon": "📹",
-      "hash": "c4612d66084ac7d6",
+      "hash": "cef509b28b1f9fc7",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -161,7 +161,7 @@
       "description": "Sovereign AI audio stem separation and vocal remover studio powered by Meta AI Demucs v4 (Hybrid Transformer HTDemucs). Extract isolated vocals (acapella), instrumental (karaoke), drums, bass, and multitrack stems with hardware GPU CUDA acceleration.",
       "category": "Arts, Music & Literature",
       "icon": "🎛️",
-      "hash": "8239abad92bb9119",
+      "hash": "a02153733eeecf44",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -266,7 +266,7 @@
       "description": "Sovereign real-time market technical scanner and swing signal automation studio for stocks and crypto. Multi-indicator confluence (RSI, EMA 20/50/200, MACD, Bollinger Bands, Volume Surge), automated 1:2+ R:R trade plans, and HMAC-SHA256 signed webhook alerts.",
       "category": "Finance & Algorithmic Trading",
       "icon": "📈",
-      "hash": "cb04173128965416",
+      "hash": "186c0ed449445ce6",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -287,7 +287,7 @@
       "description": "Multi-agent autonomous trading desk featuring dialectic bull-bear debates, 4 specialized analysts, 3 risk managers, portfolio gating, and zero-key sentiment streams.",
       "category": "Trading, Web3 & DeFi",
       "icon": "📈",
-      "hash": "17a860f46f5db59c",
+      "hash": "4a4a5f5c4ab9f2ca",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -329,7 +329,7 @@
       "description": "Sovereign AI 3D & WebGL CAD Forge. Browse 34,840 procedural 3D models across 7 modalities, inspect parametric code, generate 3D objects via AI few-shot RAG, and export to STL, STEP, GLB, and 360° YouTube turntable video.",
       "category": "Architecture & Spatial Engineering",
       "icon": "🧊",
-      "hash": "8d635b961f8acf0f",
+      "hash": "3238add819fca5a4",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -350,7 +350,7 @@
       "description": "Sovereign AI-driven audio to 2D dynamic stickman animation generator. Features real-time voice transformation (kids, cartoon, chipmunk), procedural stickman action state machine, kinetic word-by-word subtitles, and 9:16 viral short video rendering.",
       "category": "Media, Creative Writing & Journalism",
       "icon": "🤺",
-      "hash": "d3eb06cde159abd9",
+      "hash": "30207c1208b5a68c",
       "entry": {
         "gui": "gui/index.html",
         "backend": "engine/server.mjs"
@@ -362,6 +362,27 @@
       "shard": "index/st/ic/stickman_studio.json",
       "source_path": "plugins/st/stickman-studio",
       "category_id": "CAT-010"
+    },
+    {
+      "id": "vibe-arcade",
+      "name": "Flowork Vibe Arcade",
+      "version": "1.1.0",
+      "author": "Awenk Audico & Flowork OS",
+      "description": "Curated 270+ AI Vibe-Coded Game Launcher & Sandboxed Player featuring Claude Opus 5.5, Sonnet 5.5, GPT-6 Astra, and Offline Standalone Games.",
+      "category": "Sports Science & Athletics Performance",
+      "icon": "🕹️",
+      "hash": "35f4c85501181759",
+      "entry": {
+        "gui": "gui/index.html",
+        "backend": "engine/server.mjs"
+      },
+      "ipc": {
+        "port_env": "FLOWORK_APP_PORT",
+        "default_port": 18050
+      },
+      "shard": "index/vi/be/vibe_arcade.json",
+      "source_path": "plugins/vi/vibe-arcade",
+      "category_id": "CAT-020"
     }
   ]
 }

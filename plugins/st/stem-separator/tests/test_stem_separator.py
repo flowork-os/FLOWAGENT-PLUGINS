@@ -103,12 +103,78 @@ class TestStemSeparator(unittest.TestCase):
             self.assertEqual(data.get("status"), "ok")
             self.assertEqual(data.get("app"), "stem-separator")
 
-            # 2. Test /gui/index.html
+            # 2. Test /gui/index.html elements
             gui_req = urllib.request.urlopen(f"http://127.0.0.1:{test_port}/gui/index.html")
             self.assertEqual(gui_req.status, 200)
             html = gui_req.read().decode()
             self.assertIn("Vocal & Stem Demixer Studio", html)
-            self.assertIn("Demucs", html)
+            self.assertIn("destination-folder-input", html)
+            self.assertIn("browse-folder-btn", html)
+            self.assertIn("download-zip-btn", html)
+
+            # 3. Test /api/export endpoint with mock job
+            mock_job_id = "test_unit_job_mock"
+            mock_job_dir = f"/tmp/flowork_stem_separator/{mock_job_id}/htdemucs_6s"
+            os.makedirs(mock_job_dir, exist_ok=True)
+            mock_dest_dir = "/tmp/flowork_test_dest"
+
+            try:
+                # Create mock stem files
+                with open(os.path.join(mock_job_dir, "vocals.wav"), "wb") as f:
+                    f.write(b"MOCK_VOCALS_DATA")
+                with open(os.path.join(mock_job_dir, "bass.wav"), "wb") as f:
+                    f.write(b"MOCK_BASS_DATA")
+                with open(os.path.join(mock_job_dir, "all_stems.zip"), "wb") as f:
+                    f.write(b"MOCK_ZIP_DATA")
+
+                # Test single stem export
+                single_payload = json.dumps({
+                    "jobId": mock_job_id,
+                    "stemKey": "vocals",
+                    "destinationFolder": mock_dest_dir,
+                    "originalName": "test_song"
+                }).encode("utf-8")
+
+                export_req = urllib.request.Request(
+                    f"http://127.0.0.1:{test_port}/api/export",
+                    data=single_payload,
+                    headers={"Content-Type": "application/json"}
+                )
+                with urllib.request.urlopen(export_req) as resp:
+                    self.assertEqual(resp.status, 200)
+                    resp_data = json.loads(resp.read().decode())
+                    self.assertTrue(resp_data.get("success"))
+                    self.assertEqual(len(resp_data.get("exportedFiles", [])), 1)
+                    self.assertEqual(resp_data["exportedFiles"][0]["filename"], "vocals.wav")
+                    expected_file = os.path.join(mock_dest_dir, "test_song_stems", "vocals.wav")
+                    self.assertTrue(os.path.exists(expected_file))
+
+                # Test export all stems
+                all_payload = json.dumps({
+                    "jobId": mock_job_id,
+                    "stemKey": "all",
+                    "destinationFolder": mock_dest_dir,
+                    "originalName": "test_song"
+                }).encode("utf-8")
+
+                export_all_req = urllib.request.Request(
+                    f"http://127.0.0.1:{test_port}/api/export",
+                    data=all_payload,
+                    headers={"Content-Type": "application/json"}
+                )
+                with urllib.request.urlopen(export_all_req) as resp:
+                    self.assertEqual(resp.status, 200)
+                    all_resp_data = json.loads(resp.read().decode())
+                    self.assertTrue(all_resp_data.get("success"))
+                    self.assertEqual(len(all_resp_data.get("exportedFiles", [])), 3)
+
+            finally:
+                # Cleanup mock files
+                import shutil
+                if os.path.exists(f"/tmp/flowork_stem_separator/{mock_job_id}"):
+                    shutil.rmtree(f"/tmp/flowork_stem_separator/{mock_job_id}", ignore_errors=True)
+                if os.path.exists(mock_dest_dir):
+                    shutil.rmtree(mock_dest_dir, ignore_errors=True)
 
         finally:
             proc.terminate()

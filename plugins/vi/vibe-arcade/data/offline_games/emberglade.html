@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://emberglade.agentcell.app/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Emberglade</title>
+  <meta name="description" content="A small open-world action game that runs in your browser. Every tree, creature, note and sound effect is code written by Claude. Deployed on AgentCell." />
+  <meta property="og:title" content="Emberglade" />
+  <meta property="og:description" content="An open-world browser game with zero asset files: terrain, creatures, a boss fight and the music are all code. Deployed on AgentCell." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 L25 16 L16 30 L7 16Z' fill='%23ff7a30'/%3E%3C/svg%3E" />
+  <script type="module" crossorigin src="/assets/index-BCK-X_JS.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-7_sEgy-t.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="hud" class="hidden">
+    <div id="bars">
+      <div class="bar hp"><i></i></div>
+      <div class="bar st"><i></i></div>
+    </div>
+    <div id="compass"><div id="compass-strip"></div><div id="compass-marker"></div><div id="compass-dist"></div></div>
+    <div id="shards"></div>
+    <div id="toast"></div>
+    <div id="boss" class="hidden"><div id="boss-name"></div><div class="bar"><i></i><b></b></div></div>
+    <div id="hint"></div>
+    <div id="vignette"></div>
+  </div>
+
+  <div id="sound" role="group" aria-label="Sound">
+    <button id="toggle-music" class="icon" type="button" aria-pressed="true" title="Music on (N)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/><path class="slash" d="M3 3l18 18"/></svg>
+      <span>Music</span>
+    </button>
+    <button id="toggle-sound" class="icon" type="button" aria-pressed="true" title="All sound on (M)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="slash" d="M3 3l18 18"/></svg>
+      <span>Sound</span>
+    </button>
+    <label id="graphics" class="icon select" title="Graphics quality">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg>
+      <span>Graphics</span>
+      <select id="graphics-select" aria-label="Graphics quality"><option value="auto">Auto</option></select>
+    </label>
+  </div>
+
+  <div id="title" class="screen title">
+    <div class="title-shade" aria-hidden="true"></div>
+    <main class="title-block">
+      <p class="eyebrow"><span class="spark" aria-hidden="true"></span>A browser game, all code</p>
+      <h1 class="wordmark">Emberglade</h1>
+      <p class="tagline">Three shards. One gate. Something old waiting behind it.</p>
+      <div class="title-actions">
+        <button id="play" class="play" type="button" disabled>
+          <span class="play-label">Loading the glade</span><span class="play-arrow" aria-hidden="true">&rarr;</span>
+        </button>
+        <details class="controls">
+          <summary>Controls</summary>
+          <dl class="controls-list">
+            <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Move</dd></div>
+            <div><dt><kbd>Mouse</kbd></dt><dd>Look, or drag</dd></div>
+            <div><dt><kbd>Click</kbd></dt><dd>Attack, tap to combo</dd></div>
+            <div><dt><kbd>Q</kbd></dt><dd>Dodge roll</dd></div>
+            <div><dt><kbd>Space</kbd></dt><dd>Jump</dd></div>
+            <div><dt><kbd>Shift</kbd></dt><dd>Sprint</dd></div>
+            <div><dt><kbd>&larr;</kbd><kbd>&rarr;</kbd></dt><dd>Turn camera</dd></div>
+            <div><dt><kbd>N</kbd><kbd>M</kbd></dt><dd>Music, all sound</dd></div>
+          </dl>
+        </details>
+      </div>
+      <p class="touch-note">Left thumb moves, right thumb looks. Best held sideways.</p>
+    </main>
+    <footer class="title-credit">
+      <p>No image, model or audio files. Every tree, creature and note is code written by Claude.</p>
+      <a href="https://agentcell.dev" target="_blank" rel="noopener">Runs on AgentCell <span aria-hidden="true">&nearr;</span></a>
+    </footer>
+  </div>
+
+  <div id="pause" class="screen hidden"><div class="card small"><h2>Paused</h2><p>Click to resume</p></div></div>
+  <div id="dead" class="screen hidden"><div class="card small"><h2>You fell</h2><p>The embers remember you…</p></div></div>
+
+  <div id="victory" class="screen hidden">
+    <div class="card">
+      <h1>The glade is free</h1>
+      <p class="sub" id="victory-stats"></p>
+      <p>Everything you just played, from the terrain and the creatures to the boss and the music, is code
+        written by Claude. No image, model or audio files.</p>
+      <p>It runs on <strong>AgentCell</strong>, an AI-native deployment platform for small web apps and internal tools.
+        Publishing it to the internet was one command:</p>
+      <pre><code>agentcell deploy --cell emberglade --public .</code></pre>
+      <div class="row">
+        <a class="btn" href="https://agentcell.dev/docs/deploy" target="_blank" rel="noopener">Deploy now</a>
+        <button id="again" class="ghost">Keep exploring</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

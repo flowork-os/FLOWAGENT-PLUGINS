@@ -16,11 +16,13 @@ class DynamicCartoonist:
         self.width = width
         self.height = height
 
-    def render_beat_frame(self, beat_data, t=0.0, energy=0.7):
+    def render_beat_frame(self, beat_data, t=0.0, energy=0.7, width=None, height=None):
         """
-        Renders a full 720x1280 frame for a given beat at relative time t.
+        Renders a full 720x1280 (or custom target) frame for a given beat at relative time t.
         """
-        canvas = np.zeros((self.height, self.width, 3), dtype=np.uint8)
+        w = width or self.width
+        h = height or self.height
+        canvas = np.zeros((h, w, 3), dtype=np.uint8)
         
         # Camera shake
         shake_amp = beat_data.get("camera_shake", 0)
@@ -37,26 +39,26 @@ class DynamicCartoonist:
         text_lower = text.lower()
 
         # Specific scene routing based on narrative and visual context
-        # Beat 1: Armchair skeleton waving ("Ini 3 cara Gemini...")
-        if beat_idx == 1 or "tiga cara" in text_lower or "3 cara" in text_lower:
+        # Priority 1: Dupin / Kocak funny parody scene
+        if "dupin" in text_lower or "kocak" in text_lower or "aneh" in text_lower:
+            self._render_dupin_kocak_scene(canvas, beat_data, t, energy, shake_x, shake_y)
+        # Priority 2: Dedicated Tracked Pose 33-point Stickman Scene
+        elif has_pose and "joints" in pose_info:
+            self._draw_tracked_pose_scene(canvas, pose_info, beat_data, t, energy, shake_x, shake_y)
+        # Priority 3: Semantic Specific Scenes (Only triggered when explicit keywords match)
+        elif "tiga cara" in text_lower or "3 cara" in text_lower:
             self._render_beat1_waving_skeleton(canvas, beat_data, t, energy, shake_x, shake_y)
-        # Beat 2: Big "1" countdown ("Pertama, model interaktif...")
-        elif beat_idx == 2 or ("pertama" in text_lower and "model" in text_lower):
+        elif ("pertama" in text_lower and "model" in text_lower) or ("replikasi dna" in text_lower and "pertama" in text_lower):
             self._render_numbered_intro_scene(canvas, "1", "MODEL DNA INTERAKTIF", t, energy, shake_x, shake_y)
-        # Beat 3: 3D DNA Model ("Replikasi DNA...")
-        elif beat_idx == 3 or "replikasi dna" in text_lower or "dna" in text_lower:
+        elif "replikasi dna" in text_lower or ("dna" in text_lower and "heliks" in text_lower):
             self._render_dna_replication_scene(canvas, beat_data, t, energy, shake_x, shake_y)
-        # Beat 6: Desk Laptop & Mouse ("Saya dan Si Tulang suka banget...")
-        elif beat_idx == 6 or "situlang" in text_lower or "suka banget" in text_lower or "laptop" in text_lower:
+        elif ("situlang" in text_lower or "si tulang" in text_lower) and "laptop" in text_lower:
             self._render_beat6_laptop_skeleton(canvas, pose_info, beat_data, t, energy, shake_x, shake_y)
-        # Beat 5: Interactive Quiz ("Ketiga, kuis latihan...")
-        elif beat_idx == 5 or "kuis" in text_lower or "kuislatahan" in text_lower or "pemahaman" in text_lower:
+        elif ("kuis" in text_lower and "latihan" in text_lower) or "kuislatihan" in text_lower:
             self._render_interactive_quiz_scene(canvas, beat_data, t, energy, shake_x, shake_y)
-        # Beat 4: Anatomy Flashcard ("flashcard untuk menghafal 266 tulang...")
-        elif beat_idx == 4 or "266 tulang" in text_lower or "flashcard" in text_lower:
+        elif "266 tulang" in text_lower or ("flashcard" in text_lower and "tulang" in text_lower):
             self._render_flashcard_bone_scene(canvas, beat_data, t, energy, shake_x, shake_y)
-        # Beat 7: Call To Action ("Daftar sekarang...")
-        elif beat_idx == 7 or "daftar sekarang" in text_lower or "daftar" in text_lower:
+        elif "daftar sekarang" in text_lower and ("gemini" in text_lower or "kelas" in text_lower):
             self._render_cta_gemini_scene(canvas, beat_data, t, energy, shake_x, shake_y)
         elif has_pose and "joints" in pose_info:
             self._draw_tracked_pose_scene(canvas, pose_info, beat_data, t, energy, shake_x, shake_y)
@@ -582,3 +584,179 @@ class DynamicCartoonist:
             bx = mb_x + 20 + i * 11
             cv2.line(canvas, (bx, mb_y + 24 - bh // 2), (bx, mb_y + 24 + bh // 2), (168, 85, 247), 3)
         cv2.putText(canvas, "MUSIC / AMBIENCE", (mb_x + 115, mb_y + 31), cv2.FONT_HERSHEY_DUPLEX, 0.48, (255, 255, 255), 1)
+
+    def _render_dupin_kocak_scene(self, canvas, beat_data, t, energy, sx, sy):
+        """
+        Special Beat #1 Parody: 'Dupin jalan tuh kocak... paling aneh'
+        Goofy comic waddle walk with rubber-hose limbs, question marks, sweat drops, and speed lines.
+        """
+        cx = self.width // 2 + sx
+        cy = 760 + sy
+
+        waddle = math.sin(t * 14.0) * 28.0
+        bob_y = int(abs(math.cos(t * 14.0)) * 22.0)
+        tilt = math.sin(t * 14.0) * 0.35
+
+        # Speed / Action dash lines
+        for i in range(5):
+            lx = int(cx - 220 + i * 35)
+            ly = cy + 240 + int(math.sin(t * 20.0 + i) * 12)
+            cv2.line(canvas, (lx - 40, ly), (lx + 20, ly), (0, 229, 255), 2, cv2.LINE_AA)
+
+        # Comic 'KOCAK!' badge
+        badge_x, badge_y = cx + 110, cy - 280
+        cv2.rectangle(canvas, (badge_x - 10, badge_y - 25), (badge_x + 160, badge_y + 25), (239, 68, 68), -1)
+        cv2.rectangle(canvas, (badge_x - 10, badge_y - 25), (badge_x + 160, badge_y + 25), (255, 255, 255), 2)
+        cv2.putText(canvas, "KOCAK BGT!", (badge_x, badge_y + 10), cv2.FONT_HERSHEY_DUPLEX, 0.7, (255, 255, 255), 2, cv2.LINE_AA)
+
+        # Floating sweat drop
+        cv2.circle(canvas, (cx + 65, cy - 220 - bob_y), 8, (56, 189, 248), -1)
+        cv2.circle(canvas, (cx + 65, cy - 220 - bob_y), 8, (255, 255, 255), 1)
+
+        # Floating big question mark '?'
+        cv2.putText(canvas, "?!", (cx - 130, cy - 240), cv2.FONT_HERSHEY_DUPLEX, 1.4, (250, 204, 21), 3, cv2.LINE_AA)
+
+        # Character Anatomy
+        thick = 8
+        bone_color = (255, 255, 255)
+        joint_glow = (0, 229, 255)
+
+        head_c = (int(cx + waddle * 0.5), int(cy - 180 - bob_y))
+        head_r = 46
+        mid_sh = (int(cx + waddle * 0.3), int(cy - 110 - bob_y))
+        mid_hip = (int(cx), int(cy + 40 - bob_y // 2))
+
+        # Wacky swinging arms (Rubber hose style)
+        arm_swing = math.sin(t * 14.0) * 55.0
+        l_sh = (mid_sh[0] - 40, mid_sh[1])
+        r_sh = (mid_sh[0] + 40, mid_sh[1])
+        l_el = (int(l_sh[0] - 30), int(l_sh[1] + 40 - arm_swing * 0.5))
+        l_wr = (int(l_sh[0] - 40 - arm_swing), int(l_sh[1] + 90 - arm_swing * 0.8))
+        r_el = (int(r_sh[0] + 30), int(r_sh[1] + 40 + arm_swing * 0.5))
+        r_wr = (int(r_sh[0] + 40 + arm_swing), int(r_sh[1] + 90 + arm_swing * 0.8))
+
+        # Exaggerated high-knee cartoon waddle legs
+        leg_phase = math.sin(t * 14.0)
+        l_kn = (int(mid_hip[0] - 35), int(mid_hip[1] + 70 - max(0.0, leg_phase) * 50))
+        l_ank = (int(mid_hip[0] - 45), int(mid_hip[1] + 160 - max(0.0, leg_phase) * 60))
+        r_kn = (int(mid_hip[0] + 35), int(mid_hip[1] + 70 - max(0.0, -leg_phase) * 50))
+        r_ank = (int(mid_hip[0] + 45), int(mid_hip[1] + 160 - max(0.0, -leg_phase) * 60))
+
+        # Draw spine and limbs
+        cv2.line(canvas, mid_sh, mid_hip, bone_color, thick + 2, cv2.LINE_AA)
+        cv2.line(canvas, l_sh, r_sh, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, l_sh, l_el, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, l_el, l_wr, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, r_sh, r_el, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, r_el, r_wr, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, (mid_hip[0] - 25, mid_hip[1]), (mid_hip[0] + 25, mid_hip[1]), bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, (mid_hip[0] - 25, mid_hip[1]), l_kn, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, l_kn, l_ank, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, (mid_hip[0] + 25, mid_hip[1]), r_kn, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, r_kn, r_ank, bone_color, thick, cv2.LINE_AA)
+
+        # Big clownish shoes
+        cv2.ellipse(canvas, (l_ank[0] - 12, l_ank[1] + 4), (24, 12), 0, 0, 360, (239, 68, 68), -1)
+        cv2.ellipse(canvas, (l_ank[0] - 12, l_ank[1] + 4), (24, 12), 0, 0, 360, (255, 255, 255), 2)
+        cv2.ellipse(canvas, (r_ank[0] + 12, r_ank[1] + 4), (24, 12), 0, 0, 360, (239, 68, 68), -1)
+        cv2.ellipse(canvas, (r_ank[0] + 12, r_ank[1] + 4), (24, 12), 0, 0, 360, (255, 255, 255), 2)
+
+        # Luminous joints
+        for p in [l_sh, r_sh, l_el, r_el, l_wr, r_wr, l_kn, r_kn, l_ank, r_ank]:
+            cv2.circle(canvas, p, 9, joint_glow, -1)
+            cv2.circle(canvas, p, 4, (255, 255, 255), -1)
+
+        # Goofy Cartoon Head
+        cv2.circle(canvas, head_c, head_r + 4, joint_glow, 3, cv2.LINE_AA)
+        cv2.circle(canvas, head_c, head_r, (15, 23, 42), -1)
+        cv2.circle(canvas, head_c, head_r, bone_color, 4, cv2.LINE_AA)
+
+        # Goofy derp eyes (one big, one smaller)
+        eye_y = head_c[1] - 8
+        cv2.circle(canvas, (head_c[0] - 16, eye_y), 10, (255, 255, 255), -1)
+        cv2.circle(canvas, (head_c[0] - 14, eye_y - 2), 4, (15, 23, 42), -1)
+        cv2.circle(canvas, (head_c[0] + 16, eye_y), 7, (255, 255, 255), -1)
+        cv2.circle(canvas, (head_c[0] + 16, eye_y), 3, (15, 23, 42), -1)
+
+        # Wide silly grinning mouth
+        cv2.ellipse(canvas, (head_c[0], head_c[1] + 14), (22, 12), 0, 0, 180, (255, 255, 255), -1)
+        cv2.ellipse(canvas, (head_c[0], head_c[1] + 14), (22, 12), 0, 0, 180, (15, 23, 42), 2)
+        # Tooth gap
+        cv2.line(canvas, (head_c[0], head_c[1] + 14), (head_c[0], head_c[1] + 24), (15, 23, 42), 2)
+
+    def _draw_tracked_pose_scene(self, canvas, pose_info, beat_data, t, energy, sx, sy):
+        """
+        Direct 33-point biomechanical tracked stickman rendered from MediaPipe coordinates.
+        Draws dynamic 3D depth lines, joint illumination, and anatomical posture.
+        """
+        joints = pose_info.get("joints", {})
+        if not joints:
+            self._render_general_comic_scene(canvas, beat_data, t, energy, sx, sy)
+            return
+
+        w, h = self.width, self.height
+
+        def get_pt(name, fallback=(w // 2, h // 2)):
+            if name in joints:
+                jx = int(joints[name]["x"] * w + sx)
+                jy = int(joints[name]["y"] * h + sy)
+                return (jx, jy)
+            return fallback
+
+        # Extract primary landmarks
+        nose = get_pt("nose")
+        l_sh = get_pt("l_shoulder")
+        r_sh = get_pt("r_shoulder")
+        l_el = get_pt("l_elbow")
+        r_el = get_pt("r_elbow")
+        l_wr = get_pt("l_wrist")
+        r_wr = get_pt("r_wrist")
+        l_hip = get_pt("l_hip")
+        r_hip = get_pt("r_hip")
+        l_kn = get_pt("l_knee")
+        r_kn = get_pt("r_knee")
+        l_ank = get_pt("l_ankle")
+        r_ank = get_pt("r_ankle")
+
+        mid_sh = ((l_sh[0] + r_sh[0]) // 2, (l_sh[1] + r_sh[1]) // 2)
+        mid_hip = ((l_hip[0] + r_hip[0]) // 2, (l_hip[1] + r_hip[1]) // 2)
+
+        thick = 8
+        bone_color = (255, 255, 255)
+        joint_glow = (0, 229, 255)
+
+        # Spine & Shoulder bridge
+        cv2.line(canvas, mid_sh, mid_hip, bone_color, thick + 3, cv2.LINE_AA)
+        cv2.line(canvas, l_sh, r_sh, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, l_hip, r_hip, bone_color, thick, cv2.LINE_AA)
+
+        # Arms
+        cv2.line(canvas, l_sh, l_el, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, l_el, l_wr, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, r_sh, r_el, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, r_el, r_wr, bone_color, thick, cv2.LINE_AA)
+
+        # Legs
+        cv2.line(canvas, l_hip, l_kn, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, l_kn, l_ank, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, r_hip, r_kn, bone_color, thick, cv2.LINE_AA)
+        cv2.line(canvas, r_kn, r_ank, bone_color, thick, cv2.LINE_AA)
+
+        # Render luminous joints
+        all_pts = [l_sh, r_sh, l_el, r_el, l_wr, r_wr, l_hip, r_hip, l_kn, r_kn, l_ank, r_ank]
+        for p in all_pts:
+            cv2.circle(canvas, p, 9, joint_glow, -1)
+            cv2.circle(canvas, p, 4, (255, 255, 255), -1)
+
+        # Head based on nose and shoulders
+        head_c = nose if nose != (w // 2, h // 2) else (mid_sh[0], mid_sh[1] - 80)
+        head_r = 44
+        cv2.circle(canvas, head_c, head_r + 4, joint_glow, 3, cv2.LINE_AA)
+        cv2.circle(canvas, head_c, head_r, (15, 23, 42), -1)
+        cv2.circle(canvas, head_c, head_r, bone_color, 4, cv2.LINE_AA)
+
+        # Eyes and expression
+        cv2.circle(canvas, (head_c[0] - 14, head_c[1] - 6), 5, (255, 255, 255), -1)
+        cv2.circle(canvas, (head_c[0] + 14, head_c[1] - 6), 5, (255, 255, 255), -1)
+        cv2.ellipse(canvas, (head_c[0], head_c[1] + 14), (16, 8), 0, 0, 180, (255, 255, 255), 3, cv2.LINE_AA)
+

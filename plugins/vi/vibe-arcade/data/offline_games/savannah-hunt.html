@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://squall01337.github.io/savannah/">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#20251e" />
+  <title>Savana</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23bca876' d='M30 60V32C16 32 7 28 2 25c6-10 18-16 30-16s24 6 30 16c-6 4-15 7-28 7v28z'/%3E%3C/svg%3E" />
+  <script type="module" crossorigin src="/savannah/assets/index-CBCMagMA.js"></script>
+  <link rel="stylesheet" crossorigin href="/savannah/assets/index-CvYq5wNh.css">
+</head>
+<body class="loading">
+  <section id="startup" aria-label="Preparing Savana" aria-busy="true" data-status="loading">
+    <div class="loading-horizon" aria-hidden="true"></div>
+    <div class="loading-copy">
+      <p class="loading-eyebrow">Savannah survival</p>
+      <h1>Savana</h1>
+      <p class="loading-intro">Beyond the grass, life is stirring.</p>
+      <div class="loading-caption"><span id="startup-stage" role="status" aria-live="polite">Gathering the world</span><span id="startup-percent">0%</span></div>
+      <progress id="startup-progress" value="0" max="1" aria-label="World preparation"></progress>
+      <p id="startup-detail">Preparing your first journey…</p>
+      <button id="startup-retry" class="text-button" hidden>Retry loading</button>
+    </div>
+    <p class="loading-footnote">The world, its wildlife and sounds are prepared before you enter.<br>Your browser keeps a copy for your next visit when space is available.</p>
+  </section>
+  <script type="application/json" id="startup-report">{ "status": "loading" }</script>
+  <canvas id="world" aria-label="Savana third person survival game"></canvas>
+  <div id="shade"></div>
+  <main id="menu">
+    <h1>Savana</h1>
+    <p class="intro">Stay close to the river.<br>Watch what moves in the grass.</p>
+    <button id="enter" disabled>Preparing the savannah…</button>
+    <p id="loading" role="status">Loading the landscape</p>
+    <div class="menu-bottom">
+      <button id="controls-toggle" class="text-button" aria-expanded="false">Controls</button>
+      <button id="sound-toggle" class="text-button" aria-pressed="false">Sound on</button>
+      <button id="music-toggle" class="text-button" aria-pressed="false">Music on</button>
+      <label class="quality-label">Quality <select id="quality"><option value="ultra">Ultra</option><option value="high">High</option></select></label>
+    </div>
+    <div id="controls" hidden>
+      <p><kbd>W A S D</kbd> / <kbd>Z Q S D</kbd> Move &nbsp; <kbd>Mouse</kbd> Look</p>
+      <p><kbd>Shift</kbd> Sprint &nbsp; <kbd>C</kbd> Crouch &nbsp; <kbd>Space</kbd> Jump</p>
+      <p><kbd>Right mouse</kbd> Aim &nbsp; <kbd>Hold left mouse</kbd> Charge, release to throw</p>
+      <p><kbd>E</kbd> Retrieve / drink / harvest &nbsp; <kbd>F</kbd> Eat</p>
+      <p><kbd>Esc</kbd> Pause &nbsp; <kbd>P</kbd> Photo view &nbsp; <kbd>F3</kbd> Performance</p>
+    </div>
+    <div id="survival" hidden></div>
+  </main>
+  <div id="reticle" hidden><i></i><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="17" /></svg></div>
+  <div id="prompt" role="status"></div>
+  <div id="notice" role="status"></div>
+  <div id="hurt"></div>
+  <div id="telemetry" hidden></div>
+  <div id="photo-note" hidden>Photo view <span>Drag to look · WASD to move · P to return</span> <button id="photo-save" class="text-button">Save image</button> <a id="photo-export" hidden>Download PNG</a></div>
+</body>
+</html>

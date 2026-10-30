@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flowork Vibe Arcade - 270+ AI Vibe-Coded Games</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="fl-app-container">
+    
+    <!-- Top Cyber Header -->
+    <header class="fl-header">
+      <div class="fl-header-brand">
+        <div class="fl-arcade-icon">🕹️</div>
+        <div>
+          <h1 class="fl-title">FLOWORK VIBE ARCADE</h1>
+          <div class="fl-subtitle">Curated 270+ AI Vibe-Coded Browser Games • Claude Opus 5.5 • GPT-6 Astra • Sonnet 5.5</div>
+        </div>
+      </div>
+
+      <div class="fl-header-stats">
+        <div class="fl-stat-badge">
+          <span class="label">CATALOG</span>
+          <span class="val" id="statCatalogCount">270</span>
+        </div>
+        <div class="fl-stat-badge highlight">
+          <span class="label">OFFLINE READY</span>
+          <span class="val" id="statOfflineCount">4</span>
+        </div>
+        <div class="fl-stat-badge">
+          <span class="label">FAVORITES</span>
+          <span class="val" id="statFavCount">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Toolbar Filters & Search -->
+    <div class="fl-toolbar">
+      <div class="fl-search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search games by name, mechanism, or prompt...">
+        <button id="btnClearSearch" class="btn-clear" style="display: none;">&times;</button>
+      </div>
+
+      <div class="fl-filter-group">
+        <button class="fl-filter-pill active" data-filter="all">All Games</button>
+        <button class="fl-filter-pill" data-filter="opus-5.5">🟣 Claude Opus 5.5</button>
+        <button class="fl-filter-pill" data-filter="astra">🟢 GPT-6 Astra</button>
+        <button class="fl-filter-pill" data-filter="sonnet-5.5">🟠 Sonnet 5.5</button>
+        <button class="fl-filter-pill special-offline" data-filter="offline">⚡ Offline Playable</button>
+        <button class="fl-filter-pill special-fav" data-filter="favorites">❤️ Favorites</button>
+      </div>
+
+      <div class="fl-sort-box">
+        <label>Sort:</label>
+        <select id="sortSelect">
+          <option value="score_desc">★ Visual Score (High to Low)</option>
+          <option value="score_asc">Visual Score (Low to High)</option>
+          <option value="title_asc">Title (A - Z)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main Game Catalog Grid -->
+    <main class="fl-main-viewport">
+      <div id="gamesGrid" class="fl-games-grid">
+        <div class="fl-loading-state">
+          <div class="fl-spinner"></div>
+          <div>Loading Vibe Arcade Catalog...</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Sandboxed Arcade In-App Player Modal -->
+    <div id="playerModal" class="fl-player-modal" style="display: none;">
+      <div class="fl-player-cabinet">
+        <div class="fl-player-header">
+          <div class="fl-player-title-row">
+            <span class="player-icon">🎮</span>
+            <div>
+              <h2 id="playerGameTitle">Game Title</h2>
+              <div id="playerGameMeta" class="player-meta">Opus 5.5 • Score 9.2</div>
+            </div>
+          </div>
+          <div class="fl-player-actions">
+            <button id="btnDownloadInPlayer" class="fl-btn-pill" title="Save game to local disk for offline play">
+              📥 Save Offline
+            </button>
+            <button id="btnToggleProxy" class="fl-btn-pill" title="Toggle Anti-Frame-Buster Proxy Shield">
+              ⚡ Proxy Shield: OFF
+            </button>
+            <button id="btnOpenExternal" class="fl-btn-pill" title="Open in external browser window">
+              ↗ Pop Out
+            </button>
+            <button id="btnToggleFullscreen" class="fl-btn-pill" title="Toggle Fullscreen">
+              ⛶ Fullscreen
+            </button>
+            <button id="btnClosePlayer" class="fl-btn-pill btn-close" title="Close Game">
+              ✕ Close
+            </button>
+          </div>
+        </div>
+
+        <div class="fl-player-viewport-frame" id="playerFrameContainer">
+          <div id="playerLoadingNotice" class="fl-player-loading">
+            <div class="fl-spinner"></div>
+            <div id="playerLoadingText">Booting game sandbox...</div>
+          </div>
+          <div id="playerFrameFallback" class="fl-player-fallback" style="display: none;">
+            <div style="font-size: 36px; margin-bottom: 8px;">🛡️</div>
+            <div style="font-size: 16px; font-weight: bold; color: #fff;">Connection Restricted by Host</div>
+            <div style="font-size: 12px; color: var(--text-muted); max-width: 460px; margin: 8px 0 18px 0; line-height: 1.5;">
+              This third-party server restricts in-app iframe embedding. Use the Anti-Frame Proxy Shield, download a local copy, or launch in a dedicated browser window.
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+              <button id="btnFallbackProxy" class="fl-btn-pill" style="border-color: var(--accent-cyan); color: var(--accent-cyan);">
+                ⚡ Launch via Proxy Shield
+              </button>
+              <button id="btnFallbackDownload" class="fl-btn-pill" style="border-color: var(--accent-green); color: var(--accent-green);">
+                📥 Download Offline Copy
+              </button>
+              <button id="btnFallbackExternal" class="fl-btn-pill" style="background: var(--accent-purple); color: #fff; border: none;">
+                ↗ Open in Browser Window
+              </button>
+            </div>
+          </div>
+          <iframe id="gameIframe" src="" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-modals allow-popups" allow="fullscreen; autoplay; gamepad"></iframe>
+        </div>
+
+        <div class="fl-player-footer">
+          <div id="playerGameDesc" class="player-desc">Game Description</div>
+          <div class="fl-player-hints">
+            <span>🕹️ Controls: Click canvas to focus • Esc to exit fullscreen</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

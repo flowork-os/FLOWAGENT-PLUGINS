@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://volleyball-zeta.vercel.app/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d1120" />
+    <!-- Added to a phone's home screen it opens full screen, in landscape. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Volley Rally" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <title>Volley Rally</title>
+    <script type="module" crossorigin src="./assets/index-C9xudYb9.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BAP93Saq.css">
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game"></canvas>
+      <div id="labels"></div>
+
+      <!-- In-game HUD -->
+      <div id="hud" class="hidden">
+        <!-- Instant replay: letterbox bars, the REPLAY bug and a way to skip it. -->
+        <div id="replay" class="hidden">
+          <div class="bar top"></div>
+          <div class="bar bottom"></div>
+          <div class="replay-bug"><i class="rec"></i><b>Replay</b><span class="slowmo">Slow-mo</span></div>
+          <div class="replay-skip desktop-only"><kbd class="key">Space</kbd> skip</div>
+          <div class="replay-skip pad-only"><kbd class="pad a">A</kbd> skip</div>
+          <button id="replay-skip" class="btn-3d white touch-only"><span>Skip ▸</span></button>
+        </div>
+        <div id="fps"></div>
+        <!-- Your team's line-up in this rotation (indoor matches). -->
+        <div id="lineup" class="hidden"><div class="court"></div><div class="label"></div></div>
+        <div id="top">
+          <div id="scoreboard">
+            <div class="plate home">
+              <span class="serve-ball"></span>
+              <span class="plate-text"><span class="team-name">HOME</span><span id="sets-home" class="sets"></span></span>
+            </div>
+            <div class="digits">
+              <b id="score-home" class="digit home">0</b>
+              <span class="colon"><i></i><i></i></span>
+              <b id="score-away" class="digit away">0</b>
+            </div>
+            <div class="plate away">
+              <span class="plate-text"><span class="team-name">AWAY</span><span id="sets-away" class="sets"></span></span>
+              <span class="serve-ball"></span>
+            </div>
+          </div>
+          <div id="subbar">
+            <div id="touches"><i></i><i></i><i></i></div>
+            <div id="set-label">SET 1</div>
+          </div>
+        </div>
+        <div id="scorepop"><b class="home"></b><span class="dash"></span><b class="away"></b></div>
+        <div id="banner"><div class="burst"></div><div class="title"></div><div class="sub"></div></div>
+        <div id="hint"><span class="icon"></span><span class="text"></span></div>
+        <div id="controls"></div>
+
+        <!-- Tutorial lesson -->
+        <div id="lesson-panel" class="hidden">
+          <div class="lesson-head">
+            <span id="lesson-name"></span>
+            <span id="lesson-steps"></span>
+          </div>
+          <div id="step-count"></div>
+          <div id="step-title"></div>
+          <p id="step-text"></p>
+          <div class="step-goal">
+            <span>Goal</span>
+            <span id="goal-pips"></span>
+            <b id="goal-count"></b>
+          </div>
+          <div class="step-help desktop-only">Stuck? <kbd class="key">Esc</kbd> → Skip step</div>
+          <div class="step-help pad-only">Stuck? <kbd class="pad menu">Menu</kbd> → Skip step</div>
+          <div class="step-help touch-only">Stuck? <span class="pause-glyph"></span> Pause → Skip step</div>
+        </div>
+        <div id="lesson-toast" class="empty"><span class="icon"></span><span class="text"></span></div>
+      </div>
+
+      <!-- Touch controls (phones and tablets) -->
+      <div id="touch" class="hidden">
+        <div class="touch-stick">
+          <div class="stick-base"><div class="stick-knob"></div></div>
+        </div>
+        <div class="touch-look"><span class="look-hint"><i></i>drag to aim</span></div>
+        <div class="touch-buttons">
+          <button class="tbtn t-secondary" data-button="secondary" tabindex="-1"><b>Dive</b></button>
+          <button class="tbtn t-set" data-button="set" tabindex="-1"><b>Set</b></button>
+          <button class="tbtn t-jump" data-button="jump" tabindex="-1"><b>Jump</b></button>
+          <button class="tbtn t-primary" data-button="primary" tabindex="-1"><b>Bump</b></button>
+        </div>
+        <div class="touch-top">
+          <button class="round-3d touch-camera" aria-label="Camera" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5h4l1.6-2.5h6.8L17 8.5h4V19H3z" fill="#fff" stroke="#1d2233" stroke-width="1.9" stroke-linejoin="round"/><circle cx="12" cy="13.2" r="3.6" fill="#8fd3ff" stroke="#1d2233" stroke-width="1.9"/></svg>
+          </button>
+          <button class="round-3d touch-pause" aria-label="Pause" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="4.5" width="4.6" height="15" rx="1.6" fill="#fff" stroke="#1d2233" stroke-width="1.9"/><rect x="13.9" y="4.5" width="4.6" height="15" rx="1.6" fill="#fff" stroke="#1d2233" stroke-width="1.9"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="rotate" class="hidden">
+        <div class="rotate-card">
+          <div class="rotate-phone"><i></i></div>
+          <b>Turn your phone sideways</b>
+          <span>Volley Rally plays in landscape — the game waits for you.</span>
+        </div>
+      </div>
+
+      <!-- Between points and round replays: slabs sweep across, the logo stamps in, and they sweep on out. -->
+      <div id="wipe" aria-hidden="true">
+        <div class="slabs"><i class="l"></i><i class="r"></i><i class="l"></i><i class="r"></i><i class="l"></i></div>
+        <div class="rays"></div>
+        <div class="ring"></div>
+        <div class="mark">
+          <div class="ball"></div>
+          <div class="name"><span class="w1">VOLLEY</span><span class="w2">RALLY</span></div>
+        </div>
+      </div>
+
+      <!-- Match / lesson intro: covers the switch into play while the new venue gets ready. -->
+      <div id="intro" class="hidden">
+        <div class="intro-side home">
+          <span class="intro-tag">Home</span>
+          <b class="intro-team">Your team</b>
+          <small class="intro-sub"></small>
+        </div>
+        <div class="intro-side away">
+          <span class="intro-tag">Away</span>
+          <b class="intro-team">Bots</b>
+          <small class="intro-sub"></small>
+        </div>
+        <div class="intro-vs"><div class="logo-ball"></div><b>VS</b></div>
+        <div class="intro-lesson">
+          <span class="lesson-icon big"></span>
+          <span class="intro-tag"></span>
+          <b class="intro-title"></b>
+          <small class="intro-sub"></small>
+        </div>
+        <div class="intro-foot">
+          <span class="intro-format"></span>
+          <div class="intro-bar"><div class="intro-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- Loading screen: the bar follows the loading stages, then a start button. -->
+      <div id="splash">
+        <div class="splash-ball"><div class="logo-ball"></div><div class="logo-ball-shadow"></div></div>
+        <div class="splash-name"><span class="w1">VOLLEY</span><span class="w2">RALLY</span></div>
+        <div class="splash-load">
+          <div class="splash-bar"><div class="splash-track"><div class="splash-fill"></div></div></div>
+          <div class="splash-status">Loading game files…</div>
+        </div>
+        <button id="splash-start" class="btn-3d pink big"><span>Tap to start</span></button>
+        <p class="splash-tip"></p>
+      </div>
+
+      <!-- Lobby -->
+      <div id="menu" class="overlay lobby hidden">
+        <div class="lobby-tools">
+          <button id="open-settings" class="round-3d" aria-label="Settings" title="Settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.40 12.00 L19.36 12.81 L22.02 13.91 L21.39 15.98 L18.57 15.41 L17.23 17.23 L16.63 17.78 L17.73 20.44 L15.83 21.45 L14.23 19.06 L12.00 19.40 L11.19 19.36 L10.09 22.02 L8.02 21.39 L8.59 18.57 L6.77 17.23 L6.22 16.63 L3.56 17.73 L2.55 15.83 L4.94 14.23 L4.60 12.00 L4.64 11.19 L1.98 10.09 L2.61 8.02 L5.43 8.59 L6.77 6.77 L7.37 6.22 L6.27 3.56 L8.17 2.55 L9.77 4.94 L12.00 4.60 L12.81 4.64 L13.91 1.98 L15.98 2.61 L15.41 5.43 L17.23 6.77 L17.78 7.37 L20.44 6.27 L21.45 8.17 L19.06 9.77 Z M15.2 12a3.2 3.2 0 1 0 -6.4 0a3.2 3.2 0 1 0 6.4 0Z" fill="#fff" fill-rule="evenodd" stroke="#1d2233" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </button>
+          <button id="toggle-sound" class="round-3d" aria-label="Sound" title="Sound (M)">
+            <svg class="sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z" fill="#fff" stroke="#1d2233" stroke-width="1.8" stroke-linejoin="round"/><path d="M15.5 8.6a4.8 4.8 0 0 1 0 6.8M18.3 5.8a8.8 8.8 0 0 1 0 12.4" fill="none" stroke="#1d2233" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <svg class="sound-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z" fill="#fff" stroke="#1d2233" stroke-width="1.8" stroke-linejoin="round"/><path d="M15.5 9.2l5.6 5.6M21.1 9.2l-5.6 5.6" fill="none" stroke="#ff4d5e" stroke-width="2.6" stroke-linecap="round"/></svg>
+          </button>
+          <button id="toggle-fullscreen" class="round-3d" aria-label="Fullscreen" title="Fullscreen">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5V4h5.5M14.5 4H20v5.5M20 14.5V20h-5.5M9.5 20H4v-5.5" fill="none" stroke="#1d2233" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9.5V4h5.5M14.5 4H20v5.5M20 14.5V20h-5.5M9.5 20H4v-5.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="lobby-grid">
+          <header class="logo">
+            <div class="logo-ball-wrap"><div class="logo-ball"></div><div class="logo-ball-shadow"></div></div>
+            <h1><span class="w1">VOLLEY</span><span class="w2">RALLY</span></h1>
+            <a id="credit" class="credit" href="https://x.com/madbykai" target="_blank" rel="noopener noreferrer" title="madbykai on X">
+              <i class="x-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></i>
+              <span class="who"><small>by</small> <b>@madbykai</b></span>
+            </a>
+            <p class="tag">phase 0 prototype · you + bots vs bots · runs in the browser</p>
+          </header>
+
+          <section class="card setup">
+            <div class="ribbon">Match</div>
+            <div class="option-group" data-option="teamSize">
+              <label>Mode</label>
+              <div class="tiles">
+                <button class="tile" data-value="2"><b>2v2</b><small>beach</small></button>
+                <button class="tile" data-value="3"><b>3v3</b><small>quick</small></button>
+                <button class="tile" data-value="4"><b>4v4</b><small>squad</small></button>
+                <button class="tile" data-value="6"><b>6v6</b><small>full</small></button>
+              </div>
+            </div>
+            <div class="option-group" data-option="difficulty">
+              <label>Level</label>
+              <div class="tiles">
+                <button class="tile" data-value="easy"><b>Easy</b><small class="stars">★☆☆</small></button>
+                <button class="tile" data-value="normal"><b>Normal</b><small class="stars">★★☆</small></button>
+                <button class="tile" data-value="hard"><b>Hard</b><small class="stars">★★★</small></button>
+              </div>
+            </div>
+            <div class="option-group" data-option="length">
+              <label>Length</label>
+              <div class="tiles">
+                <button class="tile wide" data-value="short"><b>1 set</b><small>11 points</small></button>
+                <button class="tile wide" data-value="full"><b>Best of 3</b><small>15 points</small></button>
+              </div>
+            </div>
+            <div class="play-row">
+              <button id="play" class="btn-3d pink big"><span>PLAY!</span></button>
+              <button id="open-cup" class="btn-3d gold">
+                <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 10h-7c0 7 4 11 9 12M34 10h7c0 7-4 11-9 12" fill="none" stroke="#1d2233" stroke-width="3" stroke-linecap="round"/><path d="M13 6h22v10c0 8-5 13-11 13S13 24 13 16z" fill="#fff" stroke="#1d2233" stroke-width="3" stroke-linejoin="round"/><path d="M21 29h6v6h-6z" fill="#fff" stroke="#1d2233" stroke-width="3" stroke-linejoin="round"/><path d="M15 35h18l2 7H13z" fill="#fff" stroke="#1d2233" stroke-width="3" stroke-linejoin="round"/></svg>
+                <span>Cup</span>
+                <b id="cup-new" class="sticker hidden">New gear!</b>
+              </button>
+              <button id="open-tutorial" class="btn-3d blue">
+                <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 9L3 18l21 9 21-9z" fill="#fff" stroke="#1d2233" stroke-width="3" stroke-linejoin="round"/><path d="M12 22.5V32c0 3 5.5 6 12 6s12-3 12-6v-9.5L24 27z" fill="#fff" stroke="#1d2233" stroke-width="3" stroke-linejoin="round"/><path d="M41 19.5V31" stroke="#1d2233" stroke-width="3" stroke-linecap="round"/><circle cx="41" cy="33" r="3" fill="#ffcf33" stroke="#1d2233" stroke-width="2.4"/></svg>
+                <span>Tutorial</span>
+                <b id="tutorial-new" class="sticker">New? Start here</b>
+              </button>
+            </div>
+            <div class="howto touch-only">
+              <div class="howto-title">Touch controls</div>
+              <div class="touch-legend">
+                <span><i class="glyph stick"></i> left thumb: move</span>
+                <span><i class="glyph drag"></i> drag right: aim &amp; camera</span>
+                <span><i class="pill pink">Bump</i> serve · bump · spike</span>
+                <span><i class="pill white">Dive</i> dive · block</span>
+                <span><i class="pill gold">Set</i> set · tip</span>
+                <span><i class="pill blue">Jump</i> jump</span>
+              </div>
+              <p class="tip">Tap an action <em>before</em> the ball arrives — contact happens on its own at the sweet spot.</p>
+            </div>
+            <div class="howto desktop-only">
+              <div class="howto-title">Controls</div>
+              <div class="key-grid">
+                <span><kbd class="key">W</kbd><kbd class="key">A</kbd><kbd class="key">S</kbd><kbd class="key">D</kbd> move</span>
+                <span><kbd class="key" data-mouse="move"></kbd> aim &amp; camera</span>
+                <span><kbd class="key" data-mouse="left"></kbd> serve · bump · spike</span>
+                <span><kbd class="key" data-mouse="right"></kbd> dive · block</span>
+                <span><kbd class="key">F</kbd> set · tip</span>
+                <span><kbd class="key wide">Space</kbd> jump</span>
+                <span><kbd class="key">C</kbd> camera</span>
+                <span><kbd class="key">M</kbd> sound</span>
+              </div>
+              <p class="tip">Press an action <em>before</em> the ball arrives — contact happens on its own at the sweet spot.</p>
+            </div>
+            <div class="howto pad-only">
+              <div class="howto-title">Gamepad</div>
+              <div class="key-grid">
+                <span><kbd class="pad ls">LS</kbd> move</span>
+                <span><kbd class="pad rs">RS</kbd> aim &amp; camera</span>
+                <span><kbd class="pad a">A</kbd> serve · bump · spike</span>
+                <span><kbd class="pad b">B</kbd> dive · block</span>
+                <span><kbd class="pad x">X</kbd> set · tip</span>
+                <span><kbd class="pad y">Y</kbd> jump</span>
+                <span><kbd class="pad view">View</kbd> camera</span>
+                <span><kbd class="pad menu">Menu</kbd> pause</span>
+              </div>
+              <p class="tip">Press an action <em>before</em> the ball arrives — contact happens on its own at the sweet spot.</p>
+            </div>
+          </section>
+
+          <section class="card avatar">
+            <div class="ribbon blue">Your Player</div>
+            <div class="preview">
+              <div class="spotlight"></div>
+              <canvas id="avatar-canvas"></canvas>
+              <span class="drag-hint">drag to rotate</span>
+            </div>
+            <input id="player-name" class="field-3d" maxlength="12" spellcheck="false" placeholder="Your name" />
+            <div class="custom-row">
+              <label>Hair</label>
+              <button class="arrow btn-3d white" data-step="-1" aria-label="previous style"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.8 2.2L4 6l3.8 3.8" fill="none" stroke="#1d2233" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <span id="style-name" class="style-name"></span>
+              <button class="arrow btn-3d white" data-step="1" aria-label="next style"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.2 2.2L8 6 4.2 9.8" fill="none" stroke="#1d2233" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+            <div class="custom-row">
+              <label>Number</label>
+              <button class="arrow btn-3d white" data-number="-1" aria-label="lower number"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.8 2.2L4 6l3.8 3.8" fill="none" stroke="#1d2233" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <span id="number-name" class="style-name"></span>
+              <button class="arrow btn-3d white" data-number="1" aria-label="higher number"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.2 2.2L8 6 4.2 9.8" fill="none" stroke="#1d2233" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+            <div class="custom-row gear-row"><label>Gear</label><div id="gear-slots" class="gear-slots"></div></div>
+            <div class="custom-row swatch-row"><label>Color</label><div id="hair-swatches" class="swatches"></div></div>
+            <div class="custom-row swatch-row"><label>Skin</label><div id="skin-swatches" class="swatches"></div></div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- Pause -->
+      <div id="pause" class="overlay hidden">
+        <div class="card small center">
+          <div class="ribbon">Paused</div>
+          <p class="card-text match-only">Game paused. Hit <b>Resume</b> to get back on the court.</p>
+          <p class="card-text lesson-only">Lesson paused. Stuck on a step? Skip it, or start the lesson over.</p>
+          <button id="resume" class="btn-3d pink"><span>Resume</span></button>
+          <div class="pause-lesson lesson-only">
+            <button id="skip-step" class="btn-3d white"><span>Skip step</span></button>
+            <button id="restart-lesson" class="btn-3d white"><span>Restart</span></button>
+          </div>
+          <button id="to-lessons" class="btn-3d white lesson-only"><span>All lessons</span></button>
+          <div class="pause-row">
+            <button id="pause-settings" class="btn-3d white"><span>Settings</span></button>
+            <button id="quit" class="btn-3d white"><span>Quit to menu</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div id="settings" class="overlay hidden">
+        <div class="card settings-card">
+          <div class="ribbon blue">Settings</div>
+          <section class="set-group">
+            <h3 class="set-title">Sound</h3>
+            <div class="set-row">
+              <label for="set-volume">Volume</label>
+              <input id="set-volume" class="slider-3d" type="range" min="0" max="100" step="5" />
+              <output id="set-volume-out" for="set-volume"></output>
+            </div>
+            <div class="set-row">
+              <label for="set-crowd">Crowd</label>
+              <input id="set-crowd" class="slider-3d" type="range" min="0" max="100" step="5" />
+              <output id="set-crowd-out" for="set-crowd"></output>
+            </div>
+            <div class="set-row">
+              <label for="set-muted">Mute all</label>
+              <button id="set-muted" class="switch-3d" role="switch" aria-checked="false"><i></i></button>
+              <span class="set-note desktop-only"><kbd class="key">M</kbd></span>
+            </div>
+          </section>
+          <section class="set-group">
+            <h3 class="set-title">Aim</h3>
+            <div class="set-row">
+              <label for="set-sensitivity">Look speed</label>
+              <input id="set-sensitivity" class="slider-3d" type="range" min="1" max="10" step="1" />
+              <output id="set-sensitivity-out" for="set-sensitivity"></output>
+            </div>
+            <div class="set-row">
+              <label for="set-invert">Invert depth</label>
+              <button id="set-invert" class="switch-3d" role="switch" aria-checked="false"><i></i></button>
+              <span class="set-note">up = closer</span>
+            </div>
+          </section>
+          <section class="set-group">
+            <h3 class="set-title">Graphics</h3>
+            <div class="option-group" data-option="quality">
+              <label>Quality</label>
+              <div class="tiles compact">
+                <button class="tile" data-value="auto"><b>Auto</b><small>adapts</small></button>
+                <button class="tile" data-value="low"><b>Low</b></button>
+                <button class="tile" data-value="medium"><b>Med</b></button>
+                <button class="tile" data-value="high"><b>High</b></button>
+              </div>
+            </div>
+            <div class="set-row">
+              <label for="set-fps">Show FPS</label>
+              <button id="set-fps" class="switch-3d" role="switch" aria-checked="false"><i></i></button>
+            </div>
+            <div class="set-row">
+              <label for="set-replays">Replays</label>
+              <button id="set-replays" class="switch-3d" role="switch" aria-checked="false"><i></i></button>
+              <span class="set-note">great points, slow-mo</span>
+            </div>
+          </section>
+          <section class="set-group">
+            <h3 class="set-title">Touch</h3>
+            <div class="option-group" data-option="touch">
+              <label>Controls</label>
+              <div class="tiles compact">
+                <button class="tile" data-value="auto"><b>Auto</b><small>detect</small></button>
+                <button class="tile" data-value="on"><b>On</b></button>
+                <button class="tile" data-value="off"><b>Off</b></button>
+              </div>
+            </div>
+            <div class="set-row">
+              <label for="set-automove">Auto-move</label>
+              <button id="set-automove" class="switch-3d" role="switch" aria-checked="false"><i></i></button>
+              <span class="set-note">runs to your ball</span>
+            </div>
+            <div class="set-row">
+              <label for="set-smartaim">Smart aim</label>
+              <button id="set-smartaim" class="switch-3d" role="switch" aria-checked="false"><i></i></button>
+              <span class="set-note">finds open spots</span>
+            </div>
+            <div class="set-row">
+              <label for="set-vibrate">Vibration</label>
+              <button id="set-vibrate" class="switch-3d" role="switch" aria-checked="false"><i></i></button>
+              <span class="set-note">phone or gamepad</span>
+            </div>
+          </section>
+          <button id="settings-done" class="btn-3d pink"><span>Done</span></button>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="result" class="overlay hidden">
+        <div id="confetti"></div>
+        <div class="card result-card center">
+          <div id="result-icon" class="result-icon"></div>
+          <h2 id="result-title" class="extrude gold">VICTORY!</h2>
+          <p id="result-sub" class="card-text"></p>
+          <div id="result-score" class="final-score"></div>
+          <div id="result-stats" class="stats"></div>
+          <div id="result-unlocks" class="unlocks hidden"></div>
+          <div class="row-buttons">
+            <button id="again" class="btn-3d pink"><span>Play again</span></button>
+            <button id="to-menu" class="btn-3d white"><span>Menu</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cups: three knockout rounds each; winning one unlocks gear -->
+      <div id="cup" class="overlay hidden">
+        <div class="card cup-card">
+          <div class="ribbon gold">Volley Cup</div>
+          <p class="card-text">Three knockout rounds against tougher and tougher teams. Win a cup to unlock new gear for your player.</p>
+          <div id="cup-list" class="cup-list"></div>
+          <div id="cup-bracket" class="bracket"></div>
+          <p id="cup-reward" class="cup-reward"></p>
+          <p id="cup-format" class="cup-format"></p>
+          <div class="row-buttons">
+            <button id="cup-play" class="btn-3d pink"><span>Play</span></button>
+            <button id="cup-back" class="btn-3d white"><span>◀ Back</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tutorial: lesson picker -->
+      <div id="tutorial" class="overlay hidden">
+        <div class="card tutorial-card">
+          <div class="ribbon blue">Tutorial</div>
+          <div class="tutorial-head">
+            <p class="card-text">Learn one skill at a time. A coach feeds you the balls — every lesson takes a minute or two.</p>
+            <div class="tutorial-progress">
+              <div class="bar"><i id="tutorial-bar"></i></div>
+              <b id="tutorial-count"></b>
+            </div>
+          </div>
+          <div id="lesson-list" class="lesson-list"></div>
+          <button id="tutorial-back" class="btn-3d white back"><span>◀ Back</span></button>
+        </div>
+      </div>
+
+      <!-- Tutorial: rules & HUD guide -->
+      <div id="guide" class="overlay hidden">
+        <div class="card guide-card">
+          <div class="ribbon">Rules &amp; HUD</div>
+          <div class="guide-tabs">
+            <button class="guide-tab">The rally</button>
+            <button class="guide-tab">Scoring</button>
+            <button class="guide-tab">Rotation</button>
+            <button class="guide-tab">The court</button>
+            <button class="guide-tab">Controls</button>
+          </div>
+
+          <section class="guide-page">
+            <div class="guide-row">
+              <div class="guide-art"><span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div>
+              <p><b>Three touches per side.</b> Your team may play the ball up to three times — usually <em>bump</em> → <em>set</em> → <em>spike</em> — and the third touch has to send it over. The dots under the scoreboard count them.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="#fff" stroke="#1d2233" stroke-width="3"/><text x="20" y="25.5" text-anchor="middle" font-size="15" font-weight="900" fill="#1d2233">2×</text><path d="M8 32L32 8" stroke="#ff4d5e" stroke-width="4" stroke-linecap="round"/></svg></div>
+              <p><b>No double touches.</b> You can't play the ball twice in a row — a teammate has to touch it in between. A block doesn't count as a touch.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art"><svg viewBox="0 0 40 40"><path d="M3 30h34" stroke="#fff" stroke-width="2.5"/><path d="M8 18h24v6H8z" fill="none" stroke="#fff" stroke-width="2"/><path d="M8 11v19M32 11v19" stroke="#ff4d5e" stroke-width="2.5" stroke-dasharray="3 2.5"/><path d="M4 26C10 4 26 2 36 20" fill="none" stroke="#ffd23f" stroke-width="2.5" stroke-dasharray="1 4" stroke-linecap="round"/><circle cx="20" cy="8.5" r="4" fill="#fff" stroke="#1d2233" stroke-width="2"/></svg></div>
+              <p><b>Over the net, inside the antennas.</b> The ball has to cross above the net and between the two striped antennas.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art"><kbd class="key desktop-only" data-mouse="left"></kbd><i class="pill pink touch-only">Bump</i><kbd class="pad a pad-only">A</kbd></div>
+              <p><b>Press early.</b> An action is armed the moment you press it and the contact happens on its own at the sweet spot. Better timing, better touch.</p>
+            </div>
+          </section>
+
+          <section class="guide-page">
+            <div class="guide-row">
+              <div class="guide-art court-art"><svg viewBox="0 0 40 40"><rect x="6" y="4" width="28" height="32" fill="none" stroke="#fff" stroke-width="2"/><path d="M4 20h32" stroke="#fff" stroke-width="3"/><circle cx="14" cy="11" r="3.5" fill="#fff" stroke="#1d2233" stroke-width="1.6"/><text x="26" y="32" text-anchor="middle" font-size="10" font-weight="900" fill="#34d98f">+1</text></svg></div>
+              <p><b>Every rally scores.</b> The ball lands in the other court: your point. It lands in yours: their point.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art"><svg viewBox="0 0 40 40"><path d="M11 11l18 18M29 11L11 29" stroke="#ff3b4a" stroke-width="5" stroke-linecap="round"/></svg></div>
+              <p><b>Faults.</b> Send it out, into an antenna or under the net and the other team scores. A ball touching the line is in.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art"><span class="serve-ball"></span></div>
+              <p><b>Win the rally, serve next.</b> The ball icon on the scoreboard shows which team serves.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art"><span class="orbs"><span class="orb won home"></span><span class="orb"></span></span></div>
+              <p><b>Sets.</b> A set goes to 11 or 15 points (pick <em>Length</em> in the menu) and has to be won by two. Best of 3 needs two sets.</p>
+            </div>
+          </section>
+
+          <section class="guide-page">
+            <div class="guide-row">
+              <div class="guide-art court-art"><svg viewBox="0 0 40 40"><path d="M4 5.5h32" stroke="#fff" stroke-width="3"/><path d="M6 5.5v30h28v-30" fill="none" stroke="#fff" stroke-width="1.5"/><rect x="10" y="11" width="20" height="18" rx="6" fill="none" stroke="#ffd23f" stroke-width="2" stroke-dasharray="3 2.4"/><path d="M27 17.5l3 3.5 3-3.5" fill="none" stroke="#ffd23f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><g fill="#34d98f" stroke="#1d2233" stroke-width="1.5"><circle cx="10" cy="11" r="3.2"/><circle cx="20" cy="11" r="3.2"/><circle cx="30" cy="11" r="3.2"/><circle cx="10" cy="29" r="3.2"/><circle cx="20" cy="29" r="3.2"/></g><circle cx="30" cy="29" r="4.2" fill="#ffcf33" stroke="#1d2233" stroke-width="1.6"/><text x="30" y="31.4" text-anchor="middle" font-size="6.5" font-weight="900" fill="#1d2233">1</text></svg></div>
+              <p><b>Rotate on a side-out.</b> When your team wins the serve back, everyone moves one spot clockwise and the player reaching position 1 (right back) serves. The mini court at the top left shows your spot.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art court-art"><svg viewBox="0 0 40 40"><path d="M6 7h28v10H6z" fill="#ff3b4a" opacity=".4"/><path d="M4 7h32" stroke="#fff" stroke-width="3"/><path d="M6 17h28" stroke="#fff" stroke-width="1.6" stroke-dasharray="3 2"/><path d="M16.5 9.5l7 5M23.5 9.5l-7 5" stroke="#ff3b4a" stroke-width="2.6" stroke-linecap="round"/><path d="M20 30v-8" stroke="#ffd23f" stroke-width="2.2" stroke-linecap="round"/><path d="M16.8 24.5L20 21l3.2 3.5" fill="none" stroke="#ffd23f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="31" r="4" fill="#34d98f" stroke="#1d2233" stroke-width="1.6"/></svg></div>
+              <p><b>Back row (6v6).</b> The three players at the back may not block, and spike only after jumping from behind the 3 m line. They pass, dig and set; the front row attacks at the net.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art"><svg viewBox="0 0 40 40"><path d="M30.5 13.5A12 12 0 1 0 32 22" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M31.5 7v7h-7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="20" r="6.5" fill="#ffcf33" stroke="#1d2233" stroke-width="2"/><text x="20" y="24" text-anchor="middle" font-size="10" font-weight="900" fill="#1d2233">1</text></svg></div>
+              <p><b>Every set</b> starts from the starting line-up, and the teams take turns to serve first. On the beach the two players keep their sides and simply take turns to serve.</p>
+            </div>
+          </section>
+
+          <section class="guide-page">
+            <div class="guide-row">
+              <div class="guide-art court-art markers"><svg viewBox="0 0 40 40"><circle cx="11" cy="12" r="6" fill="none" stroke="#ffd23f" stroke-width="2.4"/><circle cx="11" cy="12" r="1.5" fill="#ffd23f"/><circle cx="29" cy="12" r="6" fill="none" stroke="#2fd4ff" stroke-width="2.4"/><circle cx="29" cy="12" r="1.5" fill="#2fd4ff"/><circle cx="11" cy="29" r="6" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="11" cy="29" r="1.5" fill="#fff"/><path d="M25 25l8 8M33 25l-8 8" stroke="#ff3b4a" stroke-width="2.6" stroke-linecap="round"/></svg></div>
+              <p><b>Landing ring</b> — where the ball comes down. <span class="swatch-text yellow">Yellow</span> and pulsing: your ball, go! <span class="swatch-text blue">Blue</span>: a teammate's. <span class="swatch-text white">White</span>: their side. <span class="swatch-text red">Red ×</span>: it's going out, let it go. The outer ring shrinks as the ball gets close.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art court-art"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="8" fill="none" stroke="#ff4fa3" stroke-width="2.6"/><path d="M20 7v26M7 20h26" stroke="#ff4fa3" stroke-width="2.4"/></svg></div>
+              <p><b>Pink crosshair</b> — your aim. Serves, spikes and balls you send over go there. <span class="desktop-only">Move the mouse sideways to turn it, up and down for depth.</span><span class="pad-only">Push the right stick sideways to turn it, up and down for depth.</span><span class="touch-only">Drag on the right side of the screen: sideways to turn it, up and down for depth. With <em>Smart aim</em> on it picks an open spot until you drag.</span></p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art court-art"><svg viewBox="0 0 40 40"><path d="M14 9h12l-6 9z" fill="#ffd23f"/><path d="M13 7v21M27 7v21" stroke="#ffd23f" stroke-width="1.4" opacity=".5"/><ellipse cx="20" cy="31" rx="7" ry="3.2" fill="none" stroke="#ffd23f" stroke-width="2.2"/></svg></div>
+              <p><b>Yellow arrow</b> — where your set goes when you are the setter. Steer it <span class="desktop-only">with the mouse</span><span class="pad-only">with the right stick</span><span class="touch-only">by dragging</span>.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art court-art"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="6" fill="#fff" stroke="#1d2233" stroke-width="1.6"/><circle cx="20" cy="20" r="12" fill="none" stroke="#7dffb5" stroke-width="2.6" stroke-dasharray="12 6.8"/></svg></div>
+              <p><b>Ring around the ball</b> — it is in reach right now. <span class="swatch-text white">White</span> → <span class="swatch-text yellow">yellow</span> → <span class="swatch-text green">green</span> means a cleaner contact.</p>
+            </div>
+            <div class="guide-row">
+              <div class="guide-art"><span class="mini-hint">!</span></div>
+              <p class="desktop-only"><b>Hint and keys</b> — the bubble at the bottom says when a ball is yours and what to press. The keys at the bottom right light up when their action is possible.</p>
+              <p class="pad-only"><b>Hint and buttons</b> — the bubble at the bottom says when a ball is yours and which button to press. The buttons at the bottom right light up when their action is possible.</p>
+              <p class="touch-only"><b>Hint and buttons</b> — the bubble at the bottom says when a ball is yours and what to tap. The buttons change their label to what they do right now and fade when they can't be used.</p>
+            </div>
+          </section>
+
+          <section class="guide-page">
+            <div class="touch-legend guide-keys touch-only">
+              <span><i class="glyph stick"></i> left thumb: move (the stick appears under it)</span>
+              <span><i class="glyph drag"></i> drag on the right: aim &amp; camera</span>
+              <span><i class="pill pink">Serve</i> serve · bump · spike</span>
+              <span><i class="pill white">Block</i> dive · block (at the net)</span>
+              <span><i class="pill gold">Tip</i> set · tip (in the air)</span>
+              <span><i class="pill blue">Jump</i> jump</span>
+              <span><i class="glyph camera"></i> camera</span>
+              <span><i class="glyph pause"></i> pause</span>
+            </div>
+            <p class="guide-tip touch-only">The buttons change with the situation: the pink one serves, bumps on the ground and spikes in the air, the gold one sets or tips, the white one blocks near the net and dives anywhere else. <em>Auto-move</em> runs you to your ball when you let go of the stick — turn it off in Settings to do all the footwork yourself.</p>
+            <div class="key-grid guide-keys desktop-only">
+              <span><kbd class="key">W</kbd><kbd class="key">A</kbd><kbd class="key">S</kbd><kbd class="key">D</kbd> move</span>
+              <span><kbd class="key" data-mouse="move"></kbd> aim &amp; camera</span>
+              <span><kbd class="key" data-mouse="left"></kbd> serve · bump · spike</span>
+              <span><kbd class="key" data-mouse="right"></kbd> dive · block (at the net)</span>
+              <span><kbd class="key">F</kbd> set · tip (in the air)</span>
+              <span><kbd class="key wide">Space</kbd> jump</span>
+              <span><kbd class="key">J</kbd><kbd class="key">K</kbd><kbd class="key">L</kbd> bump · dive · set</span>
+              <span><kbd class="key">C</kbd> camera</span>
+              <span><kbd class="key">M</kbd> sound</span>
+              <span><kbd class="key wide">Esc</kbd> pause</span>
+            </div>
+            <p class="guide-tip desktop-only">The same button does different things: <em>left click</em> bumps on the ground but spikes in the air, <em>F</em> sets on the ground but tips in the air, and <em>right click</em> blocks near the net but dives anywhere else.</p>
+            <div class="key-grid guide-keys pad-only">
+              <span><kbd class="pad ls">LS</kbd> move</span>
+              <span><kbd class="pad rs">RS</kbd> aim &amp; camera (click: face the net)</span>
+              <span><kbd class="pad a">A</kbd> serve · bump · spike</span>
+              <span><kbd class="pad b">B</kbd> dive · block (at the net)</span>
+              <span><kbd class="pad x">X</kbd> set · tip (in the air)</span>
+              <span><kbd class="pad y">Y</kbd><kbd class="pad rb">RB</kbd> jump</span>
+              <span><kbd class="pad view">View</kbd> camera</span>
+              <span><kbd class="pad menu">Menu</kbd> pause</span>
+            </div>
+            <p class="guide-tip pad-only">The same button does different things: <em>A</em> bumps on the ground but spikes in the air, <em>X</em> sets on the ground but tips in the air, and <em>B</em> blocks near the net but dives anywhere else. In the menus the d-pad or left stick moves, <em>A</em> picks and <em>B</em> goes back.</p>
+          </section>
+
+          <div class="guide-nav">
+            <button id="guide-back" class="btn-3d white"><span>◀ Lessons</span></button>
+            <button id="guide-prev" class="btn-3d white"><span>Previous</span></button>
+            <button id="guide-next" class="btn-3d pink"><span>Next ▶</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tutorial: lesson complete -->
+      <div id="lesson-done" class="overlay hidden">
+        <div class="card done-card center">
+          <div class="ribbon blue">Lesson complete</div>
+          <div id="done-icon" class="lesson-icon big"></div>
+          <h2 id="done-title" class="extrude gold"></h2>
+          <ul id="done-steps" class="done-steps"></ul>
+          <p class="done-tip"><b>In a match</b><span id="done-tip"></span></p>
+          <p id="done-progress" class="card-text"></p>
+          <button id="done-next" class="btn-3d pink big"><span>Next</span></button>
+          <div class="row-buttons">
+            <button id="done-again" class="btn-3d white"><span>Repeat</span></button>
+            <button id="done-lessons" class="btn-3d white"><span>All lessons</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

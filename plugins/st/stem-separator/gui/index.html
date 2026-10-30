@@ -1,3 +1,4 @@
+<!-- [FL_INDEX: destination_folder_input, browse_folder_btn, output_directory_picker, stat_time_duration, synchronized_playback_time | COT: Add output destination folder selection controls in sidebar and enhance stage timer to show current time and total audio duration| AT: 2026-10-30T02:26:02Z] -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -563,6 +564,43 @@
       max-width: 420px;
       text-align: center;
     }
+
+    /* Toast Notification */
+    .toast-notification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #141726;
+      border: 1px solid var(--accent-primary);
+      border-radius: 10px;
+      padding: 12px 18px;
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 16px rgba(139, 92, 246, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      font-size: 12px;
+      animation: toastSlide 0.25s ease-out;
+    }
+
+    @keyframes toastSlide {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .export-location-banner {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--accent-success);
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
@@ -648,6 +686,18 @@
           </div>
         </div>
 
+        <!-- Output Destination Folder -->
+        <div>
+          <div class="panel-section-title">4. Output Folder</div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="destination-folder-input" placeholder="Default: app output folder" style="flex: 1; background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px 10px; font-size: 11px; color: var(--text-main); font-family: var(--font-mono); outline: none;">
+            <button class="btn" id="browse-folder-btn" title="Pick Output Folder with OS Dialog">📁 Browse</button>
+          </div>
+          <div id="selected-folder-hint" style="font-size: 10px; color: var(--text-dim); margin-top: 4px; font-family: var(--font-mono); word-break: break-all;">
+            Output will be saved to your chosen location.
+          </div>
+        </div>
+
         <!-- Action Button -->
         <button class="btn btn-primary" id="separate-btn" style="padding: 13px; margin-top: auto;" disabled>
           ⚡ Separate Audio Stems
@@ -664,7 +714,7 @@
               <button class="btn" id="master-stop-btn" disabled>⏹ Stop</button>
             </div>
             <div class="stat-pill">Device: <strong id="stat-device">CUDA GPU</strong></div>
-            <div class="stat-pill">Time: <strong id="stat-time">0.0s</strong></div>
+            <div class="stat-pill">Time: <strong id="stat-time">00:00 / 00:00</strong></div>
           </div>
 
           <div class="toolbar-right">
@@ -915,6 +965,116 @@
       }
     }
 
+    // Output Destination Folder Elements
+    const destinationFolderInput = document.getElementById('destination-folder-input');
+    const browseFolderBtn = document.getElementById('browse-folder-btn');
+    const selectedFolderHint = document.getElementById('selected-folder-hint');
+    const toastNotification = document.getElementById('toast-notification');
+    const toastMessage = document.getElementById('toast-message');
+    const toastOpenBtn = document.getElementById('toast-open-btn');
+
+    let toastTimer = null;
+    let lastExportedFolder = '';
+
+    function showToast(message, folderPath = '') {
+      if (!toastNotification) return;
+      toastMessage.textContent = message;
+      lastExportedFolder = folderPath;
+      if (toastOpenBtn) {
+        toastOpenBtn.style.display = folderPath ? 'inline-flex' : 'none';
+      }
+      toastNotification.style.display = 'flex';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastNotification.style.display = 'none';
+      }, 7000);
+    }
+
+    if (toastOpenBtn) {
+      toastOpenBtn.addEventListener('click', () => {
+        if (lastExportedFolder) openFolderInExplorer(lastExportedFolder);
+      });
+    }
+
+    async function openFolderInExplorer(folderPath) {
+      if (!folderPath) return;
+      try {
+        await apiFetch('/api/open-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folderPath })
+        });
+      } catch (err) {
+        console.warn('[Open Folder Notice]', err);
+      }
+    }
+
+    // Persisted Output Destination Folder
+    const savedDest = localStorage.getItem('flowork_stem_dest_folder');
+    if (savedDest && destinationFolderInput) {
+      destinationFolderInput.value = savedDest;
+      selectedFolderHint.textContent = `Target Folder: ${savedDest}`;
+      selectedFolderHint.style.color = 'var(--accent-secondary)';
+    }
+
+    if (browseFolderBtn) {
+      browseFolderBtn.addEventListener('click', async () => {
+        browseFolderBtn.disabled = true;
+        browseFolderBtn.textContent = '📁 Selecting...';
+        try {
+          const data = await apiFetch('/api/pick-folder', { method: 'POST' });
+          if (data.success && data.folderPath) {
+            destinationFolderInput.value = data.folderPath;
+            selectedFolderHint.textContent = `Target Folder: ${data.folderPath}`;
+            selectedFolderHint.style.color = 'var(--accent-success)';
+            localStorage.setItem('flowork_stem_dest_folder', data.folderPath);
+          }
+        } catch (err) {
+          console.warn('Folder picker notice:', err);
+        } finally {
+          browseFolderBtn.disabled = false;
+          browseFolderBtn.textContent = '📁 Browse';
+        }
+      });
+    }
+
+    if (destinationFolderInput) {
+      destinationFolderInput.addEventListener('input', () => {
+        const val = destinationFolderInput.value.trim();
+        if (val) {
+          selectedFolderHint.textContent = `Target Folder: ${val}`;
+          selectedFolderHint.style.color = 'var(--accent-secondary)';
+          localStorage.setItem('flowork_stem_dest_folder', val);
+        } else {
+          selectedFolderHint.textContent = 'Output will be saved to your chosen location.';
+          selectedFolderHint.style.color = 'var(--text-dim)';
+          localStorage.removeItem('flowork_stem_dest_folder');
+        }
+      });
+    }
+
+    // Cross-origin safe blob download
+    async function downloadBlobFromUrl(url, filename) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+        }, 2000);
+      } catch (err) {
+        console.warn('[Download Blob Notice]', err);
+        window.open(url, '_blank');
+      }
+    }
+
     // Separation Action
     separateBtn.addEventListener('click', runSeparation);
 
@@ -926,10 +1086,12 @@
       separateBtn.disabled = true;
 
       try {
+        const destFolder = destinationFolderInput ? destinationFolderInput.value.trim() : '';
         const payload = {
           filePath: state.activeFilePath,
           mode: state.selectedMode,
-          format: state.selectedFormat
+          format: state.selectedFormat,
+          destinationFolder: destFolder
         };
 
         const json = await apiFetch('/api/separate', {
@@ -978,15 +1140,60 @@
       emptyState.style.display = 'none';
       stemsList.innerHTML = '';
       state.audioElements = [];
+      state.lastResultData = data;
 
       statDevice.textContent = data.device || 'CUDA GPU';
       statTime.textContent = `${data.processing_time_seconds}s`;
 
       const base = await resolveApiBase();
-      downloadZipBtn.href = `${base}${data.zipDownloadUrl}`;
       downloadZipBtn.style.display = 'inline-flex';
       masterPlayBtn.disabled = false;
       masterStopBtn.disabled = false;
+
+      // Auto-saved banner if saved to custom directory
+      if (data.saved_to_custom) {
+        const banner = document.createElement('div');
+        banner.className = 'export-location-banner';
+        banner.innerHTML = `
+          <span>📁 Stems auto-saved to: <strong>${data.saved_to_custom}</strong></span>
+          <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;">📂 Open Folder</button>
+        `;
+        banner.querySelector('button').addEventListener('click', () => {
+          openFolderInExplorer(data.saved_to_custom);
+        });
+        stemsList.appendChild(banner);
+      }
+
+      // Wire Download All Stems (ZIP)
+      downloadZipBtn.onclick = async (e) => {
+        e.preventDefault();
+        downloadZipBtn.textContent = '⏳ Exporting Stems & ZIP...';
+        downloadZipBtn.style.pointerEvents = 'none';
+        try {
+          const destFolder = destinationFolderInput ? destinationFolderInput.value.trim() : '';
+          const exportRes = await apiFetch('/api/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jobId: data.jobId,
+              stemKey: 'all',
+              destinationFolder: destFolder,
+              originalName: state.activeFileName
+            })
+          });
+
+          const zipUrl = `${base}${data.zipDownloadUrl}`;
+          downloadBlobFromUrl(zipUrl, data.zip_filename || 'all_stems.zip');
+
+          const targetFolder = exportRes.folder || destFolder || 'Output Folder';
+          showToast(`✅ All stems & ZIP saved to: ${targetFolder}`, exportRes.folder || destFolder);
+        } catch (err) {
+          alert('Export error: ' + err.message);
+        } finally {
+          downloadZipBtn.textContent = '⬇ Download All Stems (ZIP)';
+          downloadZipBtn.style.pointerEvents = 'auto';
+        }
+      };
 
       const stems = data.stems || {};
       for (const [key, stemInfo] of Object.entries(stems)) {
@@ -1012,7 +1219,7 @@
           <div class="stem-actions">
             <button class="chip-btn solo" data-action="solo">SOLO</button>
             <button class="chip-btn mute" data-action="mute">MUTE</button>
-            <a class="btn" href="${audioUrl}" download="${stemInfo.filename}">⬇ Export</a>
+            <button class="btn btn-export-stem" data-stem="${key}" data-filename="${stemInfo.filename}">⬇ Export</button>
           </div>
         `;
 
@@ -1024,7 +1231,6 @@
         soloBtn.addEventListener('click', () => {
           const isActive = soloBtn.classList.toggle('active');
           if (isActive) {
-            // Mute all other stems
             state.audioElements.forEach(item => {
               if (item.key !== key) {
                 item.element.muted = true;
@@ -1035,7 +1241,6 @@
               }
             });
           } else {
-            // Unmute all
             state.audioElements.forEach(item => {
               item.element.muted = false;
               item.strip.querySelector('[data-action="mute"]').classList.remove('active');
@@ -1050,6 +1255,36 @@
           const isMuted = muteBtn.classList.toggle('active');
           audioEl.muted = isMuted;
           if (isMuted) soloBtn.classList.remove('active');
+        });
+
+        // Export individual stem button handler
+        const exportBtn = strip.querySelector('.btn-export-stem');
+        exportBtn.addEventListener('click', async () => {
+          exportBtn.textContent = '⏳ Saving...';
+          exportBtn.disabled = true;
+          try {
+            const destFolder = destinationFolderInput ? destinationFolderInput.value.trim() : '';
+            const exportRes = await apiFetch('/api/export', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jobId: data.jobId,
+                stemKey: key,
+                destinationFolder: destFolder,
+                originalName: state.activeFileName
+              })
+            });
+
+            downloadBlobFromUrl(audioUrl, stemInfo.filename);
+
+            const targetFolder = exportRes.folder || destFolder || 'Output Folder';
+            showToast(`✅ ${displayName} exported to: ${targetFolder}`, exportRes.folder || destFolder);
+          } catch (err) {
+            alert(`Export notice: ${err.message}`);
+          } finally {
+            exportBtn.textContent = '⬇ Export';
+            exportBtn.disabled = false;
+          }
         });
 
         stemsList.appendChild(strip);
@@ -1084,5 +1319,11 @@
       });
     });
   </script>
+
+  <!-- Toast Notification -->
+  <div id="toast-notification" class="toast-notification" style="display: none;">
+    <span id="toast-message">Exported successfully</span>
+    <button class="btn btn-secondary" id="toast-open-btn" style="padding: 4px 10px; font-size: 11px;">📂 Open Folder</button>
+  </div>
 </body>
 </html>

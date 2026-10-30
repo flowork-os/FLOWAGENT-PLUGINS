@@ -6,7 +6,7 @@
   "description": "Sovereign AI audio stem separation and vocal remover studio powered by Meta AI Demucs v4 (Hybrid Transformer HTDemucs). Extract isolated vocals (acapella), instrumental (karaoke), drums, bass, and multitrack stems with hardware GPU CUDA acceleration.",
   "category": "Arts, Music & Literature",
   "icon": "🎛️",
-  "hash": "8239abad92bb9119",
+  "hash": "a02153733eeecf44",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"

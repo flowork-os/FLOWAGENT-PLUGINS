@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://dubai-red-ten.vercel.app/">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#120d0a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Finals Night" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content="Finals Night: a 3D table tennis game against the computer. Plays in your browser, on desktop and phone." />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/icons/icon-180.png" />
+    <title>Finals Night · 3D Table Tennis</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏓</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+
+    <div id="hud" hidden>
+      <div class="bug">
+        <div class="bug-head">Riverside TTC · Finals</div>
+        <div class="bug-row"><span class="serve-dot" id="serve-player"></span><span class="name">You</span><b id="score-player">0</b></div>
+        <div class="bug-row"><span class="serve-dot" id="serve-ai"></span><span class="name">CPU</span><b id="score-ai">0</b></div>
+        <div class="bug-foot" id="level"></div>
+      </div>
+      <div id="shot"></div>
+      <div class="hud-buttons">
+        <button id="btn-mute" class="icon" aria-label="Sound" aria-pressed="false" title="Sound (M)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9v6h4l5 4V5L8 9H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="slash" d="M4 4l16 16"/></svg>
+        </button>
+        <button id="btn-full" class="icon" aria-label="Fullscreen" title="Fullscreen" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        </button>
+        <button id="btn-pause" class="icon" aria-label="Pause" title="Pause (Esc)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M8 5h3v14H8zM13 5h3v14h-3z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="message" aria-live="polite"></div>
+
+    <div class="overlay" id="menu">
+      <div class="panel poster">
+        <p class="kicker">Riverside Table Tennis Club</p>
+        <h1>Finals <span>Night</span></h1>
+        <p class="tagline">Club Championship · First to 11, win by 2</p>
+        <div class="buttons levels">
+          <button data-level="easy" disabled><b>Easy</b><small>Club social</small></button>
+          <button data-level="medium" class="primary" disabled><b>Medium</b><small>League player</small></button>
+          <button data-level="hard" disabled><b>Hard</b><small>Club champion</small></button>
+        </div>
+        <p class="loading" id="loading">Setting up the hall…</p>
+        <p class="record" id="record"></p>
+        <details class="howto-wrap">
+          <summary>How to play</summary>
+        <ul class="howto">
+          <li class="only-mouse"><b>Move</b> the mouse to move your paddle — up takes it toward the net, down pulls it back. The mouse is captured while you play so it can't leave the window; <b>Esc</b> releases it and pauses.</li>
+          <li class="only-touch"><b>Drag</b> one finger anywhere on the screen to move your paddle — up takes it toward the net, down pulls it back. It works like a trackpad, so your thumb stays out of the way; lift and drag again to go further.</li>
+          <li>Get in line with the ball and it returns automatically — forehand or backhand depending on which side it comes to.</li>
+          <li class="only-mouse"><b>Swing as you hit:</b> flick <b>up</b> for topspin (fast, dipping), pull <b>down</b> for backspin (slow, floating), flick <b>sideways</b> for sidespin and angle.</li>
+          <li class="only-touch"><b>Swipe as the ball reaches you:</b> flick <b>up</b> for topspin (fast, dipping), pull <b>down</b> for backspin (slow, floating), flick <b>sideways</b> for sidespin and angle.</li>
+          <li><b>Read the spin:</b> the trail shows it — <span class="k top">orange</span> topspin, <span class="k back">blue</span> backspin, <span class="k side">purple</span> sidespin. Blocking backspin drops into the net, so lift it with topspin.</li>
+          <li class="only-mouse"><b>Click</b> or tap to serve. <b>M</b> mutes.</li>
+          <li class="only-touch"><b>Tap</b> to serve, or flick as you lift your finger to serve with spin. Use the buttons at the top right to pause or mute.</li>
+        </ul>
+        </details>
+        <p class="tip only-touch only-portrait">Tip: turn your phone sideways for a bigger table.</p>
+        <label class="sensitivity">Sensitivity <input type="range" min="0.4" max="2.5" step="0.1" /><output></output></label>
+      </div>
+    </div>
+
+    <div class="overlay" id="gameover" hidden>
+      <div class="panel">
+        <h1 id="result">You win!</h1>
+        <p class="tagline" id="final-score"></p>
+        <table class="stats" id="stats"></table>
+        <div class="buttons">
+          <button id="again" class="primary">Play again</button>
+          <button id="to-menu">Change difficulty</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="paused" hidden>
+      <div class="panel">
+        <h1>Paused</h1>
+        <div class="buttons">
+          <button id="resume" class="primary">Resume</button>
+          <button id="quit">Quit to menu</button>
+        </div>
+        <label class="sensitivity">Sensitivity <input type="range" min="0.4" max="2.5" step="0.1" /><output></output></label>
+      </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

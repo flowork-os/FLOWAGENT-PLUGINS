@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://boring-forest.vercel.app/">
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+	<title>Boring Forest</title>
+	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Cpath d=%22M8 1 3 9h3l-3 5h10l-3-5h3z%22 fill=%22%232f6b3a%22/%3E%3C/svg%3E" />
+  <script type="module" crossorigin src="/assets/index-CGflDyRf.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-LNlQhYJ0.css">
+</head>
+<body>
+	<div id="app"></div>
+
+	<div id="loading" class="screen">
+		<div class="loading-box">
+			<div class="loading-title">The forest is waking…</div>
+			<div class="loading-bar"><div id="loading-fill"></div></div>
+			<div id="loading-step" class="loading-step"></div>
+		</div>
+	</div>
+
+	<div id="overlay" class="screen hidden">
+		<div class="overlay-box">
+			<div class="overlay-title">Boring Forest</div>
+			<div class="overlay-hint">
+				<i class="firefly"></i>
+				<span>Hold the mouse button to call fireflies. Let go to throw light.</span>
+				<i class="firefly"></i>
+			</div>
+			<div class="overlay-cta">Click to enter</div>
+			<div class="overlay-rotate">Turn your phone sideways for a wider view</div>
+		</div>
+		<div class="overlay-footer">
+			<div id="overlay-keys" class="overlay-keys">
+				<span><b>WASD</b> walk</span>
+				<span><b>Shift</b> run</span>
+				<span><b>Space</b> jump</span>
+				<span><b>Right mouse / F</b> skip a stone (in winter, a snowball)</span>
+				<span><b>M</b> sound</span>
+				<span><b>Esc</b> pause</span>
+			</div>
+			<div class="overlay-credits">
+				<span id="overlay-version"></span>
+				<a href="https://x.com/AndreiProvkin" target="_blank" rel="noopener">@AndreiProvkin</a>
+			</div>
+		</div>
+	</div>
+
+	<div id="reticle"></div>
+	<svg id="stone-charge" viewBox="0 0 60 60" aria-hidden="true"><circle class="track" cx="30" cy="30" r="24"/><circle id="stone-charge-fill" cx="30" cy="30" r="24" transform="rotate(-90 30 30)"/></svg>
+	<div id="stone-hint"></div>
+	<div id="skips"><div class="skips-count"><span id="skips-n">0</span> <span id="skips-label">skips</span></div><div id="skips-best"></div></div>
+	<div id="gpu-lost" class="screen hidden">
+		<div class="loading-box">
+			<div class="loading-title">The forest went dark</div>
+			<div class="loading-step loading-unsupported">The graphics card stopped responding.</div>
+			<div class="overlay-cta">Click to reload</div>
+		</div>
+	</div>
+
+	<pre id="stats" class="hidden"></pre>
+	<div id="error" class="hidden"></div>
+
+</body>
+</html>

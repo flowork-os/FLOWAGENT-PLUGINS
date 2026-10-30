@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vector Asteroids - Vibe Arcade Offline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #05070d; color: #fff; font-family: monospace; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    #canvas { background: #000; border: 2px solid #a855f7; box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); border-radius: 8px; }
+    .hud { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 30px; font-weight: bold; font-size: 15px; color: #00e5ff; pointer-events: none; }
+    .controls { position: absolute; bottom: 16px; color: #64748b; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div>SCORE: <span id="score" style="color:#22c55e;">0</span></div>
+    <div>SHIELD: <span id="shield" style="color:#00e5ff;">100%</span></div>
+    <div>WAVE: <span id="wave" style="color:#f59e0b;">1</span></div>
+  </div>
+  <canvas id="canvas" width="800" height="500"></canvas>
+  <div class="controls">[W / ↑] Thrust • [A / D / ← / →] Rotate • [SPACE] Plasma Cannon • [R] Restart</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let ship = { x: 400, y: 250, r: 12, angle: -Math.PI/2, rot: 0, thrust: false, vx: 0, vy: 0, shield: 100 };
+    let lasers = [];
+    let asteroids = [];
+    let score = 0;
+    let wave = 1;
+    let keys = {};
+
+    window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+    function spawnAsteroids(n) {
+      for (let i = 0; i < n; i++) {
+        let x, y;
+        do {
+          x = Math.random() * 800;
+          y = Math.random() * 500;
+        } while (Math.hypot(x - ship.x, y - ship.y) < 120);
+        asteroids.push({
+          x, y,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+          r: 28,
+          pts: Math.floor(Math.random() * 4) + 7
+        });
+      }
+    }
+    spawnAsteroids(5);
+
+    function update() {
+      // Rotation & Thrust
+      if (keys['a'] || keys['arrowleft']) ship.angle -= 0.07;
+      if (keys['d'] || keys['arrowright']) ship.angle += 0.07;
+      ship.thrust = (keys['w'] || keys['arrowup']);
+
+      if (ship.thrust) {
+        ship.vx += Math.cos(ship.angle) * 0.12;
+        ship.vy += Math.sin(ship.angle) * 0.12;
+      }
+      ship.vx *= 0.985;
+      ship.vy *= 0.985;
+      ship.x = (ship.x + ship.vx + 800) % 800;
+      ship.y = (ship.y + ship.vy + 500) % 500;
+
+      // Fire Laser
+      if (keys[' '] && (!ship.lastShot || Date.now() - ship.lastShot > 160)) {
+        lasers.push({
+          x: ship.x + Math.cos(ship.angle) * 16,
+          y: ship.y + Math.sin(ship.angle) * 16,
+          vx: Math.cos(ship.angle) * 8,
+          vy: Math.sin(ship.angle) * 8,
+          life: 55
+        });
+        ship.lastShot = Date.now();
+      }
+
+      // Update Lasers
+      for (let i = lasers.length - 1; i >= 0; i--) {
+        const l = lasers[i];
+        l.x = (l.x + l.vx + 800) % 800;
+        l.y = (l.y + l.vy + 500) % 500;
+        l.life--;
+        if (l.life <= 0) { lasers.splice(i, 1); continue; }
+
+        // Laser vs Asteroids
+        for (let j = asteroids.length - 1; j >= 0; j--) {
+          const a = asteroids[j];
+          if (Math.hypot(l.x - a.x, l.y - a.y) < a.r) {
+            lasers.splice(i, 1);
+            score += Math.round(100 / (a.r / 10));
+            document.getElementById('score').textContent = score;
+
+            if (a.r > 16) {
+              asteroids.push({ x: a.x, y: a.y, vx: a.vx + (Math.random()-0.5)*2, vy: a.vy + (Math.random()-0.5)*2, r: a.r / 1.7 });
+              asteroids.push({ x: a.x, y: a.y, vx: a.vx - (Math.random()-0.5)*2, vy: a.vy - (Math.random()-0.5)*2, r: a.r / 1.7 });
+            }
+            asteroids.splice(j, 1);
+            break;
+          }
+        }
+      }
+
+      // Update Asteroids & Ship Collision
+      for (let a of asteroids) {
+        a.x = (a.x + a.vx + 800) % 800;
+        a.y = (a.y + a.vy + 500) % 500;
+
+        if (Math.hypot(ship.x - a.x, ship.y - a.y) < ship.r + a.r) {
+          ship.shield -= 0.6;
+          document.getElementById('shield').textContent = `${Math.max(0, Math.round(ship.shield))}%`;
+          if (ship.shield <= 0) {
+            ship.shield = 0;
+          }
+        }
+      }
+
+      if (asteroids.length === 0) {
+        wave++;
+        document.getElementById('wave').textContent = wave;
+        spawnAsteroids(4 + wave * 2);
+      }
+
+      if (keys['r']) {
+        ship = { x: 400, y: 250, r: 12, angle: -Math.PI/2, rot: 0, thrust: false, vx: 0, vy: 0, shield: 100 };
+        lasers = []; asteroids = []; score = 0; wave = 1;
+        document.getElementById('score').textContent = 0;
+        document.getElementById('shield').textContent = '100%';
+        document.getElementById('wave').textContent = 1;
+        spawnAsteroids(5);
+      }
+    }
+
+    function render() {
+      ctx.fillStyle = '#05070d';
+      ctx.fillRect(0, 0, 800, 500);
+
+      // Draw Lasers
+      ctx.strokeStyle = '#00ff88';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#00ff88';
+      ctx.shadowBlur = 10;
+      for (let l of lasers) {
+        ctx.beginPath();
+        ctx.arc(l.x, l.y, 2.5, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Draw Asteroids
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 1.8;
+      ctx.shadowColor = '#a855f7';
+      ctx.shadowBlur = 8;
+      for (let a of asteroids) {
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const ang = (i / 8) * Math.PI * 2;
+          const rad = a.r * (0.8 + ((i % 2) * 0.3));
+          const px = a.x + Math.cos(ang) * rad;
+          const py = a.y + Math.sin(ang) * rad;
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.stroke();
+      }
+
+      // Draw Ship
+      ctx.save();
+      ctx.translate(ship.x, ship.y);
+      ctx.rotate(ship.angle);
+      ctx.strokeStyle = ship.shield > 25 ? '#00e5ff' : '#ff0055';
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(16, 0);
+      ctx.lineTo(-12, 10);
+      ctx.lineTo(-6, 0);
+      ctx.lineTo(-12, -10);
+      ctx.closePath();
+      ctx.stroke();
+
+      if (ship.thrust) {
+        ctx.strokeStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.moveTo(-7, 0);
+        ctx.lineTo(-18 - Math.random() * 8, 0);
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.shadowBlur = 0;
+    }
+
+    function loop() {
+      if (ship.shield > 0) update();
+      render();
+      if (ship.shield <= 0) {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0, 0, 800, 500);
+        ctx.font = 'bold 36px monospace';
+        ctx.fillStyle = '#ff0055';
+        ctx.textAlign = 'center';
+        ctx.fillText('CRITICAL HULL DAMAGE', 400, 230);
+        ctx.font = '16px monospace';
+        ctx.fillStyle = '#00e5ff';
+        ctx.fillText(`FINAL SCORE: ${score} • PRESS [R] TO REBOOT`, 400, 275);
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://pixel-flow-classic.longmaba.workers.dev/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#2c1f7a" />
+    <title>Pixel Flow 3D</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='4' width='12' height='10' rx='5' fill='%23ff86c8'/><rect x='5' y='8' width='6' height='4' rx='2' fill='%23ffb6dc'/></svg>" />
+    <script type="module" crossorigin src="/assets/index-BQbfpSPY.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DY5kqDR_.css">
+  </head>
+  <body>
+    <canvas id="gl"></canvas>
+
+    <div id="ui">
+      <!-- HUD -->
+      <div id="hud" class="hidden">
+        <div class="hud-top">
+          <button class="icon-btn" id="btn-pause" aria-label="Pause">
+            <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>
+          </button>
+          <div class="level-block">
+            <div class="level-pill"><span id="level-label">Level 1</span><span class="hard-tag hidden" id="hard-tag">HARD</span></div>
+            <div class="progress"><div class="progress-fill" id="progress-fill"></div><div class="progress-shine"></div><span id="progress-text">0%</span></div>
+          </div>
+          <div class="coins" id="coins"><span class="coin-icon"></span><span id="coin-count">0</span></div>
+        </div>
+        <div class="hud-bottom">
+          <button class="booster" id="b-slot" data-cost="120">
+            <svg viewBox="0 0 48 48"><ellipse cx="24" cy="32" rx="16" ry="6" fill="#7ee8ff" opacity=".35"/><ellipse cx="24" cy="30" rx="14" ry="5" fill="none" stroke="#7ee8ff" stroke-width="3"/><path d="M24 6v18M15 15h18" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>
+            <span class="b-name">+Slot</span><span class="badge" id="c-slot">2</span>
+          </button>
+          <button class="booster" id="b-shuffle" data-cost="80">
+            <svg viewBox="0 0 48 48"><path d="M8 14h8c6 0 10 20 16 20h8M8 34h8c6 0 10-20 16-20h8" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/><path d="M36 8l6 6-6 6M36 28l6 6-6 6" fill="none" stroke="#ffd53d" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="b-name">Shuffle</span><span class="badge" id="c-shuffle">2</span>
+          </button>
+          <button class="booster" id="b-super" data-cost="160">
+            <svg viewBox="0 0 48 48"><ellipse cx="24" cy="30" rx="14" ry="12" fill="#ffcc33"/><ellipse cx="24" cy="31" rx="6" ry="4.5" fill="#ffe28a"/><circle cx="18" cy="25" r="2.4" fill="#1a1433"/><circle cx="30" cy="25" r="2.4" fill="#1a1433"/><path d="M14 16l4 -9 6 7 6 -7 4 9z" fill="#ffe066" stroke="#e0a400" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <span class="b-name">Super</span><span class="badge" id="c-super">2</span>
+          </button>
+          <button class="booster speed" id="b-speed">
+            <svg viewBox="0 0 48 48"><path d="M8 12l16 12-16 12zM24 12l16 12-16 12z" fill="#fff"/></svg>
+            <span class="b-name" id="speed-label">1x</span>
+          </button>
+        </div>
+        <div id="belt-counter"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="13" rx="8" ry="7" fill="#ff86c8"/><ellipse cx="12" cy="14" rx="3.5" ry="2.5" fill="#ffb6dc"/></svg><span id="belt-count">0/5</span></div>
+        <div id="combo"><span class="combo-x">x</span><span id="combo-n">0</span><div class="combo-label">COMBO</div></div>
+      </div>
+
+      <div id="toasts"></div>
+      <div id="banner"></div>
+      <div id="hand" class="hidden"><div class="hand-tip"></div><div class="hand-ripple"></div><div class="hand-text">Tap a pig!</div></div>
+
+      <!-- Title -->
+      <div id="title" class="screen">
+        <div class="logo">
+          <div class="logo-row" id="logo-a"></div>
+          <div class="logo-row small" id="logo-b"></div>
+        </div>
+        <div class="title-buttons">
+          <button class="btn big green" id="btn-play"><span>PLAY</span><small id="play-level">Level 1</small></button>
+          <div class="row">
+            <button class="btn blue" id="btn-levels">Levels</button>
+            <button class="btn purple" id="btn-settings">Settings</button>
+          </div>
+        </div>
+        <div class="credit">Three.js tribute to Pixel Flow! • tap pigs, clear pixels</div>
+      </div>
+
+      <!-- Level select -->
+      <div id="levels" class="screen modal-screen hidden">
+        <div class="panel wide">
+          <div class="panel-head"><h2>Collection</h2><button class="icon-btn close" data-close="levels">✕</button></div>
+          <div class="level-grid" id="level-grid"></div>
+        </div>
+      </div>
+
+      <!-- Win -->
+      <div id="win" class="screen modal-screen hidden">
+        <div class="rays"></div>
+        <div class="panel">
+          <div class="ribbon">LEVEL COMPLETE!</div>
+          <div class="frame"><canvas id="win-art" width="320" height="320"></canvas><div class="frame-shine"></div></div>
+          <div class="art-name" id="win-name">Heart</div>
+          <div class="stars" id="win-stars"><span class="star"></span><span class="star"></span><span class="star"></span></div>
+          <div class="win-stats"><div><b id="win-combo">0</b><small>best combo</small></div><div><b id="win-coins">+0</b><small>coins</small></div></div>
+          <button class="btn big green" id="btn-next"><span>NEXT</span></button>
+        </div>
+      </div>
+
+      <!-- Lose -->
+      <div id="lose" class="screen modal-screen hidden">
+        <div class="panel">
+          <div class="ribbon red">OUT OF SPACE!</div>
+          <div class="lose-icon">
+            <svg viewBox="0 0 120 90"><g opacity=".9"><rect x="4" y="54" width="20" height="10" rx="5" fill="#7ee8ff"/><rect x="28" y="54" width="20" height="10" rx="5" fill="#7ee8ff"/><rect x="52" y="54" width="20" height="10" rx="5" fill="#7ee8ff"/><rect x="76" y="54" width="20" height="10" rx="5" fill="#7ee8ff"/><rect x="100" y="54" width="16" height="10" rx="5" fill="#ff5a7a"/></g><ellipse cx="60" cy="34" rx="20" ry="17" fill="#ff86c8"/><ellipse cx="60" cy="37" rx="8" ry="6" fill="#ffb6dc"/><circle cx="52" cy="28" r="3" fill="#1a1433"/><circle cx="68" cy="28" r="3" fill="#1a1433"/><path d="M84 12l10 10M94 12L84 22" stroke="#ff5a7a" stroke-width="4" stroke-linecap="round"/></svg>
+          </div>
+          <p class="lose-text">Every waiting slot is full.<br/>Add one more slot to keep going?</p>
+          <button class="btn big green" id="btn-continue"><span>+1 Slot</span><small id="continue-cost">120 coins</small></button>
+          <button class="btn orange" id="btn-retry">Retry</button>
+        </div>
+      </div>
+
+      <!-- Pause / settings -->
+      <div id="pause" class="screen modal-screen hidden">
+        <div class="panel">
+          <div class="panel-head"><h2 id="pause-title">Paused</h2><button class="icon-btn close" data-close="pause">✕</button></div>
+          <div class="toggles">
+            <button class="toggle" id="t-sfx"><span>Sound</span><i></i></button>
+            <button class="toggle" id="t-music"><span>Music</span><i></i></button>
+          </div>
+          <button class="btn green" id="btn-resume">Resume</button>
+          <button class="btn orange" id="btn-restart">Restart Level</button>
+          <button class="btn blue" id="btn-home">Home</button>
+        </div>
+      </div>
+
+      <!-- Intro card for new mechanics -->
+      <div id="intro" class="screen modal-screen hidden">
+        <div class="panel">
+          <div class="ribbon" id="intro-title">NEW!</div>
+          <div class="intro-art" id="intro-art"></div>
+          <p class="lose-text" id="intro-text"></p>
+          <button class="btn big green" id="btn-intro-ok"><span>GOT IT</span></button>
+        </div>
+      </div>
+
+      <div id="loading"><div class="spinner"></div></div>
+    </div>
+  </body>
+</html>

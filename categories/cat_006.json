@@ -25,7 +25,7 @@
       "icon": "📈",
       "shard": "index/ma/rk/market_signal.json",
       "source_path": "plugins/ma/market-signal",
-      "hash": "cb04173128965416"
+      "hash": "186c0ed449445ce6"
     },
     {
       "id": "trading-agents",
@@ -37,7 +37,7 @@
       "icon": "📈",
       "shard": "index/tr/ad/trading_agents.json",
       "source_path": "plugins/tr/trading-agents",
-      "hash": "17a860f46f5db59c"
+      "hash": "4a4a5f5c4ab9f2ca"
     }
   ]
 }

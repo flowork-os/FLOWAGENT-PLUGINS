@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://mbranni03.github.io/smackdown/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Supa Smackdown</title>
+<link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #26231f; overflow: hidden; }
+  /* the letterbox is a dark desk the sheet sits on: faint pencil hatching, lit from the middle */
+  body { display: grid; place-items: center;
+    background: radial-gradient(ellipse at center, #3a352e 0%, #26231f 55%, #1b1916 100%),
+                repeating-linear-gradient(-45deg, #0000 0 7px, #ffffff08 7px 8px);
+    background-blend-mode: screen; }
+  canvas { display: block; width: min(100vw, calc(100vh * 16 / 9)); width: min(100vw, calc(100dvh * 16 / 9)); aspect-ratio: 16 / 9; /* dvh: fit what the browser bars leave */
+    box-shadow: 0 0 0 1px #0006, 0 10px 40px #000a; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="src/sketch.js"></script>
+<script src="src/characters/clawd.js"></script>
+<script src="src/characters/grok.js"></script>
+<script src="src/characters/wumpus.js"></script>
+<script src="src/characters/android.js"></script>
+<script src="src/characters/duo.js"></script>
+<script src="src/characters/snoo.js"></script>
+<script src="src/characters/lego.js"></script>
+<script src="src/characters/muse.js"></script>
+<script src="src/characters/snoopy.js"></script>
+<script src="src/characters/clawd-moveset.js"></script>
+<script src="src/characters/grok-moveset.js"></script>
+<script src="src/characters/duo-moveset.js"></script>
+<script src="src/characters/wumpus-moveset.js"></script>
+<script src="src/characters/lego-moveset.js"></script>
+<script src="src/characters/android-moveset.js"></script>
+<script src="src/characters/snoo-moveset.js"></script>
+<script src="src/characters/muse-moveset.js"></script>
+<script src="src/characters/snoopy-moveset.js"></script>
+<script src="src/cpu.js"></script>
+<script src="src/sfx.js"></script>
+<script>
+const W = 1280, H = 720, STEP = 1 / 60;
+const cv = document.getElementById('c'); ctx = cv.getContext('2d');
+const dpr = Math.min(2, window.devicePixelRatio || 1);
+cv.width = W * dpr; cv.height = H * dpr;
+ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+const paper = makePaper(W, H, dpr); // the canvas's CSS background, so frames just clear to it instead of repainting every pixel
+paper.toBlob(b => cv.style.background = `url(${URL.createObjectURL(b)}) 0 0 / 100% 100%`);
+
+// ---------- arena ----------
+const stage = { x: 240, y: 500, w: 800, h: 110 }; // solid collision box
+const stagePoly = [[240, 500], [1040, 500], [1040, 530], [960, 610], [320, 610], [240, 530]];
+const plats = [{ x: 330, y: 375, w: 210 }, { x: 740, y: 375, w: 210 }, { x: 535, y: 255, w: 210 }]; // pass-through
+const BLAST = { l: -220, r: W + 220, t: -360, b: H + 200 };
+
+// ---------- camera ----------
+// Smash-style: frames everyone in play (padded, more room above than below), zooms between zmin and zmax, and eases toward that
+// framing so it never jerks: out fast (keeps up with a launch), back in slowly. It can look out as far as the blast zone, so a fighter
+// flying off is on screen until the moment it's KO'd, but never past it (zmin), so nobody is KO'd in plain view. cam = the world point at screen centre + zoom
+const CAM = { ...BLAST, padX: 260, padUp: 260, padDown: 140, zmin: Math.max(W / (BLAST.r - BLAST.l), H / (BLAST.b - BLAST.t)), zmax: 1.35, pan: 3, zoomIn: 1.6, zoomOut: 6,
+  punch: 0.1, punchIn: 15, punchOut: 3 }; // big hits: up to 10% closer around where they landed, in fast, out slow
+// x y z = the framing, vx vy vz = what's shown (framing + punch) · kick = punch strength 0 … 1 (decaying), kz = it eased · hx hy = the hit
+const camHome = () => ({ x: W / 2, y: H / 2, z: 1, vx: W / 2, vy: H / 2, vz: 1, kick: 0, kz: 0, hx: 0, hy: 0, seen: null, exit: null });
+const cam = camHome();
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+function stepCam(dt) {
+  if (P.state === 'ko') return; // hold still while the KO blast plays, so it stays where it went out
+  let l = Infinity, r = -Infinity, t = Infinity, b = -Infinity;
+  for (const o of inPlay()) {
+    const x = clamp(o.x + o.w / 2, CAM.l, CAM.r), y = clamp(o.y + o.h / 2, CAM.t, CAM.b); // someone flying off still only pulls it so far
+    l = Math.min(l, x); r = Math.max(r, x); t = Math.min(t, y); b = Math.max(b, y);
+  }
+  l -= CAM.padX; r += CAM.padX; t -= CAM.padUp; b += CAM.padDown;
+  const z = clamp(Math.min(W / (r - l), H / (b - t)), CAM.zmin, CAM.zmax), rate = z < cam.z ? CAM.zoomOut : CAM.zoomIn;
+  cam.z += (z - cam.z) * (1 - Math.exp(-rate * dt));
+  const k = 1 - Math.exp(-Math.max(CAM.pan, rate) * dt); // pans as fast as it's zooming out
+  const hw = W / 2 / cam.z, hh = H / 2 / cam.z;
+  cam.x += (clamp((l + r) / 2, CAM.l + hw, CAM.r - hw) - cam.x) * k;
+  cam.y += (clamp((t + b) / 2, CAM.t + hh, CAM.b - hh) - cam.y) * k;
+  cam.kz += (cam.kick - cam.kz) * (1 - Math.exp(-CAM.punchIn * dt)); cam.kick *= Math.exp(-CAM.punchOut * dt);
+  const f = 1 + CAM.punch * cam.kz, g = 1 - 1 / f; // zoom in by f, keeping the hit's spot on screen put
+  Object.assign(cam, { vz: cam.z * f, vx: cam.x + (cam.hx - cam.x) * g, vy: cam.y + (cam.hy - cam.y) * g });
+  const [sx, sy] = onScreen();
+  if (sx >= 0 && sx <= W && sy >= 0 && sy <= H) { cam.seen = [sx, sy]; cam.exit = null; } else cam.exit = exitPoint(); // a KO blasts from where they left
+}
+// a hit with knockback k (KB units) at x, y: from k 60 up, full punch by 130
+function camPunch(k, x, y) { const s = clamp((k - 60) / 70, 0, 1); if (s > cam.kick) Object.assign(cam, { kick: s, hx: x, hy: y }); }
+const onScreen = () => [(P.x + P.w / 2 - cam.vx) * cam.vz + W / 2, (P.y + P.h / 2 - cam.vy) * cam.vz + H / 2];
+// where P's path crossed the screen's edge on the way out: from the last point it was seen at toward where it is now
+function exitPoint() {
+  if (cam.exit || !cam.seen) return cam.exit;
+  const [ax, ay] = cam.seen, [bx, by] = onScreen(), dx = bx - ax, dy = by - ay;
+  const t = Math.min(dx < 0 ? -ax / dx : dx > 0 ? (W - ax) / dx : 1, dy < 0 ? -ay / dy : dy > 0 ? (H - ay) / dy : 1);
+  return [ax + dx * t, ay + dy * t];
+}
+// world → screen: z scaled around cam; depth < 1 moves less (parallax for the background)
+function view(depth = 1) {
+  const z = 1 + (cam.vz - 1) * depth;
+  ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.translate(-(W / 2 + (cam.vx - W / 2) * depth), -(H / 2 + (cam.vy - H / 2) * depth));
+}
+
+// ---------- player ----------
+const G = 2300, RUN = 440, DASH = 600, WALK = 190, CRAWL = 110, JUMP = 930, HOP = 640, AIRJUMP = 820;
+const TURN_SPEED = 1.4; // turnaround plays this much faster than a plain brake
+// attack feel: presses are remembered for BUFFER frames; the last CANCEL share of a move's recovery can be cut short by any input;
+// a move that connects recovers in HIT_REC of the time (and can jump out right away)
+const BUFFER = 8, CANCEL = 0.4, HIT_REC = 0.6, ATK_FRICTION = 1400;
+const TILT_MS = 150; // forward tilt needs ← / → pressed within this long of light; a direction you're just holding (walking) still jabs
+const ATTACK_FROM = ['idle', 'walk', 'dash', 'run', 'skid', 'crouch', 'crouchWalk', 'crouchUp', 'land', 'shield'];
+// shield: holding it wears it down, letting go lets it grow back; blocking a hit costs a chunk. Emptied = it breaks (stun), and comes back at SHIELD_MIN
+const SHIELD_DRAIN = 1 / 240, SHIELD_REGEN = 1 / 360, SHIELD_HIT = 0.3, SHIELD_MIN = 0.3;
+let p1 = null, fighter, M = MOVESET.movement; // P1's pick (null = not yet), the fighter in play (FIGHTER, set on the vs screen), its movement
+const has = group => !!fighter.set[group];
+const AIR_JUMPS = () => fighter.jumps || 1;
+const JABS = ['jab1', 'jab2', 'jab3'];
+const NO_KB = { base: 0, growth: 0, angle: 0 }; // damage only: the target stays put
+const THROWS = ['forwardThrow', 'backThrow', 'upThrow', 'downThrow']; // holding the bag: hold / pummel / throws
+const DODGES = ['spotDodge', 'rollForward', 'rollBack'];
+// the fighter in play's moves, by group: its own, with any it hasn't made yet borrowed from Claw'd's (has() still switches whole groups off)
+// SP = its specials by direction · FLY = rocket-style specials by state (the flight, and its charge: state + 'Charge')
+let L, GR, SP, DOWN_B, ATK, AIR, NEUTRAL_B, US, MOVES, FLY, R, D, AD, SB;
+function loadMoves(set) {
+  const S = g => ({ ...MOVESET[g], ...set[g] });
+  L = S('ledge'); GR = S('grabs'); R = S('reactions'); D = S('defense'); AD = D.airDodge; SB = D.shieldBreak;
+  SP = S('specials'); NEUTRAL_B = SP.neutralSpecial; US = SP.upSpecial; // US = MCP tether: its own state, runs off P.teth
+  DOWN_B = SP.downSpecial; // the subagent (sub), if it has one
+  ATK = { ...S('groundAttacks'), ...S('smashAttacks'), grab: GR.grab, dashGrab: GR.dashGrab }; AIR = { ...S('aerials') }; // attack states are named after their move
+  // specials are usable on the ground and in the air, so they live in both maps, as their own states (m.state, else the move's name,
+  // e.g. Grok's extra neuralZap, Lego Man's booklet builds). Not Claw'd's held think or MCP tether (no startup / a reach: wired in by hand), nor ones with their
+  // own step: flights (they steer themselves), warps (Android's Maps pin, off P.warp), held charges (Android's fast charge, off P.batt)
+  FLY = {}; const own = {};
+  for (const [k, m] of Object.entries(SP)) {
+    const st = m.state || k;
+    if (m.flight) FLY[st] = FLY[st + 'Charge'] = own[st] = m;
+    else if (m.warp || m.charge || (m.startup == null && m.state)) own[st] = m; // (+ Lego Man's booklet: it runs itself, bookletStep)
+    else if (m.startup != null && m.reach == null) { AIR[st] = m; if (!m.thrust) ATK[st] = m; } // a climb (Lego Man's staircase) is air-only: it hops off first
+  }
+  MOVES = { ...ATK, ...AIR, ...own, ledgeAttack: L.ledgeAttack, pummel: GR.pummel, ...Object.fromEntries(THROWS.map(k => [k, GR[k]])) };
+  if (!(NEUTRAL_B.state || 'neutralSpecial' in MOVES)) MOVES.neutralSpecial = NEUTRAL_B; // Claw'd's think: animated, no hitbox
+}
+loadMoves(MOVESET);
+const think = () => { // resume from the last checkpoint reached · Duo's heart zap spends a heart (P.roll = hearts it had before)
+  if (NEUTRAL_B.hearts) { P.roll = P.hearts; P.hearts = Math.max(0, P.hearts - 1); return setState('neutralSpecial'); }
+  setState('neutralSpecial'); P.f = thinkFrom(P.think);
+};
+const RESPAWN_Y = 100; // respawn platform: where it stops (top of Claw'd's box)
+// dodges and the ledge roll list intangible = [first, last) frames where nothing can hurt Claw'd
+const intangible = () => { if (P.state === 'tunnel') return true; const it = (L[P.state] || D[P.state] || R[P.state] || MOVES[P.state])?.intangible; return !!it && P.f >= it[0] && P.f < it[1]; };
+// the fighter in play (see newFighter): x, y, w, h = collision box (Claw'd's: body + legs, the arm nubs overhang it) · batt = Android's
+// stored fast charge 0 … 1 (spent on its next hit) · think = neutral special effort tier reached (0 … 3), kept until KO
+let P;
+const GROUNDED = ['idle', 'walk', 'dash', 'run', 'skid', 'crouch', 'crouchWalk', 'crouchUp', 'squat', 'land', 'landLag', 'shield', 'shieldDrop', 'knockdown', 'getup', 'tech', 'hold', 'pummel', ...THROWS, ...DODGES, ...Object.keys(ATK).filter(k => !(k in AIR))];
+const STOCKS = 3; let stocks = STOCKS;
+const fx = []; // dust clouds left in the world: { x, y, dir, t }
+let shots = []; // thrown sparks in flight: { x, y, vx, t, m }
+let nelly = null; // Wumpus's side special: Nelly the snail { x, y, w, h, vx, vy, face, t, ground, on, N = her move data }
+let wreck = null; // a rocket-style up special's ship once the rider's off it: { x, y (its middle), vx, vy, t, m, boom = 0 … 1 once it's blowing up }
+let cart = null; // a ride special's vehicle (Grok's Cybertruck), Steve minecart style: { x, y, w, h, vx, vy, face, t, ground, on, m = the move, dist = px driven, bag = target scooped into it, bagT, done }
+let thrown = null; // Lego Man's head while it's off, flying (side special): { x, y, vx, dir, back, sp, t, rot, face, hit, T }
+let rockets = [], booms = []; // Lego Man's rockets in flight { x, y, v, dir, t, L } and their blasts { x, y, t, r }
+let bricks = []; // Lego Man's loose bricks: boxes that tumble out and lie on the floor, hurting whoever touches one: { x, y, w, h, vx, vy, rot, spin, col, dir, t, m }
+let sub = null; // the down special's subagent: a half-size Claw'd box { x, y, w, h, vx, vy, face, t, ground, on, done = seconds since it reported back }
+// every fighter: name, collision box [w, h], art = its draw function (bottom-centre x, y, pose, facing), set = its moveset: a group it
+// doesn't have yet (attacks, specials, grabs, defense, ledge) is simply off for it · jumps = air jumps · flap = air jump speed ·
+// glide = max fall speed holding jump · pad = draws its own respawn platform (pose.pad). draw = standing, idling (t = seconds): dummies, portraits, the select and vs screens
+const FIGHTER = {
+  clawd: { name: "Claw'd", box: [60, 50], art: drawClawd, set: MOVESET },
+  grok: { name: 'Grok Bot', box: [52, 56], art: drawGrok, set: GROK_MOVESET },
+  wumpus: { name: 'Wumpus', box: [50, 64], art: drawWumpus, set: WUMPUS_MOVESET },
+  android: { name: 'Android', box: [50, 64], art: drawAndroid, set: ANDROID_MOVESET },
+  duo: { name: 'Duo', box: [60, 61], art: drawDuo, set: DUO_MOVESET, jumps: 5, flap: 620, glide: 170 }, // flies like Kirby / Meta Knight
+  snoo: { name: 'Snoo', box: [46, 76], art: drawSnoo, set: SNOO_MOVESET },
+  lego: { name: 'Lego Man', box: [44, 72], art: drawLego, set: LEGO_MOVESET, pad: true },
+  muse: { name: 'Muse', box: [50, 70], art: drawMuse, set: MUSE_MOVESET },
+  snoopy: { name: 'Snoopy', box: [46, 78], art: drawSnoopy, set: SNOOPY_MOVESET, tile: { k: 1.1, x: -8 } }, // tile: his select tile portrait smaller and back a bit (his big head and nose)
+  bag: { name: 'Training Bag', box: [44, 76], draw: (x, y, p) => drawSack(x, y, p.rot || 0) },
+  random: { name: 'Random', box: [60, 60], draw: (x, y, p, f, t) => { ctx.save(); ctx.translate(x, y - 32); drawQuestion(48, t); ctx.restore(); } }, // a pick not rolled yet
+};
+const ROSTER = ['clawd', 'grok', 'wumpus', 'android', 'duo', 'snoo', 'lego', 'muse', 'snoopy']; // select screen order (LOGOS follows it)
+ROSTER.forEach((id, k) => FIGHTER[id].draw = (x, y, p, f, t) => FIGHTER[id].art(x, y, { ...idleAt(t, k), ...p }, f)); // each a little out of step
+fighter = FIGHTER.clawd;
+// in play: P1 and the CPUs picked on the select screen (fighters, below), or the training bag if none. The CPUs fight back (src/cpu.js
+// plays them) with STOCKS lives each; the bag just takes hits and knockback, and drops back in where it started when it leaves the blast zone
+const BAG_SPAWN = { vx: 0, vy: 0, dmg: 0, hitT: 0, rot: 0, grabbed: false, pinned: false, carted: false, sticker: null, pinT: 0, slowT: 0 }; // what anyone who can be hit carries: grabbed = the P holding it in its claws · pinned = the P whose up special's cord it's on the end of · pinT = s left stuck under a move's pin (Wumpus) · slowT = s left in slowmode
+const SPAWN_X = [822, 435, 1000]; // centres the CPUs drop in at: the first where the bag always did, the others to either side
+let bags = [], foes = [], cpus = [], lvls = [], sides = [], rolled = [], targets = [], mode = 'ffa'; // cpus = fighter ids picked as enemies ('random' until the vs screen rolls them into rolled), lvls = their levels (indexes into LVL / CPU_LEVELS: 0 beginner … 3 medium … 6 AI trained) · foes = the CPUs' fighters, kept for the hud once out of lives · targets = who the fighter in play can hit · mode = 'teams' (sides: each CPU with you, 0, or against you, 1) or 'ffa' (everyone for themselves)
+function spawnTarget(b) { Object.assign(b, BAG_SPAWN, { x: b.home - b.w / 2, y: -120, ground: false, on: null }); }
+const heldBag = () => targets.find(b => b.grabbed === P);
+const KB = 10; // knockback units → px/s
+
+let keys = {}, jumpQ = false, downQ = false, dropQ = false, ffQ = false, dashQ = false, attackQ = false, heavyQ = false, specialQ = false, dodgeQ = false, grabQ = 0, techQ = 0, techLock = 0, sideQ = false, lastTap = { a: null, t: 0 }, lastDir = 0, pressT = {}, attackT = -1e9, tiltQ = false;
+// the engine plays one fighter through its globals: P, its moves, its controls (above) and what it has out. Every fighter in play keeps
+// its own set of them (a context, c), and use(c) swaps c's in, stashing the ones that were in. P1's are in between frames, so key
+// presses always land on P1's controls. c.P.c = c; a CPU's context also has its brain (src/cpu.js)
+let fighters = [], human = null, cur = null; // fighters = P1's context, then the CPUs' still in the fight · cur = whose are in now
+const stash = c => Object.assign(c, { P, fighter, M, L, GR, SP, DOWN_B, ATK, AIR, NEUTRAL_B, US, MOVES, FLY, R, D, AD, SB, stocks, keys, jumpQ, downQ, dropQ, ffQ, dashQ, attackQ, heavyQ, specialQ, dodgeQ, grabQ, techQ, techLock, sideQ, lastTap, lastDir, pressT, attackT, tiltQ, sub, cart, wreck, nelly, thrown, shots, rockets, booms, bricks, targets });
+function use(c) {
+  if (c === cur) return;
+  if (cur) stash(cur);
+  ({ P, fighter, M, L, GR, SP, DOWN_B, ATK, AIR, NEUTRAL_B, US, MOVES, FLY, R, D, AD, SB, stocks, keys, jumpQ, downQ, dropQ, ffQ, dashQ, attackQ, heavyQ, specialQ, dodgeQ, grabQ, techQ, techLock, sideQ, lastTap, lastDir, pressT, attackT, tiltQ, sub, cart, wreck, nelly, thrown, shots, rockets, booms, bricks, targets } = cur = c);
+}
+// a fighter's context, fresh: its moves, STOCKS lives, P standing in the air with its feet at x, y (facing the middle), no controls held,
+// nothing out. Its globals are the ones in play after
+function newFighter(f, x, y) {
+  if (cur) stash(cur);
+  fighter = f; M = f.set.movement; loadMoves(f.set); stocks = STOCKS;
+  const [w, h] = f.box;
+  P = { ...BAG_SPAWN, x: x - w / 2, y: y - h, w, h, ground: false, on: null, jumps: 1, face: x > W / 2 ? -1 : 1, drop: 0, inv: 0, state: 'air', f: 0, fastFall: false, ledge: 0, regrab: 0, shield: 1, think: 0, batt: 0,
+    hearts: NEUTRAL_B.hearts || 0, toastT: null, studs: NEUTRAL_B.studs?.start ?? 0, gold: 0, mech: 0, stairs: false, warn: null, streak: 0, buff: 0, struck: new Map() }; // Lego Man: studs to spend on builds, the gold brick's and mech suit's time left · Duo: its streak meter (0 … 1), buff time left · struck = who the attack it's doing has hit (with which hit)
+  keys = {}; jumpQ = downQ = dropQ = ffQ = dashQ = attackQ = heavyQ = specialQ = dodgeQ = sideQ = tiltQ = false; grabQ = techQ = techLock = lastDir = 0; lastTap = { a: null, t: 0 }; pressT = {}; attackT = -1e9;
+  sub = cart = wreck = nelly = thrown = null; shots = []; rockets = []; booms = []; bricks = []; targets = [];
+  cur = P.c = {}; stash(cur); return cur;
+}
+const everyone = () => [...fighters.map(c => c.P), ...bags], inPlay = () => everyone().filter(p => p.state !== 'ko'); // anyone who can be hit · what the camera frames
+restart(); // Claw'd and the bag, behind the home screen
+// key bindings: two sets, both live at once, changed on the controls screen and kept in the 'keys' cookie (a slot can be
+// empty: null). Brawlhalla-style light / heavy: J K (WASD) · C X (arrows); special L / V; grab I / G; dodge (held on the ground: shield, like Smash) Shift / Z
+const ACTIONS = ['left', 'right', 'up', 'down', 'jump', 'attack', 'heavy', 'special', 'grab', 'dodge'];
+const DEFAULT_BINDS = [
+  { left: 'KeyA', right: 'KeyD', up: 'KeyW', down: 'KeyS', jump: 'Space', attack: 'KeyJ', heavy: 'KeyK', special: 'KeyL', grab: 'KeyI', dodge: 'ShiftLeft' },
+  { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', jump: 'Space', attack: 'KeyC', heavy: 'KeyX', special: 'KeyV', grab: 'KeyG', dodge: 'KeyZ' }];
+const MENU_NAV = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }; // menus always take the arrows, whatever they're bound to
+let binds, KEYMAP; // KEYMAP = key code → action
+function setBinds(b, save) { // b's slots (anything missing or not a key code: the default), then KEYMAP from them
+  binds = DEFAULT_BINDS.map((d, s) => Object.fromEntries(ACTIONS.map(a => { const k = b?.[s]?.[a]; return [a, typeof k === 'string' || k === null ? k : d[a]]; })));
+  KEYMAP = {}; for (const set of binds) for (const a of ACTIONS) if (set[a]) KEYMAP[set[a]] ??= a;
+  if (save) document.cookie = `keys=${encodeURIComponent(JSON.stringify(binds))}; max-age=31536000; path=/; SameSite=Lax`;
+}
+try { setBinds(JSON.parse(decodeURIComponent(document.cookie.match(/(?:^|; )keys=([^;]*)/)?.[1] ?? 'null'))); } catch { setBinds(); }
+function bindKey(a, s, code) { binds.forEach(set => { for (const b of ACTIONS) if (set[b] === code && b !== a) set[b] = null; }); binds[s][a] = code; setBinds(binds, true); } // a key does one thing: it leaves any other action it was on
+const KEY_NAMES = { ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', ShiftLeft: 'Shift', ShiftRight: 'R Shift', ControlLeft: 'Ctrl', ControlRight: 'R Ctrl', AltLeft: 'Alt', AltRight: 'R Alt', MetaLeft: 'Cmd', MetaRight: 'R Cmd' };
+const keyName = c => c ? KEY_NAMES[c] ?? c.replace(/^(Key|Digit)/, '') : '—';
+// ---------- pause menu ----------
+const MENU = ['resume', 'controls', 'sound', 'music', 'restart', 'quit'], HOME_MENU = ['play', 'characters', 'controls', 'sound', 'music'];
+let paused = true, sel = 0, showControls = false, keyEdit = null, over = false, home = true, picking = false, vsT = null, menu = HOME_MENU; // boots to the home screen · picking = character select (after play) · vsT = when the vs screen started (after picking)
+function setPaused(on) {
+  paused = on; sel = 0; showControls = false; keyEdit = null; over = false; home = false; picking = false; vsT = null; menu = MENU;
+  for (const k in keys) keys[k] = false; jumpQ = downQ = dropQ = ffQ = dashQ = attackQ = heavyQ = specialQ = dodgeQ = grabQ = techQ = techLock = false;
+}
+function gameOver(won) { setPaused(true); over = won ? 'win' : 'lose'; menu = ['restart', 'quit']; sfx.play(won ? 'win' : 'lose'); }
+function goHome() { restart(); setPaused(true); home = true; menu = HOME_MENU; }
+function restart() {
+  Object.assign(cam, camHome());
+  fx.length = 0;
+  for (let i = plats.length - 1; i >= 0; i--) if (plats[i].lego) plats.splice(i, 1); // Lego Man's stairs
+  cur = null; human = Object.assign(newFighter(fighter, W / 2, 430), { team: 0 }); // P1 in the middle, the CPUs dropping in
+  foes = rolled.map((id, i) => Object.assign(newFighter(FIGHTER[id], SPAWN_X[i], FIGHTER[id].box[1] - 120 - i * 70), { brain: cpuBrain(lvls[i] ?? 3), team: mode === 'ffa' ? i + 1 : sides[i] ?? 1 }));
+  if (foes.length && foes.every(c => !c.team)) foes.at(-1).team = 1; // teams with everyone on yours: the last CPU's against you anyway
+  fighters = [human, ...foes];
+  bags = rolled.length ? [] : [{ id: 'bag', w: FIGHTER.bag.box[0], h: FIGHTER.bag.box[1], home: SPAWN_X[0] }]; bags.forEach(spawnTarget);
+  use(human);
+}
+function fight() { restart(); setPaused(false); sfx.play('go'); } // leaves the vs screen
+// character picked: the vs screen, then the fight. Random picks are rolled here, so the select screen never shows who they'll be
+const rollPick = id => id === 'random' ? ROSTER[Math.floor(Math.random() * ROSTER.length)] : id;
+function versus() { sfx.play('vs'); picking = false; vsT = performance.now(); fighter = FIGHTER[rollPick(p1)]; rolled = cpus.map(rollPick); M = fighter.set.movement; loadMoves(fighter.set); [P.w, P.h] = fighter.box; }
+// B pressed: the special for the held direction. Claw'd's tether and think and Android's warp are wired in by hand; anything else is its
+// own move, usable on the ground and in the air. oncePerAir moves (and rolls, dash) can't be used again until it lands; a held charge
+// (charge) is ground only; a ride waits until the last one is gone; a zap (Grok's Neuralink) goes off instead while its chip is planted.
+// Lego Man's: the head boomerang waits for his head (toss); the staircase
+// (step) and booklet (builds) need studs
+function special(dir) {
+  specialQ = 0;
+  const k = keys.up ? 'upSpecial' : keys.down ? 'downSpecial' : dir ? 'sideSpecial' : 'neutralSpecial', m = SP[k];
+  if ((m.ride && cart) || (m.charge && !P.ground) || ((m.oncePerAir || m.dash) && !P.ground && P.usedB?.[k])) return;
+  if (!P.ground) (P.usedB ||= {})[k] = true;
+  if (k === 'upSpecial' && m.warp) return warpUp(dir); // Android's Maps pin
+  if (k === 'upSpecial' && m.reach != null) return tetherUp(dir); // Claw'd's MCP tether
+  if (m.toss && thrown) return; // one head: not again till it's back
+  if (m.step) { if (P.studs < 1) return warn('no studs!'); if (P.stairs) return; } // the staircase: once, till he's back on the stage or a normal platform
+  if (m.streak && (P.buff > 0 || P.streak < 1)) return P.buff > 0 ? undefined : warn('streak not full', drawStreakIcon); // Duo's streak mode: needs a full meter
+  if (m.builds && P.studs < Math.min(...m.builds.map(b => MOVES[b].cost))) return warn('not enough studs'); // can't afford any build: the booklet stays shut
+  if (dir) P.face = dir; P.held = true; P.chg = 0; // held: a charge / a roll (B) keeps going while B is held (see chargeKey)
+  const pick = m.projectile?.pick || m.pick; P.roll = pick ? Math.floor(Math.random() * pick.length) : null; // a random outcome: I'm Feeling Lucky's app, what Muse imagines
+  if (m.dash && !P.ground) P.vy = Math.min(P.vy, -m.dash.pop); // an air roll pops up a little
+  if (k === 'neutralSpecial' && (m.hearts || (m.startup == null && !m.state))) return think(); // Claw'd's held think / Duo's heart zap
+  if (m.step) { // the first step's stud; the new staircase replaces the old
+    P.stairs = true; P.studs--; for (let i = plats.length - 1; i >= 0; i--) if (plats[i].lego === 'step' && plats[i].by === P) plats.splice(i, 1);
+    Object.assign(P, { ground: false, on: null, fastFall: false, vy: Math.min(P.vy, -m.hop) });
+  }
+  if (m.builds) P.bk = { i: P.bk?.i || 0, u: !!keys.up, d: !!keys.down }; // the last pick is remembered
+  if (m.flight) { P.fastFall = false; P.aim = 0; return setState(m.state + 'Charge'); }
+  setState(m.zap && targets.some(b => b.sticker?.chip) ? m.zap : m.state || k);
+}
+// Lego Man's brick moves spend a stud per brick they build, as many as he has: m.bricks = [least, more at full charge]. P.nb = the
+// bricks this one builds, counted while it charges and fixed once it comes out. sizeOf = how big a charged move comes out (0 … 1;
+// for his brick moves, by the bricks he could afford)
+const bricksOf = m => Math.max(0, Math.min(m.bricks[0] + Math.round(m.bricks[1] * P.chg / m.chargeFrames), P.studs));
+const sizeOf = m => m.bricks ? (P.nb - m.bricks[0]) / m.bricks[1] : m.chargeFrames ? P.chg / m.chargeFrames : 0;
+// Lego Man tried to build without the studs: the move doesn't happen, a warning pops up over his head for WARN_T seconds instead
+const WARN_T = 1.2, warn = (text, icon) => { P.warn = { text, t: 0, icon }; }; // (icon: see drawLegoWarn)
+// the booklet's open: ↑ ↓ move the pick (a fresh press each), special / light builds it if he has the studs (else it shuts, with a
+// warning), shield / dodge / jump puts it away
+function bookletStep() {
+  const B = MOVES.booklet, k = P.bk, n = B.builds.length;
+  k.i = (k.i + n + (keys.down && !k.d ? 1 : 0) - (keys.up && !k.u ? 1 : 0)) % n; k.u = !!keys.up; k.d = !!keys.down;
+  if (!P.ground) P.vy = Math.min(P.vy, B.fall); // pages slow the fall
+  if (P.f >= B.open && (specialQ || attackQ)) { specialQ = attackQ = 0; const b = MOVES[B.builds[k.i]]; if (P.studs >= b.cost) { P.studs -= b.cost; setState(B.builds[k.i]); } else { warn('not enough studs'); setState(P.ground ? 'idle' : 'air'); } }
+  else if (dodgeQ || jumpQ || keys.dodge) { dodgeQ = jumpQ = 0; setState(P.ground ? 'idle' : 'air'); }
+}
+// the booklet's builds, on their release frame: fire the rocket, or switch on the gold brick / the mech suit (the wrecking ball is just a hit)
+function legoBuild(m) {
+  if (m.fire) { const L = m.fire; rockets.push({ x: P.x + P.w / 2 + P.face * L.x, y: P.y + P.h + L.y, v: L.speed[0], dir: P.face, t: 0, L }); }
+  if (m.power) P.gold = m.power.time;
+  if (m.suit) { P.mech = m.suit.time; mechFit(true); }
+}
+// in the mech suit his box is MECH_K times his own, grown round his feet; back to his own size when it pops off in a shower of bricks
+function mechFit(on) { const [w, h] = fighter.box, k = on ? MECH_K : 1; P.x += (P.w - w * k) / 2; P.y += P.h - h * k; P.w = w * k; P.h = h * k; }
+function popMech() { P.mech = 0; mechFit(false); booms.push({ x: P.x + P.w / 2, y: P.y + P.h / 2, t: 0, r: 50 }); puff(); sfx.play('boom'); }
+function choose(i) {
+  if (menu[i] === 'controls') { showControls = true; keyEdit = { r: 0, c: 0, wait: false }; } // keyEdit = the slot picked, wait = for its new key
+  else if (menu[i] === 'sound') sfx.toggle();
+  else if (menu[i] === 'music') sfx.musicStep(1, true); // up a notch, 100 % → off
+  else if (menu[i] === 'quit') goHome();
+  else if (menu[i] === 'characters') location.href = 'pages/moves.html'; // storyboard of every move
+  else if (menu[i] === 'play') { picking = true; p1 = null; cpus = []; lvls = []; sides = []; focus = 0; onBand = false; } // character select first, from scratch
+  else { if (menu[i] !== 'resume') restart(); setPaused(false); } // play / restart start fresh
+}
+addEventListener('keydown', e => {
+  if (e.code === 'Escape') { e.preventDefault(); sfx.play('back'); if (keyEdit?.wait) keyEdit.wait = false; else if (showControls) showControls = false; else if (vsT != null) { vsT = null; picking = true; } else if (picking) picking = false; else if (!over && !home) setPaused(!paused); return; }
+  if (paused) {
+    const a = MENU_NAV[e.code] ?? KEYMAP[e.code], ok = e.code === 'Enter' || e.code === 'Space';
+    if (keyEdit?.wait) { bindKey(ACTIONS[keyEdit.r], keyEdit.c, e.code); keyEdit.wait = false; } // the key pressed for the slot waiting on one
+    else if (showControls) { // ↑ ↓ ← → move between the slots (and reset below them), Enter / Space change one
+      if (a === 'up' || a === 'down') keyEdit.r = (keyEdit.r + (a === 'up' ? ACTIONS.length : 1)) % (ACTIONS.length + 1);
+      else if (a === 'left' || a === 'right') keyEdit.c ^= 1;
+      else if (ok) keyEdit.r === ACTIONS.length ? setBinds(DEFAULT_BINDS, true) : keyEdit.wait = true;
+      else return;
+    }
+    else if (vsT != null) { if (ok) fight(); else return; } // skip ahead
+    else if (picking) { if (!pickKey(e.code, a)) return; }
+    else if (menu[sel] === 'music' && (a === 'left' || a === 'right')) sfx.musicStep(a === 'right' ? 1 : -1); // its volume
+    else if (a === 'up') sel = (sel + menu.length - 1) % menu.length;
+    else if (a === 'down') sel = (sel + 1) % menu.length;
+    else if (ok) choose(sel);
+    else return;
+    sfx.play(ok ? 'select' : 'tick'); e.preventDefault(); return;
+  }
+  const a = KEYMAP[e.code]; if (!a) return;
+  e.preventDefault();
+  if (!keys[a]) {
+    if (P.state === 'shieldBreak') P.f += 3; // mash out of the stun
+    if (a === 'jump') jumpQ = BUFFER; // jump / attack / heavy stay queued for a few frames (see BUFFER)
+    if (a === 'down') { downQ = true; if (lastTap.a === a && e.timeStamp - lastTap.t < 200) ffQ = true; pressT[a] = e.timeStamp; } // double-tap = fast fall, so ↓ can aim a down air freely
+    if (a === 'attack') { attackQ = BUFFER; attackT = e.timeStamp; tiltQ = (keys.left || keys.right) && e.timeStamp - Math.max(pressT.left || 0, pressT.right || 0) < TILT_MS; }
+    if (a === 'heavy') heavyQ = BUFFER;
+    if (a === 'special') specialQ = BUFFER;
+    if (a === 'dodge') dodgeQ = BUFFER;
+    if (a === 'grab') grabQ = BUFFER;
+    if (a === 'dodge' && P.state === 'tumble' && !techLock) { techQ = R.tech.window; techLock = R.tech.lockout; } // teches a tumble that hits the ground within window frames
+    if (a === 'left' || a === 'right') { // dash = a quick tap, then the same direction again right after (see keyup)
+      lastDir = a === 'left' ? -1 : 1; sideQ = true; // fresh ← / → press (rolls out of shield)
+      if (lastTap.a === a && e.timeStamp - lastTap.t < 200) dashQ = true;
+      pressT[a] = e.timeStamp;
+      if (e.timeStamp - attackT < TILT_MS) tiltQ = true; // direction landed just after light: still a tilt
+    }
+  }
+  keys[a] = true;
+});
+addEventListener('keyup', e => {
+  const a = KEYMAP[e.code]; if (!a) return;
+  keys[a] = false;
+  // only a short tap (< 150ms held) can start a dash / fast fall / platform drop (Smash's flick), so a held direction just walks / crouches
+  if (a === 'down' && e.timeStamp - pressT.down < 400) dropQ = true; // a bit longer than the dash / fast fall tap
+  if (a === 'left' || a === 'right' || a === 'down') lastTap = e.timeStamp - pressT[a] < 150 ? { a, t: e.timeStamp } : { a: null, t: 0 };
+});
+addEventListener('blur', () => { if (!over && !home) setPaused(true); });
+// mouse: hover highlights, click picks (items drawn in drawPause)
+const at = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; };
+function menuAt(e) {
+  const [x, y] = at(e), i = Math.floor((y - (menuY() - 34)) / MENU_DY);
+  return paused && !showControls && !picking && vsT == null && Math.abs(x - W / 2) < 120 && i >= 0 && i < menu.length ? i : -1;
+}
+cv.addEventListener('mousemove', e => {
+  const i = menuAt(e), p = picking && selectAt(...at(e)), k = paused && showControls && slotAt(...at(e)); if (i >= 0) sel = i;
+  if (k && !keyEdit.wait) Object.assign(keyEdit, k);
+  if (p?.tile != null) { focus = p.tile; onBand = false; } else if (p?.ready) onBand = true; // hover moves the keyboard focus too
+  cv.style.cursor = i >= 0 || p || k ? 'pointer' : '';
+});
+cv.addEventListener('click', e => {
+  if (paused) sfx.play('select');
+  if (paused && showControls) { // a click on a slot waits for its key, off them goes back
+    const k = slotAt(...at(e));
+    if (k?.r === ACTIONS.length) { keyEdit.r = k.r; setBinds(DEFAULT_BINDS, true); }
+    else if (k) Object.assign(keyEdit, k, { wait: true });
+    else if (keyEdit.wait) keyEdit.wait = false; else showControls = false;
+    return;
+  }
+  if (vsT != null) { fight(); return; }
+  if (picking) { // character select hot spots (drawn in drawSelect)
+    const p = selectAt(...at(e));
+    if (p?.back) picking = false; else if (p?.tile != null) pickTile(p.tile); else if (p?.p1) p1 = null; else if (p?.level) lvls[p.level[0]] = lvl = p.level[1]; else if (p?.mode) mode = mode === 'ffa' ? 'teams' : 'ffa'; else if (p?.side) sides[p.side - 1] ^= 1; else if (p?.slot) { cpus.splice(p.slot - 1, 1); lvls.splice(p.slot - 1, 1); sides.splice(p.slot - 1, 1); } else if (p?.ready && p1) { versus(); cv.style.cursor = ''; }
+    return;
+  }
+  const i = menuAt(e); if (i >= 0) { choose(i); if (!paused) cv.style.cursor = ''; }
+});
+
+const overlaps = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+const setState = s => { if (P.state !== s) { P.state = s; P.f = 0; sfx.enter(s); } };
+const dust = (dx, dir) => fx.push({ x: P.x + P.w / 2 + dx, y: P.y + P.h, dir, t: 0 });
+const puff = () => { dust(-26, -1); dust(26, 1); };
+
+function land(surface, wasGround) {
+  if (!wasGround) {
+    P.fastFall = false;
+    if (P.state === 'shieldBreak') puff(); // still stunned through the landing
+    else if (P.state === 'tumble' || (P.state === 'airDodge' && P.fromTumble && techQ)) { // tech (+ ← → tech roll), else slammed onto its back (dodging out of a tumble right before landing still techs)
+      const d = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+      if (techQ) { techQ = dodgeQ = 0; setState(d && has('defense') ? (d === P.face ? 'rollForward' : 'rollBack') : 'tech'); } else setState('knockdown');
+      puff();
+    }
+    else if (P.state === 'hitstun') {} // flinches through the landing
+    else if (P.state === 'upSpecial' && US.warp) {} // warped onto the floor: finishes the pop there
+    else if ((P.state in AIR && !AIR[P.state].keepOnLand) || ['airDodge', 'upSpecial', 'specialFall'].includes(P.state)) { P.lag = (AIR[P.state] || (P.state === 'airDodge' ? AD : US)).landingLag; setState('landLag'); puff(); } // landed mid-aerial / mid-dodge / helpless (keeps its slide)
+    else if (P.state === 'neutralSpecial' || P.state === 'booklet' || AIR[P.state]?.keepOnLand || (FLY[P.state] && P.state !== FLY[P.state].state)) {} // keeps thinking (charging) through the landing
+    else if (FLY[P.state]) { const m = FLY[P.state]; blowWreck(P.x + P.w / 2, P.y + P.h - m.wreck.mid, m); P.lag = m.landingLag; setState('landLag'); } // flew into the floor
+    else if (P.vy > 300) { setState('land'); puff(); } else setState('idle');
+  }
+  P.vy = 0; P.ground = true; P.on = surface; P.jumps = 2; P.airDodged = false; P.usedB = null; if (surface.lego !== 'step') P.stairs = false; // back on solid ground: stairs again
+}
+
+// ledges: falling past a stage corner (not holding down) catches it. While on it, the ledge moves' x / air place Claw'd
+// (measured from standing at the lip); P.ledge = which corner, -1 left / 1 right
+function grabLedge() {
+  if (!has('ledge') || P.regrab > 0 || keys.down || P.vy < 0 || !(['air', 'djump', 'upSpecial', 'specialFall'].includes(P.state) || (P.state === 'tumble' && P.f >= P.stun))) return;
+  for (const side of [-1, 1]) {
+    const lx = side < 0 ? stage.x : stage.x + stage.w, gap = side < 0 ? lx - (P.x + P.w) : P.x - lx;
+    if (gap >= 0 && gap < 24 && P.y > stage.y - 40 && P.y < stage.y + 16) {
+      if (P.mech > 0) popMech(); // too big to hang on: he climbs out and the suit falls apart
+      Object.assign(P, { ledge: side, face: -side, fastFall: false, jumps: AIR_JUMPS(), airDodged: false }); // catching refreshes the double jump
+      return setState('ledgeGrab');
+    }
+  }
+}
+function ledgeInput(dir) {
+  const s = P.state;
+  if (s === 'ledgeGrab' && P.f >= L.ledgeGrab.frames) setState('ledgeHang');
+  else if (s === 'ledgeHang') {
+    if (jumpQ) { jumpQ = 0; setState('ledgeJump'); }
+    else if (dodgeQ) { dodgeQ = 0; setState('ledgeRoll'); }
+    else if (attackQ || heavyQ) { attackQ = heavyQ = 0; setState('ledgeAttack'); }
+    else if (keys.up || dir === P.face) setState('ledgeGetup');
+    else if (keys.down || dir === -P.face) { P.ledge = 0; P.regrab = 0.4; setState('ledgeDrop'); }
+  }
+  else if (s === 'ledgeGetup' && P.f >= L.ledgeGetup.frames) { P.ledge = 0; P.ground = true; P.on = stage; P.jumps = 2; setState('idle'); }
+  else if (s === 'ledgeJump' && P.f >= L.ledgeJump.launchAt) { P.ledge = 0; P.regrab = 0.4; P.vy = -JUMP; P.jumps = AIR_JUMPS(); setState('air'); }
+  else if (s === 'ledgeRoll' && P.f >= L.ledgeRoll.frames) { P.ledge = 0; P.ground = true; P.on = stage; P.jumps = 2; setState('idle'); }
+  else if (s === 'ledgeAttack' && P.f >= L.ledgeAttack.startup + L.ledgeAttack.active + L.ledgeAttack.endlag) { P.ledge = 0; P.ground = true; P.on = stage; P.jumps = 2; setState('idle'); }
+  else if ((s === 'ledgeGetup' && P.f === 19) || (s === 'ledgeAttack' && P.f === 15) || (s === 'ledgeRoll' && P.f === 26)) puff(); // feet hit the stage
+}
+function ledgePlace() {
+  const p = clawdPose(), lx = P.ledge < 0 ? stage.x : stage.x + stage.w;
+  P.x = lx + P.face * (P.w / 2 + (p.x || 0)) - P.w / 2; P.y = stage.y + (p.air || 0) - P.h; P.vx = P.vy = 0;
+}
+
+// up special, warp (Android): drop a pin reach px up (up and ahead with ← →), blink to it on US.blink, pop, then helpless.
+// P.warp = [x, feet y] of the pin; one inside the stage goes up onto its top
+function warpUp(dir) {
+  if (dir) P.face = dir;
+  const [ax, ay] = dir ? [US.aim[0] * dir, US.aim[1]] : [0, -1], x = P.x + P.w / 2 + ax * US.reach;
+  let y = P.y + P.h + ay * US.reach;
+  if (x > stage.x - P.w / 2 && x < stage.x + stage.w + P.w / 2 && y > stage.y && y < stage.y + stage.h) y = stage.y;
+  P.warp = [x, y]; P.vx = P.vy = 0; P.fastFall = false; setState('upSpecial');
+}
+function warpStep() {
+  if (!P.ground) P.vy = 0; // hangs there (US.gravity just keeps it pressed to the floor if it's on one)
+  if (P.f === US.blink) Object.assign(P, { x: P.warp[0] - P.w / 2, y: P.warp[1] - P.h, vx: 0, vy: 0, ground: false, on: null });
+  if (P.f >= US.startup + US.active + US.endlag) { if (P.ground) { P.lag = US.landingLag; setState('landLag'); } else setState('specialFall'); }
+}
+
+// up special: fling the MCP cord. P.teth = { len px out, ang above level, side = ledge it's plugged into (0 = not yet), miss, hit }
+function tetherUp(dir) {
+  if (dir) P.face = dir; specialQ = 0;
+  P.teth = { len: 0, ang: (dir ? US.aim[1] : US.aim[0]) * Math.PI / 180, side: 0, miss: false, link: null }; // link = frames since the plug went into the bag
+  P.vy = Math.min(P.vy, -US.pop); P.vx *= 0.5; P.ground = false; P.on = null; P.fastFall = false; setState('upSpecial');
+}
+const hand = () => { const [hx, hy] = clawdHand(clawdPose(), P.face); return [P.x + P.w / 2 + hx, P.y + P.h + hy]; };
+function tetherStep(dt) {
+  const T = P.teth, [ax, ay] = hand();
+  if (T.side) { // plugged in: reel straight to hanging from that ledge (where ledgePlace would put a fresh grab)
+    const lx = T.side < 0 ? stage.x : stage.x + stage.w, g = L.ledgeGrab.anim(0);
+    const tx = lx - T.side * (P.w / 2 + g.x) - P.w / 2, ty = stage.y + g.air - P.h, dx = tx - P.x, dy = ty - P.y, d = Math.hypot(dx, dy), step = US.reel * dt;
+    P.vx = P.vy = 0;
+    if (d > step) { P.x += dx / d * step; P.y += dy / d * step; return; }
+    Object.assign(P, { x: tx, y: ty, ledge: T.side, face: -T.side, fastFall: false, jumps: AIR_JUMPS(), airDodged: false }); // catching refreshes the double jump
+    return setState('ledgeGrab');
+  }
+  if (T.link != null) return linkStep(T, ax, ay, dt);
+  if (P.f < US.startup) return;
+  if (T.miss) { if ((T.len = Math.max(0, T.len - US.reach / US.endlag)) === 0) { setState('specialFall'); Object.assign(P, { toastT: 0, toastMsg: 2, toastOk: false }); sfx.play('refused'); } return; } // pull it back, then helpless (+ the "connection refused" toast)
+  T.len = Math.min(US.reach, T.len + US.reach / US.active);
+  const tx = ax + P.face * Math.cos(T.ang) * T.len, ty = ay - Math.sin(T.ang) * T.len, wall = overlaps({ x: tx - 1, y: ty - 1, w: 2, h: 2 }, stage);
+  for (const side of [-1, 1]) { // a lip off to this side, within the cord and close enough to the aim, pulls the plug in (hitting the wall under it: any lip in reach)
+    const lx = side < 0 ? stage.x : stage.x + stage.w, a = Math.atan2(ay - stage.y, P.face * (lx - ax));
+    if (side * (P.x + P.w / 2 - lx) > 0 && Math.hypot(lx - ax, stage.y - ay) <= (wall ? US.reach : T.len) && (wall || Math.abs(a - T.ang) <= US.cone * Math.PI / 180)) { T.side = side; return; }
+  }
+  const b = targets.find(b => !b.grabbed && overlaps({ x: tx - 12, y: ty - 12, w: 24, h: 24 }, b));
+  if (b) { // plugged into a target: connected (see linkStep)
+    if (!hitBag(b, US.link.zapDmg, NO_KB, P.face)) { T.miss = true; return; } // shielded / countered: it doesn't take
+    T.link = 0; T.bag = b; T.at = [Math.min(b.w - 4, Math.max(4, tx - b.x)), Math.min(b.h - 8, Math.max(8, ty - b.y))]; b.pinned = P;
+    Object.assign(P, { toastT: 0, toastMsg: LINKED, toastOk: true }); sfx.play('linked'); return;
+  }
+  if (T.len >= US.reach || wall) T.miss = true; // nothing to plug into
+}
+
+// plugged into a target: zap it a few times through the cord, reel it in, blast it away. Claw'd hangs on the cord meanwhile and comes
+// out of it free (not helpless), popping up with its double jump back
+function linkStep(T, ax, ay, dt) {
+  const K = US.link, b = T.bag, px = b.x + T.at[0], py = b.y + T.at[1];
+  P.vx *= 0.9; P.vy = 0; b.vx = b.vy = 0;
+  if (++T.link <= (K.zaps - 1) * K.every) { if (T.link % K.every === 0) hitBag(b, K.zapDmg, NO_KB, P.face); return; }
+  const dx = ax - px, dy = ay - py, d = Math.hypot(dx, dy), step = K.reel * dt;
+  if (d > K.near + step && T.link < K.zaps * K.every + 40) { b.x += dx / d * step; b.y += dy / d * step; return; } // (gives up reeling after a bit)
+  b.pinned = false; hitBag(b, US.damage, US.kb, P.face);
+  Object.assign(P, { vy: -K.pop, jumps: Math.max(P.jumps, 1), airDodged: false }); setState('air');
+}
+
+// the shield ran out: the terminal shatters, Claw'd pops up and is left dizzy for SB.frames (each key press shakes off 3 frames)
+function breakShield() {
+  P.shield = 0; P.vy = -SB.pop; P.ground = false; P.on = null; setState('shieldBreak');
+  const msgs = SB.oops || OOPS; P.oopsMsg = msgs[Math.floor(Math.random() * msgs.length)]; // which error toast pops up over its head (the fighter's own, or Claw'd's)
+}
+
+// holding a target: light pummels, a direction throws; once P.holdT runs out it wriggles free and they're pushed apart. A fighter hangs
+// there flinching (hitstun that's over as soon as it's let go), off whatever it was doing
+function grabBag(b) {
+  sfx.enter('grabbed'); Object.assign(b, { grabbed: P, vx: 0, vy: 0, pings: 0 }); if (b.c) Object.assign(b, { state: 'hitstun', f: 0, stun: 1, ledge: 0, fastFall: false });
+  P.holdT = GR.hold.breakFree + GR.hold.perDmg * b.dmg; P.vx = 0; setState('hold');
+  P.ratio = GR.hold.ratio ? { replies: 0, likes: GR.hold.ratio.likes, ratiod: false, at: 0 } : null; // Grok's ratio meter (grabs.hold.ratio)
+}
+function holdStep(dir) {
+  const b = heldBag(); if (!b) return setState('idle');
+  if (--P.holdT <= 0) { Object.assign(b, { grabbed: false, vx: P.face * 300, vy: -250 }); P.vx = -P.face * 200; return setState('idle'); }
+  if (P.state === 'pummel') {
+    const m = GR.pummel;
+    if (P.f === m.startup) {
+      hitBag(b, m.damage, NO_KB, P.face); if (m.badge) b.pings++; // badge: count them up on it (Wumpus)
+      const r = P.ratio; // a reply; out-replied the likes: ratio'd
+      if (r && ++r.replies > r.likes && !r.ratiod) { r.ratiod = true; r.at = performance.now(); }
+    }
+    if (dir || keys.up || keys.down) P.throwQ = throwFor(dir); // a direction mid-pummel: throw as soon as it's done
+    if (P.f >= m.startup + m.active + m.endlag) { setState(P.throwQ || 'hold'); P.throwQ = null; }
+  }
+  else if (attackQ) { attackQ = 0; P.throwQ = null; setState('pummel'); }
+  else if (P.f >= 4 && (dir || keys.up || keys.down)) setState(throwFor(dir));
+}
+const throwFor = dir => keys.up ? 'upThrow' : keys.down ? 'downThrow' : dir === P.face ? 'forwardThrow' : 'backThrow';
+function throwStep() { // lets go on the startup frame
+  const m = GR[P.state], b = heldBag();
+  if (P.f === m.startup && b) {
+    const k = P.ratio?.ratiod ? GR.hold.ratio.mult : 1; // ratio'd: the throw hits harder, and the stamp stays on them a moment
+    b.grabbed = false; b.y = Math.min(b.y, P.y + P.h - b.h); hitBag(b, m.damage * k, { ...m.kb, base: m.kb.base * k, growth: m.kb.growth * k }, P.state === 'backThrow' ? -P.face : P.face);
+    if (k > 1) b.sticker = { t: 0, ...GR.hold.ratio.stamp };
+    P.ratio = null;
+  }
+  if (P.f >= m.startup + m.active + m.endlag) setState('idle');
+}
+
+// every hit on the fighter in play: damage, then launched away from the hit; knockback picks a flinch (hitstun) or a tumble.
+// A counter in its window turns it back; a raised shield takes it instead, wearing down by its damage (SHIELD_HIT per 12%) and breaking
+// if it runs out, sliding back a little. false = it didn't connect
+function hitClawd(dmg, kb, dir) {
+  const c = MOVES[P.state]; if (c?.counter && P.f >= c.startup && P.f < c.startup + c.active) { P.counterDir = dir; setState(c.counter); if (MOVES[c.counter].turn) P.face = -dir; return false; } // countered: the hit does nothing (turn: the follow-up faces whoever hit it, Snoopy's kickoff)
+  if (P.state === 'shield' && P.shield > 0) { sfx.play('block'); P.shield -= SHIELD_HIT * dmg / 12; P.vx = dir * (150 + 20 * dmg); if (P.shield <= 0) breakShield(); return false; }
+  hurt(dmg);
+  const k = (kb.base + kb.growth * P.dmg / 100) * (P.buff > 0 ? DOWN_B.streak.heavy : 1), a = kb.angle * Math.PI / 180; // buff Duo's heavy
+  P.vx = dir * k * KB * Math.cos(a); P.vy = -k * KB * Math.sin(a); camPunch(k, P.x + P.w / 2, P.y + P.h / 2); P.face = -dir; P.stun = Math.round(k * R.hitstun.perKb);
+  Object.assign(P, { ground: false, on: null, ledge: 0, fastFall: false, airDodged: false, grabbed: false, pinT: 0, state: k >= R.tumble.threshold ? 'tumble' : 'hitstun', f: 0 }); // a new hit restarts it; refreshes the air dodge; knocks it out of a grab or off a pin
+  return true;
+}
+
+// crossed the blast zone: leave a blast at the screen edge where it went out, pointing back in (the respawn follows)
+function ko() {
+  sfx.play('ko');
+  const [ex, ey] = (cur === human ? exitPoint() : onScreen()) || [W / 2, 0], x = clamp(ex, 30, W - 30), y = clamp(ey, 30, H - 30); // right where it left the screen, nudged in to show (a CPU: where it is)
+  P.ko = [x, y, Math.atan2(H / 2 - y, W / 2 - x)]; P.ledge = 0; thrown = null; for (const b of everyone()) { if (b.grabbed === P) b.grabbed = false; if (b.pinned === P) b.pinned = false; } P.vx = P.vy = 0; P.state = 'ko'; P.f = 0;
+}
+// back on the respawn platform (P1 in the middle, a CPU over where it dropped in), or out of lives: P1 loses, a CPU's out of the fight
+function respawn() {
+  if (--stocks <= 0) { if (cur === human) return gameOver(); cur.out = true; fighters = fighters.filter(c => !c.out); return; }
+  [P.w, P.h] = fighter.box; // out of the mech
+  Object.assign(P, { x: (cur === human ? W / 2 : clamp(SPAWN_X[foes.indexOf(cur)], stage.x + 120, stage.x + stage.w - 120)) - P.w / 2, y: RESPAWN_Y - 220, vx: 0, vy: 0, jumps: AIR_JUMPS(), inv: 0, fastFall: false, dmg: 0, hitT: 0, ledge: 0, airDodged: false, shield: 1, think: 0, batt: 0, hearts: NEUTRAL_B.hearts || 0, toastT: null, slowT: 0, sticker: null, stairs: false, gold: 0, mech: 0, streak: 0, buff: 0, lit: null }); // (a lost stock loses Duo's streak)
+  P.state = 'respawn'; P.f = 0; sfx.enter('respawn');
+}
+// on the respawn platform: lowered in, then any input (or waiting too long) drops Claw'd, flickering for a bit
+function respawnStep(dir) {
+  const k = Math.min(1, P.f / R.respawn.descend);
+  P.y = RESPAWN_Y - 220 * (1 - k) ** 3; P.vx = P.vy = 0;
+  if (P.f >= R.respawn.wait || (k === 1 && (dir || jumpQ || attackQ || heavyQ || specialQ || dodgeQ || keys.down))) { P.inv = 1.5; setState('air'); } // the press still acts, from the air
+}
+
+// brawlhalla-style damage: no number, the portrait goes white → yellow → orange → red → dark red
+function hurt(n) { P.dmg += n; P.hitT = 0.3; }
+const DMG = [[0, [242, 237, 226]], [60, [242, 207, 74]], [120, [236, 139, 54]], [180, [217, 68, 46]], [250, [110, 26, 20]]];
+function dmgColor(d) {
+  let i = 0; while (i < DMG.length - 2 && d > DMG[i + 1][0]) i++;
+  const [d0, a] = DMG[i], [d1, b] = DMG[i + 1], k = Math.min(1, (d - d0) / (d1 - d0));
+  return `rgb(${a.map((v, j) => Math.round(v + (b[j] - v) * k))})`;
+}
+
+// a frame: each fighter in turn, with what it has out (anyone can hit anyone not on its team, P1 the bag too; a CPU's brain works its
+// controls first), then the stage's things. Someone grabbed, on a cord, in a cart or pinned stays where that puts it; slowmode plays
+// every other frame
+let tick = 0;
+function update(dt) {
+  tick++;
+  for (const c of fighters) {
+    use(c);
+    targets = [...fighters.filter(o => o.team !== c.team && !o.P.safe).map(o => o.P), ...(c === human ? bags : [])];
+    if (P.pinT > 0 && (P.pinT -= dt) <= 0) [P.vx, P.vy] = P.pop; // pinned: stuck where it was hit, then popped free
+    if (P.grabbed || P.pinned || P.carted || P.pinT > 0 || (P.slowT > 0 && tick % 2)) {}
+    else if (P.state !== 'ko') { if (c.brain) cpuStep(c); stepPlayer(dt); }
+    else if (++P.f >= R.ko.frames - R.ko.blastAt) respawn(); // the blast plays out first
+    stepWorld(dt); wear(P, dt);
+    P.safe = P.state === 'ko' || P.state === 'respawn' || P.inv > 0 || intangible(); // nothing can touch it now
+  }
+  use(human);
+  for (let i = plats.length - 1; i >= 0; i--) if (plats[i].lego && (plats[i].t += dt) > plats[i].life) plats.splice(i, 1); // the stairs run out
+  for (const b of bags) {
+    b.hitT = Math.max(0, b.hitT - dt); wear(b, dt);
+    const tdt = b.slowT > 0 ? dt / 2 : dt; // slowmode: everything at half speed
+    if (b.pinT > 0) { if ((b.pinT -= dt) > 0) continue; [b.vx, b.vy] = b.pop; } // pinned: stuck where it was hit, then popped free
+    if (b.grabbed || b.pinned || b.carted) continue; // Claw'd (or its ride) places it
+    b.vy = Math.min(b.vy + G * tdt, 950);
+    b.vx -= Math.sign(b.vx) * Math.min(Math.abs(b.vx), (b.ground ? 1800 : 250) * tdt); // floor friction / air drag
+    move(b, tdt, s => { b.vy = 0; b.ground = true; b.on = s; });
+    b.rot = b.ground ? b.rot * 0.8 : b.rot + b.vx * tdt / 80; // tumbles while flying
+    if (out(b)) spawnTarget(b);
+  }
+  for (let i = fx.length - 1; i >= 0; i--) if ((fx[i].t += dt / (fx[i].dur || 0.25)) >= 1) fx.splice(i, 1);
+  if (foes.length && foes.every(c => c.out || c.team === human.team) && !over) gameOver(true); // last CPU against P1 out: P1's side wins (P1 out loses, ally or not)
+}
+// what's stuck on someone wears off: a sticker, slowmode
+function wear(b, dt) { if (b.sticker && (b.sticker.t += dt) > b.sticker.secs) b.sticker = null; b.slowT = Math.max(0, b.slowT - dt); }
+
+function stepPlayer(dt) {
+  P.f++;
+  if (P.toastT != null && ++P.toastT >= TOAST) P.toastT = null;
+  const dir = keys.left && keys.right ? lastDir : (keys.right ? 1 : 0) - (keys.left ? 1 : 0); // both held: newest wins
+  let s = P.state;
+  if (s === 'tunnel') return tunnelStep(dir, dt);
+  if (s === 'ride') { // in the vehicle: stepCart places it. Jump bails out with a hop, keeping the air jumps (the recovery)
+    if (jumpQ) { jumpQ = 0; P.vy = -AIRJUMP; P.fastFall = false; P.airDodged = false; P.ground = false; setState('air'); puff(); }
+    else if (!cart) setState(P.ground ? 'idle' : 'air');
+    if (out(P)) ko();
+    return;
+  }
+
+  const cm = MOVES[s];
+  if (cm?.chargeAt != null) { // smashes (and charge specials): holding the button freezes the wind-up at chargeAt, up to chargeFrames
+    P.held = P.held && keys[cm.chargeKey || cm.hold || 'heavy']; // the button held: chargeKey / hold (Grok's), heavy for smashes
+    if (P.held && P.f > cm.chargeAt && P.chg < cm.chargeFrames) { P.f = cm.chargeAt; P.chg++; }
+    if (cm.odds != null && P.roll == null && !P.held && P.f > cm.chargeAt) P.roll = Math.random() < cm.odds + (cm.oddsCharged - cm.odds) * P.chg / cm.chargeFrames; // let go: a gamble (Duo's pop quiz) comes up right or wrong, better odds the longer it charged
+  }
+  if (cm?.loop) { // a held stream (Muse's spark breath): frames loop[0] … loop[1] play over while hold is held, up to chargeFrames of it
+    P.held = P.held && keys[cm.hold]; // in all (P.chg, which also shrinks it: sizeOf); each pass can hit again
+    if (P.f >= cm.startup) P.chg++;
+    if (P.held && P.f >= cm.loop[1] && P.chg < cm.chargeFrames) { P.f = cm.loop[0]; P.struck.clear(); }
+  }
+  if (P.ground && s in ATK) { // locked in until the recovery can be cancelled
+    const m = ATK[s], i = JABS.indexOf(s), done = m.startup + m.active;
+    const rec = m.endlag * (P.landed ? HIT_REC : 1), end = done + rec;
+    if (m.burrow) { if (P.f >= end) burrowIn(m.burrow); } // drilled in: underground from here (no cancelling out of it)
+    else if (attackQ && i >= 0 && i < 2 && !tiltQ && !keys.up && !keys.down) { P.nextJab = true; attackQ = 0; } // light during a jab queues the next one (a held direction is fine); a fresh tilt input waits for the cancel window instead
+    if (m.burrow) {}
+    else if (P.nextJab && P.f >= done) { P.nextJab = false; setState(JABS[i + 1]); }
+    else if (P.f >= end || (P.f >= end - rec * CANCEL && (dir || jumpQ || attackQ || heavyQ || specialQ || dodgeQ || keys.down)) || (P.landed && P.f >= done && jumpQ)) {
+      if (keys.down) { P.state = 'crouch'; P.f = 5; } // still holding down: stay crouched
+      else setState(s === 'downTilt' ? 'crouchUp' : 'idle');
+      s = P.state; // free: fall through and act on this frame's input
+    }
+  }
+
+  const stunned = (s === 'hitstun' || s === 'tumble') && P.f < P.stun; // no control at all
+  if (s === 'respawn') respawnStep(dir);
+  else if (P.ledge) ledgeInput(dir);
+  else if (P.ground) {
+    if (s in ATK || FLY[s]) {}
+    else if (s === 'booklet') bookletStep();
+    else if (s === 'shieldBreak') { if (P.f >= SB.frames) { P.shield = Math.max(P.shield, SHIELD_MIN); setState('idle'); } } // dizzy: no control
+    else if (s === 'landLag') { if (P.f >= P.lag) setState('idle'); }
+    else if (s === 'hitstun') { if (!stunned) setState('idle'); }
+    else if (s === 'hold' || s === 'pummel') holdStep(dir);
+    else if (THROWS.includes(s)) throwStep();
+    else if (s === 'getup' || s === 'tech') { if (P.f >= R[s].frames) setState('idle'); }
+    else if (s === 'knockdown') { // lying there: any input gets up (← → rolls away instead), or it gets up by itself
+      if (P.f >= R.knockdown.frames || (P.f >= R.knockdown.bounce && (dir || keys.up || jumpQ || attackQ || heavyQ || specialQ || dodgeQ))) {
+        const atk = attackQ || heavyQ; jumpQ = attackQ = heavyQ = specialQ = dodgeQ = 0;
+        setState(atk && has('groundAttacks') ? 'getupAttack' : dir && has('defense') ? (dir === P.face ? 'rollForward' : 'rollBack') : 'getup');
+      }
+    }
+    else if (DODGES.includes(s)) { if (P.f >= D[s].frames) setState('idle'); }
+    else if (s === 'neutralSpecial') { if (!keys.special) setState('idle'); } // charges while held
+    else if (s === 'downSpecial' && DOWN_B.charge) { if (P.f >= DOWN_B.plugAt) P.batt = Math.min(1, P.batt + DOWN_B.charge); if (!keys.special || P.batt >= 1) setState('idle'); } // fast charge: fills while B is held
+    else if (s === 'upSpecial') warpStep(); // only a warp is ever on the ground
+    else if (s === 'shield' && P.shield <= 0) breakShield();
+    else if (s === 'shield' && !(attackQ || heavyQ || specialQ || jumpQ || grabQ)) { // holding up the terminal; attacks / jump come straight out of it below
+      if (downQ || (dodgeQ && !dir)) { dodgeQ = 0; setState('spotDodge'); }
+      else if ((sideQ || dodgeQ) && dir) { dodgeQ = 0; setState(dir === P.face ? 'rollForward' : 'rollBack'); }
+      else if (!keys.dodge) setState('shieldDrop');
+    }
+    else if (s === 'shieldDrop' && P.f < 7) {} // lowering it
+    else if ((grabQ || (s === 'shield' && attackQ)) && has('grabs') && ATTACK_FROM.includes(s) && !(s === 'land' && P.f < 4)) { // running = dash grab (keeps its slide) · shield + light = grab too (Smash)
+      grabQ = attackQ = 0; const dash = s === 'dash' || s === 'run'; if (dir && !dash) P.face = dir; setState(dash ? 'dashGrab' : 'grab');
+    }
+    else if (dodgeQ && (dir || keys.down || !fighter.set.defense?.shield) && has('defense') && ATTACK_FROM.includes(s) && s !== 'shield' && !(s === 'land' && P.f < 4)) { // dodge: + ← → = roll that way, + ↓ spot dodge, alone = shield (below)
+      dodgeQ = 0; setState(dir && !keys.down ? (dir === P.face ? 'rollForward' : 'rollBack') : 'spotDodge');
+    }
+    else if (heavyQ && has('smashAttacks') && ATTACK_FROM.includes(s) && !(s === 'land' && P.f < 4)) { // a smash it doesn't have yet: its side smash instead
+      const sm = fighter.set.smashAttacks, k = keys.up && sm.upSmash ? 'upSmash' : keys.down && sm.downSmash ? 'downSmash' : 'forwardSmash'; heavyQ = 0;
+      if (ATK[k].bricks && P.studs < 1) warn('no studs!'); // Lego Man can't build it
+      else { if (dir) P.face = dir; P.held = true; P.chg = 0; P.roll = null; setState(k); }
+    }
+    else if (specialQ && has('specials') && ATTACK_FROM.includes(s) && !(s === 'land' && P.f < 4)) special(dir);
+    else if (attackQ && has('groundAttacks') && ATTACK_FROM.includes(s) && !(s === 'land' && P.f < 4)) {
+      // light: up / down pick the tilt, moving fast = dash attack, a direction = forward tilt, else jab
+      const atk = keys.up ? 'upTilt' : keys.down ? 'downTilt' : s === 'dash' || s === 'run' ? 'dashAttack' : dir && tiltQ ? 'forwardTilt' : 'jab1';
+      if (dir && atk !== 'dashAttack') P.face = dir;
+      attackQ = 0; P.nextJab = false; setState(atk);
+    }
+    else if ((keys.dodge || dodgeQ) && fighter.set.defense?.shield && ATTACK_FROM.includes(s) && s !== 'shield' && !(s === 'land' && P.f < 4)) { dodgeQ = 0; setState('shield'); } // dodge held: raise it (also right after a roll, landing…)
+    else if (jumpQ && s !== 'squat') { jumpQ = 0; setState('squat'); }
+    else if (dropQ && P.on !== stage) { P.drop = 0.2; P.ground = false; P.y += 2; P.jumps = AIR_JUMPS(); setState('drop'); } // tapped ↓: through the platform
+    else if (s === 'squat') { // jump decided at the end of the squat: still holding = full hop, tapped = short hop
+      if (P.f >= 4) { P.vy = keys.jump ? -JUMP : -HOP; P.ground = false; P.jumps = AIR_JUMPS(); setState('air'); puff(); sfx.enter('jump'); }
+    }
+    else if (s === 'skid') { // braking slide; pressing the other way at any point turns it into a turnaround
+      if (dir === -P.face) P.turn = true;
+      P.sk += P.turn ? TURN_SPEED : 1; // skid animation progress
+      if (P.turn && P.sk >= 26) { P.face = -P.face; setState(dir === P.face ? 'run' : 'idle'); } // still holding the new way = keep running
+      else if (!P.turn && dir === P.face) setState('run');
+      else if (!P.turn && P.sk >= 16) setState('idle');
+    }
+    else if (keys.down) { // crouch (platforms too: only a tap drops through); add a direction to crawl once fully down
+      if (dir && (s === 'crouchWalk' || (s === 'crouch' && P.f >= 5))) { P.face = dir; setState('crouchWalk'); }
+      else if (!dir && s === 'crouchWalk') { P.state = 'crouch'; P.f = 5; } // back to the held crouch, skipping the squat-down
+      else if (s !== 'crouch') setState('crouch');
+    }
+    else if (s === 'crouch' || s === 'crouchWalk') setState('crouchUp');
+    else if ((s === 'land' && (P.f < 4 || (!dir && P.f < 15))) || (s === 'crouchUp' && !dir && P.f < 10)) {} // let these play out
+    else if (s === 'run' && dir !== P.face) { P.turn = dir === -P.face; P.sk = 0; setState('skid'); dust(P.face * 34, P.face); } // let go or reversed
+    else if (!dir) setState('idle');
+    else if (s === 'run' || (s === 'dash' && P.f >= 16)) setState('run');
+    else if (dashQ || (s === 'dash' && dir !== P.face)) { P.face = dir; P.state = 'dash'; P.f = 0; } // turning mid-dash restarts it
+    else if (s !== 'dash') { P.face = dir; setState('walk'); }
+  } else {
+    if (GROUNDED.includes(s)) { P.jumps = Math.min(P.jumps, AIR_JUMPS()); setState('air'); s = 'air'; } // walked off an edge
+    if (s in AIR) { // aerial: drift freely the whole time; free once it ends, or early like ground attacks
+      const m = AIR[s], done = m.startup + m.active, rec = m.endlag * (P.landed ? HIT_REC : 1), end = done + rec;
+      if (m.helpless) { if (P.f >= end) { setState('specialFall'); s = 'specialFall'; } } // spent: falls helpless
+      else if (P.f >= end || (P.f >= end - rec * CANCEL && (jumpQ || attackQ)) || (P.landed && P.f >= done && jumpQ)) { if (m.thrust) P.vx = P.vy = 0; setState('air'); s = 'air'; } // stairs: stop on the top step
+      else if (m.thrust && P.f >= m.startup) P.vy = -m.thrust; // climbing: the move carries him (drive, below)
+    }
+    if (s === 'booklet') { bookletStep(); s = P.state; }
+    if (s === 'neutralSpecial' && !keys.special && !(s in AIR)) { setState('air'); s = 'air'; } // let go: stop charging
+    if (s === 'hitstun' && !stunned) { setState('air'); s = 'air'; }
+    if (s === 'upSpecial') US.warp ? warpStep() : US.reach != null && tetherStep(dt); // specialFall: helpless, only drifts (and fast falls) until it lands or catches a ledge
+    const free = ['air', 'djump', 'drop', 'ledgeDrop'].includes(s) || (s === 'tumble' && !stunned); // tumble: acts once the hitstun runs out
+    if ((attackQ || heavyQ) && free && has('aerials')) { // aerial picked by the held direction (back = away from facing); heavy does the same in the air
+      attackQ = heavyQ = 0; setState(keys.up ? 'upAir' : keys.down ? 'downAir' : dir === P.face ? 'forwardAir' : dir ? 'backAir' : 'neutralAir');
+    }
+    else if (specialQ && free && has('specials')) special(dir);
+    else if (dodgeQ && free && has('defense') && !P.airDodged) { // air dodge: aim with the arrows (diagonals too), no direction = stall
+      const dx = dir, dy = keys.up ? -1 : keys.down ? 1 : 0, n = Math.hypot(dx, dy) || 1;
+      dodgeQ = 0; P.airDodged = true; P.fastFall = false; P.fromTumble = s === 'tumble'; P.dodgeV = [dx / n * AD.speed, dy / n * AD.speed]; setState('airDodge');
+      P.dodgeAnim = !dx ? 'airDodge' : dx === P.face ? 'airDodgeForward' : 'airDodgeBack'; P.dodgeTilt = dx ? dy * 0.35 * dx * P.face : 0; // diagonals tip toward where it's going
+    }
+    else if (s === 'airDodge') { if (P.f >= AD.frames) setState('air'); }
+    else if (jumpQ && P.jumps > 0 && !(s in AIR) && !stunned && !FLY[s] && !['shieldBreak', 'upSpecial', 'specialFall'].includes(s)) { jumpQ = 0; P.vy = -(fighter.flap || AIRJUMP); P.jumps--; P.fastFall = false; P.state = 'djump'; P.f = 0; sfx.enter('djump'); } // restarts: a flyer flaps again
+    if (ffQ && P.vy > -150 && !stunned && !FLY[P.state] && !AIR[P.state]?.thrust && !['airDodge', 'shieldBreak', 'upSpecial', 'booklet'].includes(P.state)) P.fastFall = true; // double-tap down near the peak or after
+    if ((P.state === 'djump' && P.f >= 25) || (P.state === 'drop' && P.f >= 20) || (P.state === 'ledgeDrop' && P.f >= 16)) setState('air');
+  }
+  downQ = dropQ = ffQ = dashQ = sideQ = false; techQ = Math.max(0, techQ - 1); techLock = Math.max(0, techLock - 1);
+  if (P.state === 'neutralSpecial' && !(P.state in AIR)) { const a = NEUTRAL_B.anim(P.f).aura || 0; if (a > P.think) { P.think = a; sfx.play('think', a); } } // checkpoint locked in (a chime for each)
+  jumpQ = Math.max(0, jumpQ - 1); attackQ = Math.max(0, attackQ - 1); heavyQ = Math.max(0, heavyQ - 1); specialQ = Math.max(0, specialQ - 1); dodgeQ = Math.max(0, dodgeQ - 1); grabQ = Math.max(0, grabQ - 1);
+
+  // horizontal: ground speed comes from the state, air speed from the stick
+  let target = 0, accel; const pw = THINK_POWER[P.think] * (P.mech > 0 ? MOVES.mech.suit.speed : 1); // effort tier speeds up walking, running and air drift; the mech suit slows it
+  if (P.ground) {
+    if (['walk', 'dash', 'run', 'crouchWalk'].includes(P.state)) target = P.face * pw * { walk: WALK, dash: DASH, run: RUN, crouchWalk: CRAWL }[P.state];
+    const atk = ATK[P.state], dg = DODGES.includes(P.state) && D[P.state].anim;
+    if (dg) target = P.vx = P.face * ((dg(P.f + 1).x || 0) - (dg(P.f).x || 0)) / dt; // rolls move exactly as their animation's x
+    if (atk?.step && P.f === atk.startup) P.vx = P.face * Math.max(P.face * P.vx, atk.step); // the move's lunge
+    accel = target ? 4200 : P.state === 'skid' ? (P.turn ? 1800 * TURN_SPEED : 1800) : P.state === 'dashAttack' ? 800 : atk || P.state === 'landLag' ? ATK_FRICTION : 3600; // attacks keep momentum
+  } else { target = P.state === 'shieldBreak' || stunned || (P.state === 'upSpecial' && US.warp) ? 0 : dir * RUN * pw * (P.state === 'specialFall' ? 0.6 : 1); accel = dir && target ? 2300 : stunned ? 250 : 700; } // helpless drifts slower · launched: flies on like the bag till it can act
+  const dv = target - P.vx;
+  P.vx += Math.sign(dv) * Math.min(Math.abs(dv), accel * dt);
+  const cl = AIR[P.state]; if (cl?.drive && P.f >= cl.startup) P.vx = P.face * cl.drive; // climbing the stairs: steadily ahead, no steering
+  if ((P.state === 'run' && P.f % 12 === 0) || (P.state === 'dash' && P.f === 5) || (P.state in ATK && ATK[P.state].anim(P.f).dust === 0)) dust(-P.face * 34, -P.face); // steps / dash launch
+  if ((P.state in ATK || THROWS.includes(P.state)) && MOVES[P.state].anim(P.f).puff === 0) puff(); // both ways (smash landings, /compact)
+  if (P.state.startsWith('roll') && P.f === 4) { const d = P.state === 'rollForward' ? -P.face : P.face; dust(d * 34, d); } // kicked up opposite the roll
+
+  const mv = MOVES[P.state];
+  if (mv?.launch && P.f === mv.startup) Object.assign(P, { vy: -mv.launch, ground: false, on: null, fastFall: false }); // lift-off
+  P.vy += G * dt * (P.state === 'upSpecial' ? US.gravity ?? 1 : 1);
+  P.vy = Math.min(P.vy, P.fastFall ? 1500 : 950);
+  P.glide = fighter.glide && keys.jump && P.vy > 0 && !P.fastFall && ['air', 'djump'].includes(P.state); // holding jump on the way down
+  if (P.glide) P.vy = Math.min(P.vy, fighter.glide);
+  if (P.fastFall) P.vy = Math.max(P.vy, 1100);
+  const dm = MOVES[P.state]?.dash; // a roll: pushed along at dash.speed through its rolling frames, sinking slowly in the air
+  if (dm && P.f >= dm.from && P.f < dm.to) { P.vx = P.face * dm.speed; if (!P.ground) P.vy = Math.min(P.vy, dm.fall); }
+  const bm = MOVES[P.state], bu = bm?.burst, b0 = bu?.from ?? bm?.startup; // a special's burst: set speed for its frames from b0 (vx along
+  if (bu && P.f >= b0 && P.f < b0 + bu.frames) { if (bu.vx != null) P.vx = P.face * bu.vx; if (bu.vy < 0) { P.ground = false; P.on = null; } if (!P.ground) P.vy = bu.vy; } // facing; none = free drift; vy only off the ground),
+  else if (bu && P.f === b0 + bu.frames) P.vx *= bu.keep ?? 1; // then only keep that much of it
+  if (P.state === 'airDodge' && P.f <= AD.burst) { // the dodge burst ignores gravity and steering, then eases off
+    const k = P.f === AD.burst ? 0.4 : 1;
+    P.vx = P.dodgeV[0] * k; P.vy = P.dodgeV[1] * k;
+  }
+  const fm = FLY[P.state];
+  if (fm) flyStep(fm, dir);
+
+  const wasGround = P.ground;
+  P.drop = Math.max(0, P.drop - dt);
+  P.inv = Math.max(0, P.inv - dt);
+  P.gold = Math.max(0, (P.gold || 0) - dt);
+  if (P.warn && (P.warn.t += dt) > WARN_T) P.warn = null;
+  if (P.mech > 0 && (P.mech -= dt) <= 0) popMech();
+  const SK = DOWN_B.streak; // Duo's streak: fills over SK.fill s (P.lit = s since it filled, for the flame); buff, it drains instead, and he shrinks back with a puff
+  if (SK && P.buff > 0) { if ((P.buff -= dt) <= 0) { P.buff = 0; puff(); } }
+  else if (SK && P.streak < 1 && P.state !== 'respawn' && (P.streak = Math.min(1, P.streak + dt / SK.fill)) === 1) P.lit = 0;
+  if (P.lit != null) P.lit += dt;
+  P.hitT = Math.max(0, P.hitT - dt);
+  P.regrab = Math.max(0, P.regrab - dt);
+  P.shield = Math.max(0, Math.min(1, (P.shield ?? 1) + (P.state === 'shield' ? -SHIELD_DRAIN : SHIELD_REGEN)));
+
+  if (P.ledge) ledgePlace();
+  else if ((P.state === 'upSpecial' && US.reach != null && !US.warp && P.teth.side) || P.state === 'respawn') {} // reeling / on the platform: already placed
+  else { move(P, dt, s => land(s, wasGround)); grabLedge(); }
+  if (MOVES[P.state]?.flight && P.fly.want && ((P.fly.want[0] && !P.vx) || (P.fly.want[1] < 0 && !P.vy))) crashFlight(MOVES[P.state]); // into a wall / the underside
+
+  // attack hitboxes vs the targets: one hit on each per attack, knockback grows with its damage (and a smash's charge)
+  const m = MOVES[P.state], cx = P.x + P.w / 2;
+  if (m?.startup > 0 && P.f === m.startup) sfx.out(P.state); // it comes out: its sound
+  if (m?.bricks && P.f <= m.startup) P.nb = bricksOf(m);
+  if (m?.bricks && P.f === m.startup) P.studs -= P.nb; // pays for the bricks as it comes out
+  if (m?.hitbox && !(m.hearts && !P.roll) && !(m.bricks && !P.nb)) { // out of hearts: the zap fizzles · no bricks built: nothing to hit with
+    const hb0 = typeof m.hitbox === 'function' ? m.hitbox(P.f, m.chargeFrames ? P.chg / m.chargeFrames : 0) : m.hitbox; // a function = it moves or grows: (frame, charge 0 … 1) => box
+    const c = sizeOf(m), K = P.mech > 0 ? MECH_K : P.buff > 0 ? DOWN_B.streak.size : 1; // charging can grow it (grow); the mech suit (buff Duo) scales it (and the lean) with him
+    const hb = { ...hb0, ...Object.fromEntries(['x', 'y', 'w', 'h'].map(k => [k, (hb0[k] + (m.grow?.[k] || 0) * c) * K])) };
+    const ox = (P.ledge ? 0 : clawdPose().x || 0) * K; // on the ledge, ledgePlace already moved P by the pose's x
+    const inWorld = r => ({ x: P.face > 0 ? cx + ox + r.x : cx - ox - r.x - r.w, y: P.y + P.h + r.y, w: r.w, h: r.h });
+    const box = inWorld(hb), sweet = m.sweet && inWorld(m.sweet); // sweet = a stronger spot inside the hitbox, with its own damage / kb
+    // multi-hit (every = frames between hits): each hit is its own, and the last one is the finisher's damage / kb if it has one
+    const n = m.every ? Math.floor((P.f - m.startup) / m.every) : 0, key = P.state + n, hf = m.finisher && n === Math.ceil(m.active / m.every) - 1 ? m.finisher : m;
+    if (P.f >= m.startup && P.f < m.startup + m.active) for (const b of targets) {
+      if (P.struck.get(b) === key || !overlaps(box, b) || (m.grab && b.grabbed)) continue;
+      P.struck.set(b, key);
+      if (m.flight) { crashFlight(m); break; } // a rocket-style ship blows up on whoever it flies into
+      if (m.grab) { grabBag(b); P.landed = true; break; } // one in the claws at a time
+      const h = sweet && overlaps(sweet, b) ? m.sweet : hf;
+      const miss = P.roll === false && m.missKb; // a gamble that came up wrong hits softer
+      if (!hitBag(b, (miss ? m.missDamage : h.damage) * (hb.mult ?? 1) * charged(m) * (m.hearts ? 1 + 0.3 * (m.hearts - P.roll) : 1), miss ? m.missKb : h.kb, m.both ? Math.sign(b.x + b.w / 2 - cx) || P.face : P.face)) continue; // both-sided moves send it away · shielded / countered: that's all
+      P.landed = true;
+      if (m.sticker) b.sticker = { t: 0, ...m.sticker }; // e.g. a community note stuck on it
+      const pin = m.pin && P.chg > 0 && clawdPose().pin; // charged at all: held where the pose's pin stuck in (a quarter as long … all of m.pin), the knockback saved for later
+      if (pin) Object.assign(b, { pinT: m.pin * (0.25 + 0.75 * P.chg / m.chargeFrames), pop: [b.vx, b.vy], vx: 0, vy: 0, pinAt: [cx + P.face * (ox + pin[0]), P.y + P.h + pin[1], pin[2]] });
+    }
+  }
+  if (!m || P.f < m.startup) { P.struck.clear(); P.landed = false; }
+  for (const b of everyone()) if (b.pinned === P && !(P.state === 'upSpecial' && P.teth?.link != null)) b.pinned = false; // Claw'd got hit / landed: the cord's gone
+  const hb = heldBag();
+  if (hb) { // in the claws, where the pose carries it; let go if the pose stops carrying it (Claw'd got hit)
+    const c = clawdPose().carry;
+    if (c) Object.assign(hb, { x: P.x + P.w / 2 + P.face * c[0] - hb.w / 2, y: P.y + P.h + c[1] - hb.h, vx: 0, vy: 0, rot: P.face * c[2] }); else hb.grabbed = false;
+  }
+  if (m?.build && P.f === m.startup) legoBuild(m);
+  if (m?.step && P.f > m.startup && (P.f - m.startup) % m.step.every === 0) { // a step clicks in under his feet; then the next one's stud, or stop here
+    const S = m.step, k = (P.f - m.startup) / S.every; plats.push({ x: cx + P.face * 6 - S.w / 2, y: P.y + P.h, w: S.w, h: S.h, lego: 'step', by: P, col: k % 4, t: 0, life: S.life }); sfx.play('brick');
+    if (k < Math.floor(m.active / S.every)) { if (P.studs >= 1) P.studs--; else { P.vx = P.vy = 0; setState('air'); } }
+  }
+  if (m?.toss && P.f === m.startup) { const T = m.toss; thrown = { x: cx + P.face * T.x, y: P.y + P.h + T.y, vx: P.face * T.speed, dir: P.face, back: false, sp: T.home[0], t: 0, rot: 0, face: P.face, hit: new Set(), T }; }
+  if (m?.reform && P.f === m.reform[0]) { P.x -= P.counterDir * m.reform[1]; P.vx = 0; P.face = P.counterDir; } // reassembling: past the attacker, facing them
+  if (m?.scatter && P.f === m.startup) { // fling the bricks it built out ahead (charged: more, thrown further). One set at a time: a new
+    // one clears the old (each old brick poofs where it lay)
+    const c = P.chg / m.chargeFrames;
+    if (P.nb) { for (const k of bricks) fx.push({ x: k.x + k.w / 2, y: k.y + k.h, dir: k.dir, t: 0 }); bricks.length = 0; }
+    for (let k = 0; k < P.nb; k++) {
+      const [vx, vy] = scatterVel(k, c);
+      bricks.push({ x: cx + P.face * 20 - 6, y: P.y + P.h - 26, w: 12, h: 7, vx: P.face * vx, vy, rot: 0, spin: P.face * (8 + 5 * (k % 3)), col: k % 4, dir: P.face, t: 0, m: m.scatter });
+    }
+  }
+  if (m?.nelly && P.f === m.startup) nelly = { x: cx + P.face * m.nelly.x - 16, y: P.y + P.h - 20, w: 32, h: 20, vx: 0, vy: 0, face: P.face, t: 0, ground: P.ground, on: P.on, N: m.nelly };
+  if (P.state === 'downSpecial' && DOWN_B.streak && P.f === DOWN_B.startup) { P.buff = DOWN_B.streak.time; P.streak = 0; P.lit = null; camPunch(130, cx, P.y + P.h / 2); } // Duo bursts buff
+  if (P.state === 'downSpecial' && DOWN_B.sub && P.f === DOWN_B.startup && !sub) { // push the subagent out: runs on the ground, dropped in the air
+    const S = DOWN_B.sub, w = P.w * S.scale, h = P.h * S.scale;
+    sub = { x: cx + P.face * S.x - w / 2, y: P.y + P.h - h, w, h, vx: P.face * (P.ground ? S.speed : 150), vy: P.ground ? 0 : 250, face: P.face, t: 0, ground: P.ground, on: null, done: 0 };
+    fx.push({ x: cx + P.face * S.x, y: P.y + P.h, dir: P.face, t: 0 });
+  }
+  if (m?.ride && P.f === m.startup && !cart) { // the vehicle appears under it, and it's riding
+    const rd = m.ride;
+    cart = { x: cx - rd.w / 2, y: P.y + P.h - rd.h, w: rd.w, h: rd.h, vx: P.face * rd.speed[0], vy: P.ground ? 0 : Math.max(0, P.vy), face: P.face, t: 0, ground: P.ground, on: P.on, m, dist: 0, bag: null, bagT: 0, done: 0 };
+    setState('ride'); return;
+  }
+  if (m?.projectile && P.f === m.startup && !(m.projectile.homing && shots.some(sh => sh.m === m))) { // pr = how it flies: the move's projectile, with a picked item's (I'm Feeling Lucky) over it · r = its size (grows with a charge),
+    // k = damage multiplier from the charge; one homing shot out at a time · pic = which picture (Grok Imagine) · hits = hits before it's used up
+    const c = m.chargeAt != null ? P.chg / m.chargeFrames : 0, pr = m.projectile.pick ? { ...m.projectile, ...m.projectile.pick[P.roll ?? 0] } : m.projectile;
+    shots.push({ x: cx + P.face * pr.x, y: P.y + P.h + pr.y, y0: P.y + P.h + pr.y, vx: P.face * pr.speed, vy: pr.vy || 0, t: 0, m, pr, hits: pr.hits || 1, cool: 0, r: (pr.r ?? SPARK_R) * (1 + (pr.grow || 0) * c), k: charged(m), pic: Math.floor(Math.random() * 3) });
+  }
+  if (m?.detonate && P.f === m.startup) for (const b of targets) if (b.sticker?.chip) { // set off whatever it planted (Neuralink)
+    hitBag(b, m.damage, m.kb, Math.sign(b.x + b.w / 2 - cx) || P.face); b.sticker = { t: 0, ...m.detonate }; P.landed = true;
+  }
+  if (out(P)) ko();
+}
+
+// burrowing (Grok's down smash): under the surface it drilled into, steered with ← → (it turns to face the way it goes). Left alone
+// it digs on ahead dist px; it pops out (the out move) then, on attack / heavy / special / jump, or after max frames. Can't be hurt,
+// and can't dig past either end of the surface
+// rocket-style up special, like Diddy Kong's Rocketbarrel Boost (Grok's Starship). Charging (state + 'Charge'): stuck in place (barely
+// sinking in the air) while B builds it up, ← → swinging the aim (P.aim, radians off straight up, + = right); let go to launch that
+// way, faster the longer the charge; held overheat frames past full,
+// it blows up under the rider (selfDamage, the blast hits anyone near) and drops it helpless. Flying (the move's own state, its
+// hitbox the body): ← → turns it, B again bails out; at active frames, or bailing, the empty ship flies on and blows up on whatever it
+// meets (wreck), the rider falls helpless. Flying into the stage blows it up there
+function flyStep(m, dir) {
+  const fl = m.flight;
+  if (P.state !== m.state) { // charging
+    P.vx = 0; if (!P.ground) P.vy = Math.min(P.vy, fl.fall);
+    P.aim = Math.max(-fl.aimMax, Math.min(fl.aimMax, P.aim + dir * fl.aimTurn));
+    if (keys.special) { if (++P.chg > m.chargeFrames + m.overheat) { blowWreck(P.x + P.w / 2, P.y + P.h - m.wreck.mid, m); hurt(m.selfDamage); P.vy = -300; P.vx = 0; setState('specialFall'); } return; }
+    const c = Math.min(1, P.chg / m.chargeFrames);
+    P.fly = { ang: P.aim, speed: fl.speed[0] + (fl.speed[1] - fl.speed[0]) * c };
+    P.ground = false; P.on = null; setState(m.state); puff();
+  }
+  const F = P.fly;
+  if (specialQ || P.f >= m.active) { specialQ = 0; return bail(m); }
+  F.ang = Math.max(-fl.tilt, Math.min(fl.tilt, F.ang + dir * fl.turn));
+  P.vx = Math.sin(F.ang) * F.speed; P.vy = -Math.cos(F.ang) * F.speed; F.want = [P.vx, P.vy];
+}
+function bail(m) { // the ship flies on without its rider
+  wreck = { x: P.x + P.w / 2, y: P.y + P.h - m.wreck.mid, vx: P.vx * 0.9, vy: P.vy * 0.9, t: 0, m, boom: null };
+  P.vx *= 0.3; P.vy = Math.max(P.vy * 0.3, -250); setState('specialFall');
+}
+function blowWreck(x, y, m) { // the blast: hits every target in reach once
+  sfx.play('boom');
+  wreck = { x, y, vx: 0, vy: 0, t: 0, m, boom: 0 };
+  for (const b of targets) if (Math.hypot(b.x + b.w / 2 - x, b.y + b.h / 2 - y) < m.wreck.r + b.w / 2) hitBag(b, m.wreck.damage, m.wreck.kb, Math.sign(b.x + b.w / 2 - x) || 1);
+  fx.push({ x, y: y + 20, dir: -1, t: 0 }, { x, y: y + 20, dir: 1, t: 0 });
+}
+function crashFlight(m) { const x = P.x + P.w / 2, y = P.y + P.h - m.wreck.mid; setState('specialFall'); P.vx = P.vy = 0; blowWreck(x, y, m); }
+function stepWreck(dt) {
+  const w = wreck, W = w.m.wreck;
+  if (w.boom != null) { if ((w.boom += dt / 0.45) >= 1) wreck = null; return; }
+  w.t += dt; if (w.t > W.coast) w.vy += G * W.gravity * dt; w.x += w.vx * dt; w.y += w.vy * dt; // flies on under its own power a moment, then drops
+  const pt = { x: w.x - 8, y: w.y - 8, w: 16, h: 16 };
+  const hitPlat = w.vy > 0 && plats.some(pl => w.x > pl.x && w.x < pl.x + pl.w && w.y > pl.y && w.y - w.vy * dt <= pl.y);
+  if (targets.some(b => overlaps(pt, b)) || overlaps(pt, stage) || hitPlat || w.t > W.life) blowWreck(w.x, w.y, w.m);
+  else if (out({ x: w.x, y: w.y, w: 0, h: 0 })) wreck = null;
+}
+
+const charged = m => m.chargeMult ? 1 + (m.chargeMult - 1) * P.chg / m.chargeFrames : 1; // damage multiplier for the charge held
+
+function burrowIn(bw) { setState('tunnel'); P.tun = { bw, steered: false, dist: 0 }; P.vx = P.vy = 0; }
+function tunnelStep(dir, dt) {
+  const T = P.tun, bw = T.bw, on = P.on || stage;
+  if (dir) { T.steered = true; P.face = dir; }
+  const v = dir ? dir * bw.speed : T.steered ? 0 : P.face * bw.speed;
+  const x0 = P.x; P.x = Math.max(on.x, Math.min(on.x + on.w - P.w, P.x + v * dt)); T.dist += Math.abs(P.x - x0);
+  P.vx = P.vy = 0;
+  if (P.x !== x0 && P.f % 6 === 0) dust(-P.face * 16, -P.face); // dirt thrown up behind the mound
+  if (attackQ || heavyQ || specialQ || jumpQ || P.f >= bw.max || (!T.steered && T.dist >= bw.dist)) {
+    attackQ = heavyQ = specialQ = jumpQ = 0; setState(bw.out); puff();
+  }
+}
+
+function stepWorld(dt) {
+  // thrown things fly until they hit a target or the stage, or run out of range. pr (see the spawn): speed, vy + gravity (× G) to arc,
+  // bounce = how much of its fall speed it keeps bouncing off the stage's top, hits = hits before it's used up (every s apart; it slows
+  // right down to grind in, and only the last one knocks back), damage / kb over the move's, draw (default: Claw'd's spark). A homing
+  // one (Duo's reminder) turns toward the nearest target at up to homing rad/s and drifts through the stage
+  for (let i = shots.length - 1; i >= 0; i--) {
+    const sh = shots[i], pr = sh.pr;
+    const near = pr.homing && targets.reduce((a, b) => !a || Math.hypot(b.x + b.w / 2 - sh.x, b.y + b.h / 2 - sh.y) < Math.hypot(a.x + a.w / 2 - sh.x, a.y + a.h / 2 - sh.y) ? b : a, null);
+    if (near) {
+      const a = Math.atan2(sh.vy, sh.vx), d = Math.atan2(near.y + near.h / 2 - sh.y, near.x + near.w / 2 - sh.x) - a, turn = Math.atan2(Math.sin(d), Math.cos(d));
+      const na = a + Math.max(-pr.homing * dt, Math.min(pr.homing * dt, turn));
+      sh.vx = Math.cos(na) * pr.speed; sh.vy = Math.sin(na) * pr.speed;
+    }
+    sh.vy += (pr.gravity || 0) * G * dt; sh.x += sh.vx * dt; sh.y += sh.vy * dt; sh.t += dt; sh.cool -= dt;
+    if (pr.wave) sh.y = sh.y0 + pr.wave[0] * Math.sin(2 * Math.PI * sh.t / pr.wave[1]); // [px up and down, s per wave]
+    const r = sh.r, box = { x: sh.x - r, y: sh.y - r, w: 2 * r, h: 2 * r }, hit = sh.cool <= 0 && targets.find(b => overlaps(box, b));
+    if (hit) {
+      const last = --sh.hits <= 0;
+      const ok = hitBag(hit, (pr.damage ?? sh.m.damage) * sh.k, last ? pr.kb || sh.m.kb : NO_KB, Math.sign(sh.vx) || P.face);
+      if (!last) { sh.cool = pr.every; sh.vx *= 0.15; }
+      if (pr.hitFx) fx.push({ x: sh.x, y: sh.y, t: 0, ...pr.hitFx }); // hitFx = { draw(x, y, t), dur s }
+      if (ok && sh.m.plant) hit.sticker = { t: 0, ...sh.m.plant }; // plant = a sticker it leaves (not on a shield)
+    }
+    const wall = !pr.homing && overlaps(box, stage);
+    const bounce = wall && pr.bounce && sh.vy > 0 && sh.y - sh.vy * dt + r <= stage.y + 2;
+    if (bounce) { sh.y = stage.y - r; sh.vy *= -pr.bounce; } // landed on top: bounce
+    if ((hit && sh.hits <= 0) || (wall && !bounce) || sh.t > pr.life) shots.splice(i, 1); // (a ball rolling along bounces every frame: it still runs out)
+  }
+
+  for (let i = bricks.length - 1; i >= 0; i--) { // loose bricks: tumble, settle flat, then lie in wait. Only targets can step on them
+    const k = bricks[i]; k.t += dt;
+    k.vy = Math.min(k.vy + G * dt, 950);
+    if (k.ground) k.vx -= Math.sign(k.vx) * Math.min(Math.abs(k.vx), 1800 * dt);
+    move(k, dt, s => { k.vy = 0; k.ground = true; k.on = s; });
+    k.rot = k.ground ? k.rot * 0.6 : k.rot + k.spin * dt;
+    const hit = k.ground && targets.find(b => overlaps(k, b));
+    if (hit) hitBag(hit, k.m.damage, k.m.kb, Math.sign(hit.x + hit.w / 2 - k.x - k.w / 2) || k.dir); // ouch: hops off it
+    if (hit || out(k) || k.t > k.m.life) bricks.splice(i, 1);
+  }
+
+  for (let i = rockets.length - 1; i >= 0; i--) { // rockets: speed up along their line, burst on a target, the stage, or at the end of their range
+    const r = rockets[i], L = r.L; r.t += dt; r.v = Math.min(L.speed[1], r.v + L.accel * dt); r.x += r.dir * r.v * dt;
+    const box = { x: r.x - 16, y: r.y - 6, w: 32, h: 12 };
+    if (!(targets.some(b => overlaps(box, b)) || overlaps(box, stage) || r.t > L.life || out(box))) continue;
+    const B = L.blast; rockets.splice(i, 1); booms.push({ x: r.x, y: r.y, t: 0, r: B.r }); sfx.play('boom');
+    for (const b of targets) { // everything the blast reaches (the nearest point of its box within r), thrown away from the middle
+      const nx = Math.max(b.x, Math.min(r.x, b.x + b.w)), ny = Math.max(b.y, Math.min(r.y, b.y + b.h));
+      if (Math.hypot(nx - r.x, ny - r.y) <= B.r) hitBag(b, B.damage, B.kb, Math.sign(b.x + b.w / 2 - r.x) || r.dir);
+    }
+  }
+  for (let i = booms.length - 1; i >= 0; i--) if ((booms[i].t += dt / 0.45) >= 1) booms.splice(i, 1);
+
+  if (thrown) stepThrown(dt);
+  if (sub) stepSub(dt);
+  if (nelly) stepNelly(dt);
+  if (cart) stepCart(dt);
+  if (wreck) stepWreck(dt);
+}
+
+// Nelly crawls straight ahead (falls if she's in the air) until she slows the first target she touches, or gives up
+function stepNelly(dt) {
+  const n = nelly, N = n.N;
+  if ((n.t += dt) > N.life || out(n)) return nelly = null;
+  if (n.ground) n.vx = n.face * N.speed;
+  n.vy = Math.min(n.vy + G * dt, 950);
+  move(n, dt, s => { n.vy = 0; n.ground = true; n.on = s; });
+  const b = targets.find(b => !b.grabbed && overlaps(n, b));
+  if (b) { if (hitBag(b, N.damage, N.kb, n.face)) b.slowT = N.slow; fx.push({ x: n.x + n.w / 2, y: n.y + n.h, dir: n.face, t: 0 }); nelly = null; }
+}
+
+// Lego Man's thrown head: out along its line, slowing, then back to his neck wherever he's got to (speeding up), where it clicks
+// back on; gives up and snaps straight back after T.life. Hits each target once going out and once coming back
+function stepThrown(dt) {
+  const h = thrown, T = h.T, nx = P.x + P.w / 2, ny = P.y + P.h - 61;
+  h.t += dt; h.rot += h.dir * 22 * dt;
+  if (!h.back) { h.vx -= h.dir * T.decel * dt; h.x += h.vx * dt; if (h.vx * h.dir <= 0) { h.back = true; h.hit = new Set(); } }
+  else {
+    const dx = nx - h.x, dy = ny - h.y, d = Math.hypot(dx, dy), step = (h.sp = Math.min(T.home[1], h.sp + 1600 * dt)) * dt;
+    if (d <= step + 10 || h.t > T.life) return thrown = null;
+    h.x += dx / d * step; h.y += dy / d * step; h.vx = dx / d * h.sp;
+  }
+  const box = { x: h.x - 10, y: h.y - 10, w: 20, h: 20 };
+  for (const b of targets) if (!h.hit.has(b) && overlaps(box, b)) { h.hit.add(b); const H = h.back ? T.back : T.out; hitBag(b, H.damage, H.kb, Math.sign(h.vx) || h.dir); }
+}
+
+// the subagent runs straight ahead (falls if it's in the air), bonks a target once and reports back, or gives up after a while
+function stepSub(dt) {
+  const S = DOWN_B.sub;
+  if (sub.done) { if ((sub.done += dt) > S.report) sub = null; return; }
+  sub.t += dt;
+  if (sub.ground) sub.vx = sub.face * S.speed;
+  sub.vy = Math.min(sub.vy + G * dt, 950);
+  move(sub, dt, s => { sub.vy = 0; sub.ground = true; sub.on = s; });
+  if (out(sub)) return sub = null; // ran off the stage
+  const hit = targets.find(b => overlaps(sub, b));
+  if (hit) hitBag(hit, DOWN_B.damage, DOWN_B.kb, sub.face);
+  if (hit || sub.t > S.life) { sub.done = dt; fx.push({ x: sub.x + sub.w / 2, y: sub.y + sub.h, dir: -1, t: 0 }, { x: sub.x + sub.w / 2, y: sub.y + sub.h, dir: 1, t: 0 }); } // poof
+}
+
+// a ride speeds up along the ground (falls off ledges), carrying the rider. Running into a target with the rider in scoops it into
+// the back (the rider leaps out), carries it scoop.carry seconds and launches it; a driverless one just rams the first thing it
+// meets. Ends on a hit, a crash into the stage's side, after ride.life seconds or out of the blast zone, with a poof
+function stepCart(dt) {
+  const c = cart, rd = c.m.ride, riding = P.state === 'ride';
+  if (c.done) { if ((c.done += dt) > 0.2) cart = null; return; }
+  c.t += dt;
+  const sp = Math.min(rd.speed[1], Math.abs(c.vx) + rd.accel * dt);
+  c.vx = c.face * sp; c.vy = Math.min(c.vy + G * dt, 950);
+  const x0 = c.x; let crash = false;
+  move(c, dt, s => { c.vy = 0; c.ground = true; c.on = s; });
+  if (Math.abs(c.x - x0) < sp * dt * 0.5) crash = true; // ran into the stage's side
+  c.dist += Math.abs(c.x - x0);
+  if (c.ground && c.t % 0.12 < dt) fx.push({ x: c.x + c.w / 2 - c.face * c.w / 2, y: c.y + c.h, dir: -c.face, t: 0 }); // dust off the back wheels
+  if (riding) Object.assign(P, { x: c.x + c.w / 2 - P.w / 2, y: c.y + c.h - P.h, vx: c.vx, vy: c.vy, ground: c.ground, on: c.on });
+
+  const b = c.bag;
+  if (b) { // riding in the back, then launched
+    Object.assign(b, { x: c.x + c.w / 2 - c.face * rd.bed - b.w / 2, y: c.y + c.h - rd.bedY - b.h, vx: 0, vy: 0, rot: 0.08 * Math.sin(c.t * 30) });
+    if ((c.bagT += dt) >= rd.scoop.carry || crash || out(c)) { b.carted = false; hitBag(b, rd.scoop.damage, rd.scoop.kb, c.face); return poofCart(); }
+    return;
+  }
+  const hit = targets.find(t => !t.grabbed && overlaps(c, t));
+  if (hit && riding) { // scooped: into the back it goes, and Grok leaps out up and back
+    Object.assign(hit, { carted: true, hitT: 0.3 }); c.bag = hit;
+    P.vy = -AIRJUMP; P.vx = -c.face * 180; P.ground = false; setState('air');
+    return;
+  }
+  if (hit) { hitBag(hit, rd.ram.damage, rd.ram.kb, c.face); return poofCart(); }
+  if (crash || c.t > rd.life || out(c)) poofCart();
+}
+function poofCart() {
+  const c = cart; c.done = 1e-6;
+  if (P.state === 'ride') { P.vy = -HOP; P.ground = false; setState('air'); } // thrown clear
+  if (!out(c)) for (const d of [-1, 1]) fx.push({ x: c.x + c.w / 2 + d * 30, y: c.y + c.h, dir: d, t: 0 }, { x: c.x + c.w / 2 + d * 10, y: c.y + c.h - 20, dir: d, t: 0 });
+}
+
+// damage + knockback on a target from the fighter in play, growing with the target's damage. A fighter
+// takes it its own way (hitClawd: its shield or counter can stop it). false = it didn't connect
+function hitBag(b, dmg, kb, dir) {
+  dmg *= THINK_POWER[P.think] * (1 + (DOWN_B.power || 0) * P.batt) * (P.gold > 0 ? MOVES.goldBrick.power.mult : 1) * (P.mech > 0 ? MOVES.mech.suit.mult : 1) * (P.buff > 0 ? DOWN_B.streak.mult : 1); P.batt = 0; // (+ Lego Man's gold brick / mech suit, buff Duo)
+  if (P.buff > 0) kb = { ...kb, base: kb.base * DOWN_B.streak.kb, growth: kb.growth * DOWN_B.streak.kb }; // buff Duo hits harder
+   // the attacker's effort tier scales every hit, a stored fast charge just this one
+  if (b.c) { const me = cur, g = b.grabbed; use(b.c); const hit = hitClawd(dmg, kb, dir), slip = !hit && P.f === 0 && MOVES[P.state]?.slip; use(me); if (g === P) b.grabbed = g; if (slip) P.sticker = { t: 0, ...slip }; if (!hit) return false; } // (a pummel keeps the grip; anyone else's hit knocks it loose) · slip = a counter's sticker left on the attacker (Snoopy's AAUGH!)
+  else {
+    b.dmg += dmg; b.hitT = 0.3; b.pinT = 0; // a hit knocks it off a pin
+    const s = (kb.base + kb.growth * b.dmg / 100) * KB, a = kb.angle * Math.PI / 180;
+    b.vx = dir * s * Math.cos(a); b.vy = -s * Math.sin(a); camPunch(s / KB, b.x + b.w / 2, b.y + b.h / 2);
+  }
+  sfx.hit(dmg); // it connected
+  const ST = NEUTRAL_B.studs; if (ST) P.studs = Math.min(ST.max, P.studs + Math.round(dmg)); // Lego Man earns a stud per %
+  return true;
+}
+
+function out(b) {
+  const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+  return cx < BLAST.l || cx > BLAST.r || cy > BLAST.b || cy < BLAST.t;
+}
+
+// move a box by its velocity, colliding with the solid stage and landing on pass-through platforms
+function move(b, dt, onLand) {
+  b.x += b.vx * dt;
+  if (overlaps(b, stage)) { b.x = b.x + b.w / 2 < stage.x + stage.w / 2 ? stage.x - b.w : stage.x + stage.w; b.vx = 0; } // out the nearer side (vx can be 0)
+
+  const prevBottom = b.y + b.h;
+  b.y += b.vy * dt;
+  const was = b.on; b.ground = false; b.on = null;
+  if (overlaps(b, stage)) {
+    if (b.vy > 0) { b.y = stage.y - b.h; onLand(stage); }
+    else { b.y = stage.y + stage.h; b.vy = 0; }
+  }
+  if (b.vy >= 0 && !(b.drop > 0)) for (const pl of plats) {
+    if (b === P && keys.down && pl !== was) continue; // holding ↓: fall straight through (standing on one, the drop waits a beat instead)
+    if (b.x + b.w > pl.x && b.x < pl.x + pl.w && prevBottom <= pl.y + 0.5 && b.y + b.h >= pl.y) {
+      b.y = pl.y - b.h; onLand(pl);
+    }
+  }
+}
+
+// which frame of which animation to show for the current state
+function clawdPose() {
+  const f = P.f, atk = MOVES[P.state], fly = FLY[P.state];
+  if (fly && P.state !== fly.state) return { ...fly.chargeAnim(f, P.chg / fly.chargeFrames), tilt: P.aim }; // charging a flight (c runs past 1 into the overheat), aimed
+  if (atk) { const p = ((P.buff > 0 && fighter.set.buffed?.[P.state]) || atk).anim(f, undefined, sizeOf(atk), P.roll); if (P.held && f === atk.chargeAt && atk.chargeMult) p.x = (p.x || 0) + (P.chg % 4 < 2 ? 1.5 : -1.5); if (fly) p.tilt = P.fly.ang; return p; } // tremble while charging a smash · P.roll = a random outcome (Duo's quiz, Android's app) · buff Duo punches instead (its buffed anims)
+  switch (P.state) {
+    case 'idle': return M.idle.anim(f % 120, 120);
+    case 'walk': return M.walk.anim(f % 40, 40);
+    case 'dash': return M.dash.anim(Math.min(f, 16), 20);
+    case 'run': return M.run.anim(f % 24, 24);
+    case 'skid': return M.skid.anim(Math.min(Math.floor(P.sk), P.turn ? 25 : 13), 26); // a plain brake holds before the flip
+    case 'crouch': return M.crouch.anim(f < 50 ? f : 5 + (f - 5) % 45, 60); // loop the held part
+    case 'crouchWalk': return M.crouchWalk.anim(f % 32, 32);
+    case 'crouchUp': return M.crouch.anim(Math.min(50 + f, 59), 60);
+    case 'squat': return M.jumpSquat.anim(Math.min(6, f * 1.5), 14);
+    case 'land': return M.land.anim(Math.min(3 + f, 17), 18);
+    case 'landLag': return M.land.anim(Math.min(3 + f * 14 / P.lag, 17), 18); // the landing squash stretched over the lag
+    case 'drop': return M.platformDrop.anim(Math.min(8 + f, 30), 40);
+    case 'djump': return M.doubleJump.anim(Math.min(3 + f, 28), 36);
+    case 'ledgeGrab': return L.ledgeGrab.anim(Math.min(f, 10));
+    case 'ledgeHang': return L.ledgeHang.anim(f % 60, 60);
+    case 'ledgeGetup': return L.ledgeGetup.anim(Math.min(f, 24));
+    case 'ledgeJump': return L.ledgeJump.anim(f);
+    case 'ledgeRoll': return L.ledgeRoll.anim(Math.min(f, 35));
+    case 'shield': case 'shieldDrop': { // the terminal shrinks a little, cracks and fades as the shield wears down
+      const p = D.shield.anim(P.state === 'shieldDrop' ? Math.min(50 + f, 59) : f < 4 ? f : 4 + (f - 4) % 46);
+      if (p.shield) p.shield *= 0.75 + 0.25 * P.shield; p.wear = 1 - P.shield; return p; // (Duo's phone reads wear as its battery)
+    }
+    case 'shieldBreak': return { oopsMsg: P.oopsMsg, ...SB.anim(Math.min(f, SB.frames - 1)) }; // a fighter's own break message wins over Claw'd's random one
+    case 'airDodge': { const p = D[P.dodgeAnim].anim(Math.min(f, AD.frames - 1)); p.rot = (p.rot || 0) + P.dodgeTilt * Math.min(1, f / 3, Math.max(0, (AD.frames - f) / 10)); return p; }
+    case 'spotDodge': case 'rollForward': case 'rollBack': return D[P.state].anim(Math.min(f, D[P.state].frames - 1));
+    case 'ledgeDrop': return L.ledgeDrop.anim(Math.min(f, 16));
+    case 'upSpecial': { // the cord: out along its aim, or taut to the lip it's plugged into
+      const T = P.teth, p = T.side || T.link != null ? { ...US.reelPose } : US.anim(Math.min(f, US.startup + US.active + US.endlag - 1));
+      delete p.tether; delete p.air;
+      const [hx, hy] = clawdHand(p, P.face), ax = P.x + P.w / 2 + hx, ay = P.y + P.h + hy, lx = T.side < 0 ? stage.x : stage.x + stage.w;
+      if (T.side) Object.assign(p, { tether: [Math.hypot(lx - ax, stage.y - ay), Math.atan2(ay - stage.y, P.face * (lx - ax))], plugged: true });
+      else if (T.link != null) { const px = T.bag.x + T.at[0], py = T.bag.y + T.at[1]; Object.assign(p, { tether: [Math.hypot(px - ax, py - ay), Math.atan2(ay - py, P.face * (px - ax))], plugged: true, flow: T.link / 24 }); }
+      else if (T.len) p.tether = [T.len, T.ang];
+      return p;
+    }
+    case 'hold': return GR.hold.anim(f % 60, 60);
+    case 'hitstun': return R.hitstun.anim(Math.min(f, P.stun - 1), P.stun);
+    case 'tumble': return R.tumble.anim(f % 40, 40);
+    case 'knockdown': return R.knockdown.anim(f);
+    case 'getup': case 'tech': return R[P.state].anim(Math.min(f, R[P.state].frames - 1));
+    case 'respawn': return { ...M.idle.anim(f % 120, 120), pad: 1, padMark: R.respawn.mark, say: [R.respawn.say, Math.min(1, f / 10)] };
+    case 'specialFall': return M.fall.anim(f % 40, 40); // helpless
+    case 'tunnel': return { mound: f, moving: P.tun.steered ? !!(keys.left || keys.right) : true };
+  }
+  if (P.glide) return M.glide.anim(f % 48, 48);
+  if (P.fastFall) return M.fastFall.anim(f % 24, 24);
+  if (P.vy > 450) return M.fall.anim(f % 40, 40);
+  // rising / floating: pick the jump-arc frame from vertical speed (stretched going up, tucked at the peak, reaching down)
+  return M.fullHop.anim(7 + 48 * Math.min(1, Math.max(0, (P.vy + JUMP) / (JUMP + 450))), 64);
+}
+
+// ---------- render ----------
+function surfaceBelow() {
+  const cx = P.x + P.w / 2, feet = P.y + P.h;
+  let best = null;
+  for (const s of [stage, ...plats]) if (cx > s.x && cx < s.x + s.w && s.y >= feet - 1 && (best === null || s.y < best)) best = s.y;
+  return best;
+}
+
+function render(t) {
+  seed = Math.floor(t * 8) * 7919 + 1;
+  ctx.clearRect(0, 0, W, H);
+  ctx.lineCap = ctx.lineJoin = 'round';
+
+  // faint pencil background (far away: follows the camera at half strength)
+  ctx.save(); view(0.5);
+  ctx.strokeStyle = INK; ctx.globalAlpha = 0.18; ctx.lineWidth = 1.5;
+  ellipse(1040, 150, 62, 62, 2);
+  line(40, 470, 330, 440, 3, 1); line(330, 440, 620, 468, 3, 1); line(700, 460, 1000, 430, 3, 1); line(1000, 430, 1240, 462, 3, 1);
+  ctx.globalAlpha = 1; ctx.restore();
+
+  ctx.save(); view();
+
+  // main stage
+  ctx.fillStyle = '#e3d9c6'; path(stagePoly); ctx.fill();
+  ctx.strokeStyle = INK;
+  hatch([[240, 532], [1040, 532], [960, 610], [320, 610]]);
+  ctx.lineWidth = 2.6; poly(stagePoly, 1.6);
+  ctx.lineWidth = 1.4; line(250, 512, 1030, 512, 1.2, 1);
+
+  // platforms
+  for (const pl of plats) {
+    if (pl.lego) { if (pl.life - pl.t > 1.5 || Math.floor(pl.t * 10) % 2) drawLegoPlate(pl); continue; } // blinks before it goes
+    const r = [[pl.x, pl.y], [pl.x + pl.w, pl.y], [pl.x + pl.w - 8, pl.y + 12], [pl.x + 8, pl.y + 12]];
+    ctx.fillStyle = '#e3d9c6'; path(r); ctx.fill();
+    hatch(r, 9, 0.35);
+    ctx.lineWidth = 2.2; poly(r, 1.3);
+  }
+
+  // shadows
+  const all = [...fighters.filter(c => c !== human), human]; // each drawn with its own globals in; P1 on top
+  for (const c of all) {
+    use(c); const sy = surfaceBelow();
+    if (sy === null || P.state === 'ko') continue;
+    const dist = sy - (P.y + P.h), s = Math.max(0.25, 1 - dist / 400);
+    ctx.globalAlpha = 0.35 * s;
+    ctx.fillStyle = 'rgba(42,38,34,0.35)';
+    ctx.beginPath(); ctx.ellipse(P.x + P.w / 2, sy, 44 * s, 5 * s, 0, 0, 6.28); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  drawTargets(t);
+  for (const c of all) { // what each has out
+    use(c);
+    if (sub) drawSub();
+    for (const k of bricks) if (k.m.life - k.t > 1.5 || Math.floor(k.t * 10) % 2) drawLooseBrick(k); // blinks before it goes
+    for (const r of rockets) drawLegoRocket(r);
+    for (const b of booms) drawLegoBoom(b.x, b.y, b.t, b.r);
+    if (thrown) drawLegoHead(thrown);
+    if (nelly) drawNelly(nelly.x + nelly.w / 2, nelly.y + nelly.h, nelly.t, nelly.face);
+    if (wreck) wreck.m.wreck.draw(wreck.x, wreck.y, Math.atan2(wreck.vx, -wreck.vy), wreck.boom);
+    if (cart && !cart.done) { const c = cart, air = c.ground ? 0 : Math.max(-0.25, Math.min(0.3, c.vy / 2500)); // noses down as it falls, a wheelie as it sets off
+      fighter.art(c.x + c.w / 2, c.y + c.h, { car: 1, empty: P.state !== 'ride', squint: true, wheel: c.dist / 11, rot: air - 0.1 * Math.max(0, 1 - c.t / 0.15) }, c.face); }
+    for (const sh of shots) { const k = Math.min(1, (sh.pr.life - sh.t) / 0.1); sh.m.shotArt ? sh.m.shotArt(sh.x, sh.y, Math.min(k, sh.t / 0.1), Math.sign(sh.vx) || 1) : (sh.pr.draw || drawSpark)(sh.x, sh.y, sh.r * k, sh.t * 14 * Math.sign(sh.vx), sh); } // shrinks away at max range
+    if (P.state === 'upSpecial' && US.warp) US.marker(P.warp[0], P.warp[1], P.f); // where the warp's headed
+  }
+
+  // fighters (flicker after respawn)
+  for (const d of fx) d.draw ? d.draw(d.x, d.y, d.t) : drawDust(d.x, d.y, d.t, d.dir);
+  for (const c of all) {
+    use(c);
+    // x / air in poses are preview-only root motion; here physics moves Claw'd
+    if (P.state !== 'ride' && P.state !== 'ko' && !(P.inv > 0 && Math.floor(t * 14) % 2)) { const pose = clawdPose(); ctx.globalAlpha = intangible() ? 0.5 : 1; drawFighter(P.x + P.w / 2, P.y + P.h, { ...pose, x: P.state in MOVES && !P.ledge ? pose.x : 0, ...powered(pose), ...toast(), ...(P.batt || (P.state === 'downSpecial' && DOWN_B.charge) ? { batt: P.batt } : {}), headless: pose.headless || !!thrown, gold: pose.gold || (P.gold > 0 && (P.gold > 2 || Math.floor(t * 8) % 2)), mech: pose.mech || P.mech > 0, ...streakPose(pose) }, P.face); ctx.globalAlpha = 1; } // attacks lean and come back
+    if (P.state === 'booklet') { const B = MOVES.booklet; drawLegoBooklet(P.x + P.w / 2, P.y - 12, B.builds.map(k => MOVES[k]), P.bk.i, Math.min(1, P.f / B.open), P.studs); } // Lego Man's pick list
+    if (P.warn) drawLegoWarn(P.x + P.w / 2, P.y - 14 - lift(), P.warn.text, P.warn.t / WARN_T, P.warn.icon);
+    else if (foes.length && P.state !== 'ko' && P.state !== 'booklet') drawMark(c);
+  }
+  drawStuck();
+  ctx.restore();
+  for (const c of all) { use(c); if (P.state === 'ko') { const p = R.ko.anim(R.ko.blastAt + P.f); p.blast[1] = P.ko[2]; drawClawd(P.ko[0], P.ko[1] + 2.5 * CV, { ...p, x: 0 }); } } // KO blast: on the screen's edge (x = the preview's drift)
+  use(human);
+
+  // hud
+  drawHealth(t);
+  if (paused) drawPause(t);
+}
+
+// the fighter in play; anyone but Claw'd is drawn inside his effects (speed lines, dizzy stars, respawn pad…), stretched to its height,
+// minus his terminal shield and its shards: shield / wear / shatter are theirs to draw
+const drawFighter = (cx, b, p, face) => drawClawd(cx, b, fighter.art === drawClawd ? p : { ...p, shield: 0, shatter: null, pad: fighter.pad ? 0 : p.pad, sy: (p.sy ?? 1) * fighter.box[1] / 50, body: () => fighter.art(cx, b, p, face) }, face);
+
+// the up special's toasts ("connection refused" on a miss, "mcp connected" plugging into the bag): stay up TOAST frames whatever
+// Claw'd does next (landing, getting up…). P.toastMsg = OOPS index or [headline, detail], P.toastOk = success style
+const TOAST = 150;
+const toast = () => P.toastT == null ? {} : { oops: Math.min(1, P.toastT / 6, (TOAST - P.toastT) / 12), oopsMsg: P.toastMsg, oopsOk: P.toastOk };
+
+// Duo's streak: buff (flickering back to the owl over its last half second; the down special draws its own way in), and the flame
+// that bursts up behind it, with a shout, when the meter fills
+function streakPose(pose) {
+  if (!DOWN_B.streak || P.state === 'downSpecial') return {};
+  const lit = P.lit != null && P.lit < 1.2 && !pose.flame ? { flame: [100 * Math.min(1, P.lit / 0.12), Math.min(1, (1.2 - P.lit) / 0.5)], say: pose.say || ['🔥 streak full!', Math.min(1, (1.2 - P.lit) / 0.3)] } : {};
+  return { buff: P.buff > 0 ? Math.min(1, P.buff / 0.5) : 0, eyeFire: P.streak >= 1, ...lit, ...(pose.say && lift() ? { say: [pose.say[0], pose.say[1], (pose.say[2] || 0) + lift()] } : {}) }; // captions over buff Duo's head
+}
+const lift = () => P.buff > 0 ? DOWN_B.streak.lift : 0; // how far buff Duo stands over its box
+
+// effort tiers stay on Claw'd until KO: its aura, and 5% more size per tier (the neutral special's own pose already has both)
+function powered(pose) {
+  if (!P.think || P.state === 'neutralSpecial') return {};
+  const g = 1 + 0.05 * P.think;
+  return { aura: P.think, sx: (pose.sx ?? 1) * g, sy: (pose.sy ?? 1) * g };
+}
+
+// the subagent: the fighter at half size, popping in, running (or falling); once done just its toast, over where it poofed
+function drawSub() {
+  const S = DOWN_B.sub, bx = sub.x + sub.w / 2, by = sub.y + sub.h, fr = Math.floor(sub.t * 60);
+  if (sub.done) return S.report && drawOops(bx, sub.y - 4, Math.min(1, sub.done / 0.1, (S.report - sub.done) / 0.2), DONE, true);
+  const k = S.scale * Math.min(1, 0.4 + sub.t / 0.15), pose = !sub.ground ? M.fall.anim(fr % 40, 40) : S.speed ? M.run.anim(fr % 24, 24) : M.idle.anim(fr % 120, 120); // a plush that stays put just sits
+  ctx.save(); ctx.translate(bx, by); ctx.scale(k, k); ctx.lineWidth = 2; fighter.art(0, 0, { ...pose, x: 0 }, sub.face); ctx.restore();
+}
+
+// the training bag (turned to face Claw'd), shaking when hit, its damage % floating above it
+function drawTargets(t) {
+  for (const b of bags) {
+    const sh = b.hitT * 14, bx = b.x + b.w / 2 + (Math.random() - 0.5) * sh + (b.pinT > 0 ? Math.sin(t * 50) * 1.5 : 0), by = b.y + b.h; // pinned: struggling
+    FIGHTER[b.id].draw(bx, by, { rot: b.rot }, Math.sign(P.x + P.w / 2 - bx) || -1, t);
+    drawOn(b, bx);
+    ctx.font = '700 30px Caveat, cursive'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = INK;
+    const pct = Math.round(b.dmg) + '%';
+    ctx.strokeText(pct, bx, b.y - 12); ctx.fillStyle = dmgColor(b.dmg); ctx.fillText(pct, bx, b.y - 12);
+  }
+  ctx.textAlign = 'left';
+}
+const drawStuck = () => { for (const c of fighters) drawOn(c.P, c.P.x + c.P.w / 2); ctx.textAlign = 'left'; }; // over the fighters
+// what's on a target (the bag or a fighter), centred on bx
+function drawOn(b, bx) {
+  if (b.pinT > 0) drawPin(...b.pinAt, Math.min(1, b.pinT * 5)); // Wumpus's pin, still stuck through it (fades as it pops free)
+  if (b.grabbed && b.pings) { // unread pings from Wumpus's pummel: a red badge on its shoulder
+    const x = bx + b.w / 2 - 2, y = b.y + 4; ctx.fillStyle = '#ed4245'; ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '700 11px ui-sans-serif, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.pings, x, y + 0.5); ctx.textBaseline = 'alphabetic';
+  }
+  if (b.slowT > 0) { ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = INK; ctx.fillText(`slowmode · ${Math.ceil(b.slowT)}s`, bx, b.y - (b.id === 'bag' ? 44 : 10)); } // Nelly got it
+  if (b.sticker) b.sticker.draw(bx, b.y + b.h * 0.45, b.rot, Math.min(1, (b.sticker.secs - b.sticker.t) / 0.3)); // fades at the end
+  const g = b.grabbed; if (g?.ratio) g.c.GR.hold.ratio.draw(bx, b.y - 44, g.ratio); // the holder's ratio meter over whoever it's holding
+}
+// under a fighter's feet when there are CPUs: whose is whose (P1 and its allies orange, a CPU against it grey, like their tags on the select screen); overhead is left to the moves' own text
+function drawMark(c) {
+  const x = P.x + P.w / 2, y = P.y + P.h + 8, you = c.team === human.team, text = c === human ? 'P1' : you ? 'ALLY' : 'CPU';
+  ctx.font = '700 17px Caveat, cursive'; ctx.textAlign = 'center'; const w = ctx.measureText(text).width + 12;
+  ctx.fillStyle = you ? CLAWD : '#6b7280'; ctx.beginPath(); ctx.roundRect(x - w / 2, y, w, 17, 4); ctx.moveTo(x - 5, y + 1); ctx.lineTo(x, y - 5); ctx.lineTo(x + 5, y + 1); ctx.fill();
+  ctx.fillStyle = PAPER; ctx.fillText(text, x, y + 13); ctx.textAlign = 'left';
+}
+
+// hud: P1's badge top right, the CPUs' in a row to its left (the training bag keeps its % overhead instead)
+function drawHealth(t) {
+  const portrait = (F, face, p = {}, up = 0) => () => { const h = F.box[1] + up, k = Math.min(1, 44 / h / 0.8); ctx.scale(k, k); F.draw(0, h / 2, p, face, t); }; // fit the taller fighters in the circle
+  const meter = (Q, S) => S && (Q.buff > 0 ? [Q.buff / S.time, true] : [Q.streak, false]); // Duo's streak meter: filling, or draining while buff
+  badge(W - 120, P.dmg, P.hitT, portrait(fighter, 1, { buff: P.buff > 0 ? 1 : 0, eyeFire: P.streak >= 1 }, lift()), stocks, meter(P, DOWN_B.streak), t);
+  if (NEUTRAL_B.studs) drawLegoStuds(W - 66, 44, P.studs); // Lego Man's studs, by his badge
+  foes.forEach((c, i) => {
+    ctx.globalAlpha = c.out ? 0.35 : 1; // faded once out
+    badge(W - 120 - (foes.length - i) * 150, c.P.dmg, c.P.hitT, portrait(c.fighter, -1, { buff: c.P.buff > 0 ? 1 : 0, eyeFire: c.P.streak >= 1 }, c.P.buff > 0 ? c.DOWN_B.streak.lift : 0), c.stocks, meter(c.P, c.DOWN_B.streak), t);
+  });
+  ctx.globalAlpha = 1;
+}
+
+// a fighter's damage badge: its portrait in a circle coloured by damage, the % overlapping it, and stock pips if it has lives
+function badge(x, dmg, hitT, portrait, lives, streak, t) {
+  const sh = hitT * 16, bx = x + (Math.random() - 0.5) * sh, by = 70 + (Math.random() - 0.5) * sh, R = 38; // shakes when hit
+  ctx.fillStyle = dmgColor(dmg); ctx.beginPath(); ctx.arc(bx, by, R, 0, 6.28); ctx.fill();
+  ctx.strokeStyle = INK; ctx.lineWidth = 2.6; ellipse(bx, by, R, R, 1.2);
+  ctx.save(); ctx.translate(bx, by); ctx.scale(0.8, 0.8); portrait(); ctx.restore(); // centred inside
+  // damage %, overlapping the circle's bottom right, filled with the same colour
+  ctx.font = '700 36px Caveat, cursive'; ctx.lineWidth = 3.5; ctx.textAlign = 'left'; ctx.strokeStyle = INK; // grows rightward, away from the circle
+  const pct = Math.round(dmg) + '%', tx = bx + 12, ty = by + R + 6;
+  ctx.strokeText(pct, tx, ty); ctx.fillStyle = dmgColor(dmg); ctx.fillText(pct, tx, ty);
+  // stocks: a white pip per life left (lost ones just go), wrapping the circle's bottom-left quarter, starting at the bottom
+  for (let i = 0; i < lives; i++) {
+    const a = Math.PI / 2 - 0.04 + i * 0.38, px = bx + (R + 11) * Math.cos(a), py = by + (R + 11) * Math.sin(a);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(px, py, 5, 0, 6.28); ctx.fill();
+    ctx.lineWidth = 1.6; ellipse(px, py, 5, 5, 0.5);
+  }
+  if (streak) drawStreakMeter(bx, by, R + 12, ...streak, t);
+}
+
+// Duo's streak meter, curved over the top of its badge like Little Mac's KO meter: an orange flame fill from the left, a flame riding its
+// tip. Full, it throbs and glows; buff (on), it's the time left, draining
+function drawStreakMeter(x, y, r, v, on, t) {
+  const a0 = Math.PI * 1.1, a1 = Math.PI * 1.9, at = a0 + (a1 - a0) * v, hot = on || v >= 1, pulse = hot ? 0.5 + 0.5 * Math.sin(t * 10) : 0;
+  const arc = (a, b) => { ctx.beginPath(); ctx.arc(x, y, r, a, b); ctx.stroke(); };
+  ctx.save(); ctx.lineCap = 'round';
+  ctx.strokeStyle = INK; ctx.lineWidth = 11; arc(a0, a1); // the track
+  ctx.strokeStyle = '#e5ddcb'; ctx.lineWidth = 6; arc(a0, a1);
+  if (v > 0.01) {
+    if (hot) { ctx.shadowColor = '#ff9600'; ctx.shadowBlur = 8 + 10 * pulse; }
+    ctx.strokeStyle = '#ff9600'; ctx.lineWidth = 6 + 1.5 * pulse; arc(a0, at);
+    ctx.shadowBlur = 0; ctx.strokeStyle = '#ffc800'; ctx.lineWidth = 2.5; arc(a0, at); // a hot yellow core
+  }
+  ctx.translate(x + r * Math.cos(at), y + r * Math.sin(at) + 5); ctx.scale(0.3 + 0.08 * pulse, 0.3 + 0.08 * pulse);
+  drawStreakFlame(0, 0, 44, v > 0.01 ? 1 : 0.35); // the flame on its tip (grey-faint when empty)
+  ctx.restore();
+}
+
+const menuY = () => home ? H / 2 + 140 : H / 2 + 10, MENU_DY = 46; // first menu row's baseline (home: below the title and lineup), row to row
+
+// home title: SUPA over a tilted, ink-shadowed SMACKDOWN, then the fighters lined up on a ground line, Claw'd in the middle
+function drawTitle(t) {
+  ctx.save(); ctx.translate(W / 2, 215); ctx.rotate(-0.035);
+  ctx.font = '700 44px Caveat, cursive'; ctx.letterSpacing = '14px'; ctx.fillStyle = INK; ctx.fillText('SUPA', 7, -112);
+  ctx.letterSpacing = '0px'; ctx.font = '700 132px Caveat, cursive';
+  ctx.fillText('SMACKDOWN', 5, 5); ctx.fillStyle = CLAWD; ctx.fillText('SMACKDOWN', 0, 0);
+  ctx.strokeStyle = INK; ctx.lineWidth = 3; line(-250, 22, 250, 18, 2, 2); // scribbled underline
+  ctx.restore();
+  const gy = H / 2 + 85;
+  ctx.strokeStyle = INK; ctx.lineWidth = 2; line(W / 2 - 420, gy, W / 2 + 420, gy, 1.2, 1);
+  [[-400, drawWumpus, 1], [-300, drawGrok, 1], [-200, drawLego, 1], [-100, drawSnoopy, 1], [0, drawClawd, 1], [100, drawMuse, -1], [200, drawSnoo, -1], [300, drawAndroid, -1], [400, drawDuo, -1]].forEach(([x, draw, face], i) => {
+    ctx.save(); ctx.translate(W / 2 + x, gy); ctx.scale(1.4, 1.4); draw(0, 0, idleAt(t, i), face); ctx.restore();
+  });
+}
+// Claw'd's idle loop (every fighter can pose it) at time t, the k-th fighter out of step with the others so they don't breathe in unison
+const idleAt = (t, k = 0) => M.idle.anim((Math.floor(t * 60) + 47 * k) % 120, 120);
+
+function drawPause(t) {
+  // home: clean paper with ink; pause / game over: the frozen game dimmed with light text
+  if (home) ctx.clearRect(0, 0, W, H);
+  else { ctx.fillStyle = `rgba(38,35,31,${showControls ? 0.94 : 0.8})`; ctx.fillRect(0, 0, W, H); } // near-solid behind the controls
+  if (picking) return drawSelect(t);
+  if (vsT != null) return drawVersus((performance.now() - vsT) / 1000);
+  ctx.fillStyle = ctx.strokeStyle = home ? INK : '#efe7d6'; ctx.textAlign = 'center';
+  if (home && !showControls) {
+    drawTitle(t);
+  } else if (!showControls) { ctx.font = '700 84px Caveat, cursive'; ctx.fillText(over ? (over === 'win' ? 'victory!' : 'defeat') : 'paused', W / 2, H / 2 - 70); }
+  if (showControls) drawKeys(home ? INK : '#efe7d6');
+  else {
+    ctx.font = '600 40px Caveat, cursive';
+    menu.forEach((m, i) => {
+      ctx.globalAlpha = i === sel ? 1 : 0.5;
+      ctx.fillText((i === sel ? '›  ' : '') + (m === 'sound' ? `sound ${sfx.on ? 'on' : 'off'}` : m === 'music' ? `music ${sfx.musicLevel ? Math.round(sfx.musicLevel * 100) + '%' : 'off'}` : m) + (i === sel ? '  ‹' : ''), W / 2, menuY() + i * MENU_DY);
+    });
+  }
+  ctx.globalAlpha = 0.6; ctx.font = '600 22px Caveat, cursive'; // key hints (none on the home screen)
+  if (showControls || !home) ctx.fillText(showControls ? keyEdit?.wait ? `press a key for ${ACTION_NAMES[ACTIONS[keyEdit.r]]} · Esc cancel` : '↑ ↓ ← → choose · Enter / click  change · Esc back' : '↑ ↓ choose' + (menu[sel] === 'music' ? ' · ← → volume' : '') + ' · Enter / Space / click select' + (over ? '' : ' · Esc resume'), W / 2, showControls ? H - 34 : H / 2 + 290);
+  ctx.globalAlpha = 1; ctx.textAlign = 'left';
+}
+
+// vs screen: the pick on a peach panel sliding in from the left, the CPUs (or the training bag) on an ink one from the right,
+// split on a slant, and a big VS popping in between. Plays VS_TIME seconds, then the fight starts (any key / click skips)
+const VS_TIME = 2.4;
+function drawVersus(s) {
+  const ease = k => 1 - (1 - Math.min(1, Math.max(0, k))) ** 3, slide = ease(s / 0.35), cut = 70;
+  const left = [[0, 0], [W / 2 + cut, 0], [W / 2 - cut, H], [0, H]], right = [[W / 2 + cut, 0], [W, 0], [W, H], [W / 2 - cut, H]];
+  ctx.save(); ctx.translate(-(1 - slide) * W / 2, 0);
+  ctx.fillStyle = '#f3cdb9'; path(left); ctx.fill(); ctx.strokeStyle = CLAWD; hatch(left, 16, 0.35);
+  ctx.save(); ctx.translate(W * 0.27, H * 0.7); ctx.scale(3.4, 3.4); fighter.draw(0, 0, {}, 1, s); ctx.restore();
+  ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.font = '700 76px Caveat, cursive'; ctx.fillText(fighter.name, W * 0.27, H * 0.88);
+  ctx.restore();
+  ctx.save(); ctx.translate((1 - slide) * W / 2, 0);
+  ctx.fillStyle = INK; path(right); ctx.fill(); ctx.strokeStyle = PAPER; hatch(right, 16, 0.08);
+  const glow = ctx.createRadialGradient(W * 0.73, H * 0.58, 10, W * 0.73, H * 0.58, 190); glow.addColorStop(0, 'rgba(242,237,226,0.22)'); glow.addColorStop(1, 'rgba(242,237,226,0)');
+  ctx.fillStyle = glow; ctx.fillRect(W / 2, 0, W / 2, H); // a spotlight on them
+  const foes = rolled.length ? rolled : ['bag'], n = foes.length, k = [3, 2.3, 1.8][n - 1], gap = [0, 200, 160][n - 1];
+  foes.forEach((id, i) => {
+    ctx.save(); ctx.translate(W * 0.73 + (i - (n - 1) / 2) * gap, H * 0.7); ctx.scale(k, k);
+    FIGHTER[id].draw(0, 0, { rot: id === 'bag' ? Math.sin(s * 3) * 0.04 : 0 }, -1, s); ctx.restore();
+  });
+  ctx.fillStyle = PAPER; ctx.textAlign = 'center'; ctx.font = `700 ${n > 1 ? 44 : 76}px Caveat, cursive`; ctx.fillText(foes.map(id => FIGHTER[id].name).join(' · '), W * 0.73, H * 0.88);
+  if (rolled.length) { ctx.font = '600 30px Caveat, cursive'; ctx.globalAlpha = 0.75; ctx.fillText(rolled.map((_, i) => LVL[lvls[i] ?? 3][0]).join(' · '), W * 0.73, H * 0.95); ctx.globalAlpha = 1; } // their levels
+  ctx.restore();
+  ctx.strokeStyle = PAPER; ctx.lineWidth = 6; line(W / 2 + cut, -10, W / 2 - cut, H + 10, 3, 2); // the seam
+  const pop = s < 0.3 ? 0 : 1 + 1.4 * (1 - ease((s - 0.3) / 0.18)); // VS slams in after the panels
+  if (pop) {
+    ctx.save(); ctx.translate(W / 2, H * 0.42); ctx.rotate(-0.08); ctx.scale(pop, pop);
+    ctx.font = '700 190px Caveat, cursive'; ctx.textAlign = 'center';
+    ctx.fillStyle = INK; ctx.fillText('VS', 8, 8); ctx.fillStyle = PAPER; ctx.fillText('VS', 0, 0);
+    ctx.restore();
+  }
+  ctx.textAlign = 'left';
+}
+
+// each fighter's company logo, drawn in a 28px box from its top-left: Claude, xAI, Discord, Google, Duolingo, Reddit, LEGO
+// the Claude and xAI marks, as SVG paths on a 24px grid (Simple Icons, LobeHub icons), and LEGO's on a 180px grid (Wikimedia Commons)
+const LOGO_CLAUDE = new Path2D('m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z');
+const LOGO_XAI = new Path2D('M6.469 8.776L16.512 23h-4.464L2.005 8.776H6.47zm-.004 7.9l2.233 3.164L6.467 23H2l4.465-6.324zM22 2.582V23h-3.659V7.764L22 2.582zM22 1l-9.952 14.095-2.233-3.163L17.533 1H22z');
+const LOGO_LEGO = [['#fff', new Path2D('M1.223 1.204V178.8H178.82l-.001-177.596H1.223Z')], ['#FFED00', new Path2D('M1.223 178.8V1.204h177.595l.001 177.596H1.223Zm162.171-86.743c1.555-4.606 3.316-11.5 3.606-17.033.221-4.174-.341-10.02-4.278-14.174-3.141-3.319-7.94-4.994-14.264-4.994-7.989 0-14.426 2.82-19.136 8.397l-1.243 1.466-.826-1.734c-.674-1.413-1.156-1.992-1.89-2.82-3.219-3.642-8.617-5.488-16.044-5.487-6.804 0-12.95 2.039-17.308 5.742l-1.103.937-.76-1.237c-2.058-3.345-7.188-5.51-13.065-5.51-8.456.002-16.988 1.15-22.135 9.447l-2.133 3.424-.167-4.033c-.13-3.12-.415-4.416-1.866-5.952-1.596-1.693-4.282-2.516-8.21-2.513-5.768 0-10.103 2.515-13.256 7.694-4.853 7.752-16.583 33.25-16.324 45.369.17 7.865 5.418 12.679 14.043 12.878 7.108.172 12.758-1.652 16.347-5.274l.916-.926.88.952c3.226 3.502 8.13 5.432 13.811 5.432 7.234 0 13.42-2.248 16.973-6.171l.97-1.069.912 1.121c3.326 4.086 8.466 6.228 14.863 6.202 8.343-.037 16.135-3.871 21.376-10.512l1.374-1.741.767 2.083c3.23 8.783 11.984 10.092 16.921 10.095 16.765 0 24.005-11.503 30.249-30.059Z')], ['#E3000B', new Path2D('M1.223 178.8V1.204h177.595l.001 177.596H1.223Zm163.283-73.742c2.321-4.784 6.688-16.757 7.495-23.222l.009-.071c.984-7.892 1.915-15.36-3.41-22.781-3.786-5.274-10.237-8.813-20.052-8.814-7.419 0-14.045 2.01-19.343 6.416-4.537-4.49-11.044-6.528-19.802-6.526-6.853 0-12.605 1.567-17.614 4.574-3.636-2.889-7.904-4.694-14.704-4.694-6.164-.001-14.818.32-21.347 5.863-1.509-3.079-4.577-5.497-13.04-5.497-7.796 0-14.156 3.688-18.327 10.535-5.569 8.895-17.39 34.582-17.088 48.614.225 10.563 8.146 17.84 19.62 18.113 6.895.161 12.767-1.315 17.248-4.289 4.052 2.92 9.23 4.497 14.984 4.497 6.886.001 13.098-1.807 17.704-5.053 4.173 3.308 9.648 5.096 15.842 5.096 8.036.003 15.503-2.772 21.535-8.051 4.114 5.246 11.162 7.973 19.721 7.974 16.023.001 24.346-9.854 30.569-22.684Z')], [INK, new Path2D('M0 180V0h180l-.003 179.997L0 180Zm177.52-2.479.002-175.043H2.476L2.48 177.52h175.04Z')], [INK, new Path2D('M167.615 54.301a4.305 4.305 0 0 1 4.309-4.313 4.307 4.307 0 0 1 4.315 4.313 4.304 4.304 0 0 1-4.315 4.312 4.302 4.302 0 0 1-4.309-4.312Zm4.311-3.457c1.918.001 3.477 1.545 3.472 3.463.005 1.918-1.56 3.467-3.472 3.467a3.458 3.458 0 0 1-3.453-3.467 3.448 3.448 0 0 1 3.453-3.463Zm1.679 4.81.515.9-1.117.007-.357-.73a3.643 3.643 0 0 0-.609-.874c-.176-.183-.337-.229-.734-.229l-.164.001-.002 1.83h-.921v-4.467h2.225c.959 0 1.409.535 1.409 1.243.002.675-.454 1.16-1.208 1.25l.002.025c.383.133.51.258.961 1.044Zm-2.469-2.868v1.227h.933c.624 0 .83-.304.821-.62 0-.394-.313-.61-.921-.61l-.833.003Zm-42.77 10.664c4.348-5.15 10.782-8.839 20.086-8.839 16.105 0 20.318 10.53 19.79 20.48-.313 5.98-2.232 13.104-3.666 17.365-6.37 18.931-14.02 30.902-31.43 30.9-7.945.002-15.216-3.098-18.081-10.908-5.233 6.622-13.231 10.944-22.35 10.989-6.97.034-12.39-2.429-15.835-6.66-4.09 4.514-11.011 6.581-17.89 6.583-6.18-.004-11.34-2.157-14.727-5.835-3.774 3.806-9.704 5.826-17.257 5.649-9.675-.232-15.08-6.037-15.258-14.095-.266-12.474 11.614-38.226 16.511-46.045 3.38-5.547 8.075-8.27 14.31-8.273 3.423.003 6.938.598 9.111 2.9 1.787 1.89 2.074 3.57 2.206 6.75 5.48-8.83 14.716-10.03 23.19-10.028 6.484 0 11.866 2.427 14.124 6.096 4.346-3.694 10.605-6.038 18.113-6.038 7.685.001 13.41 1.876 16.974 5.908.786.885 1.345 1.562 2.079 3.102ZM43.59 106.915c.286-3.016-1.973-6.273-10.986-4.709.895-2.005 2.226-4.753 3.737-7.873v-.001C41.183 84.334 47.874 70.519 48 65.114c.068-2.665-1.006-4.887-5.328-4.885-4.566-.002-7.43 1.908-9.776 5.762-5.088 8.125-15.893 32.635-15.666 43.229.128 6.056 4.823 8.446 10.04 8.568 7.19.167 15.472-1.852 16.321-10.874Zm18.35-13.03c-.6 1.614-1.728 4.994-2.639 8.571 2.958-.738 5.173-1.249 8.97-1.161 4.329.106 7.099 1.898 7.097 5.48 0 8.674-9.593 11.222-16.24 11.224-7.306 0-13.724-4.155-13.724-12.144 0-9.366 5.076-23.568 9.84-33.023 5.848-11.616 11.827-13.159 22.12-13.159 4.526 0 9.736 1.932 9.736 6.204 0 5.922-5.008 8.18-9.983 8.466-2.127.122-5.394.239-7.348.099 0 0-1.661 2.525-3.416 7.015 9.208-1.296 13.116.795 11.562 6.12-2.104 7.199-8.342 7.674-15.976 6.307Zm39.964-19.114c1.215-1.703 2.84-3.28 5.333-3.28 3.055 0 2.759 1.616 2.034 3.681-2.059 5.88 4.159 6.035 5.677 5.915 5.428-.423 8.419-3.93 9.155-9.904 1.008-8.134-5.845-11.257-14.532-11.257-14.48 0-20.164 8.856-25.586 21.516-2.547 5.947-5.755 16.11-5.754 22.582-.001 9.09 5.53 14.019 14.444 14.019 13.017 0 22.215-10.38 24.843-23.313.809-3.98 1.806-11.449-8.304-11.033-5.132.212-8.228 1.344-9.86 6.588-1.68 5.402 4.413 5.549 4.413 5.549-1.226 5.585-4.815 8.971-8.013 8.974-1.996 0-3.812-.866-3.204-5.09.903-6.176 6.687-21.198 9.354-24.947Zm60.017 7.407c-1.536 7.62-4.976 16.64-8.714 23.361-6.1 10.964-13.499 12.5-19.968 12.418-6.465-.077-13.754-2.461-13.809-12.439-.039-7.16 3.048-17.272 5.671-23.893 4.575-12.01 9.241-21.805 24.01-21.63 17.218.201 14.147 15.516 12.81 22.183Zm-21.598 19.537c2.394-4.055 9.133-22.448 9.317-27.047.054-1.34-.167-2.9-2.327-2.925-1.481-.021-2.769.266-3.927 2.055-2.602 3.382-10.219 24.185-10.09 28.335.047 1.492.88 2.795 2.712 2.795 2.11.002 3.279-1.45 4.315-3.213Z')]]; // white ground, yellow ring, red square, black outlines
+const LOGOS = [
+  () => { ctx.fillStyle = CLAWD; ctx.scale(28 / 24, 28 / 24); ctx.fill(LOGO_CLAUDE); },
+  () => { ctx.fillStyle = INK; ctx.scale(26 / 24, 26 / 24); ctx.fill(LOGO_XAI, 'evenodd'); },
+  () => { // Clyde
+    ctx.fillStyle = '#5865f2'; ctx.beginPath(); ctx.moveTo(7, 5);
+    for (const [qx, qy, x, y] of [[14, 8, 21, 5], [24.5, 5.8, 26, 10], [28.5, 14, 28, 21], [26, 23.5, 22, 24.5], [20.5, 23.5, 19.5, 21.5],
+      [14, 23, 8.5, 21.5], [7.5, 23.5, 6, 24.5], [2, 23.5, 0, 21], [-0.5, 14, 2, 10], [3.5, 5.8, 7, 5]]) ctx.quadraticCurveTo(qx, qy, x, y);
+    ctx.fill(); ctx.fillStyle = '#fff';
+    for (const ex of [9.5, 18.5]) { ctx.beginPath(); ctx.ellipse(ex, 15.5, 2.4, 2.8, 0, 0, 6.28); ctx.fill(); }
+  },
+  () => { // G: four arcs round an opening at the upper right, and the blue bar
+    ctx.lineWidth = 5; ctx.lineCap = 'butt';
+    for (const [c, a0, a1] of [['#ea4335', -0.8, -0.25], ['#fbbc05', 0.75, 1.2], ['#34a853', 0.25, 0.8], ['#4285f4', -0.02, 0.26]]) {
+      ctx.strokeStyle = c; ctx.beginPath(); ctx.arc(14, 14, 11, a0 * Math.PI, a1 * Math.PI); ctx.stroke();
+    }
+    ctx.fillStyle = '#4285f4'; ctx.fillRect(14, 11.5, 13.5, 5);
+  },
+  () => { // Duolingo's app icon: Duo's face on a green rounded square, the face cropped by its edges
+    ctx.scale(28 / 660, 28 / 660); ctx.translate(-667, -61);
+    ctx.fillStyle = '#58cc02'; ctx.beginPath(); ctx.roundRect(667, 61, 660, 660, 150); ctx.fill(); ctx.clip(); duoFace();
+  },
+  () => { // Snoo's head on an orange disc
+    ctx.fillStyle = '#ff4500'; ctx.beginPath(); ctx.arc(14, 14, 14, 0, 6.28); ctx.fill();
+    ctx.strokeStyle = ctx.fillStyle = '#fff'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(14, 12); ctx.lineTo(15.5, 6); ctx.lineTo(19, 5.5); ctx.stroke();
+    for (const [x, y, r] of [[20, 5.5, 2], [7, 13.5, 2.2], [21, 13.5, 2.2]]) { ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill(); }
+    ctx.beginPath(); ctx.ellipse(14, 17, 9, 6, 0, 0, 6.28); ctx.fill();
+    ctx.fillStyle = '#ff4500'; for (const ex of [10.5, 17.5]) { ctx.beginPath(); ctx.arc(ex, 16, 1.5, 0, 6.28); ctx.fill(); }
+  },
+  () => { // LEGO's red square with the outlined white wordmark
+    ctx.scale(28 / 177.6, 28 / 177.6); ctx.translate(-1.223, -1.204);
+    for (const [c, p] of LOGO_LEGO) { ctx.fillStyle = c; ctx.fill(p, 'evenodd'); }
+  },
+  () => { ctx.translate(14, 14); metaLoop(28, 15, 4); }, // Meta's ∞
+  snoopyLogo, // Snoopy's head on a red disc
+];
+// character select, Smash style: the roster along the top (click / Enter picks your fighter, then CPU dummies), a READY TO FIGHT band,
+// and the player slots along the bottom: P1 (the first pick) and up to three CPUs (the picks after it; click a slot to clear it).
+// No CPUs: the fight is against the training bag, shown faded in the first CPU slot once P1 has picked
+const MAX_CPUS = 3, TILES = ROSTER.length + 1, TILE_STEP = Math.min(172, (W - 28) / TILES), TILE = { w: TILE_STEP - 12, h: 150, y: 104 }, tileX = i => W / 2 + (i - (TILES - 1) / 2) * TILE_STEP - TILE.w / 2; // the last tile is Random; spacing shrinks to fit the row
+const BAND = { y: 280, h: 50 }, SLOT = { w: 280, h: 320, y: 368 }, slotX = i => W / 2 + (i - 1.5) * 300 - SLOT.w / 2;
+const MODE = { x: W - 290, y: 30, w: 250, h: 40 }; // teams / free-for-all switch, once there's more than one CPU
+let focus = 0, onBand = false; // keyboard focus: a roster tile, or the READY band
+const rect = (x, y, w, h) => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+function selectAt(x, y) {
+  if (x < 170 && y < 90) return { back: true };
+  for (let i = 0; i < TILES; i++) if (x > tileX(i) && x < tileX(i) + TILE.w && y > TILE.y && y < TILE.y + TILE.h) return { tile: i };
+  if (y > BAND.y && y < BAND.y + BAND.h) return { ready: true };
+  if (p1 && x > slotX(0) && x < slotX(0) + SLOT.w && y > SLOT.y && y < SLOT.y + SLOT.h) return { p1: true }; // clears the pick
+  for (let i = 1; i <= cpus.length; i++) if (x > pillX(i) && x < pillX(i) + PILL.w && y > PILL.y && y < PILL.y + PILL.h) return { level: [i - 1, (lvls[i - 1] + (x < pillX(i) + PILL.w / 2 ? -1 : 1) + LVL.length) % LVL.length] }; // left half ‹ / right half ›, wrapping
+  if (cpus.length > 1 && x > MODE.x && x < MODE.x + MODE.w && y > MODE.y && y < MODE.y + MODE.h) return { mode: true };
+  if (cpus.length > 1 && mode === 'teams') for (let i = 1; i <= cpus.length; i++) if (x > slotX(i) && x < slotX(i) + 170 && y > SLOT.y && y < SLOT.y + 44) return { side: i }; // its tag
+  for (let i = 1; i <= cpus.length; i++) if (x > slotX(i) && x < slotX(i) + SLOT.w && y > SLOT.y && y < SLOT.y + SLOT.h) return { slot: i };
+  return null;
+}
+// CPU levels (what they mean: CPU_LEVELS in src/cpu.js): a ‹ level › switch on each CPU's slot picks its own; a new CPU gets the last one picked (lvl)
+const LVL = [['beginner', '#9cc3e6'], ['easy', '#8fb573'], ['casual', '#c9c55a'], ['medium', '#e9b949'], ['skilled', '#e8833a'], ['hard', '#d9442e'], ['AI trained', '#8b5cf6']], PILL = { w: 200, h: 34, y: SLOT.y + SLOT.h - 104 }, pillX = i => slotX(i) + (SLOT.w - PILL.w) / 2; // AI trained = the one tuned against CPUs: fast, relentless
+let lvl = 3; // medium
+const addCpu = id => { if (cpus.length < MAX_CPUS) { cpus.push(id); lvls.push(lvl); sides.push(1); } };
+const pickTile = i => { const id = i === ROSTER.length ? 'random' : ROSTER[i]; p1 ? addCpu(id) : p1 = id; }; // the first pick is P1's fighter, the rest are CPUs
+function pickKey(code, a) { // ← → roster · ↓ ↑ to / from the band · Enter / Space pick (P1 first, then CPUs) or fight · Backspace undoes the last pick · 1 2 3 every CPU's level · M teams / free-for-all
+  const n = TILES;
+  if (a === 'left' || a === 'right') { focus = (focus + (a === 'left' ? n - 1 : 1)) % n; onBand = false; }
+  else if (a === 'down' || a === 'up') onBand = a === 'down';
+  else if (code === 'Enter' || code === 'Space') onBand ? p1 && versus() : pickTile(focus);
+  else if (code === 'Backspace' || code === 'Delete') cpus.length ? (cpus.pop(), lvls.pop(), sides.pop()) : p1 = null;
+  else if (code === 'KeyM') mode = mode === 'ffa' ? 'teams' : 'ffa';
+  else if (/^Digit[1-7]$/.test(code)) lvls.fill(lvl = +code[5] - 1);
+  else return false;
+  return true;
+}
+function tag(x, y, text, fill, right) { // a little filled label, e.g. P1 / CPU 2
+  ctx.font = '700 20px Caveat, cursive'; const w = ctx.measureText(text).width + 14, x0 = right ? x - w : x;
+  ctx.fillStyle = fill; ctx.beginPath(); ctx.roundRect(x0, y, w, 24, 5); ctx.fill();
+  ctx.fillStyle = PAPER; ctx.textAlign = 'left'; ctx.fillText(text, x0 + 7, y + 18);
+}
+// the P1 / CPU badges on a roster tile picked by them
+function pickTags(x, y, id) {
+  const n = cpus.filter(c => c === id).length;
+  if (id === p1) tag(x + TILE.w - 8, y + 8, 'P1', CLAWD, true);
+  if (n) tag(x + TILE.w - 8, y + (id === p1 ? 36 : 8), n > 1 ? `CPU ×${n}` : 'CPU', '#6b7280', true);
+}
+// a big orange question mark (a Random pick) centred on the origin; Caveat's ? slants right, so it's stood upright, wobbling a little
+function drawQuestion(size, t) {
+  ctx.save(); ctx.rotate(-0.2 + Math.sin(t * 3) * 0.06); ctx.textAlign = 'left'; ctx.font = `700 ${size}px Caveat, cursive`;
+  const m = ctx.measureText('?'), qx = (m.actualBoundingBoxLeft - m.actualBoundingBoxRight) / 2, qy = (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2; // centre the glyph's ink
+  ctx.fillStyle = INK; ctx.fillText('?', qx + size / 32, qy + size / 32); ctx.fillStyle = CLAWD; ctx.fillText('?', qx, qy); ctx.restore();
+}
+function drawSelect(t) {
+  ctx.fillStyle = ctx.strokeStyle = INK; ctx.textAlign = 'center';
+  ctx.font = '700 56px Caveat, cursive'; ctx.fillText(p1 ? 'now pick your opponents' : 'choose your fighter', W / 2, 74);
+  ctx.font = '600 32px Caveat, cursive'; ctx.textAlign = 'left'; ctx.fillText('‹ back', 40, 60);
+  if (cpus.length > 1) { // the mode switch
+    ctx.fillStyle = mode === 'ffa' ? '#6b7280' : CLAWD; ctx.beginPath(); ctx.roundRect(MODE.x, MODE.y, MODE.w, MODE.h, 20); ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.4; ctx.stroke();
+    ctx.fillStyle = PAPER; ctx.textAlign = 'center'; ctx.font = '700 28px Caveat, cursive'; ctx.fillText(mode === 'ffa' ? '‹ free-for-all ›' : '‹ teams ›', MODE.x + MODE.w / 2, MODE.y + 29); ctx.textAlign = 'left';
+  }
+
+  ROSTER.forEach((id, i) => { // roster tiles: portrait, name, logo, and a P1 / CPU badge once picked
+    const x = tileX(i), y = TILE.y, on = !onBand && focus === i, r = rect(x, y, TILE.w, TILE.h);
+    ctx.fillStyle = '#e3d9c6'; path(r); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.rect(x + 2, y + 2, TILE.w - 4, TILE.h - 4); ctx.clip(); // keep antennae / ears inside
+    const { k = 1.35, x: dx = 0 } = FIGHTER[id].tile || {}; ctx.translate(x + TILE.w / 2 + dx, y + 108); ctx.scale(k, k); FIGHTER[id].draw(0, 0, {}, 1, t); ctx.restore();
+    ctx.strokeStyle = on ? CLAWD : INK; ctx.lineWidth = on ? 3.6 : 2; poly(r, 1.1);
+    ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.font = '700 28px Caveat, cursive'; ctx.fillText(FIGHTER[id].name, x + TILE.w / 2, y + TILE.h - 12);
+    ctx.save(); ctx.translate(x + 9, y + 9); ctx.scale(0.8, 0.8); LOGOS[i](); ctx.restore();
+    pickTags(x, y, id);
+  });
+  { // Random: a big question mark; picking it rolls one of the fighters
+    const x = tileX(ROSTER.length), y = TILE.y, on = !onBand && focus === ROSTER.length, r = rect(x, y, TILE.w, TILE.h);
+    ctx.fillStyle = '#e3d9c6'; path(r); ctx.fill(); ctx.strokeStyle = INK; hatch(r, 12, 0.15);
+    ctx.save(); ctx.translate(x + TILE.w / 2, y + (TILE.h - 34) / 2); drawQuestion(96, t); ctx.restore(); // above the name
+    ctx.strokeStyle = on ? CLAWD : INK; ctx.lineWidth = on ? 3.6 : 2; poly(r, 1.1);
+    ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.font = '700 28px Caveat, cursive'; ctx.fillText('Random', x + TILE.w / 2, y + TILE.h - 12);
+    pickTags(x, y, 'random');
+  }
+
+  // READY TO FIGHT: a slightly slanted orange band right across
+  const br = [[0, BAND.y + 6], [W, BAND.y - 6], [W, BAND.y + BAND.h - 6], [0, BAND.y + BAND.h + 6]], txt = !p1 ? 'PICK YOUR FIGHTER' : onBand ? '›  READY TO FIGHT  ‹' : 'READY TO FIGHT';
+  ctx.fillStyle = CLAWD; path(br); ctx.fill(); ctx.strokeStyle = INK; hatch(br, 14, 0.18); ctx.lineWidth = onBand ? 3.4 : 2; poly(br, 1.2);
+  ctx.save(); ctx.translate(W / 2, BAND.y + BAND.h / 2 + 15); ctx.rotate(-0.01); ctx.textAlign = 'center'; ctx.font = '700 46px Caveat, cursive';
+  ctx.fillStyle = INK; ctx.fillText(txt, 3, 3); ctx.fillStyle = PAPER; ctx.fillText(txt, 0, 0); ctx.restore();
+
+  for (let i = 0; i <= MAX_CPUS; i++) { // player slots: P1, then the CPUs
+    const x = slotX(i), y = SLOT.y, id = i ? cpus[i - 1] ?? (i === 1 && !cpus.length && p1 ? 'bag' : null) : p1, ghost = id === 'bag', r = rect(x, y, SLOT.w, SLOT.h);
+    ctx.textAlign = 'center';
+    if (!id) { // empty slot: P1 waiting for its pick, or room for a CPU
+      ctx.globalAlpha = i ? 0.4 : 0.8; ctx.strokeStyle = ctx.fillStyle = i ? INK : CLAWD; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.strokeRect(x, y, SLOT.w, SLOT.h); ctx.setLineDash([]);
+      ctx.font = '700 44px Caveat, cursive'; ctx.fillText(i ? '+ CPU' : 'P1', x + SLOT.w / 2, y + SLOT.h / 2);
+      ctx.font = '600 22px Caveat, cursive'; ctx.fillText(i ? (p1 ? 'pick a fighter above' : 'after your fighter') : 'pick your fighter above', x + SLOT.w / 2, y + SLOT.h / 2 + 32); ctx.globalAlpha = 1; continue;
+    }
+    ctx.globalAlpha = ghost ? 0.5 : 1;
+    ctx.fillStyle = i ? '#d6d2c9' : '#f3cdb9'; path(r); ctx.fill(); ctx.strokeStyle = i ? INK : CLAWD; hatch(r, 16, 0.12);
+    const cpu = i && !ghost; // (standing a little higher, over its level pills)
+    ctx.save(); ctx.beginPath(); ctx.rect(x + 2, y + 2, SLOT.w - 4, SLOT.h - 64); ctx.clip();
+    ctx.translate(x + SLOT.w / 2, y + (cpu ? 208 : 240)); ctx.scale(2.4, 2.4); FIGHTER[id].draw(0, 0, {}, i ? -1 : 1, t); ctx.restore();
+    ctx.fillStyle = INK; path(rect(x, y + SLOT.h - 62, SLOT.w, 62)); ctx.fill(); // name plate
+    ctx.fillStyle = PAPER; ctx.font = '700 40px Caveat, cursive'; ctx.fillText(FIGHTER[id].name, x + SLOT.w / 2, y + SLOT.h - 18);
+    ctx.strokeStyle = i ? INK : CLAWD; ctx.lineWidth = i ? 2.4 : 3.4; poly(r, 1.2);
+    const ally = i && !ghost && cpus.length > 1 && mode === 'teams' && !sides[i - 1], teamed = i && !ghost && cpus.length > 1 && mode === 'teams';
+    tag(x + 10, y + 10, i ? (ghost ? 'no CPUs' : teamed ? `CPU ${i} · ${ally ? 'with you' : 'against you'}` : `CPU ${i}`) : 'P1', i && !ally ? '#6b7280' : CLAWD);
+    if (!ghost) { ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.font = '700 34px Caveat, cursive'; ctx.fillText('×', x + SLOT.w - 20, y + 32); }
+    if (cpu) { // its level: ‹ name ›
+      const [name, col] = LVL[lvls[i - 1]], px = pillX(i), cy = PILL.y + 25;
+      ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(px, PILL.y, PILL.w, PILL.h, 17); ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.4; ctx.stroke();
+      ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.font = '700 26px Caveat, cursive'; ctx.fillText(name, px + PILL.w / 2, cy);
+      ctx.font = '700 34px Caveat, cursive'; ctx.fillText('‹', px + 18, cy + 2); ctx.fillText('›', px + PILL.w - 18, cy + 2);
+    }
+  }
+  if (cpus.length) { ctx.fillStyle = INK; ctx.globalAlpha = 0.6; ctx.textAlign = 'center'; ctx.font = '600 22px Caveat, cursive'; ctx.fillText('click ‹ › on a CPU to change its level · 1–7 set them all · AI trained = tuned against other AIs' + (cpus.length > 1 ? mode === 'teams' ? ' · click a CPU\'s tag to switch its side' : ' · everyone fights everyone' : ''), W / 2, H - 9); ctx.globalAlpha = 1; }
+  ctx.textAlign = 'left';
+}
+
+// the controls screen: a row per action with its two slots (KEYS_AT.x[set], row y = KEYS_AT.y + r * KEYS_AT.dy), then reset under them
+const KEYS_AT = { x: [560, 800], y: 200, dy: 40, w: 190, h: 34 }, ACTION_NAMES = { attack: 'light' };
+function slotAt(x, y) {
+  const r = Math.round((y + 8 - KEYS_AT.y) / KEYS_AT.dy), c = KEYS_AT.x.findIndex(cx => Math.abs(x - cx) < KEYS_AT.w / 2);
+  if (r === ACTIONS.length + 1 && Math.abs(x - 680) < KEYS_AT.w / 2) return { r: ACTIONS.length, c: 0 }; // reset (a row's gap below the slots)
+  return r >= 0 && r < ACTIONS.length && c >= 0 && Math.abs(y + 8 - KEYS_AT.y - r * KEYS_AT.dy) < KEYS_AT.h / 2 ? { r, c } : null;
+}
+function drawKeys(fg) {
+  const { x: X, y: Y, dy, w, h } = KEYS_AT, box = (cx, y, on) => { ctx.globalAlpha = on ? 1 : 0.25; ctx.strokeStyle = on ? CLAWD : fg; ctx.lineWidth = on ? 2.6 : 1.4; ctx.beginPath(); ctx.roundRect(cx - w / 2, y - 25, w, h, 6); ctx.stroke(); };
+  ctx.font = '700 72px Caveat, cursive'; ctx.textAlign = 'center'; ctx.fillText('controls', W / 2, 92);
+  ctx.font = '700 30px Caveat, cursive'; ctx.globalAlpha = 0.8; X.forEach((cx, s) => ctx.fillText(`keys ${s + 1}`, cx, Y - 42));
+  ACTIONS.forEach((a, r) => {
+    const y = Y + r * dy;
+    ctx.globalAlpha = 0.8; ctx.fillStyle = fg; ctx.textAlign = 'right'; ctx.font = '700 28px Caveat, cursive'; ctx.fillText(ACTION_NAMES[a] ?? a, X[0] - w / 2 - 24, y);
+    X.forEach((cx, s) => {
+      const on = keyEdit.r === r && keyEdit.c === s, waiting = on && keyEdit.wait;
+      box(cx, y, on); ctx.globalAlpha = 1; ctx.fillStyle = waiting ? fg : CLAWD; ctx.textAlign = 'center'; ctx.font = '700 26px Caveat, cursive';
+      ctx.fillText(waiting ? 'press a key…' : keyName(binds[s][a]), cx, y);
+    });
+  });
+  const y = Y + (ACTIONS.length + 1) * dy, on = keyEdit.r === ACTIONS.length;
+  box(680, y, on); ctx.globalAlpha = on ? 1 : 0.8; ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.font = '700 26px Caveat, cursive'; ctx.fillText('reset to defaults', 680, y);
+  ctx.globalAlpha = 1; ctx.fillStyle = ctx.strokeStyle = fg;
+}
+
+let last = performance.now(), acc = 0;
+function frame(now) {
+  let dt = Math.min(0.1, (now - last) / 1000); last = now;
+  const snap = Math.round(dt / (STEP / 2)) * STEP / 2; if (snap && Math.abs(dt - snap) < 0.002) dt = snap; // a 60 / 120 Hz frame's timing wobble would sometimes give 0 steps then 2 (a stutter): count it as exactly one refresh
+  acc += dt;
+  if (paused) acc = 0;
+  if (vsT != null && now - vsT > VS_TIME * 1000) fight();
+  let steps = 0;
+  while (!paused && acc >= STEP) { update(STEP); acc -= STEP; steps++; } // game over can pause mid-frame
+  if (!paused) stepCam(dt); // after the moves, so it frames what's drawn
+  sfx.music(over ? null : home || picking || vsT != null ? 'menu' : paused ? 'pause' : 'fight');
+  if (steps || paused) render(now / 1000); // a frame with no step would redraw the same picture (120 Hz+ screens: half the draws)
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+<script src="src/touch.js"></script>
+</body>
+</html>

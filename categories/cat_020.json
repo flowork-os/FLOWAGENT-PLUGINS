@@ -1,7 +1,7 @@
 {
   "category_id": "CAT-020",
   "category": "Sports Science & Athletics Performance",
-  "total_items": 1,
+  "total_items": 2,
   "items": [
     {
       "id": "chess",
@@ -14,6 +14,18 @@
       "shard": "index/ch/es/chess.json",
       "source_path": "plugins/ch/chess",
       "hash": "5772e3eb6550c474"
+    },
+    {
+      "id": "vibe-arcade",
+      "name": "Flowork Vibe Arcade",
+      "category_id": "CAT-020",
+      "category": "Sports Science & Athletics Performance",
+      "version": "1.1.0",
+      "description": "Curated 270+ AI Vibe-Coded Game Launcher & Sandboxed Player featuring Claude Opus 5.5, Sonnet 5.5, GPT-6 Astra, and Offline Standalone Games.",
+      "icon": "🕹️",
+      "shard": "index/vi/be/vibe_arcade.json",
+      "source_path": "plugins/vi/vibe-arcade",
+      "hash": "35f4c85501181759"
     }
   ]
 }

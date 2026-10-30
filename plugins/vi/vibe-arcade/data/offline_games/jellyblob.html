@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://jellyblob.win/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07041a" />
+  <title>JellyBlob.win — Free Online Multiplayer Jelly .io Game (No Download)</title>
+  <meta name="description" content="Play JellyBlob free in your browser: a squishy multiplayer .io arena. Eat glowing dew, hop over trails, splat rivals and go Supernova. Works on phone and PC." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta name="application-name" content="JellyBlob" />
+  <meta name="apple-mobile-web-app-title" content="JellyBlob" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="canonical" href="https://jellyblob.win/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/brand/icon-32.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="/brand/icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/brand/icon-180.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="preconnect" href="https://arena-ca.jellyblob.win" crossorigin />
+  <link rel="preload" href="/brand/logo-640.webp" as="image" type="image/webp" />
+  <script defer src="/traffic.js"></script>
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="JellyBlob.win" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:title" content="JellyBlob.win — the squishiest free multiplayer .io game" />
+  <meta property="og:description" content="Hop over trails, cut off rivals and go Supernova. Free in your browser — no download, works on phone and PC." />
+  <meta property="og:url" content="https://jellyblob.win/" />
+  <meta property="og:image" content="https://jellyblob.win/brand/social-card.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Glowing gelatin jellies racing across a neon pond in JellyBlob" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="JellyBlob.win — the squishiest free multiplayer .io game" />
+  <meta name="twitter:description" content="Hop over trails, cut off rivals and go Supernova. Free in your browser." />
+  <meta name="twitter:image" content="https://jellyblob.win/brand/social-card.jpg" />
+  <meta name="twitter:image:alt" content="Glowing gelatin jellies racing across a neon pond in JellyBlob" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://jellyblob.win/#org","name":"JellyBlob","url":"https://jellyblob.win/","logo":{"@type":"ImageObject","url":"https://jellyblob.win/brand/icon-512.png","width":512,"height":512}},{"@type":"WebSite","@id":"https://jellyblob.win/#website","name":"JellyBlob.win","alternateName":["JellyBlob","Jelly Blob"],"url":"https://jellyblob.win/","inLanguage":"en","publisher":{"@id":"https://jellyblob.win/#org"}},{"@type":["VideoGame","WebApplication"],"@id":"https://jellyblob.win/#game","name":"JellyBlob","url":"https://jellyblob.win/","image":"https://jellyblob.win/brand/social-card.jpg","description":"A free multiplayer .io arena of wobbly gelatin jellies. Eat glowing dew, cut rivals off with your trail, hop over theirs, stomp smaller jellies and go Supernova. Plays instantly in the browser on phone and desktop.","genre":["Arcade","Action","Multiplayer",".io game"],"playMode":["MultiPlayer","SinglePlayer"],"gamePlatform":["Web browser","Mobile web browser"],"applicationCategory":"GameApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires WebGL 2","inLanguage":"en","isAccessibleForFree":true,"numberOfPlayers":{"@type":"QuantitativeValue","minValue":1,"maxValue":150},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},"publisher":{"@id":"https://jellyblob.win/#org"},"author":{"@id":"https://jellyblob.win/#org"},"keywords":"jelly game, io game, free online multiplayer game, browser game, snake io alternative, slither style game, no download game"}]}</script>
+  <script type="module" crossorigin src="/assets/index-BLrqL7Cz.js"></script>
+</head>
+<body>
+  <noscript><div class="noscript"><h1>JellyBlob.win — free online multiplayer jelly game</h1><p>JellyBlob needs JavaScript and WebGL to run. Turn on JavaScript to play, or read <a href="/how-to-play">how to play</a>.</p></div></noscript>
+  <canvas id="gl"></canvas>
+  <div id="ui">
+    <!-- ================= MENU ================= -->
+    <section id="menu" class="screen lobby">
+      <div class="menu-shade"></div>
+      <h1 class="logo lb-logo"><img class="logo-img" src="/brand/logo-640.webp" srcset="/brand/logo-640.webp 640w, /brand/logo-1280.webp 1280w" sizes="(max-width: 860px) 60vw, 320px" alt="JellyBlob.win" width="640" height="203" /><span class="sr-only"> — free online multiplayer jelly game</span></h1>
+      <p class="sr-only">JellyBlob is a free multiplayer .io game you play instantly in your browser. Eat glowing dew to grow, hop over other jellies' trails, cut rivals off with your own, stomp smaller jellies and fill your Glow to go Supernova. <a href="/how-to-play">How to play</a></p>
+      <div class="card level-card lb-level" id="level-card" role="button" tabindex="0" aria-label="Your level and the rewards ahead">
+        <img class="lvl-badge" id="lvl-badge" alt="" width="64" height="64" />
+        <div class="lvl-info">
+          <div class="lvl-title">Level <b id="lvl-num2">1</b> <span class="lvl-rank" id="lvl-rank"></span><span class="xp-text" id="xp-text">0 / 120 XP</span></div>
+          <div class="xpbar"><i id="xp-fill"></i></div>
+          <div class="next-unlock" id="next-unlock"></div>
+        </div>
+      </div>
+      <div class="lb-actions">
+        <button id="open-account" class="acct-chip" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.4 9.3 4.35 4.35 0 0 0 7 18Z"/><path d="M12 10.5v5M9.8 13.2 12 15.5l2.2-2.3"/></svg><span id="acct-chip-text">Save progress</span></button>
+        <button id="fullscreen" class="icon-round fs-toggle" type="button" aria-label="Full screen" title="Full screen" hidden><svg class="ico fs-in" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ico fs-out" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+        <button id="open-settings" class="icon-round" type="button" aria-label="Settings" title="Settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg></button>
+      </div>
+      <aside class="lb-left" aria-label="Quests and challenges">
+        <div class="card goals-card" id="goals-card">
+          <button class="sheet-close" id="goals-close" type="button" aria-label="Close quests"></button>
+          <div class="tabs" role="tablist">
+            <button class="tab on" data-tab="daily" role="tab">Daily</button>
+            <button class="tab" data-tab="weekly" role="tab">Weekly</button>
+            <button class="tab" data-tab="runs" role="tab">Run</button>
+          </div>
+          <div class="tab-body" id="tab-daily"></div>
+          <div class="tab-body hidden" id="tab-weekly">
+            <div class="wk-head"><span class="wk-kicker">Weekly challenge</span><span class="wk-time" id="wk-time"></span></div>
+            <div class="wk-title" id="wk-title">Loading…</div>
+            <div class="wk-goal" id="wk-goal"></div>
+            <div class="xpbar wk-bar"><i id="wk-fill"></i></div>
+            <div class="wk-progress" id="wk-progress"></div>
+            <div class="wk-reward"><span class="wk-art" id="wk-art"></span><div><small id="wk-reward-label">Reward</small><b id="wk-reward"></b></div></div>
+            <ol class="wk-board" id="wk-board"></ol>
+            <div class="wk-cleared" id="wk-cleared"></div>
+          </div>
+          <div class="tab-body hidden" id="tab-runs"><ul id="chal-list"></ul></div>
+        </div>
+      </aside>
+      <div class="lb-hero"><canvas id="hero-jelly" class="hero-jelly" aria-hidden="true"></canvas></div>
+      <div class="lb-controls">
+        <label class="sr-only" for="name">Your jelly's name</label>
+        <input id="name" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Name your jelly" />
+        <div id="swatches" class="swatches" role="listbox" aria-label="Color"></div>
+        <button id="play" class="btn-play"><span>PLAY</span></button>
+        <div class="lb-meta"><span class="online-pill"><span class="live-dot" aria-hidden="true"></span><span id="online">Connecting to the pond…</span></span><span id="first-run" class="bonus-pill hidden">+50% XP first run today</span></div>
+        <button id="today" class="today-strip" type="button" aria-label="Today's quests"></button>
+        <button id="open-supporter" class="support-link"><i class="shift-dot"></i>Unlock <b>Color Shift</b> — support the game</button>
+      </div>
+      <aside class="lb-right">
+        <div class="card coming-card" id="coming-up" role="button" tabindex="0" aria-label="Rewards coming up — open the Reward Road"></div>
+        <div class="card best-card" id="best-card"></div>
+        <a class="gba-badge" href="https://gamesbyai.win/games/jellyblob/" target="_blank" rel="noopener"><img src="https://gamesbyai.win/badge/jellyblob.svg" alt="JellyBlob on GamesByAI" width="268" height="64" loading="lazy" decoding="async"></a>
+      </aside>
+      <nav class="lb-dock" aria-label="Menu">
+        <button id="open-locker" class="dock-btn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.2a2.2 2.2 0 1 1 2.2-2.2c0 1-1 1.5-2.2 2.2v1.6l8.4 5.6a1.7 1.7 0 0 1-.9 3.1H4.5a1.7 1.7 0 0 1-.9-3.1L12 8.8"/></svg><span>Locker</span><i class="dock-badge hidden" id="locker-badge"></i></button>
+        <button id="open-road" class="dock-btn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 21V4.2"/><path d="M5.5 4.5h11.8l-2.3 4.1 2.3 4.1H5.5"/></svg><span>Road</span></button>
+        <button id="open-goals" class="dock-btn dock-goals" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6.5h10M10 12h10M10 17.5h10"/><path d="m3.6 6.6 1.4 1.4 2.6-2.8M3.6 12.1l1.4 1.4 2.6-2.8M3.6 17.6l1.4 1.4 2.6-2.8"/></svg><span>Quests</span><i class="dock-badge hidden" id="goals-badge"></i></button>
+        <button id="dock-profile" class="dock-btn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.3" r="3.8"/><path d="M4.6 20.2a7.4 7.4 0 0 1 14.8 0"/></svg><span>Profile</span></button>
+        <button id="open-howto" class="dock-btn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.4a2.6 2.6 0 0 1 5 .9c0 1.8-2.5 2.2-2.5 3.9"/><path d="M12 17.4h.01" stroke-width="3"/></svg><span>Help</span></button>
+      </nav>
+      <div class="menu-foot"><span id="controls-hint"></span><nav class="foot-links" aria-label="Site"><a href="/how-to-play">How to play</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></div>
+      <div class="goals-scrim" id="goals-scrim"></div>
+      <aside id="consent" class="consent hidden" aria-label="Optional analytics">
+        <p><b>Help us improve the pond?</b> Allow optional Google Analytics cookies. Basic cookieless visit totals work either way. <a href="/privacy">Details</a></p>
+        <div class="consent-actions"><button type="button" class="btn-ghost" data-consent="yes">Allow</button><button type="button" class="btn-ghost" data-consent="no">No thanks</button></div>
+      </aside>
+    </section>
+
+    <!-- ================= HUD ================= -->
+    <section id="hud" class="hidden">
+      <div class="hud-score">
+        <div class="score-num" id="score">20</div>
+        <div class="score-meta"><span id="rank">#–</span><span id="kills-chip" class="chip hidden"><b id="kills">0</b> splats</span></div>
+        <div class="run-info"><div id="weekly-chip" class="weekly-chip hidden"></div><div id="run-goals" class="run-goals hidden"></div></div>
+      </div>
+      <ol class="board" id="board"></ol>
+      <div class="combo" id="combo"><div class="combo-n" id="combo-n">×0</div><div class="combo-label">COMBO</div><div class="combo-bar"><i id="combo-bar"></i></div></div>
+      <div class="glow" id="glow">
+        <div class="glow-label" id="glow-label">GLOW</div>
+        <div class="glow-track"><i id="glow-fill"></i><em></em></div>
+      </div>
+      <div class="power hidden" id="power"><div class="power-ring" id="power-ring"></div><div class="power-name" id="power-name"></div></div>
+      <canvas id="radar" width="176" height="176"></canvas>
+      <div id="feed" class="feed"></div>
+      <div id="event-banner" class="event-banner"></div>
+      <div id="threats" class="threats"></div>
+      <div id="killcam" class="killcam"></div>
+      <div id="net" class="net"></div>
+      <div id="emote-bar" class="emote-bar"><button data-slot="0" aria-label="Emote 1"><canvas width="96" height="96"></canvas><kbd>1</kbd></button><button data-slot="1" aria-label="Emote 2"><canvas width="96" height="96"></canvas><kbd>2</kbd></button><button data-slot="2" aria-label="Emote 3"><canvas width="96" height="96"></canvas><kbd>3</kbd></button><button data-slot="3" aria-label="Emote 4"><canvas width="96" height="96"></canvas><kbd>4</kbd></button></div>
+      <button id="fs-btn" class="pause-btn fs-btn fs-toggle" aria-label="Full screen" hidden><svg class="ico fs-in" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ico fs-out" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+      <button id="pause-btn" class="pause-btn" aria-label="Pause and settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><rect x="6" y="5" width="4.2" height="14" rx="1.6"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.6"/></svg></button>
+    </section>
+    <div id="callouts"></div>
+    <div id="floaters"></div>
+    <div id="hint" class="hint hidden"></div>
+
+    <!-- ================= TOUCH ================= -->
+    <div id="touch" class="hidden">
+      <div id="stick-zone"></div>
+      <div id="stick-base"></div><div id="stick-knob"></div>
+      <button id="btn-surge" class="tbtn surge">SURGE</button>
+      <button id="btn-emote" class="tbtn emote" aria-label="Emotes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2h9A3.5 3.5 0 0 1 20 5.5v6a3.5 3.5 0 0 1-3.5 3.5H11l-4.6 3.7c-.5.4-1.2 0-1.1-.6l.5-3.1A3.5 3.5 0 0 1 4 11.5z" fill="#fff"/><circle cx="9" cy="8.6" r="1.3" fill="#1a0f2e"/><circle cx="15" cy="8.6" r="1.3" fill="#1a0f2e"/><path d="M9.2 11.2q2.8 2.2 5.6 0" stroke="#1a0f2e" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></button>
+      <div id="emote-wheel" class="emote-wheel"><button data-slot="0" aria-label="Emote 1"><canvas width="96" height="96"></canvas></button><button data-slot="1" aria-label="Emote 2"><canvas width="96" height="96"></canvas></button><button data-slot="2" aria-label="Emote 3"><canvas width="96" height="96"></canvas></button><button data-slot="3" aria-label="Emote 4"><canvas width="96" height="96"></canvas></button></div>
+      <button id="btn-hop" class="tbtn hop"><span>HOP</span><svg viewBox="0 0 100 100"><circle id="hop-cd" cx="50" cy="50" r="46" /></svg></button>
+    </div>
+
+    <!-- ================= DEATH ================= -->
+    <section id="death" class="screen hidden">
+      <div class="death-card card" id="death-card">
+        <div class="death-body" id="death-body">
+          <div class="db-a">
+          <div class="death-title" id="death-title">SPLAT!</div>
+          <div class="death-by" id="death-by"></div>
+          <div class="stats" id="stats"></div>
+          <div class="wk-result hidden" id="wk-result"></div>
+          </div>
+          <div class="db-b">
+          <div class="xp-block">
+            <div class="xp-head"><span class="xp-lvl"><img id="d-badge" class="d-badge" alt="" />Level <b id="d-level">1</b></span><span id="d-xp-gain">+0 XP</span></div>
+            <div class="xpbar big"><i id="d-xp-fill"></i></div>
+            <ul class="xp-lines" id="xp-lines"></ul>
+            <div class="rank-up hidden" id="rank-up"></div>
+          </div>
+          <div class="reveals" id="reveals"></div>
+          <div class="tier-ups" id="tier-ups"></div>
+          <div class="quest-bars" id="quest-bars"></div>
+          <div class="next-unlock" id="d-next"></div>
+          </div>
+        </div>
+        <div class="death-actions">
+          <button id="again" class="btn-play small"><span>PLAY AGAIN</span></button>
+          <button id="share-run" class="btn-ghost icon-btn" aria-label="Share your run" title="Share your run"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M5 12v6.5A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V12"/></svg></button>
+          <button id="to-menu" class="btn-ghost">Menu</button>
+        </div>
+        <div class="death-tip" id="death-tip"></div>
+      </div>
+    </section>
+
+    <!-- ================= MODALS ================= -->
+    <section id="locker" class="modal hidden">
+      <div class="card modal-card locker-card">
+        <div class="locker-stage">
+          <canvas id="locker-canvas" aria-label="Your jelly — drag to spin"></canvas>
+          <canvas id="locker-fx" aria-hidden="true"></canvas>
+          <div id="locker-emote" class="locker-emote" aria-hidden="true"></div>
+          <div id="locker-caption" class="locker-caption"></div>
+        </div>
+        <div class="locker-side">
+          <div class="locker-head"><h2>Locker</h2><button class="btn-ghost close-modal">Done</button></div>
+          <div class="tabs locker-tabs" role="tablist">
+          <button class="tab on" data-ltab="hat" role="tab">Hats</button>
+          <button class="tab" data-ltab="face" role="tab">Eyes</button>
+          <button class="tab" data-ltab="trail" role="tab">Trails</button>
+          <button class="tab" data-ltab="finish" role="tab">Finishes</button>
+          <button class="tab" data-ltab="emote" role="tab">Emotes</button>
+          <button class="tab" data-ltab="splat" role="tab">Splats</button>
+          <button class="tab" data-ltab="title" role="tab">Titles</button>
+          <button class="tab" data-ltab="weekly" role="tab">Weekly</button>
+          <button class="tab" data-ltab="trophies" role="tab">Trophies</button>
+          </div>
+          <p class="locker-note" id="locker-note"></p>
+          <div id="locker-grid" class="lk-grid"></div>
+        </div>
+      </div>
+    </section>
+    <section id="road" class="modal hidden" aria-labelledby="road-title">
+      <div class="card modal-card road-card">
+        <div class="road-head">
+          <img id="road-badge" class="road-badge" alt="" />
+          <div><h2 id="road-title">Reward Road</h2><p class="road-sub" id="road-sub"></p></div>
+          <button class="btn-ghost close-modal">Done</button>
+        </div>
+        <div class="road-wrap">
+          <button id="road-prev" class="road-nav prev" type="button" aria-label="Earlier levels">‹</button>
+          <div id="road-track" class="road-track" tabindex="0" aria-label="Rewards by level — arrow keys scroll"></div>
+          <button id="road-next" class="road-nav next" type="button" aria-label="Later levels">›</button>
+        </div>
+        <div class="road-foot">
+          <span><b class="rd-key claimed">✓</b> claimed · <b class="rd-key rank">★</b> new rank every 10 levels · 🎟️ Golden Tickets claim missed weekly rewards</span>
+          <button id="road-here" class="btn-ghost" type="button">Back to my level</button>
+        </div>
+      </div>
+    </section>
+    <section id="profile" class="modal hidden" aria-labelledby="pf-name">
+      <div class="card modal-card profile-card">
+        <div class="pf-head">
+          <img id="pf-badge" class="pf-badge" alt="" />
+          <div class="pf-id">
+            <h2 id="pf-name">Jelly</h2>
+            <p class="pf-rank" id="pf-rank"></p>
+            <button id="pf-title" class="pf-title" type="button"></button>
+          </div>
+          <button id="pf-account" class="acct-chip" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.4 9.3 4.35 4.35 0 0 0 7 18Z"/><path d="M12 10.5v5M9.8 13.2 12 15.5l2.2-2.3"/></svg><span id="pf-account-text">Save progress</span></button>
+        </div>
+        <div class="pf-tiles" id="pf-tiles"></div>
+        <h4>Lifetime</h4>
+        <div class="pf-stats" id="pf-totals"></div>
+        <h4>Best in one life</h4>
+        <div class="pf-stats" id="pf-bests"></div>
+        <button class="btn-ghost close-modal">Done</button>
+      </div>
+    </section>
+    <section id="whatsnew" class="modal hidden" aria-labelledby="wn-title">
+      <div class="card modal-card whatsnew-card">
+        <p class="wn-kicker">New in the pond</p>
+        <h2 id="wn-title">The Glow-Up Update</h2>
+        <div class="wn-grid">
+          <button class="wn-card" type="button" data-go="hats"><img id="wn-hat" alt="" /><b>Meme hats</b><span id="wn-hat-name">Weekly rewards</span><small>Clear the weekly challenge to earn one</small></button>
+          <button class="wn-card" type="button" data-go="road"><img id="wn-road" alt="" /><b>Reward Road</b><span>Endless levels</span><small>Rewards to 100, legend ranks to 1000</small></button>
+          <button class="wn-card" type="button" data-go="daily"><span class="wn-ico" aria-hidden="true">🔥</span><b>Daily quests</b><span>Three new every day</span><small>Keep a streak, grab the first-run bonus</small></button>
+          <button class="wn-card" type="button" data-go="emotes"><canvas id="wn-emote" width="128" height="128"></canvas><b>Emotes</b><span class="hint-desk">Keys 1–4 in a run</span><span class="hint-touch">Tap 💬 in a run</span><small>Say GG mid-fight</small></button>
+        </div>
+        <div class="wn-retro" id="wn-retro"></div>
+        <button class="btn-play small close-modal" type="button"><span>Let's wobble</span></button>
+      </div>
+    </section>
+    <section id="settings" class="modal hidden">
+      <div class="card modal-card">
+        <h2>Settings</h2>
+        <label class="row">Sound <input type="range" id="set-vol" min="0" max="1" step="0.05" /></label>
+        <label class="row">Music <input type="range" id="set-music" min="0" max="1" step="0.05" /></label>
+        <label class="row">Graphics <select id="set-quality"><option value="auto">Auto</option><option value="high">High</option><option value="low">Battery saver</option></select></label>
+        <label class="row">Announcer voice <input type="checkbox" id="set-announcer" /></label>
+        <label class="row">Tutorial hints <input type="checkbox" id="set-hints" /></label>
+        <label class="row">Nameplates <input type="checkbox" id="set-nameplates" /></label>
+        <p class="fine emote-hint"><span class="hint-desk">Emotes: press <kbd>1</kbd>–<kbd>4</kbd> during a run.</span><span class="hint-touch">Emotes: tap 💬 during a run.</span> Pick your four in the Locker.</p>
+        <label class="row touch-only">Vibration <input type="checkbox" id="set-haptics" /></label>
+        <label class="row">Reduce screen shake <input type="checkbox" id="set-motion" /></label>
+        <label class="row">Reduce flashes <input type="checkbox" id="set-flash" /></label>
+        <label class="row">Optional analytics <input type="checkbox" id="set-analytics" /></label>
+        <p class="fine">Google Analytics helps us see what players enjoy. No names, keys or codes are sent; ads stay off. <a href="/privacy">Privacy</a></p>
+        <div class="menu-row"><button class="btn-ghost" id="reset-tutorial">Replay tutorial</button><button class="btn-ghost" id="leave-run">Leave run</button></div>
+        <button class="btn-ghost close-modal">Done</button>
+      </div>
+    </section>
+    <section id="howto" class="modal hidden">
+      <div class="card modal-card howto">
+        <h2>How to play</h2>
+        <div class="howto-grid">
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/steer.webp" data-src="howto/steer.mp4" aria-hidden="true"></video><b>Steer</b><p>Mouse, WASD / arrows, or the left thumbstick.</p></div>
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/dew.webp" data-src="howto/dew.mp4" aria-hidden="true"></video><b>Eat dew</b><p>Glowing dew grows your jelly. Chain pickups fast for a combo multiplier (up to ×2).</p></div>
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/trails.webp" data-src="howto/trails.mp4" aria-hidden="true"></video><b>Trails burst rivals</b><p>Everyone leaves a glowing trail. Touch another jelly's trail and you splat. Cut them off!</p></div>
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/hop.webp" data-src="howto/hop.mp4" aria-hidden="true"></video><b>Hop</b><p>Click / Space / HOP to leap over trails — a ring shows where you'll land. Vaulting a trail fills your Glow.</p></div>
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/stomp.webp" data-src="howto/stomp.mp4" aria-hidden="true"></video><b>Stomp</b><p>Land a hop on a much smaller jelly to burst it flat. A gold landing ring means a stomp is coming.</p></div>
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/surge.webp" data-src="howto/surge.mp4" aria-hidden="true"></video><b>Surge</b><p><span class="hint-desk">Hold Shift or right-click</span><span class="hint-touch">Hold SURGE</span> to speed up. Costs size — you shed goo others can eat.</p></div>
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/supernova.webp" data-src="howto/supernova.mp4" aria-hidden="true"></video><b>Supernova</b><p>Vaults, close calls, splats and combos fill Glow. At 100%: 7 seconds of speed, magnetism, trail immunity — and you swallow smaller jellies on touch.</p></div>
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/currents.webp" data-src="howto/currents.mp4" aria-hidden="true"></video><b>Currents</b><p>Ride the blue tide streams the way their chevrons point for +45% speed. Against them you slow down.</p></div>
+          <div><video class="ht-clip" muted loop playsinline preload="none" poster="howto/power.webp" data-src="howto/power.mp4" aria-hidden="true"></video><b>Power bubbles</b><p><span class="pink">Magnet</span> pulls dew, <span class="cyan">Shield</span> survives one hit, <span class="gold">Turbo</span> gives free surging.</p></div>
+          <div><b>Pond events</b><p>Every few minutes a ring appears on the floor. The banner says what to do: catch the Golden Jelly, race to the falling star, hop into the piñata…</p></div>
+          <div><b>Emote</b><p><span class="hint-desk">Keys 1–4</span><span class="hint-touch">The 💬 button</span> pops a bubble over your jelly. Pick your four in the Locker.</p></div>
+        </div>
+        <a class="gba-badge gba-help" href="https://gamesbyai.win/games/jellyblob/" target="_blank" rel="noopener"><img src="https://gamesbyai.win/badge/jellyblob.svg" alt="JellyBlob on GamesByAI" width="268" height="64" loading="lazy" decoding="async"></a>
+        <p class="fine howto-links"><a href="/how-to-play">Full guide</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
+        <button class="btn-ghost close-modal">Got it</button>
+      </div>
+    </section>
+    <section id="account" class="modal hidden" aria-labelledby="acct-title">
+      <div class="card modal-card account-card">
+        <img class="acct-art" src="/brand/icon-192.png" alt="" width="72" height="72" />
+        <h2 id="acct-title">Keep your squish</h2>
+        <p class="lead" id="acct-lead">Save your level, trophies and collection to an account and pick up on any device. Played JellyBlob before? Sign in the same way and your progress comes with you.</p>
+        <div id="acct-providers" class="providers">
+          <button type="button" class="provider google" data-provider="google"><img src="/brands/google-g.png" width="20" height="20" alt="" />Continue with Google</button>
+          <button type="button" class="provider discord" data-provider="discord"><img src="/brands/discord-clyde.svg" width="24" height="18" alt="" />Continue with Discord</button>
+        </div>
+        <div id="acct-signed" class="acct-signed hidden">
+          <div class="acct-id"><b id="acct-name"></b><small id="acct-provider"></small></div>
+          <button id="acct-signout" type="button" class="btn-ghost">Sign out on this device</button>
+        </div>
+        <p id="acct-status" class="status" role="status"></p>
+        <div class="invite-box">
+          <h3>Invite friends</h3>
+          <p>Friends who play through your link unlock rewards early: <b>Bunny Ears</b> (1), <b>Heart Eyes</b> (3), <b>Candy Stripe</b> trail (5), <b>Rubber Duck</b> (10) and <b>Lava</b> trail (25).</p>
+          <div class="claim-row"><input id="invite-link" readonly aria-label="Your invite link" value="Loading…" /><button id="copy-invite" type="button" class="btn-ghost">Copy</button></div>
+          <p class="note" id="invite-count"></p>
+          <details class="backup"><summary>Invite key — move your invites to another browser</summary>
+            <p>Keep this private. Paste it in another browser to bring your invite link and friends along (signing in does this for you).</p>
+            <div class="claim-row"><input id="inv-key" spellcheck="false" autocomplete="off" aria-label="Private invite key" /><button id="restore-invite" type="button" class="btn-ghost">Restore</button></div>
+          </details>
+        </div>
+        <p class="fine">No account needed to play. <a href="/privacy">What gets saved?</a></p>
+        <button class="btn-ghost close-modal" type="button">Back</button>
+      </div>
+    </section>
+    <section id="supporter" class="modal hidden">
+      <div class="card modal-card supporter-card">
+        <div class="shift-orb" aria-hidden="true"><i></i></div>
+        <h2>Color Shift</h2>
+        <p class="lead">Your jelly slowly drifts through every color with a pearly shimmer, and its trail follows — everyone in the pond sees it. Cosmetic only, no extra powers. Your support keeps the servers running. 💖</p>
+        <div id="sup-flow">
+          <div class="step"><b>1</b>Copy your code</div>
+          <div class="claim-row"><input id="claim-code" readonly aria-label="Your supporter code" /><button id="copy-claim" class="btn-ghost">Copy</button></div>
+          <div class="step"><b>2</b>Paste it in your Buy Me a Coffee message</div>
+          <a id="donate-link" class="btn-play small donate" href="https://buymeacoffee.com/kvickan" target="_blank" rel="noopener noreferrer"><span>Buy me a coffee ↗</span></a>
+          <p class="note">Come back here — Color Shift unlocks automatically.</p>
+          <button id="check-donation" class="btn-ghost wide">Already donated? Check now</button>
+        </div>
+        <label class="row hidden" id="shift-row">Color Shift on my jelly <input type="checkbox" id="shift-toggle" /></label>
+        <p id="sup-status" class="status" role="status"></p>
+        <details class="backup"><summary>Recovery key — unlock on another device</summary>
+          <p>Keep this private. Paste it on another device to restore your Color Shift.</p>
+          <div class="claim-row"><input id="sup-key" spellcheck="false" autocomplete="off" aria-label="Private recovery key" /><button id="restore-key" class="btn-ghost">Restore</button></div>
+        </details>
+        <button class="btn-ghost close-modal">Back</button>
+      </div>
+    </section>
+    <div id="toast" class="toast hidden"></div>
+    <div id="boot" class="boot"><img class="boot-logo" src="/brand/logo-640.webp" alt="" width="320" height="101" /><div class="boot-blob"></div><div class="boot-text">Warming the jelly…</div></div>
+  </div>
+<script nonce="f926e727760e68e9fdd12cfd815e6330">(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.nonce='f926e727760e68e9fdd12cfd815e6330';d.innerHTML="window.__CF$cv$params={r:'a5278449bd124f19',t:'MTc5MzMzMjg2NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5278449bd124f19',a=document.createElement('script');a.nonce='f926e727760e68e9fdd12cfd815e6330';a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -20,12 +20,32 @@
       </div>
 
       <div class="fl-header-actions">
+        <!-- Aspect Ratio Switcher -->
+        <div class="fl-mode-select-wrap">
+          <label style="font-size: 11px; color: var(--text-secondary); margin-right: 4px;">Ratio:</label>
+          <select id="selectAspectRatio" class="fl-select-sm" title="Select Video Aspect Ratio (Shorts vs Music Cover/Landscape)">
+            <option value="9:16" selected>📱 9:16 Portrait (720x1280)</option>
+            <option value="16:9">🖥️ 16:9 Landscape (1280x720 / 1920x1080)</option>
+          </select>
+        </div>
+
         <!-- Render Mode Switcher -->
         <div class="fl-mode-select-wrap">
           <label style="font-size: 11px; color: var(--text-secondary); margin-right: 4px;">Mode:</label>
           <select id="selectRenderMode" class="fl-select-sm" title="Select Video Composite Mode">
-            <option value="full_stickman" selected>🤺 100% Full Stickman (No Real Video)</option>
-            <option value="split_pip">🎬 Split-PIP (Top Video + Bottom Stickman)</option>
+            <option value="mocap" selected>🏃 Video MoCap (AI Motion Tracking)</option>
+            <option value="full_stickman">🤺 Procedural Stickman (Storyboard & Props)</option>
+            <option value="split_pip">🎬 Split-PIP (Dual Screen Video + Stickman)</option>
+          </select>
+        </div>
+
+        <!-- Staging Archetype Selector -->
+        <div class="fl-mode-select-wrap">
+          <label style="font-size: 11px; color: var(--text-secondary); margin-right: 4px;">Staging:</label>
+          <select id="selectStagingStyle" class="fl-select-sm" title="Select Stickman Staging Archetype">
+            <option value="music_narrative_story">🎵 Music MV Narrative (Lyric Acting & Glowing Silhouette)</option>
+            <option value="stick_hub_storyteller" selected>🎭 Stick Hub Storyteller (Solo Full Body)</option>
+            <option value="podcast_desk">🎙️ Podcast Studio Desk (Dual Hosts)</option>
           </select>
         </div>
 
@@ -47,7 +67,7 @@
         </div>
 
         <button id="btnExportVideo" class="fl-btn fl-btn-accent" style="width: auto; padding: 6px 14px;">
-          <span>⚡ Export Short (9:16)</span>
+          <span id="exportBtnLabel">⚡ Export Video</span>
         </button>
       </div>
     </header>
@@ -59,18 +79,18 @@
       <section class="fl-panel">
         <div class="fl-panel-header">
           <span>1. Scenes & Storyboard</span>
-          <span id="activeModeBadge" style="font-size: 10px; background: rgba(0, 229, 255, 0.1); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 229, 255, 0.2);">SPLIT-PIP</span>
+          <span id="activeModeBadge" style="font-size: 10px; background: rgba(0, 229, 255, 0.1); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 229, 255, 0.2);">MOCAP</span>
         </div>
         
         <div class="fl-panel-content">
           <!-- Storyboard Navigation Switcher -->
           <div class="fl-tab-nav">
-            <button id="tabAudioSource" class="fl-tab-btn active">📹 Media & Voice</button>
-            <button id="tabStoryboard" class="fl-tab-btn">🎬 Storyboard Beats (~3s)</button>
+            <button id="tabAudioSource" class="fl-tab-btn">📹 Media & Voice</button>
+            <button id="tabStoryboard" class="fl-tab-btn active">🎬 Storyboard Beats (~3s)</button>
           </div>
 
           <!-- Tab Content 1: Media Ingestion & Voice FX -->
-          <div id="tabContentAudio" style="display: block;">
+          <div id="tabContentAudio" style="display: none;">
             <!-- Media Ingest Dropzone (Accepts Video & Audio) -->
             <div class="fl-card">
               <div class="fl-card-header">
@@ -81,7 +101,6 @@
                 <div style="font-size: 13px; font-weight: 600;">Drop Video or Audio File Here</div>
                 <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Click or drag MP4, MOV, WEBM, WAV, MP3</div>
                 <input type="file" id="mediaFileInput" accept="video/*,audio/*" style="display: none;">
-                <input type="file" id="audioFileInput" accept="audio/*,video/*" style="display: none;">
               </div>
               
               <!-- Active Progress Spinner for Ingestion & Auto-Slicing -->
@@ -105,7 +124,7 @@
               <div class="fl-card-header">
                 <span>🎭</span> Voice Transformation
               </div>
-              <div class="fl-profile-grid">
+              <div class="fl-profile-grid" style="grid-template-columns: repeat(5, 1fr);">
                 <div class="fl-profile-card active" data-profile="kids">
                   <div style="font-size: 18px;">👶</div>
                   <div class="name">Cute Kids</div>
@@ -125,6 +144,11 @@
                   <div style="font-size: 18px;">🤖</div>
                   <div class="name">Robot Vocoder</div>
                   <div class="desc">Cyber flange</div>
+                </div>
+                <div class="fl-profile-card" data-profile="deep_boss">
+                  <div style="font-size: 18px;">👹</div>
+                  <div class="name">Titan Boss</div>
+                  <div class="desc">Deep narrator</div>
                 </div>
               </div>
 
@@ -160,7 +184,7 @@
           </div>
 
           <!-- Tab Content 2: Storyboard Multi-Part Scene List -->
-          <div id="tabContentStoryboard" style="display: none;">
+          <div id="tabContentStoryboard" style="display: block;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <span style="font-size: 11px; font-weight: 700; color: var(--accent-cyan);">~3s MICRO-BEATS</span>
               <div style="display: flex; gap: 6px;">
@@ -174,8 +198,7 @@
             </div>
 
             <div id="storyboardScenesList" class="fl-storyboard-list">
-              <!-- Dynamically populated or empty state with direct action buttons -->
-              <div id="storyboardEmptyState" class="fl-empty-storyboard-box">
+              <div class="fl-empty-storyboard-box">
                 <div style="font-size: 28px; margin-bottom: 6px;">🎬</div>
                 <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">No Video Moment Loaded</div>
                 <div style="font-size: 11px; color: var(--text-secondary); margin: 6px 0 14px 0; line-height: 1.4;">
@@ -200,7 +223,7 @@
       <section class="fl-center-viewport">
         <div class="fl-viewport-toolbar">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">VIEWPORT: 9:16 (720x1280)</span>
+            <span id="viewportRatioLabel" style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">VIEWPORT: 9:16 (720x1280)</span>
             <span id="fpsBadge" style="font-size: 11px; padding: 2px 6px; background: var(--bg-tertiary); border-radius: 4px; color: var(--accent-green);">60 FPS</span>
           </div>
 
@@ -254,15 +277,15 @@
               <div class="fl-preview-box-half">
                 <div class="fl-preview-label">Original Video</div>
                 <img id="beatKeyframeImage" src="" alt="Video Frame" style="display: none;">
-                <span id="keyframePlaceholder" style="font-size: 10px; color: var(--text-muted); text-align: center; padding: 8px;">
-                  No Keyframe
+                <span id="keyframePlaceholder" style="display: block; font-size: 10px; color: var(--text-muted); text-align: center; padding: 8px;">
+                  No Keyframe Loaded
                 </span>
               </div>
               <div class="fl-preview-box-half">
                 <div class="fl-preview-label">Stickman Parody</div>
                 <img id="partPreviewImage" src="" alt="Stickman Frame" style="display: none;">
                 <span id="partPreviewPlaceholder" style="display: block; font-size: 10px; color: var(--text-muted); text-align: center; padding: 8px;">
-                  Scene Frame
+                  No Frame Loaded
                 </span>
               </div>
             </div>
@@ -271,7 +294,7 @@
             <div id="beatParodyIdeaBox" class="fl-parody-idea-box" style="margin-top: 8px;">
               <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 2px;">💡 AI Parody Director:</div>
               <div id="beatParodyIdeaText" style="color: var(--text-secondary); font-size: 11px; line-height: 1.35;">
-                Select or slice a video moment to reveal the cognitive parody direction.
+                Select a beat or import a video to inspect choreography.
               </div>
             </div>
 
@@ -285,30 +308,125 @@
             </div>
 
             <!-- 3D Asset Vault Bridge Indicator -->
-            <div style="margin-top: 8px; padding: 6px 10px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 6px; font-size: 10px; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px;">
+            <div id="vaultStatusBadge" style="margin-top: 8px; padding: 6px 10px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 6px; font-size: 10px; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px;">
               <span>📐</span>
-              <span><strong>3D Asset Vault:</strong> 34,840 Models Connected (DNA, Skeleton & Props)</span>
+              <span id="vaultAssetCountText"><strong>3D Asset Vault:</strong> Connecting repository...</span>
             </div>
           </div>
 
-          <!-- Character Model Picker for this Part -->
+          <!-- AI Cartoon Scene Background Generator (Stick Hub Standard) -->
+          <div class="fl-card" id="aiBackgroundCard" style="border-color: rgba(56, 189, 248, 0.4);">
+            <div class="fl-card-header" style="color: var(--accent-cyan); display: flex; justify-content: space-between; align-items: center;">
+              <span>🎨 AI Scene Background</span>
+              <span id="bgStatusBadge" style="font-size: 9px; padding: 2px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.1); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.3);">
+                STICK HUB 2D
+              </span>
+            </div>
+
+            <!-- Current Beat Background Thumbnail & Info -->
+            <div id="bgPreviewBox" style="display: flex; gap: 8px; align-items: center; background: var(--bg-tertiary); padding: 8px; border-radius: 6px; border: 1px solid var(--border-subtle); margin-bottom: 8px;">
+              <div style="width: 64px; height: 56px; border-radius: 4px; overflow: hidden; background: #000; flex-shrink: 0; border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center;">
+                <img id="activeBgThumb" src="" alt="Scene Background" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                <span id="activeBgPlaceholder" style="font-size: 20px;">🎙️</span>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div id="activeBgTitle" style="font-size: 11px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  Default Podcast Studio
+                </div>
+                <div id="activeBgSubtitle" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                  Procedural Acoustic Neon
+                </div>
+                <div style="margin-top: 4px;">
+                  <button type="button" id="btnResetBackground" class="fl-btn fl-btn-secondary" style="padding: 2px 6px; font-size: 9px; height: auto; width: auto;">
+                    Reset to Studio
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Preset Themes -->
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600;">Quick Scene Presets:</div>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;">
+                <button type="button" class="fl-preset-btn fl-btn fl-btn-secondary" data-theme="podcast_studio" data-prompt="modern neon podcast recording studio" style="font-size: 10px; padding: 4px 2px;">🎙️ Studio</button>
+                <button type="button" class="fl-preset-btn fl-btn fl-btn-secondary" data-theme="classroom" data-prompt="cartoon school classroom with chalkboard and desks" style="font-size: 10px; padding: 4px 2px;">🏫 School</button>
+                <button type="button" class="fl-preset-btn fl-btn fl-btn-secondary" data-theme="courtroom" data-prompt="cartoon judge courtroom with scales of justice" style="font-size: 10px; padding: 4px 2px;">⚖️ Court</button>
+                <button type="button" class="fl-preset-btn fl-btn fl-btn-secondary" data-theme="breaking_news" data-prompt="high tech breaking news broadcast studio with world map" style="font-size: 10px; padding: 4px 2px;">📺 News</button>
+                <button type="button" class="fl-preset-btn fl-btn fl-btn-secondary" data-theme="living_room" data-prompt="cozy cartoon retro living room interior" style="font-size: 10px; padding: 4px 2px;">🛋️ Living</button>
+                <button type="button" class="fl-preset-btn fl-btn fl-btn-secondary" data-theme="cyber_grid" data-prompt="neon synthwave cyber grid with futuristic skyline" style="font-size: 10px; padding: 4px 2px;">🚀 Cyber</button>
+                <button type="button" class="fl-preset-btn fl-btn fl-btn-secondary" data-theme="cafe" data-prompt="warm aesthetic cartoon coffee shop cafe interior" style="font-size: 10px; padding: 4px 2px;">☕ Cafe</button>
+                <button type="button" class="fl-preset-btn fl-btn fl-btn-secondary" data-theme="street" data-prompt="colorful 2D cartoon city street sidewalk" style="font-size: 10px; padding: 4px 2px;">🏙️ Street</button>
+              </div>
+            </div>
+
+            <!-- AI Prompt Input -->
+            <div style="margin-bottom: 8px;">
+              <label style="font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 4px; font-weight: 600;">Custom AI Scene Prompt:</label>
+              <input type="text" id="aiBgPromptInput" placeholder="e.g. Cartoon detective office at midnight with rain..." style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 6px 8px; border-radius: var(--radius-sm); font-size: 11px;">
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <label style="font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                <input type="checkbox" id="checkApplyBgToAll" style="cursor: pointer;">
+                Apply to all video beats
+              </label>
+            </div>
+
+            <!-- Action Button -->
+            <button type="button" id="btnGenerateAiBg" class="fl-btn fl-btn-accent" style="width: 100%; padding: 8px 10px; font-size: 11px; font-weight: 700; background: linear-gradient(135deg, #38bdf8, #818cf8); color: #000; border: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span id="btnAiBgIcon">🎨</span>
+              <span id="btnAiBgText">Generate AI Background</span>
+            </button>
+
+            <button type="button" id="btnUploadCustomBg" class="fl-btn fl-btn-secondary" style="width: 100%; margin-top: 8px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>📁</span>
+              <span>Upload Custom Background Image</span>
+            </button>
+            <input type="file" id="bgFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;">
+          </div>
+
+          <!-- Character Model & MoCap Staging Picker -->
           <div class="fl-card">
             <div class="fl-card-header">
-              <span>🥋</span> Character Model
+              <span>🥋</span> Character Archetype & Framing
             </div>
             <div class="fl-character-picker">
-              <div class="fl-char-item active" data-char="classic">
+              <div class="fl-char-item active" data-char="auto" title="Automatically detect men, women, kids, and pets">
+                <span class="fl-char-icon">🤖</span>
+                <span>Auto AI Multi</span>
+              </div>
+              <div class="fl-char-item" data-char="classic">
                 <span class="fl-char-icon">🤺</span>
                 <span>Classic</span>
               </div>
-              <div class="fl-char-item" data-char="ninja">
-                <span class="fl-char-icon">🥷</span>
-                <span>Ninja</span>
+              <div class="fl-char-item" data-char="glasses">
+                <span class="fl-char-icon">👓</span>
+                <span>Glasses</span>
               </div>
-              <div class="fl-char-item" data-char="cyber">
-                <span class="fl-char-icon">🤖</span>
-                <span>Cyborg</span>
+              <div class="fl-char-item" data-char="girl">
+                <span class="fl-char-icon">👧</span>
+                <span>Anime Girl</span>
               </div>
+              <div class="fl-char-item" data-char="child">
+                <span class="fl-char-icon">👶</span>
+                <span>Child Kid</span>
+              </div>
+              <div class="fl-char-item" data-char="cool">
+                <span class="fl-char-icon">🕶️</span>
+                <span>Cool Guy</span>
+              </div>
+              <div class="fl-char-item" data-char="business">
+                <span class="fl-char-icon">👔</span>
+                <span>Business</span>
+              </div>
+            </div>
+
+            <div style="margin-top: 10px;">
+              <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">MoCap Framing Mode:</label>
+              <select id="selectFramingMode" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 6px; border-radius: var(--radius-sm); font-size: 11px;">
+                <option value="auto" selected>🧍 Natural Standing (Full Proportions)</option>
+                <option value="presenter">🎙️ Studio Presenter (Podium & Mic)</option>
+              </select>
             </div>
           </div>
 
@@ -461,6 +579,9 @@
 
   </div>
 
-  <script src="app.js?v=20261029_chat_prompt_injection_v8"></script>
+    <script>
+    window.__INITIAL_BEATS__ = [];
+  </script>
+  <script src="app.js?v=20261030_multi_entity_v2"></script>
 </body>
 </html>

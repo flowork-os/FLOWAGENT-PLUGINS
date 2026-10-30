@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://aibengineering.github.io/sprout-quest/">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#5fae4c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Sprout Quest" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <title>Sprout Quest</title>
+    <link rel="preload" href="fonts/fredoka.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/nunito.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="cv"></canvas>
+    <div id="map-fade" hidden aria-hidden="true"></div>
+    <div id="touch"></div>
+    <div id="joy"><div id="joy-knob"></div></div>
+
+    <div id="hud" hidden>
+      <div class="card stat">
+        <div class="lv">Lv<b id="hud-lv">1</b></div>
+        <div class="bars">
+          <div class="bar hp"><i id="hud-hp"></i><span id="hud-hptext"></span></div>
+          <div class="bar xp"><i id="hud-xp"></i></div>
+          <div class="hand-row"><span id="hud-hemo" class="hemo">🗡️</span><div class="bar hand"><i id="hud-hand"></i></div><b id="hud-hlv" class="hlv">1</b></div>
+          <div id="hud-gather" class="gather-row" hidden>
+            <div class="gather-label"><span id="hud-gname"></span><b id="hud-glv"></b></div>
+            <div class="bar gather" role="progressbar"><i id="hud-gxp"></i></div>
+          </div>
+        </div>
+        <span id="hud-meal" class="meal" hidden></span>
+      </div>
+      <div id="hud-zone" class="card zone"></div>
+    </div>
+
+    <!-- Frequently used menus live bottom-left, within thumb reach. -->
+    <div id="dock" class="dock">
+      <button id="btn-bag" class="dock-btn" aria-label="Bag" hidden><span>🎒</span><small>Bag</small><i class="dot"></i><kbd class="key">B</kbd></button>
+      <button id="btn-journal" class="dock-btn" aria-label="Journal" hidden><span>📜</span><small>Journal</small><i class="dot"></i><kbd class="key">Q</kbd></button>
+    </div>
+    <button id="quest-pill" class="quest-pill" hidden></button>
+    <div id="unlock-card" class="unlock-card" hidden></div>
+    <div id="coach" class="coach" hidden></div>
+    <div id="drag-hint" class="drag-hint" hidden>
+      <div class="hand touch-only">👆</div><b class="touch-only">Drag anywhere to move</b>
+      <div class="keys kbd-only"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></div><b class="kbd-only">Move with WASD or the arrow keys, then E or click to use things</b>
+    </div>
+    <div id="banner"><b></b><small></small></div>
+
+    <div id="ctl-world" class="ctl" hidden>
+      <button id="shortcut-prompt" hidden></button>
+      <button id="btn-dash" class="btn sm" aria-label="Dash" hidden><span>💨</span><small>Dash</small><i class="cd"></i><kbd class="key">Shift</kbd></button>
+      <button id="btn-act" class="act" hidden>Talk</button>
+    </div>
+
+    <div id="ctl-battle" class="ctl" hidden>
+      <button id="btn-run" class="pill">🏃 Run<kbd class="key">R</kbd></button>
+      <button id="btn-potion" class="btn sm" aria-label="Potion">🧪<span id="potion-n" class="badge">0</span><kbd class="key">1</kbd></button>
+      <button id="btn-skill" class="btn md" aria-label="Skill"><span>✨</span><small id="skill-name">Spin</small><i class="cd"></i><kbd class="key">F</kbd></button>
+      <button id="btn-dodge" class="btn md" aria-label="Dodge"><span>💨</span><small>Dodge</small><i class="cd"></i><span class="dpips" hidden></span><kbd class="key">Shift</kbd></button>
+      <button id="btn-attack" class="btn lg" aria-label="Attack">⚔️<i class="cd"></i><kbd class="key">Space</kbd></button>
+    </div>
+
+    <div id="modal" hidden><div class="sheet"></div></div>
+    <div id="toast"></div>
+    <div id="loot" aria-live="polite"></div>
+
+    <div id="title">
+      <div class="logo">
+        <div class="sprout">🌱</div>
+        <h1>Sprout<br />Quest</h1>
+        <p>Fight cute monsters · Craft cool gear</p>
+      </div>
+      <!-- Shown from the first paint, before any code runs; the buttons appear only once everything is loaded. -->
+      <div id="loading" aria-live="polite">
+        <div class="lbar waiting"><i id="load-fill"></i></div>
+        <div id="load-text">Loading the game…</div>
+      </div>
+      <div class="title-btns" hidden>
+        <button id="btn-continue" class="big-btn" hidden>Continue<kbd class="key">Enter</kbd></button>
+        <button id="btn-new" class="big-btn alt">New Game<kbd class="key" id="new-key">N</kbd></button>
+      </div>
+      <button id="btn-notes" class="ver-btn" hidden></button>
+      <p class="hint"><span class="touch-only">Drag anywhere to move · Tap buttons to fight</span><span class="kbd-only">WASD to move · J attack · K dodge · L skill · E interact · B bag · Q journal</span><br /><span class="touch-only">Best in portrait · Add to home screen for fullscreen</span></p>
+    </div>
+
+    <script>
+      // The game's code is the first big download, and until it runs nothing else can show progress: fetch it here,
+      // counting the bytes on the bar, then start it (the browser takes it from its cache). If anything fails, say so.
+      (function () {
+        var fill = document.getElementById('load-fill'), text = document.getElementById('load-text'), got = 0;
+        var say = function (msg) {
+          var l = document.getElementById('loading');
+          if (l && !l.hidden) text.textContent = msg;
+        };
+        addEventListener('error', function (e) {
+          var what = e.message || ((e.target && (e.target.src || e.target.href)) || 'a file') + ' failed to load';
+          say("Couldn't start the game: " + what + '. Try reloading.');
+        }, true);
+        addEventListener('unhandledrejection', function (e) {
+          say("Couldn't start the game: " + ((e.reason && e.reason.message) || e.reason) + '. Try reloading.');
+        });
+        setTimeout(function () {
+          if (!got && document.querySelector('.lbar.waiting')) say('Still connecting… (slow connection?)');
+        }, 8000);
+        var started = false;
+        var start = function () {
+          if (started) return;
+          started = true;
+          var s = document.createElement('script');
+          s.type = 'module';
+          s.src = 'main.js';
+          document.body.appendChild(s);
+        };
+        if (!window.fetch || !window.ReadableStream) return start();
+        var kb = function (n) { return Math.round(n / 1024) + ' KB'; };
+        fetch('main.js').then(function (r) {
+          if (!r.ok || !r.body) return start();
+          // The size before compression (the dev server says; otherwise the download's own length, if known).
+          var total = +(r.headers.get('x-size') || (r.headers.get('content-encoding') ? 0 : r.headers.get('content-length')) || 0);
+          var reader = r.body.getReader();
+          fill.parentElement.classList.remove('waiting');
+          fill.style.width = '0%';
+          var pump = function () {
+            return reader.read().then(function (c) {
+              if (c.done) return start();
+              got += c.value.length;
+              if (total) fill.style.width = Math.min(20, (20 * got) / total) + '%';
+              text.textContent = 'Downloading the game… ' + kb(got) + (total ? ' / ' + kb(total) : '');
+              return pump();
+            });
+          };
+          return pump();
+        }).catch(start);
+      })();
+    </script>
+  </body>
+</html>

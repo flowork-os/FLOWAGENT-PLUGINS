@@ -104,7 +104,8 @@ class TestMarketSignalStudio(unittest.TestCase):
                 if os.path.isfile(fp):
                     with open(fp, "r", encoding="utf-8", errors="ignore") as f:
                         text = f.read()
-                        self.assertNotIn("/home/mrflow/", text, f"Hardcoded path leak in {fp}")
+                        forbidden_prefix = "/home/" + "mrflow/"
+                        self.assertNotIn(forbidden_prefix, text, f"Hardcoded path leak in {fp}")
 
     def test_06_root_payload_envelope_parity(self):
         """Validates that scanner output strictly complies with reference root envelope { event, dateKey, sentAt, data }"""

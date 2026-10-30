@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://arcane-orb-workshop.pages.dev/reforged/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#091011" />
+    <meta
+      name="description"
+      content="An ill-advised journey from a borrowed spellbook to absolute cosmic nonsense."
+    />
+    <title>Arcane Orb · Reforged</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='27' fill='%230f2527' stroke='%23d3b77b' stroke-width='3'/%3E%3Cpath d='M32 9L38 26 55 32 38 38 32 55 26 38 9 32 26 26Z' fill='%2382e3d2'/%3E%3C/svg%3E"
+    />
+    <script type="module" crossorigin src="./assets/index-DdW0gkVy.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DuL9DmK3.css">
+  </head>
+  <body>
+    <div id="app" class="not-started">
+      <header class="topbar">
+        <a class="wordmark" href="#" aria-label="Arcane Orb home"
+          ><span class="seal">✧</span
+          ><span>ARCANE ORB<small>R E F O R G E D</small></span></a
+        >
+        <div class="run-label">
+          <span class="status-dot"></span
+          ><span id="chapter">THE FIRST SPARK</span
+          ><span class="divider">/</span><span id="levelLabel">VOID I</span>
+        </div>
+        <nav class="utility">
+          <button id="soundToggle" title="Toggle sound" aria-label="Mute sound">
+            Sound on</button
+          ><button id="codexOpen">Field notes</button
+          ><button id="settingsOpen" aria-label="Open settings">
+            Settings
+          </button>
+        </nav>
+      </header>
+      <main class="game-layout">
+        <section class="sanctum" aria-label="Wizard's chamber">
+          <div id="worldStage" class="world-stage">
+            <canvas
+              id="world"
+              tabindex="0"
+              aria-label="Animated three dimensional wizard chamber"
+            ></canvas>
+            <div class="vignette"></div>
+            <div id="crosshair" aria-hidden="true">+</div>
+            <div id="bossAnchor" hidden>
+              <strong id="bossAnchorName"></strong
+              ><span id="bossAnchorHp"></span>
+              <div class="bar"><i id="bossAnchorFill"></i></div>
+            </div>
+            <button id="interactStation" class="station-prompt" hidden>
+              Press E · Interact
+            </button>
+            <button
+              id="touchCast"
+              class="touch-cast"
+              aria-label="Cast at crosshair with touch"
+            >
+              Cast ✦
+            </button>
+          </div>
+          <aside
+            id="towerSidebar"
+            class="tower-sidebar"
+            aria-label="Tower controls and activity"
+            hidden
+          ></aside>
+          <div id="towerHud" class="tower-hud" hidden>
+            <span class="eyebrow" id="towerLocation">The wizard tower</span
+            ><strong id="towerCompass">Sanctum · Central orb</strong>
+            <div class="tower-actions">
+              <button id="captureMouse">Capture mouse</button>
+            </div>
+            <details>
+              <summary>Controls</summary>
+              <small id="towerInstructions"
+                >WASD move · Mouse look · E interact · Tab release cursor<br />Bosses
+                start on schedule. Walk back yourself.</small
+              >
+            </details>
+            <div class="touch-walk">
+              <button data-look="-160" aria-label="Look left">↶</button
+              ><button data-walk-key="KeyW" aria-label="Walk forward">↑</button
+              ><button data-look="160" aria-label="Look right">↷</button
+              ><button data-walk-key="KeyA" aria-label="Strafe left">←</button
+              ><button data-walk-key="KeyS" aria-label="Walk backward">↓</button
+              ><button data-walk-key="KeyD" aria-label="Strafe right">→</button>
+            </div>
+          </div>
+          <div id="activityPanel" hidden></div>
+          <div class="resource-hud">
+            <span class="eyebrow">STARDUST</span>
+            <div class="dust-line">
+              <span id="dust">0</span><span class="dust-symbol">✦</span>
+            </div>
+            <div class="rates">
+              <span><b id="perClick">1</b> / cast</span
+              ><span><b id="perSecond">0</b> / second</span>
+            </div>
+            <div class="soul-stat">
+              <span>◇</span> <b id="souls">0</b> void souls
+              <span id="soulBonus">+0%</span>
+            </div>
+          </div>
+          <div class="encounter-top">
+            <div class="eyebrow" id="encounterType">THE VEIL IS QUIET</div>
+            <h1 id="encounterName">Something stirs beyond the glass.</h1>
+            <div id="bossPanel" hidden>
+              <div class="boss-meta">
+                <span id="bossPhase">PHASE I</span><span id="bossHp"></span
+                ><span id="bossTime"></span>
+              </div>
+              <div class="bar boss-bar"><i id="bossFill"></i></div>
+              <div id="attackWarning">Watch its movements.</div>
+              <div id="bossDirection" hidden></div>
+            </div>
+          </div>
+          <button
+            id="orbTarget"
+            class="orb-target"
+            aria-label="Cast into the orb"
+            title="Click or press Space to cast"
+          ></button>
+          <div id="floaters" aria-hidden="true"></div>
+          <div id="flash" aria-hidden="true"></div>
+          <div class="chamber-bottom">
+            <div class="interaction-copy">
+              <span class="tiny-rule"></span
+              ><span id="clickHint">CLICK THE ORB TO CAST</span
+              ><span class="tiny-rule"></span>
+            </div>
+            <div class="health-line">
+              <span>VITALITY</span>
+              <div class="bar health-bar"><i id="healthFill"></i></div>
+              <span id="healthText">100 / 100</span
+              ><span id="wardStatus"></span>
+            </div>
+            <div class="spellbar" aria-label="Spells">
+              <button class="spell" data-spell="nova">
+                <kbd>1</kbd><span class="spell-rune">✷</span
+                ><span
+                  ><b>Starfall Nova</b
+                  ><small id="novaInfo">Burst damage</small></span
+                ><span class="cooldown" id="novaCd">READY</span></button
+              ><button class="spell" data-spell="ward">
+                <kbd>2</kbd><span class="spell-rune">⬡</span
+                ><span
+                  ><b>Aegis Ward</b
+                  ><small id="wardInfo">Block an attack</small></span
+                ><span class="cooldown" id="wardCd">READY</span></button
+              ><button class="spell" data-spell="focus">
+                <kbd>3</kbd><span class="spell-rune">◈</span
+                ><span
+                  ><b>Arcane Focus</b
+                  ><small id="focusInfo">Amplify casting</small></span
+                ><span class="cooldown" id="focusCd">READY</span>
+              </button>
+            </div>
+            <div class="encounter-controls">
+              <span id="nextEncounter">Next breach in 60s</span
+              ><button id="challenge">Open the rift <span>↗</span></button>
+            </div>
+          </div>
+          <div id="endingCaptions" hidden>
+            <span class="eyebrow">SOVEREIGN OF THE VOID</span>
+            <h1 id="endingTitle">You have mastered the Void.</h1>
+            <p id="endingSubtitle">It has prepared a very serious ceremony.</p>
+            <button id="endingReturn" class="quiet-button" hidden>
+              Return to the sanctum
+            </button>
+          </div>
+        </section>
+        <aside class="grimoire">
+          <div class="shop-heading">
+            <div>
+              <span class="eyebrow">THE ARCANE MERCHANT</span>
+              <h2>A little more power.</h2>
+            </div>
+            <span class="book-sigil">⟡</span>
+          </div>
+          <p class="shop-intro">Questionable magic. Excellent returns.</p>
+          <div class="shop-tabs" role="tablist" aria-label="Upgrade categories">
+            <button role="tab" aria-selected="true" data-tab="casting">
+              Casting</button
+            ><button role="tab" aria-selected="false" data-tab="spells">
+              Spells</button
+            ><button role="tab" aria-selected="false" data-tab="defense">
+              Defense</button
+            ><button role="tab" aria-selected="false" data-tab="summons">
+              Allies</button
+            ><button role="tab" aria-selected="false" data-tab="relics">
+              Rites
+            </button>
+          </div>
+          <div
+            id="shop"
+            class="shop-list"
+            role="tabpanel"
+            aria-label="Available upgrades"
+          ></div>
+          <div class="grimoire-footer">
+            <span id="progressLabel"
+              >A borrowed spellbook. A terrible idea.</span
+            ><button
+              id="rebirthOpen"
+              title="Reset this run to earn permanent Void Souls"
+            >
+              Rebirth <span>↗</span>
+            </button>
+            <p>Souls endure. Everything else is negotiable.</p>
+          </div>
+        </aside>
+      </main>
+      <footer class="bottom-bar">
+        <nav class="views" aria-label="Chamber views">
+          <button data-view="sanctum" class="active">
+            01 <span>Sanctum</span>
+          </button>
+        </nav>
+        <button id="walkTower" class="walk-toggle">Walk the tower</button>
+        <div class="journal">
+          <span class="journal-star">✧</span
+          ><span id="journalText"
+            >Poke the forbidden orb. What could go wrong?</span
+          >
+        </div>
+        <span id="saveStatus">Saved locally</span>
+      </footer>
+    </div>
+    <div
+      id="breachWarning"
+      class="breach-warning"
+      role="status"
+      aria-live="assertive"
+      hidden
+    >
+      <span>THE VEIL IS TEARING</span><strong id="breachSeconds">5</strong
+      ><b>RETURN TO THE SANCTUM</b
+      ><small>The boss will not wait for you.</small>
+    </div>
+    <div id="bonusBanner" class="bonus-banner" role="status" hidden>
+      ✦ THE TREASURY IS OPEN ✦<small>Every hit pays. Make it rain.</small>
+    </div>
+    <aside
+      id="archivePanel"
+      class="archive-panel"
+      aria-label="Soul records"
+      hidden
+    >
+      <button id="closeArchive" aria-label="Close soul records">
+        Return to tower ↗</button
+      ><span class="eyebrow">ARCHIVES · SOUL RECORDS</span>
+      <h2>The tower remembers.</h2>
+      <p id="archiveText"></p>
+      <p class="archive-caution">
+        Reading does not pause the world. Listen for the five-second warning and
+        return to the central Sanctum.
+      </p>
+    </aside>
+    <section id="welcome" class="welcome">
+      <div class="welcome-frame">
+        <span class="eyebrow">THE TOWER HAS BEEN EXPECTING SOMEONE</span>
+        <div class="welcome-seal">✧</div>
+        <h1>Arcane Orb</h1>
+        <div class="edition"><span></span> R E F O R G E D <span></span></div>
+        <p>
+          Borrow a little power.<br />Annoy something ancient.<br /><em
+            >See how far this gets out of hand.</em
+          >
+        </p>
+        <button id="start" class="primary" aria-label="Enter the sanctum">
+          Enter the sanctum <span>↗</span></button
+        ><span id="resumeNotice" class="welcome-note"
+          >An orb to trouble · A tower to wander · Debts to
+          something ancient</span
+        >
+        <div class="welcome-controls">
+          <span>SPACE <small>cast</small></span
+          ><span>1 / 2 / 3 <small>spells</small></span
+          ><span>ESC <small>pause</small></span>
+        </div>
+        <p id="loadError" hidden></p>
+      </div>
+    </section>
+    <dialog id="settingsDialog">
+      <form method="dialog">
+        <button class="close" aria-label="Close settings">×</button
+        ><span class="eyebrow">THE MUNDANE ARTS</span>
+        <h2>Settings</h2>
+        <label class="setting"
+          >Master volume<input
+            id="volume"
+            type="range"
+            min="0"
+            max="100"
+            value="35" /></label
+        ><label class="setting"
+          >Visual quality<select id="quality">
+            <option value="high">High</option>
+            <option value="medium">Balanced</option>
+            <option value="low">Low</option>
+          </select></label
+        ><label class="setting"
+          >Reduced motion<input id="reducedMotion" type="checkbox"
+        /></label>
+        <p class="dialog-note">
+          Combat pauses while a menu is open or this tab is hidden. Progress is
+          saved in this browser. Export a copy before clearing browser data.
+        </p>
+        <div class="button-row">
+          <button type="button" id="exportSave">Export save</button
+          ><button type="button" id="importSave">Import save</button>
+        </div>
+        <button type="button" id="exportRecovery" hidden>
+          Export recovery backup</button
+        ><input
+          id="importFile"
+          type="file"
+          accept="application/json,.json"
+          hidden
+        /><button type="button" id="resetOpen" class="danger-text">
+          Erase progress…
+        </button>
+        <p id="settingsMessage" role="status"></p>
+      </form>
+    </dialog>
+    <dialog id="codexDialog">
+      <form method="dialog">
+        <button class="close" aria-label="Close field notes">×</button
+        ><span class="eyebrow">NOTES FROM YOUR PREDECESSOR</span>
+        <h2>How not to die.</h2>
+        <div class="codex-entry">
+          <b>01 · The orb pays the bills</b>
+          <p>
+            Click the orb or press Space for Stardust. Casting upgrades
+            strengthen your clicks. Apprentices, Constructs and Singularities
+            earn dust automatically.
+          </p>
+        </div>
+        <div class="codex-entry">
+          <b>02 · The Void knocks back</b>
+          <p>
+            A rift approaches every minute, or call one early. Every arrival has
+            an ominous five-second warning. Defeat hostile creatures before time
+            runs out. They start and attack even while you are elsewhere in the
+            tower. Follow the Sanctum arrow and walk back—there is no rescue
+            teleport.
+          </p>
+        </div>
+        <div class="codex-entry">
+          <b>03 · Use the entire spellbook</b>
+          <p>
+            <strong>1 — Nova:</strong> a burst of damage during encounters.
+            <strong>2 — Ward:</strong> cast before an incoming attack to block
+            it. <strong>3 — Focus:</strong> boost active casting. Every spell
+            can be upgraded; Chronomancer Ink reduces cooldowns.
+          </p>
+        </div>
+        <div class="codex-entry">
+          <b>04 · Invest in surviving</b>
+          <p>
+            Ward Sigils add blocks. Borrowed Hearts improve health. Weapons
+            improve strikes; Sunbro and Dragon allies attack automatically.
+            Repeatable upgrades grow stronger by rank, and dearer with each purchase.
+          </p>
+        </div>
+        <div class="codex-entry">
+          <b>05 · Death is a business expense</b>
+          <p>
+            The deeper breaches devour unprepared wizards. Rebirth turns
+            completed breaches into permanent Void Souls: each adds 10% to
+            generation and damage. Stardust, purchases and breach progress
+            reset; souls survive. The confirmation shows exactly what you gain.
+            Even the old masters wore through several robes. Forbidden offers reveal
+            themselves only when you can afford them.
+          </p>
+        </div>
+        <div class="codex-entry">
+          <b>06 · Look around</b>
+          <p>
+            Select Walk the tower: WASD moves, the mouse looks, and E uses a
+            nearby station. Click the chamber or Capture mouse to aim; Tab or
+            Escape releases the pointer. With the cursor free, Escape opens
+            Settings. Right-mouse drag is a fallback for looking. The Orrery has
+            a 20-second spell-target range; the Archives hold a slot cabinet and
+            soul records. Explore on foot to discover their glowing stations.
+          </p>
+        </div>
+        <div class="codex-entry">
+          <b>07 · Spectacularly questionable income</b>
+          <p>
+            Every fifth breach is a full 30-second treasure rush: harmless
+            treasure, golden coin rain, extra income and a payout for every orb
+            click. Keep collecting until time expires. The wizard slot cabinet
+            costs 100 earned Stardust per spin. It has bad odds, no real money
+            or cash-out, and an exceptionally rare enormous jackpot. Read its
+            exact odds before pulling the lever. Practice and gambling do not
+            stop the boss timer; leaving an unfinished practice round forfeits
+            its reward.
+          </p>
+        </div>
+        <button class="primary">My judgment remains questionable.</button>
+      </form>
+    </dialog>
+    <dialog id="storyDialog">
+      <span class="eyebrow" id="storyLabel"></span>
+      <h2 id="storyTitle"></h2>
+      <p id="storyText"></p>
+      <div class="button-row">
+        <button id="storyCancel">Not yet</button
+        ><button id="storyConfirm" class="primary">Continue</button>
+      </div>
+    </dialog>
+    <dialog id="saveConflictDialog" aria-labelledby="saveConflictTitle">
+      <h2 id="saveConflictTitle">Save changed in another tab</h2>
+      <p>
+        This tab is paused to protect the newer save. Reload to continue with
+        the latest progress. Unsaved changes in this tab will be discarded.
+      </p>
+      <button id="reloadSave" class="primary">Reload latest save</button>
+    </dialog>
+    <button
+      id="returnToBattle"
+      hidden
+      style="
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 90;
+        background: #10292b;
+        border-color: #d3b77b;
+        padding: 14px 20px;
+        max-width: calc(100vw - 24px);
+        width: max-content;
+      "
+      aria-live="polite"
+    >
+      Battle active · Return to battle ↑
+    </button>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

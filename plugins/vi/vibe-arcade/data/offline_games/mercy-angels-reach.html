@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://mercy.astra.demos.sulat.com/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#b5cfda"><link rel="stylesheet" href="./style.css"><title data-sulat-seo>Mercy — GPT 6 Astra one-shot demo | Sulat</title>
+<meta name="description" content="Explore Mercy, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="robots" content="index, follow, max-image-preview:large" data-sulat-seo>
+<link rel="canonical" href="https://mercy.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:type" content="website" data-sulat-seo>
+<meta property="og:locale" content="en_NZ" data-sulat-seo>
+<meta property="og:site_name" content="Sulat" data-sulat-seo>
+<meta property="og:title" content="Mercy — GPT 6 Astra" data-sulat-seo>
+<meta property="og:description" content="Explore Mercy, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta property="og:url" content="https://mercy.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:image" content="https://demos.sulat.com/openai/astra/mercy/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:secure_url" content="https://demos.sulat.com/openai/astra/mercy/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:type" content="image/jpeg" data-sulat-seo>
+<meta property="og:image:width" content="1200" data-sulat-seo>
+<meta property="og:image:height" content="630" data-sulat-seo>
+<meta property="og:image:alt" content="Mercy one-shot demo preview" data-sulat-seo>
+<meta name="twitter:card" content="summary_large_image" data-sulat-seo>
+<meta name="twitter:title" content="Mercy — GPT 6 Astra" data-sulat-seo>
+<meta name="twitter:description" content="Explore Mercy, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="twitter:url" content="https://mercy.astra.demos.sulat.com/" data-sulat-seo>
+<meta name="twitter:image" content="https://demos.sulat.com/openai/astra/mercy/thumbnail.jpg" data-sulat-seo>
+<meta name="twitter:image:alt" content="Mercy one-shot demo preview" data-sulat-seo>
+<!--
+Sulat content-use policy:
+User-initiated automated scraping, extraction, and bulk copying are not permitted.
+Search indexing and discovery crawlers may access this content.
+When citing, summarising, or reusing Sulat content, credit Sulat and link to this page's canonical URL.
+Preserve the original creator credits and source links shown on this page; do not attribute third-party work to Sulat.
+Canonical URL: https://mercy.astra.demos.sulat.com/
+--></head>
+<body data-state="menu">
+<main id="experience" aria-label="Angel's Reach, a Mercy rescue minigame">
+ <div id="stage"><canvas id="scene" aria-label="Three dimensional alpine rescue airspace"></canvas><div class="vignette"></div><div id="markers"></div></div>
+ <header class="topbar">
+  <a class="brand" href="#" id="home" aria-label="Angel's Reach home"><svg viewBox="0 0 64 48" aria-hidden="true"><path d="M30 29 8 9 1 9l6 14 21 12M34 29 56 9h7l-6 14-21 12M17 28 9 27l8 9 11 3M47 28l8-1-8 9-11 3"/><circle cx="32" cy="11" r="6"/><path d="m32 21-6 20h12z"/></svg><span><strong>MERCY</strong><small>ANGEL'S REACH</small></span></a>
+  <div class="station-code"><span class="live-dot"></span> SWISS ALPS <span>/</span> STATION 07</div>
+  <nav aria-label="Game options"><button class="quiet" id="helpButton"><span>?</span> Field guide</button><button class="icon-button" id="soundButton" aria-label="Mute sound" title="Toggle sound">♪</button><button class="icon-button play-only" id="pauseButton" aria-label="Pause game" title="Pause (Esc)">Ⅱ</button></nav>
+ </header>
+
+ <section class="intro" id="intro" aria-labelledby="introTitle">
+  <div class="eyebrow"><span></span> A MERCY FIELD OPERATION</div>
+  <h1 id="introTitle">Every life.<br><em>Within reach.</em></h1>
+  <p class="intro-copy">Four signals in the storm. One guardian angel.<br>Take wing above the Swiss Alps and bring<br class="desktop-break"> your team home.</p>
+  <div class="mission-facts"><span><strong>75</strong> SECONDS</span><i></i><span><strong>04</strong> LIVES TO PROTECT</span></div>
+  <button class="primary" id="startButton">Begin rescue <span>↗</span></button>
+  <div class="start-caption">MOUSE + KEYBOARD <span>·</span> TOUCH READY</div>
+ </section>
+ <div class="hero-caption menu-only"><span>DR. ANGELA ZIEGLER</span><h2>Science in service<br>of hope.</h2><div><i></i> VALKYRIE SUIT · ONLINE</div></div>
+ <footer class="menu-footer menu-only"><span class="coordinates">46°35′ N &nbsp; 07°57′ E <i> / </i> 3,454 M</span><span class="mission-note">AN ORIGINAL OVERWATCH FAN EXPERIENCE</span><button class="text-button" id="creditsButton">About this flight <span>↗</span></button></footer>
+
+ <div id="playHUD" class="play-only">
+  <section class="operation"><div class="eyebrow">OPERATION: SAFE HORIZON</div><h2>Keep them in the sky.</h2><p id="phaseText">01 / FIRST RESPONSE</p></section>
+  <div class="objective"><span class="live-dot"></span> KEEP AT LEAST 3 ALLIES ALIVE <strong id="aliveCount">4 / 4</strong></div>
+  <div class="timer"><span>EXTRACTION IN</span><strong id="timeLeft">01:15</strong><div class="timeline"><i id="timeBar"></i></div></div>
+  <aside id="roster" aria-label="Select rescue target"></aside>
+  <div class="scoreboard"><span>RESCUE SCORE</span><strong id="score">0000</strong></div>
+  <div class="statusline" id="statusline"><span class="pulse-dot"></span><span id="linkStatus">SELECT AN ALLY · SHIFT TO FLY</span></div>
+  <div class="mercyVitals"><span class="medical-mark">✦</span><div><span>MERCY <b id="healthNumber">100</b></span><div class="health-track"><i id="healthBar"></i></div></div><small>VITALS</small></div>
+  <div id="beamModes" class="beam-modes" aria-label="Caduceus Staff mode"><button id="healButton" class="beam-button selected" aria-pressed="true"><span class="beam-icon">✚</span><span>Healing<small>RESTORE YOUR ALLY</small></span><kbd>1</kbd></button><button id="boostButton" class="beam-button" aria-pressed="false"><span class="beam-icon">ϟ</span><span>Damage boost<small>HELP THEM CLEAR DRONES</small></span><kbd>2</kbd></button></div>
+  <div id="actions" aria-label="Mercy abilities"><button id="gaButton" class="ability"><kbd>SHIFT</kbd><span class="ability-symbol">↗</span><strong>Guardian Angel</strong><small id="gaState">READY</small></button><button id="rezButton" class="ability"><kbd>E</kbd><span class="ability-symbol">✧</span><strong>Resurrect</strong><small id="rezState">READY</small></button><button id="valkButton" class="ability ultimate"><kbd>Q</kbd><span class="ability-symbol">⌁</span><strong>Valkyrie</strong><small id="valkState">0%</small><i id="chargeFill"></i></button></div>
+  <div class="flight-pad" aria-label="Flight direction controls"><button data-key="ArrowUp" aria-label="Fly up">↑</button><button data-key="ArrowLeft" aria-label="Fly left">←</button><span>FLY</span><button data-key="ArrowRight" aria-label="Fly right">→</button><button data-key="ArrowDown" aria-label="Fly down">↓</button></div>
+  <div class="control-strip"><span><kbd>W A S D</kbd> / <kbd>↑ ← ↓ →</kbd> FLY</span><span>CLICK ALLY TO LINK</span><span><kbd>TAB</kbd> NEXT ALLY</span><span><kbd>SPACE</kbd> SWITCH BEAM</span></div>
+ </div>
+ <div id="toast" role="status" aria-live="polite"></div><div id="hitFlash"></div>
+
+ <dialog id="guideDialog" class="modal guide-modal"><button class="close" data-close aria-label="Close field guide">×</button><div class="eyebrow">VALKYRIE FIELD MANUAL</div><h2>A little help.<br><em>A second chance.</em></h2><p class="modal-intro">Survive 75 seconds with at least three allies alive. Their rescue platforms are under drone attack. Your staff links automatically to the selected ally when you are close enough.</p><div class="guide-grid"><article><span>01</span><h3>Read the signals.</h3><p>Click an ally in the airspace or roster. Gold means linked. Red means critical. <kbd>Tab</kbd> cycles targets.</p></article><article><span>02</span><h3>Close the distance.</h3><p><kbd>WASD</kbd> or <kbd>arrow keys</kbd> fly left, right, up and down on screen. <kbd>Shift</kbd> flies straight toward your selected ally.</p></article><article><span>03</span><h3>Choose your beam.</h3><p><kbd>1</kbd> heals. <kbd>2</kbd> boosts your ally's drone fire. <kbd>Space</kbd> swaps beams. Left/right click empty air also select heal/boost.</p></article><article><span>04</span><h3>Make the save.</h3><p>A downed signal lasts 14 seconds. Fly close and press <kbd>E</kbd>; stay still for 1.65 seconds to revive. Charge <kbd>Q</kbd> through support to link everyone with Valkyrie.</p></article></div><div class="guide-note">Leave red pulse rings before they detonate. Pause with <kbd>Esc</kbd> or <kbd>P</kbd>. On touch, use the flight pad and ability buttons.</div><button class="primary" data-close>Ready to take wing <span>↗</span></button></dialog>
+ <dialog id="pauseDialog" class="modal pause-modal"><div class="eyebrow">FLIGHT SUSPENDED</div><h2>A moment<br><em>to breathe.</em></h2><p>The team will be here when you're ready.</p><button class="primary" id="resumeButton">Resume rescue <span>↗</span></button><button class="secondary" id="restartButton">Restart operation</button><button class="text-button" id="menuButton">Return to base</button></dialog>
+ <dialog id="resultDialog" class="modal result-modal"><div class="eyebrow" id="resultEyebrow">OPERATION COMPLETE</div><div class="result-grade" id="resultGrade">A</div><h2 id="resultTitle">Hope takes<br><em>flight.</em></h2><p id="resultCopy">All four signals made it home.</p><div class="result-score"><span>RESCUE SCORE</span><strong id="finalScore">0</strong><small id="bestScore">PERSONAL BEST 0</small></div><div class="result-stats"><span><strong id="finalAlive">4/4</strong>EXTRACTED</span><span><strong id="finalHealing">0</strong>HEALING</span><span><strong id="finalRescues">0</strong>REVIVES</span></div><button class="primary" id="replayButton">Take wing again <span>↗</span></button><button class="text-button" id="resultMenuButton">Return to base</button></dialog>
+ <dialog id="creditsDialog" class="modal credits-modal"><button class="close" data-close aria-label="Close about">×</button><div class="eyebrow">ABOUT THIS FLIGHT</div><h2>Compassion,<br><em>in motion.</em></h2><p>An original, unofficial minigame inspired by Dr. Angela Ziegler: Swiss physician, scientist, and Overwatch's guardian angel. The alpine extraction is a new scenario, with abilities adapted for this experience.</p><p>Mercy and Overwatch belong to Blizzard Entertainment. Character and ability references: <a href="https://overwatch.blizzard.com/en-us/heroes/mercy/" target="_blank" rel="noreferrer">official Mercy profile</a> and <a href="https://news.blizzard.com/en-us/article/23229614/the-history-of-mercy-from-guardian-to-guardian-angel" target="_blank" rel="noreferrer">Blizzard's character history</a>.</p><p>All in-game characters, scenery, effects and sound were created for Angel's Reach. Runs entirely in your browser.</p></dialog>
+ <div id="errorFallback" hidden><h1>The airspace couldn't open.</h1><p>This experience needs WebGL. Please try a current browser with hardware acceleration enabled.</p></div>
+</main>
+<script type="module" src="./app.js"></script>
+<link rel="stylesheet" href="/.well-known/sulat-demo-overlay-v12.css" data-sulat-demo-overlay-asset="styles-v12">
+<details id="sulat-demo-referral-overlay" data-model="astra" data-experiment="mercy" data-storage-scope="astra.demos.sulat.com" data-deal-id="oneshot-websites" data-has-deal="true" data-collapsed="true">
+  <summary data-overlay-toggle aria-label="Expand demo links" aria-expanded="false" title="Expand demo links"></summary>
+  <div class="sulat-demo-overlay__actions">
+    <div class="sulat-demo-overlay__primary">
+      <details class="sulat-demo-overlay__share" data-overlay-share>
+        <summary aria-label="Share this demo" title="Share this demo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M12 15.75v-12m0 0L7.5 8.25M12 3.75l4.5 4.5M5.25 13.5v5.25h13.5V13.5"/></svg><span class="sulat-demo-overlay__share-label">Share</span></summary>
+        <nav class="sulat-demo-overlay__share-menu" aria-label="Share this demo">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fmercy.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fmercy.astra.demos.sulat.com%2F&t=Mercy%20%E2%80%94%20GPT%206%20Astra%20demo" target="_blank" rel="noopener noreferrer">Hacker News</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fmercy.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text=Mercy%20%E2%80%94%20GPT%206%20Astra%20demo&url=https%3A%2F%2Fmercy.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Twitter</a>
+        </nav>
+      </details>
+      <a class="sulat-demo-overlay__catalogue" data-overlay-catalogue href="https://astra.demos.sulat.com/" aria-label="More demos"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>More demos</a>
+      <a class="sulat-demo-overlay__next" data-overlay-next href="https://demos.sulat.com/surprise" aria-label="Open another random demo" title="Open another random demo"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 4 12 8-12 8z"/></svg>Next demo</a>
+    </div>
+    <a class="sulat-demo-overlay__deal" data-overlay-deal href="https://github.com/jpcaparas/skills#oneshot-websites" target="_blank" rel="sponsored noopener noreferrer" aria-label="Create your own one-shots (opens in a new tab)">Create your own one-shots</a>
+  </div>
+</details>
+<script src="/.well-known/sulat-demo-overlay-v12.js" defer data-sulat-demo-overlay-asset="script-v12"></script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a527844509c0ceca',t:'MTc5MzMzMjg2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a527844509c0ceca',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ecb2b94d4b63450a9e0af42e304662ed","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body></html>

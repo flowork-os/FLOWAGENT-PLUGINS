@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://vibe-f1-racing.pages.dev/">
+<meta charset="utf-8">
+<title>Aurora Grand Prix — F1 Simulator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
+</script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:'Titillium Web',system-ui,sans-serif;user-select:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;z-index:2}
+.dark{background:rgba(11,13,19,.86)}
+#board{left:14px;top:14px;width:214px;font-size:12px;font-weight:700}
+#board .hd{display:flex;align-items:baseline;gap:10px;background:#fff;color:#111;padding:3px 8px;font-weight:900}
+#board .hd b{font-size:14px}
+#board .hd span:last-child{margin-left:auto;font-size:10px;letter-spacing:.08em}
+.row{display:grid;grid-template-columns:16px 4px 38px 1fr 62px;align-items:center;gap:6px;height:19px;padding:0 8px;background:rgba(11,13,19,.82)}
+.row:nth-child(odd){background:rgba(18,20,28,.82)}
+.row.me{background:#fff;color:#111}
+.row .bar{width:3px;height:12px}
+.row .ty{width:11px;height:11px;border-radius:50%;border:2.5px solid #ffd400;justify-self:center}
+.row .gp{text-align:right;font-variant-numeric:tabular-nums;font-size:11px}
+.row.out{opacity:.55}
+#timing{right:14px;top:14px;display:flex;min-width:250px}
+#timing .p{background:#fff;color:#111;padding:4px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:4px solid #e10600}
+#timing .p b{font:italic 900 30px/1 'Titillium Web'}
+#timing .p small{font-size:10px;font-weight:700}
+#timing .t{padding:6px 12px;flex:1}
+#timing .t small{font-size:10px;font-weight:700;letter-spacing:.08em;color:#aab}
+#timing .t .big{font:700 26px/1.1 'Titillium Web';font-variant-numeric:tabular-nums}
+#timing .t .sub{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#ccd;margin-top:4px;font-variant-numeric:tabular-nums}
+#lapinfo{right:14px;top:92px;padding:3px 10px;font-weight:900;font-size:13px}
+#lights{left:50%;top:56px;transform:translateX(-50%);display:flex;gap:12px;background:#070707;padding:12px 16px;border-radius:4px;opacity:0;transition:opacity .4s;box-shadow:0 6px 30px rgba(0,0,0,.5)}
+#lights.show{opacity:1}
+#lights .col{display:flex;flex-direction:column;gap:9px}
+#lights i{width:32px;height:32px;border-radius:50%;background:#2a0606;display:block}
+#lights i.on{background:#ff2323;box-shadow:0 0 20px #ff2b2b,inset 0 0 6px #ffb3b3}
+#map{left:14px;bottom:14px}
+#dash{right:14px;bottom:14px;width:262px;padding:8px 10px 10px}
+#rpm{display:flex;gap:2px;margin-bottom:8px}
+#rpm i{flex:1;height:7px;background:#2c2f38;display:block;border-radius:1px}
+#dash .mid{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center}
+#dash .gear{font:italic 900 54px/1 'Titillium Web';text-align:center}
+#dash .spd{text-align:right}
+#dash .spd b{font:700 34px/1 'Titillium Web';font-variant-numeric:tabular-nums;display:block}
+#dash .spd small,#dash .lbl{font-size:10px;font-weight:700;color:#aab;letter-spacing:.06em}
+#ersbar{height:5px;background:#2c2f38;margin:3px 0 0;width:90%}
+#ersbar i{display:block;height:100%;background:#ffd400;width:100%}
+#dash .bot{display:flex;gap:8px;align-items:center;margin-top:8px}
+#drs{border:2px solid #444;color:#666;font:italic 900 14px 'Titillium Web';padding:3px 8px}
+#drs.av{border-color:#1fd05a;color:#1fd05a}
+#drs.open{background:#1fd05a;color:#062;border-color:#1fd05a}
+#tyres{display:grid;grid-template-columns:24px 24px;gap:2px}
+#tyres i{font-style:normal;background:#1aa7ff;color:#012;font-size:9px;font-weight:900;text-align:center;border-radius:2px;padding:1px 0}
+#dash .info{font-size:10px;font-weight:700;color:#ccd;line-height:1.4}
+#msg{left:50%;top:34%;transform:translate(-50%,-50%);font:italic 900 68px/1 'Titillium Web';text-shadow:0 4px 24px rgba(0,0,0,.7);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+#msg.show{opacity:1}
+body.capture #help{display:none}
+#help{left:50%;bottom:10px;transform:translateX(-50%);font-size:11px;color:#dde;opacity:.75;text-shadow:0 1px 3px #000}
+.overlay{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(4,7,12,.5);backdrop-filter:blur(3px)}
+.overlay[hidden]{display:none}
+.card{background:rgba(11,13,19,.95);padding:26px 32px;min-width:440px;border-top:4px solid #e10600;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.card h1{font:italic 900 40px/1 'Titillium Web';margin:0 0 4px}
+.card h2{font:700 14px 'Titillium Web';margin:0 0 18px;color:#aab;letter-spacing:.1em}
+.card .laps{display:flex;gap:6px;margin:6px 0 16px}
+.card button{font:900 14px 'Titillium Web';background:#2a2e3a;color:#fff;border:0;padding:8px 14px;cursor:pointer}
+.card button.sel{background:#fff;color:#111}
+.card .go{background:#e10600;width:100%;font-size:18px;padding:12px;margin-top:12px}
+.card table{border-collapse:collapse;width:100%;font-size:13px;font-weight:700}
+.card td{padding:3px 8px;font-variant-numeric:tabular-nums}
+.card tr.me{background:#fff;color:#111}
+.card .keys{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px;color:#ccd}
+.card .keys b{color:#fff}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="board" class="hud"><div class="hd"><span>LAP</span><b id="lapc">1/3</b><span>INTERVAL</span></div><div id="rows"></div></div>
+<div id="timing" class="hud dark"><div class="p"><b id="pos">P10</b><small id="of">/20</small></div>
+  <div class="t"><small>LAP TIME</small><div class="big" id="laptime">0:00.000</div>
+  <div class="sub"><span>LAST <b id="last">-:--.---</b></span><span>BEST <b id="best">-:--.---</b></span></div></div></div>
+<div id="lights" class="hud"></div>
+<canvas id="map" class="hud dark" width="220" height="160"></canvas>
+<div id="dash" class="hud">
+  <div id="rpm"></div>
+  <div class="mid">
+    <div><div class="lbl" id="tyrelbl">MEDIUM</div><div id="ersbar"><i></i></div><div class="lbl" style="margin-top:2px">ERS</div></div>
+    <div class="gear" id="gear">N</div>
+    <div class="spd"><b id="spd">0</b><small>KM/H</small></div>
+  </div>
+  <div class="bot"><div id="drs">DRS</div><div id="tyres"><i>90°</i><i>90°</i><i>88°</i><i>88°</i></div><div class="info">WING <b>OK</b><br>TYRE <b>M 0%</b></div></div>
+</div>
+<div id="msg" class="hud"></div>
+<div id="help" class="hud">↑/W throttle · ↓/S brake · ←→/AD steer · SPACE DRS · C camera · R reset · M mute · P pause</div>
+
+<div id="menu" class="overlay"><div class="card">
+  <h1>AURORA GRAND PRIX</h1><h2>F1 RACE SIMULATOR · 20 CARS</h2>
+  <div class="lbl" style="font-size:11px;color:#aab;font-weight:700">RACE LENGTH</div>
+  <div class="laps" id="lapsel"></div>
+  <div class="keys"><b>↑ / W</b><span>Throttle</span><b>↓ / S</b><span>Brake / reverse</span><b>← → / A D</b><span>Steer</span><b>SPACE</b><span>Open DRS (when available, lap 2+)</span><b>C</b><span>Change camera</span><b>R</b><span>Reset car to track</span></div>
+  <button class="go" id="go">START RACE ▸</button>
+</div></div>
+
+<div id="results" class="overlay" hidden><div class="card">
+  <h1 id="restitle">CHEQUERED FLAG</h1><h2 id="ressub">CLASSIFICATION</h2>
+  <table id="restable"></table>
+  <button class="go" id="again">RACE AGAIN</button>
+</div></div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>

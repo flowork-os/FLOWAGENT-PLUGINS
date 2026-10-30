@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://colorquestgame.com/">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TDRC0HB16T"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      // Dev sessions (localhost / 127.0.0.1) stay out of GA4: only measure real hosts.
+      if (!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+        gtag("config", "G-TDRC0HB16T", { send_page_view: false }); // src/shell/analytics.ts sends one per screen
+      }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#faf7ef" />
+    <meta name="description" content="Free color-by-number pixel game for kids. Plays in the browser on phones, tablets and computers, with no ads, no sign-up and no timers. Turn a photo into a puzzle; it never leaves your device." />
+    <link rel="canonical" href="https://colorquestgame.com/" />
+    <!-- Kept in sync by hand with build/lang-pages.ts's hreflangLinks(): index.html is static,
+         so it can't call that function, but every language page must list the same set. -->
+    <link rel="alternate" hreflang="en" href="https://colorquestgame.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://colorquestgame.com/" />
+    <link rel="alternate" hreflang="es" href="https://colorquestgame.com/es/" />
+    <link rel="alternate" hreflang="vi" href="https://colorquestgame.com/vi/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Color Quest" />
+    <meta property="og:title" content="Color Quest: a free color-by-number game for kids" />
+    <meta property="og:description" content="Free color-by-number pixel game for kids. Plays in the browser on phones, tablets and computers, with no ads, no sign-up and no timers. Turn a photo into a puzzle; it never leaves your device." />
+    <meta property="og:url" content="https://colorquestgame.com/" />
+    <meta property="og:image" content="https://colorquestgame.com/s/heart.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": ["VideoGame", "WebApplication"],
+            "name": "Color Quest",
+            "url": "https://colorquestgame.com/",
+            "description": "Free color-by-number pixel game for kids. Plays in the browser on phones, tablets and computers, with no ads, no sign-up and no timers. Turn a photo into a puzzle; it never leaves your device.",
+            "genre": ["Color by number", "Pixel art", "Educational"],
+            "gamePlatform": "Web browser",
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Any (runs in the browser)",
+            "inLanguage": "en",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "audience": { "@type": "PeopleAudience", "suggestedMinAge": 4, "suggestedMaxAge": 10 },
+            "image": "https://colorquestgame.com/icon-512.png",
+            "screenshot": "https://colorquestgame.com/s/heart.png",
+            "featureList": ["Color-by-number pixel pictures", "Power tools earned by coloring in a row", "Photo magic: turn a photo into a puzzle on your device", "Printable pages", "Works offline", "Calm mode for reduced motion", "English, Spanish and Vietnamese"],
+            "publisher": { "@id": "https://colorquestgame.com/#org" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://colorquestgame.com/#org",
+            "name": "Color Quest",
+            "url": "https://colorquestgame.com/",
+            "logo": "https://colorquestgame.com/icon-512.png"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://colorquestgame.com/#website",
+            "name": "Color Quest",
+            "url": "https://colorquestgame.com/",
+            "inLanguage": ["en", "es", "vi"],
+            "publisher": { "@id": "https://colorquestgame.com/#org" }
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://colorquestgame.com/#webpage",
+            "url": "https://colorquestgame.com/",
+            "name": "Color Quest: free color-by-number pixel game for kids",
+            "isPartOf": { "@id": "https://colorquestgame.com/#website" },
+            "about": { "@type": "Thing", "name": "Color by number games for kids" },
+            "dateModified": "2026-10-10",
+            "speakable": { "@type": "SpeakableSpecification", "cssSelector": [".seo-intro h1", ".seo-answer"] }
+          },
+          {
+            "@type": "HowTo",
+            "name": "How to play Color Quest",
+            "totalTime": "PT1M",
+            "step": [
+              { "@type": "HowToStep", "name": "Pick a picture", "text": "Open colorquestgame.com and choose a pixel picture, or turn your own photo into a puzzle." },
+              { "@type": "HowToStep", "name": "Match the numbers", "text": "Tap a color in the palette, then tap the squares with the same number." },
+              { "@type": "HowToStep", "name": "Earn power tools", "text": "Color five squares in a row to fill a strike and earn Line Blaster, Paint Brush, Paint Rain and Bomb tools." },
+              { "@type": "HowToStep", "name": "Finish and share", "text": "Watch the picture come to life, then print it or share a replay with family." }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              { "@type": "Question", "name": "Is Color Quest free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Color Quest is completely free, with no ads, no in-app purchases and no sign-up." } },
+              { "@type": "Question", "name": "What age is Color Quest for?", "acceptedAnswer": { "@type": "Answer", "text": "It is made for children around 4 to 10. There are no timers, lives or lost progress, and a wrong tap just gets a gentle hint." } },
+              { "@type": "Question", "name": "Does it work on phones and tablets?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. It runs in any modern browser on iPhone, iPad, Android and computers, can be added to the Home Screen, and keeps working offline." } },
+              { "@type": "Question", "name": "Can I turn my own photo into a coloring puzzle?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Photo magic turns any photo into a pixel color-by-number puzzle. The photo is processed on your device and never uploaded." } },
+              { "@type": "Question", "name": "Does Color Quest work offline?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Add it to your Home Screen and it keeps working without a connection." } },
+              { "@type": "Question", "name": "Is there a calm mode for sensitive kids?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Calm effects follow your device's Reduce Motion setting and can be switched with the header toggle, replacing motion with gentle fades." } },
+              { "@type": "Question", "name": "What languages does Color Quest support?", "acceptedAnswer": { "@type": "Answer", "text": "English, Spanish and Vietnamese." } },
+              { "@type": "Question", "name": "Can I print the pictures?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every picture has a free printable color-by-number page at colorquestgame.com/printables/." } },
+              { "@type": "Question", "name": "Does Color Quest collect personal data?", "acceptedAnswer": { "@type": "Answer", "text": "There are no accounts. Progress is saved only in your browser, and photos never leave your device. The site uses anonymous page analytics." } }
+            ]
+          }
+        ]
+      }
+    </script>
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Color Quest" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>Color Quest: free color-by-number pixel game for kids</title>
+    <style>.seo-intro{max-width:640px;margin:0 auto;padding:48px 20px;font:16px/1.6 system-ui,sans-serif;color:#3a4535;background:#faf7ef}.seo-intro h1{font-size:28px;line-height:1.2}.seo-intro h2{font-size:18px;margin-top:28px}</style>
+    <script type="module" crossorigin src="/assets/index-CW_wgCO-.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DLeUx2we.css">
+  </head>
+  <body><div id="app"><main class="seo-intro">
+      <h1>Color Quest: a free color-by-number pixel game for kids</h1>
+      <p class="seo-answer"><strong>Color Quest is a free color-by-number pixel game for kids ages 4 to 10, playable in any web browser with no ads, no sign-up and no timers.</strong></p>
+      <p>Color Quest is a calm, free color-by-number game that runs in the browser. Kids pick a pixel picture, match each numbered square to its color, and watch a little garden world come to life. It works on iPhone, iPad, Android and computers, with no ads, no sign-up and no timers.</p>
+      <h2>How to play</h2>
+      <ol>
+        <li>Pick a pixel picture, or turn your own photo into a puzzle.</li>
+        <li>Tap a color in the palette, then tap the squares with the same number.</li>
+        <li>Color five squares in a row to earn power tools.</li>
+        <li>Finish the picture, then print it or share a replay.</li>
+      </ol>
+      <h2>What you can do</h2>
+      <ul>
+        <li>Color dozens of pixel pictures: animals, food, flowers, space scenes and more.</li>
+        <li>Earn fun power tools (Line Blaster, Paint Brush, Paint Rain, Bomb) by coloring in a row.</li>
+        <li>Turn a photo into a puzzle. Photos are processed on your device and never uploaded.</li>
+        <li>Print a picture and color it on paper.</li>
+        <li>Share a replay of a finished picture with family.</li>
+      </ul>
+      <h2>Questions parents ask</h2>
+      <p><strong>Is it free?</strong> Yes, completely: no ads, no purchases, no account.</p>
+      <p><strong>What age is it for?</strong> Around 4 to 10. There are no lives or lost progress, and wrong taps just get a gentle hint.</p>
+      <p><strong>Does it work offline?</strong> Yes. Add it to your Home Screen and it keeps working without a connection.</p>
+      <p><strong>Is there a calm mode?</strong> Yes. Effects follow your device's Reduce Motion setting and can be switched in the header; motion becomes gentle fades.</p>
+      <p><strong>What languages?</strong> English, Spanish and Vietnamese.</p>
+      <p><strong>Can I print the pictures?</strong> Yes, every picture has a free <a href="/printables/">printable page</a>.</p>
+      <p><strong>Is my child's data collected?</strong> There are no accounts. Progress stays in your browser, and photos never leave your device.</p>
+      <h2>Browse by theme</h2>
+      <!-- Kept in sync by hand with build/theme-pages.ts: one link per theme page. -->
+      <p><a href="/themes/animals/">Animals</a> · <a href="/themes/dinosaurs/">Dinosaurs</a> · <a href="/themes/ocean/">Ocean</a> · <a href="/themes/space/">Space</a> · <a href="/themes/treats/">Treats</a> · <a href="/themes/nature/">Nature</a> · <a href="/themes/magic/">Magic and unicorns</a> · <a href="/themes/happy/">Happy things</a> · <a href="/themes/seasonal/">Seasonal and holidays</a> · <a href="/themes/big-adventures/">Big adventures</a></p>
+      <h2>Print and color on paper</h2>
+      <p><a href="/printables/">Free printable color-by-number pages</a> · <a href="/halloween-coloring-pages/">Halloween coloring pages</a></p>
+      <p>Also in <a href="/es/" hreflang="es" lang="es">Español</a> · <a href="/vi/" hreflang="vi" lang="vi">Tiếng Việt</a></p>
+      <p><a href="#/">Start coloring</a></p>
+    </main></div><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"84dcb77522ba4636bad35016e4e8558d","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

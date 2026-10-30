@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://kylebuildsai.github.io/driftwing/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1b1522">
+<meta name="description" content="DRIFTWING: an ambient infinite-flight exploration game. Two games behind one toggle: V1, the original, and V2 with real flight physics.">
+<title>DRIFTWING</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M4 38 L32 26 L60 38 L32 32 Z' fill='%23f3c77a'/%3E%3C/svg%3E">
+<style>
+  /* The launcher shell: one full-window game iframe and the V1 | V2 pill, in V1's glass style.
+     The iframe's allow list includes fullscreen; an allowfullscreen attribute next to it would
+     only make Chrome warn that the allow attribute takes precedence. */
+  :root {
+    --font-ui: "Inter", "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --dw-text: #f6efe4;
+    --dw-text-dim: rgba(246, 239, 228, 0.74);
+    --dw-gold: #f3c77a;
+    --dw-gold-soft: rgba(243, 199, 122, 0.18);
+    --dw-glass-top: rgba(34, 27, 40, 0.5);
+    --dw-glass-bottom: rgba(20, 16, 26, 0.4);
+    --dw-hairline: rgba(255, 240, 220, 0.14);
+    --dw-shadow: 0 10px 30px rgba(10, 7, 14, 0.24), 0 2px 6px rgba(10, 7, 14, 0.12);
+    --dw-inner: inset 0 1px 0 rgba(255, 246, 232, 0.07);
+    --dw-ease: cubic-bezier(0.22, 0.8, 0.26, 1);
+    --dw-fade-ms: 280ms;
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0a0f;
+    color: var(--dw-text);
+    font-family: var(--font-ui);
+    -webkit-tap-highlight-color: transparent;
+  }
+  #dw-shell-frame {
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #0a0a0f;
+  }
+  /* Covers the game while one is swapped for the other. */
+  #dw-shell-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    background: #0a0a0f;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity var(--dw-fade-ms) ease;
+  }
+  #dw-shell-veil.dw-clear { opacity: 0; }
+  /* Thin strips along the top-left edges: pointer events inside the game never reach the shell,
+     so reaching for the corner here reveals the pill. They stay clear of both games' HUDs. */
+  .dw-shell-hot { position: fixed; top: 0; left: 0; z-index: 3; }
+  #dw-shell-hot-top { width: 260px; height: 10px; }
+  #dw-shell-hot-left { width: 10px; height: 200px; }
+  .dw-shell-pill {
+    position: fixed;
+    top: 14px;
+    left: 18px;
+    z-index: 4;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: linear-gradient(180deg, var(--dw-glass-top), var(--dw-glass-bottom));
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid var(--dw-hairline);
+    border-radius: 999px;
+    box-shadow: var(--dw-shadow), var(--dw-inner);
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 220ms var(--dw-ease), transform 220ms var(--dw-ease);
+  }
+  .dw-shell-pill.dw-visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .dw-shell-pill button {
+    min-width: 40px;
+    height: 26px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--dw-text-dim);
+    font: 600 11px/1 var(--font-ui);
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease;
+  }
+  .dw-shell-pill button:hover { color: var(--dw-text); background: rgba(255, 240, 220, 0.08); }
+  .dw-shell-pill button[aria-pressed="true"] { color: var(--dw-gold); background: var(--dw-gold-soft); }
+  .dw-shell-pill button:focus-visible { outline: 2px solid var(--dw-gold); outline-offset: 1px; }
+  .dw-shell-pill button:disabled { cursor: progress; }
+  .dw-shell-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :root { --dw-fade-ms: 0ms; }
+    .dw-shell-pill, .dw-shell-pill button { transition: none; }
+  }
+</style>
+  <script type="module">function G(e){return typeof e=="string"&&/^#seed=[A-Z0-9-]{1,24}(&t=(0\.\d{1,4}|1\.0{1,4}|0|1))?$/.test(e)}const I=Object.freeze(["v1","v2"]),D="v2",W="driftwing.shell.lastVersion",v=Object.freeze({v1:"V1",v2:"V2"}),H=3e3,z=280,B=3e4,x=500,f=18,w=14,O=8,g=8,K=[".dw-modebar","#dw-chips > *","#dw-compass","#dw-flight",".dw-topbar",".dw-debug",".dw-devbadge"].join(", "),Y=Object.freeze(["source","to","type"]),Q=Object.freeze(["hash","source","type"]),c=document.getElementById("dw-shell-frame"),X=document.getElementById("dw-shell-veil"),s=document.getElementById("dw-shell-pill"),_=document.getElementById("dw-shell-status"),V=[...s.querySelectorAll("button[data-version]")],Z=window.matchMedia("(prefers-reduced-motion: reduce)");let h=null,u=!1,b=null,N=0,L=!0,P=0,y=0;const k=e=>new Promise(t=>{setTimeout(t,e)});function J(){const e=new URLSearchParams(window.location.search).get("v");return e==="1"||e==="v1"?"v1":e==="2"||e==="v2"?"v2":null}function ee(){try{const e=window.localStorage.getItem(W);return I.includes(e)?e:null}catch{return L=!1,null}}function te(e){if(L)try{window.localStorage.setItem(W,e)}catch{L=!1}}function ne(e){const t=new URLSearchParams(window.location.search);t.set("v",e.slice(1)),window.history.replaceState(null,"",`${window.location.pathname}?${t.toString()}${window.location.hash}`)}function oe(e){const t=new URLSearchParams(window.location.search);t.delete("v");const o=t.toString();return`${window.location.protocol==="file:"?`${e}/index.html`:`${e}/`}${o?`?${o}`:""}${window.location.hash}`}function A(e){return new Promise(t=>{const o=setTimeout(()=>{c.removeEventListener("load",i),t(!1)},B);function i(){clearTimeout(o),t(!0)}c.addEventListener("load",i,{once:!0}),c.src=e})}function $(e){return X.classList.toggle("dw-clear",!e),k(Z.matches?0:z)}function F(){c.focus(),c.contentWindow?.focus()}function p(){for(const e of V)e.setAttribute("aria-pressed",String(e.dataset.version===h)),e.disabled=u}async function C(e,{initial:t=!1}={}){u=!0,p(),_.textContent=`Loading ${v[e]}`,t||(await $(!0),await A("about:blank")),h=e,te(e),ne(e),c.title=`DRIFTWING ${v[e]}`,p(),await A(oe(e)),await $(!1),u=!1,t||(N+=1),p(),_.textContent=`${v[e]} is running`,F(),E();const o=b;b=null,o&&d(o.version,{reload:o.reload})}function d(e,{reload:t=!1}={}){return I.includes(e)?u?(b={version:e,reload:t},!0):e===h&&!t?(F(),!1):(C(e).catch(o=>{console.error("[DRIFTWING shell] switching games failed",o),u=!1,p()}),!0):!1}function U(e,t){if(e===null||typeof e!="object"||Object.getPrototypeOf(e)!==Object.prototype)return!1;const o=Object.keys(e).sort();return o.length===t.length&&o.every((i,n)=>i===t[n])}function ie(e){return U(e,Y)?e.source==="driftwing-v2"&&e.type==="switch-version"&&I.includes(e.to):!1}function re(e){return U(e,Q)?e.source==="driftwing-v2"&&e.type==="open-world"&&G(e.hash):!1}function se(e){const t=new URLSearchParams(window.location.search);t.delete("seed"),t.delete("time"),window.history.replaceState(null,"",`${window.location.pathname}?${t.toString()}${e}`),d("v2",{reload:!0})}window.addEventListener("message",e=>{e.origin!==window.location.origin||e.source!==c.contentWindow||(ie(e.data)?d(e.data.to):re(e.data)&&se(e.data.hash))});function le(){const e=c.contentDocument;if(!e||!e.defaultView)return[];const t=[];for(const o of e.querySelectorAll(K)){const i=e.defaultView.getComputedStyle(o);if(i.display==="none"||i.visibility==="hidden")continue;const n=o.getBoundingClientRect();n.width>0&&n.height>0&&t.push(n)}return t}function S(){const e=s.offsetWidth,t=s.offsetHeight,o=le(),i=(l,T)=>o.every(m=>l+e+g<=m.left||l-g>=m.right||T+t+g<=m.top||T-g>=m.bottom),n=Math.min(window.innerWidth*.5,window.innerWidth-e-f),r=Math.min(window.innerHeight*.6,window.innerHeight-t-w);let a=null;for(let l=f;l<=n&&!a;l+=O)i(l,w)&&(a=[l,w]);for(let l=w;l<=r&&!a;l+=O)i(f,l)&&(a=[f,l]);const[M,q]=a??[f,w];s.style.left=`${M}px`,s.style.top=`${q}px`}function ce(){if(s.matches(":hover")||s.contains(document.activeElement)){R();return}s.classList.remove("dw-visible"),clearInterval(y),y=0}function R(){clearTimeout(P),P=setTimeout(ce,H)}function E(){S(),s.classList.add("dw-visible"),y||(y=setInterval(S,x)),R()}function j(){s.classList.contains("dw-visible")?R():E()}for(const e of document.querySelectorAll(".dw-shell-hot"))e.addEventListener("pointerenter",E);window.addEventListener("pointermove",j);window.addEventListener("keydown",j);s.addEventListener("focusin",E);window.addEventListener("resize",()=>{s.classList.contains("dw-visible")&&S()});for(const e of V)e.addEventListener("click",()=>d(e.dataset.version));window.addEventListener("hashchange",()=>d(h??D,{reload:!0}));window.DRIFTWING_SHELL=Object.freeze({get version(){return h},get busy(){return u},get switches(){return N},get pillVisible(){return s.classList.contains("dw-visible")},get storageAvailable(){return L},get game(){return c.contentDocument?c.contentWindow.DRIFTWING??null:null},requestVersion:d});C(J()??ee()??D,{initial:!0}).catch(e=>{console.error("[DRIFTWING shell] loading the game failed",e)});</script>
+</head>
+<body>
+<iframe id="dw-shell-frame" title="DRIFTWING" allow="gamepad; microphone; camera; fullscreen; autoplay; xr-spatial-tracking; encrypted-media; clipboard-write"></iframe>
+<div id="dw-shell-veil" aria-hidden="true"></div>
+<div class="dw-shell-hot" id="dw-shell-hot-top" aria-hidden="true"></div>
+<div class="dw-shell-hot" id="dw-shell-hot-left" aria-hidden="true"></div>
+<div class="dw-shell-pill" id="dw-shell-pill" role="group" aria-label="Game version">
+  <button type="button" data-version="v1" aria-pressed="false" aria-label="Play V1, the original game">V1</button>
+  <button type="button" data-version="v2" aria-pressed="false" aria-label="Play V2, with real flight physics">V2</button>
+</div>
+<div class="dw-shell-status" id="dw-shell-status" role="status" aria-live="polite"></div>
+</body>
+</html>

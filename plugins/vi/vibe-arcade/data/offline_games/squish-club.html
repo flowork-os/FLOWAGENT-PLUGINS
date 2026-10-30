@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://marcomori.net/play/x/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#b9b6b1" />
+    <title>Squish Club: Free Stress Relief Game with a Squishy 3D Head</title>
+    <meta name="description" content="Poke it. Squish it. Pop it. A squishy, photoreal 3D head in your browser, free to start. Punch, slap and pop pimples as extras, then share the slow-mo clip." />
+    <!-- the public game since the launch (2026-09-28): served at /play/ itself (worker/src/index.ts), indexable,
+         one canonical URL for search engines and AI answers -->
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://www.marcomori.net/play/" />
+    <!-- SEO/GEO 2026-10-01 (seo/PLAY-SEO-2026-10-01.md package B): VideoGame only — not co-typed
+         SoftwareApplication, which would make the page eligible for Google's Software App rich result, and that
+         result needs a rating field we don't have and won't fake (schema.org's VideoGame is already a
+         SoftwareApplication subtype, so applicationCategory/operatingSystem/offers stay valid without the
+         co-type). GameApplication/
+         "Web browser" only (no iOS/Android/Desktop claim), all 5 live offers, no rating (none verified) — plus a
+         separate FAQPage mirroring the visible #about FAQ word for word (tests/seoLanding.test.ts checks both).
+         author/publisher @id matches the Person node on www.marcomori.net (seo/PLAY-SEO-2026-10-01.md
+         "Selbst geprüft": page.tsx:21). -->
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Squish Club","alternateName":"Squish Club by macomoroni","url":"https://www.marcomori.net/play/","description":"A free browser game: poke, pull, kiss, squeeze, punch, slap and pop a squishy, photoreal 3D head. Every tool is free. Melt it, age it, record a slow-mo clip and share it. The one paid extra is a custom 3D head built from your own photo.","image":"https://www.marcomori.net/play/og.jpg?v=2","genre":["Casual","Simulation","Sandbox"],"gamePlatform":"Web browser","applicationCategory":"GameApplication","operatingSystem":"Any (runs in the browser)","playMode":"SinglePlayer","inLanguage":"en","isAccessibleForFree":true,"offers":[{"@type":"Offer","name":"Free to play, every tool included","price":"0","priceCurrency":"EUR"},{"@type":"Offer","name":"Squish Twin (custom head from a photo)","price":"2.99","priceCurrency":"EUR"}],"author":{"@type":"Person","@id":"https://www.marcomori.net/#person","name":"Marco Mori","alternateName":"macomoroni","url":"https://www.marcomori.net/"},"publisher":{"@type":"Person","@id":"https://www.marcomori.net/#person","name":"Marco Mori","url":"https://www.marcomori.net/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is Squish Club?","acceptedAnswer":{"@type":"Answer","text":"A free browser game by Marco Mori: a squishy, photoreal 3D head you can poke, pull, kiss, squeeze, punch, slap and pop. Every tool is free. No download, no account needed."}},{"@type":"Question","name":"Is Squish Club free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Every tool, material and effect is free on the Mullet, Bald, Grandpa and JP heads. The only paid extra is a custom head from your own photo."}},{"@type":"Question","name":"Can I put my own face on the head?","acceptedAnswer":{"@type":"Answer","text":"Yes. Upload a photo of yourself, or of an adult who has clearly agreed, and Squish Club builds your Squish Twin, a custom 3D head, from it for €2.99. It is the only paid extra."}},{"@type":"Question","name":"How do I play?","acceptedAnswer":{"@type":"Answer","text":"Pick a tool from the bar at the bottom, then touch or click the head. Drag to turn it."}},{"@type":"Question","name":"What's the Pimple tool?","acceptedAnswer":{"@type":"Answer","text":"Squeeze a pimple until it pops. Free, like every other tool."}},{"@type":"Question","name":"Can I record and share a clip?","acceptedAnswer":{"@type":"Answer","text":"Yes. Record up to 10 seconds, vertical. Slow down the moment you pick, then share the clip. All free."}},{"@type":"Question","name":"Do I need to download anything or sign in?","acceptedAnswer":{"@type":"Answer","text":"No. Squish Club runs in the browser, on a phone or a computer. No install and no account to play; signing in only saves purchases across devices."}}]}</script>
+    <link rel="icon" href="/play/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/play/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Squish Club" />
+    <meta property="og:title" content="Squish Club by macomoroni" />
+    <meta property="og:description" content="Poke it. Squish it. Pop it. A squishy, photoreal 3D head in your browser, free to start. Punch, slap and pop pimples as extras, then share the slow-mo clip." />
+    <meta property="og:url" content="https://www.marcomori.net/play/" />
+    <meta property="og:image" content="https://www.marcomori.net/play/og.jpg?v=2" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A squishy 3D head in the Squish Club studio, by @macomoroni" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@macomoroni" />
+    <meta name="twitter:title" content="Squish Club by macomoroni" />
+    <meta name="twitter:description" content="Poke it. Squish it. Pop it. A squishy, photoreal 3D head in your browser, free to start. Punch, slap and pop pimples as extras, then share the slow-mo clip." />
+    <meta name="twitter:image" content="https://www.marcomori.net/play/og.jpg?v=2" />
+    <script>
+      // iOS Safari ignores user-scalable=no: no page pinch zoom (Safari's gesture events) and no double-tap zoom,
+      // on the loading screen and in the game (the canvas' own pinch runs on pointer events and stays)
+      ;['gesturestart', 'gesturechange', 'gestureend'].forEach(function (t) {
+        document.addEventListener(t, function (e) { e.preventDefault() }, { passive: false })
+      })
+      document.addEventListener('dblclick', function (e) { e.preventDefault() }, { passive: false })
+    </script>
+    <script>
+      // Load time: the first head's GLB (the biggest download by far) starts with the page instead of after
+      // the app's JS. Same table as MODELS in src/app/main.ts, which then loads the same file.
+      ;(function () {
+        var q = new URLSearchParams(location.search)
+        // the Physics panel is for development only (user 2026-09-24): ?dev=1 shows it
+        if (q.get('dev') === '1') document.documentElement.classList.add('bm-dev')
+        var m = q.get('model') || 'head' // the default head, Bald (Marco 2026-10-24), MODELS[0] in main.ts
+        if (m !== 'mullet' && m !== 'head' && m !== 'oldman' && !(m === 'marco' && 'false' === 'true')) return
+        // the Mullet (the default, Marco 2026-10-01) has no -hd file: its KTX2 sibling is its HD version, which
+        // headSource.ts also takes with ?hd=0
+        var hd = m !== 'mullet' && q.get('hd') !== '0'
+        var l = document.createElement('link')
+        l.rel = 'preload'
+        l.as = 'fetch'
+        l.crossOrigin = 'anonymous'
+        // same choice as headSource.ts: the 4096² KTX2 head when the GPU has a compressed format, else JPEG
+        var ktx2 = false
+        if ((hd || m === 'mullet') && q.get('ktx2') !== '0') {
+          try {
+            var gl = document.createElement('canvas').getContext('webgl2')
+            ktx2 = !!gl && ['WEBGL_compressed_texture_astc', 'WEBGL_compressed_texture_etc', 'WEBGL_compressed_texture_s3tc', 'EXT_texture_compression_bptc'].some(function (e) { return !!gl.getExtension(e) })
+          } catch (e) {}
+        }
+        l.href = '/play/models/' + m + (hd ? '-hd' : '') + (ktx2 ? '.ktx2' : '') + '.glb'
+        document.head.appendChild(l)
+      })()
+    </script>
+    <link rel="preload" as="image" href="/play/boot/m.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/play/boot/a.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/play/boot/c.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/play/boot/o.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/play/boot/r.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/play/boot/n.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/play/boot/i.webp" fetchpriority="high" />
+    <style id="bm-boot-css">#loader{--sb:env(safe-area-inset-bottom,0px);z-index:2;letter-spacing:.03em;font-variant-numeric:tabular-nums;-webkit-user-select:none;user-select:none;background:#d8d6d380;place-content:center;justify-items:center;gap:14px;font:500 12px/1.35 system-ui,-apple-system,sans-serif;display:grid;position:fixed;inset:0}#loader[hidden]{display:none}#loader-cap{justify-items:center;gap:9px;transition:opacity .3s;display:grid}#loader-bar{background:#28221e1a;border-radius:1px;width:132px;height:2px;position:relative;overflow:hidden}#loader-bar b{transform-origin:0;background:#28221e8c;transition:transform 1.2s cubic-bezier(.2,.7,.3,1);position:absolute;inset:0;transform:scaleX(.02)}#loader-text{color:#28221ec7;text-align:center}#loader.error #loader-text{color:#a4201b;white-space:pre-wrap;max-width:min(90vw,420px);font-size:14px}#loader.error :is(#loader-bar,#loader-dots){display:none}#loader-dots{align-items:flex-end;gap:7px;height:30px;display:flex}#loader-dots i{transform-origin:50% 100%;background:radial-gradient(circle at 34% 28%,#fff 0 9%,#fff0 24%),radial-gradient(circle at 50% 42%,#ff8a7e,#ff6f61 45%,#b0463d);border-radius:50%;width:17px;height:17px;animation:.9s infinite bm-hop;box-shadow:0 5px 5px -3px #3c282459}#loader-dots i:nth-child(2){animation-delay:.14s}#loader-dots i:nth-child(3){animation-delay:.28s}@keyframes bm-hop{0%,64%,to{animation-timing-function:ease-out;transform:none}8%{transform:scale(1.22,.78)}16%{animation-timing-function:cubic-bezier(.2,.6,.4,1);transform:translateY(-2px)scale(.86,1.16)}30%{animation-timing-function:cubic-bezier(.6,0,.8,.4);transform:translateY(-13px)scale(.98,1.03)}42%{transform:scale(1.28,.72)}50%{transform:scale(.9,1.1)}57%{transform:scale(1.05,.96)}}#loader.boot{z-index:25;touch-action:none;background:0 0;display:block}#loader.boot #loader-dots{display:none}#loader.boot #loader-cap{left:0;right:0;top:var(--cap-y,62%);position:absolute}#boot{background:radial-gradient(70vmax 70vmax at 50% 46%,#0000 38%,#00000024),radial-gradient(52vmin 52vmin at 50% 46%,#eceae7,#eceae700),linear-gradient(#d8d6d3 22%,#b8b5b1);position:absolute;inset:0;overflow:hidden}#loader:not(.boot) #boot{display:none}#boot i,#boot b{position:absolute;top:0;left:0}#boot .l{transform-origin:50% 100%;will-change:transform}#boot .l>i,#boot .l>i>i{transform-origin:50% 100%;display:block;position:relative}#boot img{pointer-events:none;display:block}#boot b{will-change:transform}#boot b i{border-radius:50%;position:absolute;inset:0}#boot b i i{background:radial-gradient(closest-side,#42363061,#4236301f 62%,#42363000)}#boot.go .l>i{animation:bm-wave 4.8s var(--w) infinite}#boot.go b>i{animation:bm-wave-s 4.8s var(--w) infinite}#boot.go .l>i>i{animation:bm-drop .8s var(--d) both}#boot.go b>i>i{animation:bm-fade .8s var(--d) both}#boot p:not(#boot-word){left:0;right:0;bottom:calc(18px + var(--sb));text-align:center;letter-spacing:.2em;text-transform:uppercase;color:#28221ed9;margin:0;font-size:10.5px;position:absolute}#boot em{color:#28221ef2;font-style:normal}#boot-word{text-align:center;letter-spacing:.01em;color:#28221ea8;margin:0;font:600 9vmin/1 -apple-system,system-ui,sans-serif;position:absolute;top:43%;left:0;right:0}#boot:not(.text-fallback) #boot-word,#boot.text-fallback .l,#boot.text-fallback>b{display:none}@keyframes bm-wave{0%,18.75%,to{transform:none}1.04%{transform:translate(2%)skew(-5deg)scale(1.12,.86)}2.29%{animation-timing-function:cubic-bezier(.2,.7,.4,1);transform:translateY(-6%)scale(.86,1.18)}4.17%{transform:translateY(-30%)rotate(-4deg)scale(.97,1.04)}5.21%{animation-timing-function:cubic-bezier(.6,0,.9,.5);transform:translateY(-32%)rotate(-2deg)scale(1.02,.98)}6.88%{transform:translateY(-5%)rotate(2deg)scale(.9,1.12)}7.5%{transform:scale(1.3,.72)}9.17%{transform:scale(.88,1.12)}10.83%{transform:scale(1.08,.93)}12.5%{transform:scale(.97,1.03)}15%{transform:translate(-1.5%)skew(4deg)scale(.94,1.04)}16.67%{transform:translate(.5%)skew(-2deg)scale(1.03,.98)}}@keyframes bm-wave-s{0%,18.75%,to{opacity:1;transform:none}1.04%{transform:scaleX(1.12)}4.17%,5.21%{opacity:.45;transform:scale(.62)}7.5%{opacity:1;transform:scaleX(1.3)}9.17%{transform:scaleX(.9)}}@keyframes bm-drop{0%{opacity:0;animation-timing-function:cubic-bezier(.5,0,1,.6);transform:translateY(-160%)scale(.9,1.15)}12%{opacity:1}46%{animation-timing-function:ease-out;transform:scale(1.34,.68)}62%{transform:scale(.88,1.14)}78%{transform:scale(1.06,.95)}to{transform:none}}@keyframes bm-fade{0%,40%{opacity:0;transform:scale(.4)}46%{opacity:1;transform:scaleX(1.3)}to{transform:none}}@keyframes bm-breathe{50%{transform:scale(1.03,.97)}}@media (prefers-reduced-motion:reduce){#boot.go .l>i,#boot.go b>i,#loader-dots i{animation:bm-breathe 3.2s ease-in-out var(--w,0s) infinite}#boot.go .l>i>i,#boot.go b>i>i{animation:none}}</style>
+    <script type="module" crossorigin src="/play/assets/game-BaFM5ikP.js"></script>
+    <link rel="modulepreload" crossorigin href="/play/assets/preload-helper-kQY6lgYV.js">
+    <link rel="modulepreload" crossorigin href="/play/assets/clientId-Ds4j8OJm.js">
+    <link rel="stylesheet" crossorigin href="/play/assets/game-DhWRSRzF.css">
+  </head>
+  <body>
+    <!-- SEO/GEO 2026-10-01: the page's only H1, visually hidden (not display:none, so it still reads to
+         screen readers and crawlers) — the app itself has no room for a visible hero, see #about below -->
+    <h1 class="sr-only">Squish Club: a squishy 3D head for stress relief</h1>
+    <div id="app">
+      <div id="stage"></div>
+      <div id="charge-vignette" aria-hidden="true"></div>
+      <div id="replay" aria-hidden="true"><span>Replay</span><i id="replay-progress"></i></div>
+
+      <button id="btn-replay" class="chip" aria-label="Slow-motion replay">Replay</button>
+
+      <div id="topbar">
+        <div class="menu-wrap">
+          <button id="btn-model" class="chip" aria-haspopup="menu" aria-expanded="false" aria-controls="model-menu">Head</button>
+          <div id="model-menu" role="menu" aria-label="Choose a head" hidden></div>
+        </div>
+        <button id="btn-effects" class="chip" aria-expanded="false" aria-controls="effects">Effects</button>
+        <button id="btn-panel" class="chip" aria-expanded="false" aria-controls="panel">Physics</button>
+        <button id="btn-settings" class="chip icon-chip" aria-expanded="false" aria-controls="settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>
+        </button>
+      </div>
+
+      <div id="material" role="radiogroup" aria-label="Material">
+        <button type="button" role="radio" data-material="wobble" aria-checked="true">Wobble</button>
+        <button type="button" role="radio" data-material="clay" aria-checked="false">Clay</button>
+        <button type="button" role="radio" data-material="jelly" aria-checked="false">Jelly</button>
+      </div>
+
+      <section id="effects" hidden aria-label="Effects">
+        <label class="param">
+          <span class="param-head"><span>Age</span><output id="age-out">0 %</output></span>
+          <input id="age" type="range" min="0" max="100" step="1" value="0" />
+        </label>
+        <label class="param toggle"><span>Melt</span><input id="melt" type="checkbox" /></label>
+        <label class="param toggle"><span>Freeze</span><input id="freeze" type="checkbox" /></label>
+      </section>
+
+      <section id="settings" hidden aria-label="Settings">
+        <label class="param toggle" id="motion-row"><span>Phone motion (tilt &amp; shake)</span><input id="motion" type="checkbox" checked /></label>
+        <label class="param toggle" id="tips-row"><span>Tips</span><input id="tips" type="checkbox" checked /></label>
+        <p class="settings-note" id="tips-note">Tips about hidden surprises. You can turn them off once you’ve unlocked anything.</p>
+        <label class="param toggle" id="pimples-row"><span>Pimples</span><input id="pimples" type="checkbox" checked /></label>
+        <label class="param" id="pimple-count-row">
+          <span class="param-head"><span>How many</span><output id="pimple-count-out">Auto</output></span>
+          <input id="pimple-count" type="range" min="0" max="3" step="1" value="0" />
+        </label>
+        <p class="settings-note" id="pimples-note">Unlock Pimple (or everything) to turn pimples off and choose how many.</p>
+        <p class="settings-note" id="signin-note" hidden></p>
+        <button id="btn-signin" class="chip" type="button" hidden style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Sign in / Sign up</button>
+        <!-- SEO/GEO 2026-10-01 (seo/PLAY-SEO-2026-10-01.md package B4): opens the static #about panel below
+             (src/app/about.ts); also reachable at the URL hash #about -->
+        <button id="btn-about" class="chip" type="button" aria-haspopup="dialog" aria-controls="about" aria-expanded="false">About &amp; FAQ</button>
+        <button id="btn-wish" class="chip" type="button">Wish a feature</button>
+        <!-- footer/settings legal links (docs/legal/ui-texts.md § 10) — one config with
+             src/app/legal/consentTexts.ts's LEGAL_LINKS (Privacy/Terms served by the Worker from
+             docs/legal/*.md, worker/src/legal.ts; Withdraw is the § 356a form, worker/src/withdraw.ts;
+             Imprint is the existing corporate page, outside this app). -->
+        <nav class="settings-legal" aria-label="Legal">
+          <a href="https://www.marcomori.net/legal-disclosure" target="_blank" rel="noopener">Legal notice</a>
+          <a href="/play/legal/privacy" target="_blank" rel="noopener">Privacy</a>
+          <a href="/play/legal/terms" target="_blank" rel="noopener">Terms</a>
+          <a href="/play/withdraw" target="_blank" rel="noopener">Withdraw from contract</a>
+          <!-- notice-and-action (docs/plans/2026-09-26-share-album-levels.md § 2 legal item 6): reachable from
+               Settings on every head, not just a shared one, so it is always findable, not only when a report is
+               relevant -->
+          <a id="link-report" href="/play/report" target="_blank" rel="noopener">Report content</a>
+        </nav>
+      </section>
+
+      <section id="panel" hidden aria-label="Physics parameters">
+        <pre id="stats" aria-live="off" hidden></pre>
+        <label class="param preset"><span>Preset</span><select id="preset"></select></label>
+        <div id="panel-body"></div>
+        <label class="param toggle"><span>Stats (dev)</span><input id="stats-on" type="checkbox" /></label>
+        <div class="panel-actions">
+          <button id="btn-defaults" class="chip">Defaults</button>
+          <button id="btn-stress" class="chip">Stress test</button>
+          <button id="btn-reset-purchases" class="chip" hidden>Reset purchases</button>
+        </div>
+      </section>
+
+      <div id="hint" aria-live="polite"></div>
+      <div id="intro" hidden role="note">
+        <span id="intro-text"></span>
+        <button id="intro-close" type="button" aria-label="Got it">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+        </button>
+      </div>
+      <button id="btn-auto" class="chip" hidden aria-pressed="false">Hold to auto-squeeze</button>
+
+      <nav id="toolbar" aria-label="Tools">
+        <div id="tools">
+          <button class="tool" data-tool="grab" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 19c3.5 0 5.5-7 9.5-7s6 7 9.5 7"/><path d="M12 9V3M9.6 5.4 12 3l2.4 2.4"/></svg><span class="tool-label">Pull</span></button>
+          <button class="tool" data-tool="poke" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="9.3" cy="16.2" rx="5" ry="4.3"/><path d="M11 12.8 16 4.5"/><path d="M16 4.5c.6-.5 1.6-.4 2 .3.5.7.2 1.6-.5 2.1l-2.7 1.8"/><path d="M9.3 11.6c.5-.6 1.4-.7 2-.2"/></svg><span class="tool-label">Poke</span></button>
+          <button class="tool" data-tool="kiss" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12.3c2.2-2.7 4.6-4.3 6.7-3.9 1.2.2 2 .9 2.8.9s1.6-.7 2.8-.9c2.1-.4 4.5 1.2 6.7 3.9-2.4 3.1-5.6 4.9-9.5 4.9s-7.1-1.8-9.5-4.9z"/><path d="M2.5 12.3c3 .8 6.2 1.2 9.5 1.2s6.5-.4 9.5-1.2"/></svg><span class="tool-label">Kiss</span></button>
+          <button class="tool" data-tool="squeeze" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="3.2" ry="6"/><path d="M2.5 12h4.5M5 9.5 7.5 12 5 14.5M21.5 12H17M19 9.5 16.5 12l2.5 2.5"/></svg><span class="tool-label">Squeeze</span></button>
+          <button class="tool" data-tool="pimple" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 18h4c1.2 0 1.8-1.2 2.3-3.2.6-2.5 1.6-4.3 3.2-4.3s2.6 1.8 3.2 4.3c.5 2 1.1 3.2 2.3 3.2h4"/><circle cx="12" cy="13.3" r="1"/><path d="M12 7.5V5M8.3 8.6 7 6.6M15.7 8.6 17 6.6"/></svg><span class="tool-label">Pimple</span></button>
+          <button class="tool" data-tool="punch" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11.5V8.2a1.6 1.6 0 0 1 3.2 0V11"/><path d="M10.2 10.5V7.4a1.6 1.6 0 0 1 3.2 0v3.1"/><path d="M13.4 10.6V8.3a1.6 1.6 0 0 1 3.2 0v3"/><path d="M16.6 11.2v-.6a1.6 1.6 0 0 1 3.2 0v3.2A6.2 6.2 0 0 1 13.6 20h-1.8A5.8 5.8 0 0 1 6 14.2v-1.4a1.6 1.6 0 0 1 3.2 0v.7"/></svg><span class="tool-label">Punch</span></button>
+          <button class="tool" data-tool="slap" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 12.5V6.3a1.5 1.5 0 0 1 3 0v5.2"/><path d="M11.5 11V4.8a1.5 1.5 0 0 1 3 0V11"/><path d="M14.5 11.2V6.3a1.5 1.5 0 0 1 3 0v6.9a7 7 0 0 1-7 7h-.3a6.2 6.2 0 0 1-5.1-2.7l-2.3-3.4a1.5 1.5 0 0 1 2.4-1.8l1.3 1.4"/><path d="M20.5 7.5l1.5-1M20.8 11h1.7"/></svg><span class="tool-label">Slap</span></button>
+          <button class="tool" data-tool="pump" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="9" rx="5" ry="6"/><path d="M10.3 14.7 12 16.4l1.7-1.7"/><path d="M12 16.4v2.1a1.3 1.3 0 0 1-1.3 1.3"/></svg><span class="tool-label">Pump</span></button>
+          <button class="tool" data-tool="paintball" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/></svg><span class="tool-label">Paintball</span></button>
+          <button class="tool" data-tool="egg" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3.6 0 6.5 5.4 6.5 10a6.5 6.5 0 0 1-13 0C5.5 8.4 8.4 3 12 3z"/></svg><span class="tool-label">Eggs</span></button>
+          <button class="tool" data-tool="bands" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="8.5" ry="4" transform="rotate(-20 12 12)"/><ellipse cx="12" cy="12" rx="8.5" ry="4" transform="rotate(35 12 12)"/></svg><span class="tool-label">Bands</span></button>
+          <button class="tool" data-tool="suction" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18h16"/><path d="M6 18c0-4.2 2.7-7.4 6-7.4s6 3.2 6 7.4"/><path d="M12 10.6V4M9.8 4h4.4"/></svg><span class="tool-label">Suction</span></button>
+        </div>
+        <button id="tools-more" type="button" aria-label="More tools" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+        <button id="btn-reset" class="tool reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 1 2.4 5.7"/><path d="M4 17.5V13h4.5"/></svg><span class="tool-label">Reset</span></button>
+      </nav>
+
+      <div id="loader" class="boot" role="status">
+        <div id="boot" aria-hidden="true"><p id="boot-word">macomoroni</p><p>made by <em>Marco Mori</em></p></div>
+        <div id="loader-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div id="loader-cap"><i id="loader-bar"><b></b></i><span id="loader-text">Loading…</span></div>
+      </div>
+      <script id="bm-boot">
+// Boot word: pre-rendered letters (public/boot/*.webp, tools/bootLetters.ts). Everything that moves runs on the
+// compositor, so it stays smooth while the app's boot blocks the main thread: the idle wave is CSS; the exit runs
+// a small spring sim once, up front, and plays it as Web Animations. Not touchable any more (user 2026-09-28:
+// a pure animation, the poke hitched now and then). ui.ts setLoader() drives window.bmBoot.
+;(function () {
+var L = document.getElementById('loader'), B = document.getElementById('boot')
+if (!L || !B) return
+var M = Math, D = document, RM = matchMedia('(prefers-reduced-motion: reduce)').matches, W = 'macomoroni', N = W.length
+// advances in x-heights and the image box (padding, top) as tools/bootLetters.ts renders them
+var G = { m: 1.3, a: .96, c: .92, o: 1, r: .78, n: .94, i: .38 }, P = .05, TOP = 1.39
+var E = [], S = [], H = 0, row = [], cxs = [], bl = [], ws = [], k
+// one state per letter image ('pending'|'loaded'|'error'): mirrors src/app/bootFallback.ts's needsTextFallback,
+// which is the tested source of truth for this rule (this script has to stay import-free, see the file header)
+var letterState = []
+function css(el, o) { for (var p in o) el.style.setProperty(p, o[p]) }
+function fallbackNeeded(leaving) {
+  for (var i = 0; i < letterState.length; i++) if (letterState[i] === 'error') return true
+  if (!leaving) return false
+  for (i = 0; i < letterState.length; i++) if (letterState[i] === 'pending') return true
+  return false
+}
+for (k = 0; k < N; k++) {
+  var sh = D.createElement('b'), l = D.createElement('i'), im = new Image(), v = { '--w': 1.2+k*.36+'s', '--d': .05+k*.07+'s' }
+  sh.innerHTML = l.innerHTML = '<i><i></i></i>'
+  l.className = 'l'
+  im.alt = ''
+  letterState.push('pending')
+  ;(function (idx) {
+    im.onload = function () { letterState[idx] = 'loaded' }
+    im.onerror = function () { letterState[idx] = 'error' }
+  })(k)
+  im.src = '/play/boot/'+W[k]+'.webp'
+  l.firstChild.firstChild.appendChild(im)
+  css(l, v); css(sh, v)
+  B.insertBefore(sh, B.firstChild)
+  B.appendChild(l)
+  E.push([l, sh, im])
+  S.push({})
+}
+// a bfcache restore (Safari can serve /play/app/ from it on a back/forward navigation) freezes layout while
+// backgrounded; re-measure once resumed so a rotated/resized phone does not leave the word mislaid
+addEventListener('pageshow', function (e) { if (e.persisted && on) layout() })
+function rows(por) { return por ? [[0, 4], [4, N]] : [[0, N]] }
+function rowW(r) { for (var t = -.05, k = r[0]; k < r[1]; k++) t += G[W[k]]+.05; return t }
+function layout() {
+  var vw = innerWidth, vh = innerHeight, por = vh > vw*1.1, rs = rows(por)
+  H = M.min((vw-2*M.max(28, vw*.08))/M.max.apply(M, rs.map(rowW)), vh*(por ? .085 : .17))
+  rs.forEach(function (r, ri) {
+    var y = vh*.43+H/2+(ri-(rs.length-1)/2)*1.9*H, x = (vw-rowW(r)*H)/2
+    for (var k = r[0]; k < r[1]; k++) {
+      var g = G[W[k]]*H, e = E[k]
+      row[k] = ri; ws[k] = g; cxs[k] = x+g/2; bl[k] = y
+      css(e[0], { left: x-P*H+'px', top: y-(TOP+P)*H+'px' })
+      css(e[2], { width: g+2*P*H+'px', height: (TOP+2*P)*H+'px' })
+      css(e[1], { left: x-g*.05+'px', top: y-.11*H+'px', width: g*1.1+'px', height: .26*H+'px' })
+      x += g+.05*H
+    }
+  })
+  L.style.setProperty('--cap-y', bl[N-1]+.75*H+'px')
+}
+layout()
+// the drop-in and the wave start with the first paint: nothing waits for the (busy) main thread
+B.className = 'go'
+addEventListener('resize', function () { if (on) layout() })
+
+// ---------- the spring sim: squash along the speed, bounce, neighbours shoved ----------
+var on = true, st = 0, DT = 1/120
+function rest(o) { o.x = o.vx = o.y = o.vy = o.a = o.va = o.b = o.vb = o.r = o.vr = 0; o.go = o.p = -1 }
+S.forEach(rest)
+function step(S) {
+  var moving = false, k, o, A, Z, ov
+  for (k = 0; k < N; k++) {
+    o = S[k]
+    if (o.go >= 0 && (o.go -= DT) < 0) { o.vy = RM ? 0 : 13*H; o.p = 0 }
+    if (o.p >= 0) o.p = M.min(1, o.p+DT/(RM ? .3 : .2))
+    o.vx += (-110*o.x-7*o.vx)*DT
+    if (o.y > 0 || o.vy > 0) o.vy -= 44*H*DT
+    o.y += o.vy*DT
+    if (o.y < 0) {
+      // landing: squashed by the impact, a small bounce
+      if (o.vy < -H) o.a += M.min(.4, -o.vy/H*.022)
+      o.vy = o.vy < -H ? -o.vy*.28 : 0
+      o.y = 0
+    }
+    // airborne: stretched along its speed
+    o.va += (-(o.a+(o.y > 0 ? M.min(.22, M.abs(o.vy)/H*.012) : 0))*380-8*o.va)*DT
+    o.vb += (-o.b*380-8*o.vb)*DT
+    o.vr += (-o.r*170-9*o.vr)*DT
+    o.x += o.vx*DT; o.a += o.va*DT; o.b += o.vb*DT; o.r += o.vr*DT
+    if (M.abs(o.x)+o.y+(M.abs(o.vx)+M.abs(o.vy))/9 > .3 || M.abs(o.a)+M.abs(o.b)+(M.abs(o.va)+M.abs(o.vb))/20 > .004 || M.abs(o.r)+M.abs(o.vr)/9 > .1 || o.go >= 0 || (o.p >= 0 && o.p < 1)) moving = true
+  }
+  // neighbours bump: a wider or shoved letter pushes the next, both squeeze
+  for (k = 0; k < N-1; k++) {
+    A = S[k]; Z = S[k+1]
+    if (row[k] !== row[k+1] || A.y > .4*H || Z.y > .4*H) continue
+    ov = ((ws[k]*(1+A.a*.8)*(1-A.b)+ws[k+1]*(1+Z.a*.8)*(1-Z.b))/2+.01*H-(cxs[k+1]+Z.x-cxs[k]-A.x))/H
+    if (ov <= 0) continue
+    A.vx -= ov*H*30; Z.vx += ov*H*30
+    A.vb += ov*14; Z.vb += ov*14
+    A.vr -= ov*90; Z.vr += ov*90
+  }
+  return moving
+}
+function n(v) { return v.toFixed(3) }
+// the sim at this moment (it runs ahead only when something happens: nothing is stepped per frame)
+function now() {
+  var t = performance.now(), i = (t-st)/1000/DT
+  if (i > 400) S.forEach(rest)
+  else while (i-- > 0) step(S)
+  st = t
+}
+// plays the sim from here on as keyframes (30 per s, the compositor fills in between) on the moving letters
+function play() {
+  var C = S.map(function (o) { return Object.assign({}, o) }), F = [], f, k, j, go = 1
+  for (f = 0; f < 80 && (go || f < 2); f++) {
+    F.push(C.map(function (o) {
+      var pp = o.p > 0 ? o.p : 0, pop = 1+pp*.45, sh = 1/(1+o.y/H*.9)
+      var sx = M.max(.3, (1+o.a*.8)*(1-o.b)), sy = M.max(.3, (1-o.a)*(1+o.b*.8)), sk = M.max(-14, M.min(14, -o.vx/H*.9)), op = o.p >= 0 ? n(1-pp*pp) : '1'
+      return [{ transform: 'translate('+n(o.x)+'px,'+n(-o.y)+'px) rotate('+n(o.r)+'deg) skewX('+n(sk)+'deg) scale('+n(sx*pop)+','+n(sy*pop)+')', opacity: op },
+        { transform: 'translateX('+n(o.x)+'px) scale('+n(sx*sh)+','+n(sh)+')', opacity: op }]
+    }))
+    for (j = 0; j < 4; j++) go = step(C)
+  }
+  for (k = 0; k < N; k++) for (j = 0; j < 2; j++) {
+    var el = E[k][j], kf = F.map(function (x) { return x[k][j] }), e = kf.length
+    // up to its last change: a letter that stays put gets no animation at all
+    while (e > 1 && kf[e-1].transform === kf[e-2].transform && kf[e-1].opacity === kf[e-2].opacity) e--
+    if (el.a) el.a.cancel()
+    el.a = e > 1 && el.animate(kf.slice(0, e), { duration: (e-1)*1000/30, fill: 'forwards' })
+  }
+}
+
+window.bmBoot = {
+  on: true,
+  // the letters hop and pop from the middle out while the paper fades to the scene (failed: the paper only)
+  leave: function (failed) {
+    if (!on) return Promise.resolve()
+    on = window.bmBoot.on = false
+    var cap = D.getElementById('loader-cap')
+    // started from a frame callback: an animation made while the main thread is stuck would start late, with its
+    // clock already running (it would jump to its end)
+    // some letter images never made it (bandwidth lost to the post-purchase sync/factory/head downloads, or an
+    // outright failure): a half-drawn word reads as broken, so swap to the plain text word instead of playing
+    // the per-letter pop on top of blanks or broken-image icons (src/app/bootFallback.ts)
+    var fallback = !failed && fallbackNeeded(true)
+    if (fallback) B.className = 'go text-fallback'
+    return new Promise(function (res) {
+      cap.style.opacity = '0'
+      requestAnimationFrame(function () {
+        if (!failed && !fallback) {
+          now()
+          for (var k = 0; k < N; k++) {
+            S[k].a = M.max(S[k].a, RM ? 0 : .28)
+            S[k].go = RM ? 0 : .09+M.abs(k-(N-1)/2)*.035
+          }
+          play()
+        }
+        B.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, delay: failed || RM ? 0 : 260, easing: 'ease-out', fill: 'forwards' }).finished.then(function () {
+          B.remove()
+          L.classList.remove('boot')
+          cap.style.opacity = ''
+          res()
+        })
+      })
+    })
+  },
+}
+})()
+      </script>
+
+      <!-- SEO/GEO 2026-10-01 (seo/PLAY-SEO-2026-10-01.md package B4): "About & FAQ" — static HTML so the
+           content is there for a crawler that never runs the toggle, same as the rest of the page. Opened by
+           #btn-about (settings nav, ui.ts/about.ts) or the URL hash #about; closed by #about-close, a tap on
+           the backdrop or Escape. tests/seoLanding.test.ts checks this text against the FAQPage JSON-LD above
+           word for word — edit both together. -->
+      <section id="about" class="about" hidden role="dialog" aria-modal="true" aria-labelledby="about-title">
+        <div class="about-backdrop" data-about-close></div>
+        <div class="about-card">
+          <button type="button" class="about-close" data-about-close aria-label="Close">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+          </button>
+          <h2 id="about-title">About Squish Club</h2>
+
+          <h3>What is Squish Club?</h3>
+          <p>A free browser game by Marco Mori (@macomoroni): a squishy, photoreal 3D head you can poke, pull, kiss, squeeze, punch, slap and pop. Every tool is free. Melt it, age it, record a clip and share it. No download, no account needed.</p>
+
+          <h3>How to play</h3>
+          <p>Pick a tool from the bar at the bottom, then touch or click the head. Drag to turn it, pinch to zoom. Hit Reset to put it back together.</p>
+
+          <h3>Tools</h3>
+          <p>All free: Pull, Poke, Kiss, Squeeze, Punch, Slap, Pimple, Pump, Paintball, Eggs, Rubber Bands and Suction; the Wobble, Clay and Jelly materials; the Age, Melt and Freeze effects; instant Replay and Slow-mo for your clips. On the Mullet, Bald, Grandpa and JP heads.</p>
+
+          <h3>The Pimple tool</h3>
+          <p>Squeeze a pimple until it pops. Gross, perfect, and free like every other tool.</p>
+
+          <h3>Your Squish Twin</h3>
+          <p>Upload a photo of yourself, or of an adult who has clearly agreed, and Squish Club builds your Squish Twin, a custom 3D head, from it: €2.99, one time. It is the only paid extra; every tool is already free.</p>
+
+          <h3>Record &amp; share a clip</h3>
+          <p>Record up to 10 seconds, vertical. Slow down the moment you pick, then share it. All free.</p>
+
+          <h3>Prices</h3>
+          <ul class="about-prices">
+            <li>Every tool, material and effect: free</li>
+            <li>A Squish Twin (custom head) from your photo: €2.99</li>
+          </ul>
+          <p class="about-note">The price is adjusted per country; the checkout shows the exact amount before you pay.</p>
+
+          <h3>FAQ</h3>
+          <dl class="about-faq">
+            <dt>What is Squish Club?</dt>
+            <dd>A free browser game by Marco Mori: a squishy, photoreal 3D head you can poke, pull, kiss, squeeze, punch, slap and pop. Every tool is free. No download, no account needed.</dd>
+            <dt>Is Squish Club free?</dt>
+            <dd>Yes. Every tool, material and effect is free on the Mullet, Bald, Grandpa and JP heads. The only paid extra is a custom head from your own photo.</dd>
+            <dt>Can I put my own face on the head?</dt>
+            <dd>Yes. Upload a photo of yourself, or of an adult who has clearly agreed, and Squish Club builds your Squish Twin, a custom 3D head, from it for €2.99. It is the only paid extra.</dd>
+            <dt>How do I play?</dt>
+            <dd>Pick a tool from the bar at the bottom, then touch or click the head. Drag to turn it.</dd>
+            <dt>What's the Pimple tool?</dt>
+            <dd>Squeeze a pimple until it pops. Free, like every other tool.</dd>
+            <dt>Can I record and share a clip?</dt>
+            <dd>Yes. Record up to 10 seconds, vertical. Slow down the moment you pick, then share the clip. All free.</dd>
+            <dt>Do I need to download anything or sign in?</dt>
+            <dd>No. Squish Club runs in the browser, on a phone or a computer. No install and no account to play; signing in only saves purchases across devices.</dd>
+          </dl>
+
+          <p class="about-back">Made by <a href="https://www.marcomori.net" target="_blank" rel="noopener">Marco Mori</a>.</p>
+        </div>
+      </section>
+
+      <div id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div id="modal-card">
+          <p id="modal-title" role="heading" aria-level="2">Stress test</p>
+          <ul id="modal-criteria"></ul>
+          <textarea id="modal-json" readonly spellcheck="false"></textarea>
+          <div id="modal-actions">
+            <button id="btn-copy" class="chip">Copy</button>
+            <button id="btn-close" class="chip">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"7bbe667943734065b033df56249a74af","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

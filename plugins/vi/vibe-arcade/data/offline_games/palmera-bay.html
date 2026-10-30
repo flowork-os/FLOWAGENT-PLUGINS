@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://cahlik.net/palmera-bay/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Palmera Bay</title>
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    :root { --pink: #ff4f8b; --orange: #ffb35c; --cream: #fff3dc; --ink: #1a1030; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #140e2a; }
+    canvas#c { display: block; image-rendering: pixelated; }
+    body { font-family: 'Press Start 2P', monospace; color: var(--cream); user-select: none; }
+
+    #hud { position: fixed; inset: 0; pointer-events: none; }
+    #speedo { position: absolute; right: 28px; bottom: 24px; text-align: right; text-shadow: 3px 3px 0 var(--ink); }
+    #speed { font-size: 44px; letter-spacing: 2px; background: linear-gradient(#fff6d0, #ffb35c 55%, #ff4f8b); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; filter: drop-shadow(3px 3px 0 var(--ink)); }
+    #speedo .unit { font-size: 11px; opacity: .85; margin-top: 8px; }
+    #gearbox { position: absolute; right: 28px; bottom: 108px; font-size: 12px; opacity: .9; text-shadow: 2px 2px 0 var(--ink); }
+    #gear { color: var(--orange); font-size: 18px; margin-left: 6px; }
+    #nitro { position: absolute; right: 28px; bottom: 136px; display: flex; align-items: center; gap: 10px; font-size: 10px; text-shadow: 2px 2px 0 var(--ink); }
+    #nitrobar { width: 150px; height: 12px; background: rgba(26, 16, 48, .75); box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px #35e8ff; }
+    #nitrofill { height: 100%; width: 100%; background: linear-gradient(90deg, #35e8ff, #b45cff 60%, #ff4f8b); }
+    #nitro.burn #nitrobar { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px #ff4f8b, 0 0 18px #ff4f8b; }
+    #nitro.burn span { color: #ff4f8b; }
+    #nitro.empty #nitrofill { background: #5a4a70; }
+    #map { position: absolute; right: 22px; top: 22px; width: 170px; height: 170px; border-radius: 50%;
+      box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--pink), 0 0 24px rgba(255, 79, 139, .45); image-rendering: pixelated; opacity: .92; }
+    #brand { position: absolute; left: 24px; top: 22px; font-size: 12px; line-height: 1.8; text-shadow: 2px 2px 0 var(--ink); opacity: .9; }
+    #brand b { color: var(--pink); }
+    #hints { position: absolute; left: 24px; bottom: 24px; font-size: 9px; line-height: 2.1; text-shadow: 2px 2px 0 var(--ink); opacity: .85; transition: opacity 2s; }
+    #hints.fade { opacity: 0; }
+    #hints span { color: var(--orange); }
+    #toast { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-size: 14px; color: var(--cream);
+      text-shadow: 3px 3px 0 var(--pink); opacity: 0; transition: opacity .25s; }
+    #toast.show { opacity: 1; }
+
+    #overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; cursor: pointer;
+      background: linear-gradient(180deg, rgba(20, 14, 42, .55), rgba(20, 14, 42, 0) 40%, rgba(20, 14, 42, 0) 60%, rgba(20, 14, 42, .7)); transition: opacity .8s; }
+    #overlay.hidden { opacity: 0; pointer-events: none; }
+    #title { font-size: clamp(28px, 7vw, 76px); letter-spacing: 4px; text-align: center; line-height: 1.15;
+      background: linear-gradient(180deg, #fff6d0 0%, #ffcf6a 38%, #ff7a59 55%, #ff4f8b 75%, #b45cff 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(5px 5px 0 var(--ink)); }
+    #sub { font-size: clamp(10px, 1.6vw, 15px); letter-spacing: 6px; color: #7ae8ff; text-shadow: 3px 3px 0 var(--ink); }
+    #press { font-size: 12px; animation: blink 1.1s steps(2) infinite; text-shadow: 2px 2px 0 var(--ink); margin-top: 20px; }
+    @keyframes blink { 50% { opacity: 0; } }
+    #error { position: fixed; left: 50%; bottom: 8%; transform: translateX(-50%); max-width: min(760px, 92vw); display: none;
+      padding: 16px 18px; background: rgba(20, 10, 30, .92); border: 2px solid var(--pink); font-size: 10px; line-height: 1.9;
+      color: var(--cream); white-space: pre-wrap; word-break: break-word; z-index: 10; }
+    #error.show { display: block; }
+    @media (max-width: 700px) { #map { width: 110px; height: 110px; } #speed { font-size: 30px; } #hints { display: none; } }
+
+    /* ---- touch devices only (body.touch is set by src/touch.js) ---- */
+    #touchpad, #menubtn, #menu, #rotate { display: none; }
+    body.touch { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; }
+    body.touch #brand, body.touch #hints, body.touch #gearbox { display: none; }
+    body.touch #map { width: 92px; height: 92px; top: calc(12px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right)); }
+    body.touch #speedo { top: calc(8px + env(safe-area-inset-top)); bottom: auto; right: auto; left: 50%; transform: translateX(-50%); text-align: center; }
+    body.touch #speed { font-size: 24px; }
+    body.touch #speedo .unit { font-size: 8px; margin-top: 4px; }
+    body.touch #nitro { top: calc(56px + env(safe-area-inset-top)); bottom: auto; right: auto; left: 50%; transform: translateX(-50%); font-size: 8px; gap: 6px; }
+    body.touch #nitrobar { width: 96px; height: 7px; }
+    body.touch #toast { top: 30%; font-size: 11px; }
+    body.touch:not(.playing) #hud { display: none; }
+    body.touch.playing #touchpad { display: block; }
+    body.touch.playing #menubtn { display: flex; }
+    #touchpad { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+    .tbtn { position: absolute; pointer-events: auto; width: 74px; height: 74px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      background: rgba(26, 16, 48, .42); box-shadow: inset 0 0 0 2px rgba(255, 243, 220, .35); color: var(--cream); font-size: 9px;
+      touch-action: none; -webkit-tap-highlight-color: transparent; transition: background .06s; }
+    .tbtn svg { width: 34px; height: 34px; fill: currentColor; filter: drop-shadow(2px 2px 0 var(--ink)); }
+    .tbtn span { text-shadow: 2px 2px 0 var(--ink); }
+    .tbtn.on { background: rgba(255, 79, 139, .5); box-shadow: inset 0 0 0 2px var(--pink), 0 0 18px rgba(255, 79, 139, .6); }
+    #t-left, #t-right, #t-gas, #t-brake { bottom: calc(18px + env(safe-area-inset-bottom)); }
+    #t-left { left: calc(18px + env(safe-area-inset-left)); }
+    #t-right { left: calc(104px + env(safe-area-inset-left)); }
+    #t-gas { right: calc(18px + env(safe-area-inset-right)); height: 86px; }
+    #t-brake { right: calc(104px + env(safe-area-inset-right)); }
+    #t-nos, #t-drift { width: 74px; height: 50px; bottom: calc(118px + env(safe-area-inset-bottom)); }
+    #t-nos { right: calc(18px + env(safe-area-inset-right)); color: #7ae8ff; box-shadow: inset 0 0 0 2px rgba(53, 232, 255, .6);
+      background: linear-gradient(to top, rgba(53, 232, 255, .35) calc(var(--nos, 1) * 100%), rgba(26, 16, 48, .42) 0); }
+    #t-drift { right: calc(104px + env(safe-area-inset-right)); }
+    #menubtn { position: fixed; z-index: 6; top: calc(12px + env(safe-area-inset-top)); left: calc(12px + env(safe-area-inset-left)); width: 44px; height: 44px;
+      border-radius: 12px; background: rgba(26, 16, 48, .5); box-shadow: inset 0 0 0 2px rgba(255, 243, 220, .35); flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+    #menubtn i { display: block; width: 20px; height: 3px; background: var(--cream); box-shadow: 1px 1px 0 var(--ink); }
+    #menu.open { display: flex; position: fixed; inset: 0; z-index: 7; align-items: center; justify-content: center; background: rgba(20, 14, 42, .55); }
+    #menu .panel { padding: 20px; background: rgba(26, 16, 48, .92); box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--pink), 0 0 30px rgba(255, 79, 139, .4); max-width: 92vw; }
+    #menu .mtitle { font-size: 12px; color: var(--pink); text-align: center; margin-bottom: 16px; text-shadow: 2px 2px 0 var(--ink); }
+    #menu .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    #menu button { font: 9px 'Press Start 2P', monospace; color: var(--cream); background: rgba(255, 243, 220, .08); border: 2px solid rgba(255, 243, 220, .35);
+      padding: 14px 8px; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+    #menu button:active { background: rgba(255, 79, 139, .45); border-color: var(--pink); }
+    #rotate { font-size: 9px; color: #7ae8ff; text-shadow: 2px 2px 0 var(--ink); text-align: center; line-height: 1.8; }
+    @media (orientation: portrait) {
+      body.touch #rotate { display: block; }
+      #menu .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="hud">
+    <div id="brand"><b>PALMERA BAY</b><br />sunset drive</div>
+    <canvas id="map" width="170" height="170"></canvas>
+    <div id="gearbox">GEAR<span id="gear">N</span></div>
+    <div id="nitro"><span>NOS</span><div id="nitrobar"><div id="nitrofill"></div></div></div>
+    <div id="speedo"><div id="speed">000</div><div class="unit">KM/H</div></div>
+    <div id="hints">
+      <span>WASD/ARROWS</span> drive &nbsp; <span>SPACE</span> drift<br />
+      <span>SHIFT</span> nitro &nbsp; <span>V</span> camera &nbsp; <span>C</span> paint<br />
+      <span>M</span> radio &nbsp; <span>P</span> pixels &nbsp; <span>R</span> reset &nbsp; <span>H</span> hud
+    </div>
+    <div id="toast"></div>
+  </div>
+  <div id="overlay">
+    <div id="title">PALMERA<br />BAY</div>
+    <div id="sub">A SUNSET DRIVE</div>
+    <div id="press">PRESS ANY KEY</div>
+    <div id="rotate">ROTATE YOUR PHONE<br />FOR THE BEST VIEW</div>
+  </div>
+  <div id="error"></div>
+  <script>
+    (function () {
+      var box = document.getElementById('error');
+      function show(msg) {
+        box.textContent = 'The game failed to start:\n' + msg;
+        box.classList.add('show');
+        document.getElementById('press').textContent = 'COULD NOT START';
+      }
+      window.addEventListener('error', function (e) {
+        if (!window.__ready) show((e.error && e.error.stack) || e.message || ('could not load ' + (e.target && (e.target.src || e.target.href))));
+      }, true);
+      setTimeout(function () {
+        if (!window.__ready && !box.classList.contains('show')) show('Still not running after 20 s. Check the browser console (F12).');
+      }, 20000);
+      // Neon signs are drawn with the pixel font, so give it a moment to arrive before starting.
+      var fontReady = document.fonts ? document.fonts.load('30px "Press Start 2P"') : Promise.resolve();
+      var timeout = new Promise(function (r) { setTimeout(r, 3000); });
+      Promise.race([fontReady, timeout]).catch(function () {}).then(function () {
+        var s = document.createElement('script');
+        s.src = 'dist/game.js';
+        document.body.appendChild(s);
+      });
+    })();
+  </script>
+</body>
+</html>

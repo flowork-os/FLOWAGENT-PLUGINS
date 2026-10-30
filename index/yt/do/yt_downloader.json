@@ -6,7 +6,7 @@
   "description": "Sovereign High-Speed YouTube Audio/Video Extractor & DSP Processor — 59s Anti-Copyright Speed Ramp for Suno AI, Custom Folders, and Multi-Format Audio/Video Export.",
   "category": "Media, Creative Writing & Journalism",
   "icon": "📹",
-  "hash": "c4612d66084ac7d6",
+  "hash": "cef509b28b1f9fc7",
   "entry": {
     "gui": "gui/index.html",
     "backend": "engine/server.mjs"

@@ -1,0 +1,139 @@
+<!doctype html>
+<html class="">
+	<head>
+  <base href="https://huggingface.co/spaces/Reubencf/spiderman-miles-morales/">
+		<meta charset="utf-8" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+		<meta name="description" content="Control Miles Morales using keyboard, mouse, or touch to swing, jump, and use special abilities across a cityscape. The game displays health, stamina, and other stats on a simple HUD, and lets you ..." />
+
+		<meta property="fb:app_id" content="1321688464574422" />
+
+		<meta name="twitter:card" content="summary_large_image" />
+
+		<meta name="twitter:site" content="@huggingface" />
+
+		<meta name="twitter:image" content="https://cdn-thumbnails.huggingface.co/social-thumbnails/spaces/Reubencf/spiderman-miles-morales.png" />
+
+		<meta property="og:title" content="Spider-Man Miles Morales - a Hugging Face Space by Reubencf" />
+
+		<meta property="og:description" content="Web-swing through Manhattan as Miles Morales (three.js)" />
+
+		<meta property="og:type" content="website" />
+
+		<meta property="og:url" content="https://huggingface.co/spaces/Reubencf/spiderman-miles-morales" />
+
+		<meta property="og:image" content="https://cdn-thumbnails.huggingface.co/social-thumbnails/spaces/Reubencf/spiderman-miles-morales.png" />
+
+		<link
+			rel="preload"
+			href="/front/assets/fonts/source-sans-pro-latin-400-normal.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+
+		<link
+			rel="preload"
+			href="/front/assets/fonts/source-sans-pro-latin-600-normal.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+
+		<link
+			rel="preload"
+			href="/front/assets/fonts/source-sans-pro-latin-700-normal.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+
+		<link rel="stylesheet" href="/front/build/kube-6c835fa/style.css" />
+
+		<link
+			rel="preload"
+			href="/front/build/kube-6c835fa/katex.css"
+			as="style"
+			onload="
+				this.onload = null;
+				this.rel = 'stylesheet';
+			"
+		/>
+
+		<noscript>
+			<link rel="stylesheet" href="/front/build/kube-6c835fa/katex.css" />
+		</noscript>
+
+		<script>const guestTheme = document.cookie.match(/theme=(\w+)/)?.[1]; document.documentElement.classList.toggle('dark', guestTheme === 'dark' || ( (!guestTheme || guestTheme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches));</script>
+<link rel="canonical" href="https://huggingface.co/spaces/Reubencf/spiderman-miles-morales"> <script type="application/ld+json">{
+  "@context": "https:\/\/schema.org",
+  "@type": "WebApplication",
+  "name": "Spider-Man Miles Morales",
+  "identifier": "Reubencf\/spiderman-miles-morales",
+  "creator": {
+    "@type": "Person",
+    "name": "Reuben fernandes",
+    "url": "https:\/\/huggingface.co\/Reubencf"
+  },
+  "applicationCategory": "AIApplication",
+  "sameAs": "reubencf-spiderman-miles-morales",
+  "url": "https:\/\/huggingface.co\/spaces\/Reubencf\/spiderman-miles-morales",
+  "operatingSystem": "Web"
+}</script> 
+		<title>Spider-Man Miles Morales - a Hugging Face Space by Reubencf</title>
+
+		<script defer src="/js/script.js"></script>
+
+		<script>
+			((window.plausible =
+				window.plausible
+				|| function () {
+					(plausible.q = plausible.q || []).push(arguments);
+				}),
+				(plausible.init =
+					plausible.init
+					|| function (i) {
+						plausible.o = i || {};
+					}));
+			plausible.init({
+				customProperties: {
+					loggedIn: "false",
+				},
+				endpoint: "/api/event",
+			});
+		</script>
+
+		<script>
+			window.hubConfig = {"features":{"signupDisabled":false},"sshGitUrl":"git@hf.co","moonHttpUrl":"https:\/\/huggingface.co","captchaApiKey":"5bd005a4-6ac8-4a86-8e60-53083832ed22","datasetViewerPublicUrl":"https:\/\/datasets-server.huggingface.co","stripePublicKey":"pk_live_x2tdjFXBCvXo2FFmMybezpeM00J6gPCAAc","environment":"production","userAgent":"HuggingFace (production)","spacesIframeDomain":"hf.space","spacesApiUrl":"https:\/\/api.hf.space","logoDev":{"apiUrl":"https:\/\/img.logo.dev\/","apiKey":"pk_UHS2HZOeRnaSOdDp7jbd5w"}};
+			window.requestId = "Root=1-6ae4167d-555f244b7969d0df251b96bb";
+			window.featureFlags = {"containers":false};
+		</script>
+
+		<link rel="modulepreload" href="/front/build/kube-6c835fa/index.js" />
+
+		<script>
+			/// Start offset for looping animations that should carry over across page loads instead of
+			/// restarting: `animation-delay: var(--animation-phase)`. Only correct for durations dividing 12s.
+			document.documentElement.style.setProperty("--animation-phase", -(Date.now() % 12000) + "ms");
+		</script>
+		<script type="text/javascript" src="https://de5282c3ca0c.edge.sdk.awswaf.com/de5282c3ca0c/526cf06acb0d/challenge.js" defer></script> 
+	</head>
+	<body class="flex flex-col min-h-dvh bg-white dark:bg-gray-950 text-black SpacePage">
+		<!--[--><div class="flex min-h-dvh flex-col"><div class="SVELTE_HYDRATER contents" data-target="ClientErrorCatcher" data-props="{}"><!----></div> <div class="SVELTE_HYDRATER contents" data-target="DeviceProvider" data-props="{}"><!----></div> <div class="SVELTE_HYDRATER contents" data-target="SystemThemeMonitor" data-props="{&quot;isLoggedIn&quot;:false}"><!----></div> <!--[-1--><!--]--> <!--[0--><div class="SVELTE_HYDRATER contents" data-target="SpaceHeader" data-props="{&quot;activeTab&quot;:&quot;spaceApp&quot;,&quot;author&quot;:{&quot;_id&quot;:&quot;6443d2821bc692d87b24f87f&quot;,&quot;avatarUrl&quot;:&quot;https://cdn-avatars.huggingface.co/v1/production/uploads/6443d2821bc692d87b24f87f/PASjvA_f5M1oJBUTjEqY9.png&quot;,&quot;fullname&quot;:&quot;Reuben fernandes&quot;,&quot;name&quot;:&quot;Reubencf&quot;,&quot;type&quot;:&quot;user&quot;,&quot;isPro&quot;:true,&quot;isHf&quot;:false,&quot;isHfAdmin&quot;:false,&quot;isMod&quot;:false,&quot;followerCount&quot;:122,&quot;isUserFollowing&quot;:false},&quot;canDisable&quot;:false,&quot;canWriteRepoSettings&quot;:false,&quot;canWrite&quot;:false,&quot;canCreateKernels&quot;:false,&quot;discussionsStats&quot;:{&quot;closed&quot;:0,&quot;open&quot;:0,&quot;total&quot;:0},&quot;query&quot;:{},&quot;space&quot;:{&quot;author&quot;:&quot;Reubencf&quot;,&quot;colorFrom&quot;:&quot;red&quot;,&quot;colorTo&quot;:&quot;gray&quot;,&quot;cardData&quot;:{&quot;title&quot;:&quot;Spider-Man Miles Morales&quot;,&quot;emoji&quot;:&quot;🕷️&quot;,&quot;colorFrom&quot;:&quot;red&quot;,&quot;colorTo&quot;:&quot;gray&quot;,&quot;sdk&quot;:&quot;docker&quot;,&quot;app_port&quot;:7860,&quot;fullWidth&quot;:true,&quot;header&quot;:&quot;mini&quot;,&quot;pinned&quot;:false,&quot;short_description&quot;:&quot;Web-swing through Manhattan as Miles Morales (three.js)&quot;},&quot;createdAt&quot;:&quot;2026-07-10T12:27:02.000Z&quot;,&quot;emoji&quot;:&quot;🕷️&quot;,&quot;discussionsDisabled&quot;:false,&quot;discussionsSorting&quot;:&quot;recently-created&quot;,&quot;duplicationDisabled&quot;:false,&quot;id&quot;:&quot;Reubencf/spiderman-miles-morales&quot;,&quot;isLikedByUser&quot;:false,&quot;lastModified&quot;:&quot;2026-09-28T05:23:11.000Z&quot;,&quot;likes&quot;:18,&quot;pinned&quot;:false,&quot;private&quot;:false,&quot;visibility&quot;:&quot;public&quot;,&quot;gated&quot;:false,&quot;repoType&quot;:&quot;space&quot;,&quot;subdomain&quot;:&quot;reubencf-spiderman-miles-morales&quot;,&quot;sdk&quot;:&quot;docker&quot;,&quot;title&quot;:&quot;Spider-Man Miles Morales&quot;,&quot;runtime&quot;:{&quot;stage&quot;:&quot;RUNNING&quot;,&quot;hardware&quot;:{&quot;current&quot;:&quot;cpu-basic&quot;,&quot;requested&quot;:&quot;cpu-basic&quot;},&quot;gcTimeout&quot;:172800,&quot;replicas&quot;:{&quot;current&quot;:1,&quot;requested&quot;:1},&quot;devMode&quot;:false,&quot;domains&quot;:[{&quot;domain&quot;:&quot;reubencf-hugging-city.hf.space&quot;,&quot;stage&quot;:&quot;READY&quot;},{&quot;domain&quot;:&quot;reubencf-spiderman-miles-morales.hf.space&quot;,&quot;stage&quot;:&quot;READY&quot;}],&quot;sha&quot;:&quot;3b64df4e6e585aad7a210f878cb8775d0655c8b1&quot;},&quot;volumes&quot;:[],&quot;iframe&quot;:{&quot;embedSrc&quot;:&quot;https://reubencf-spiderman-miles-morales.hf.space&quot;,&quot;src&quot;:&quot;https://reubencf-spiderman-miles-morales.hf.space&quot;},&quot;secrets&quot;:[{&quot;key&quot;:&quot;SESSION_SECRET&quot;,&quot;updatedAt&quot;:&quot;2026-07-10T15:11:38.237Z&quot;}],&quot;variables&quot;:[{&quot;key&quot;:&quot;RULER_HF_USERNAME&quot;,&quot;value&quot;:&quot;Reubencf&quot;,&quot;updatedAt&quot;:&quot;2026-07-10T15:11:38.537Z&quot;},{&quot;key&quot;:&quot;PUBLIC_BASE_URL&quot;,&quot;value&quot;:&quot;https://Reubencf-Hugging-city.hf.space&quot;,&quot;updatedAt&quot;:&quot;2026-07-10T15:11:38.838Z&quot;}],&quot;sse&quot;:{&quot;status&quot;:{&quot;url&quot;:&quot;https://huggingface.co/api/spaces/Reubencf/spiderman-miles-morales/events&quot;},&quot;liveMetrics&quot;:{&quot;url&quot;:&quot;https://huggingface.co/api/spaces/Reubencf/spiderman-miles-morales/metrics&quot;}},&quot;dockerJwt&quot;:&quot;eyJhbGciOiJFZERTQSIsImtpZCI6IjVHZDBvd0g5MTM2eDZjc1FvbE1zcktNWUZoRVFoUm5PVVVybEpjOUhaUEEifQ.eyJyZWFkIjp0cnVlLCJwZXJtaXNzaW9ucyI6eyJyZXBvLmNvbnRlbnQucmVhZCI6dHJ1ZX0sInJlcG9JZHMiOlsiNmE1MGU1MTZkNmI2N2M5NWEzMGE3ZmVhIl0sImlhdCI6MTc5MzMzMjg2MSwianRpIjoiMWZkYjcwNDUtMjAyNC00MTMzLTgxYjAtZDBhZjVmN2QwNjRhIiwic3ViIjoiL3NwYWNlcy9SZXViZW5jZi9zcGlkZXJtYW4tbWlsZXMtbW9yYWxlcyIsImV4cCI6MTc5MzQxOTI2MSwiaXNzIjoiaHR0cHM6Ly9odWdnaW5nZmFjZS5jbyJ9.tzxxUgmxNclP3ygl8-KaClLGLe9Q4Onh98RFmbvTYCxmkOrO3yaH1niu_a_wdOtFsStivJ538iNKHKxgMliTBw&quot;,&quot;linkedModels&quot;:[],&quot;linkedDatasets&quot;:[],&quot;linkedCollections&quot;:[],&quot;sha&quot;:&quot;3b64df4e6e585aad7a210f878cb8775d0655c8b1&quot;,&quot;hasBlockedOids&quot;:false,&quot;region&quot;:&quot;us&quot;,&quot;tags&quot;:[&quot;docker&quot;,&quot;region:us&quot;]},&quot;sessionUuid&quot;:&quot;QBq5pHDFcz4N_tgTwbjB5&quot;,&quot;hasPaidPlanEligibleOrg&quot;:false}"><!--[-1--><!--]--> <!--[0--><!--[1--><div class="from-gray-50-to-white text-md shadow-alternate bg-linear-to-t fixed right-6 top-5 z-20 flex h-[40px] items-stretch gap-3 overflow-hidden rounded-xl border border-gray-200 pl-4 text-gray-500 dark:border-gray-800 max-sm:hidden "><div class="flex flex-none items-center"><!--[0--><div class="relative mr-1.5 flex items-center"><div class="flex-none  "><img alt="" class="max-w-none size-3.5 rounded-full  flex-none select-none " src="https://cdn-avatars.huggingface.co/v1/production/uploads/6443d2821bc692d87b24f87f/PASjvA_f5M1oJBUTjEqY9.png" crossorigin="anonymous"/> <!--[-1--><!--]--></div><!----></div> <a href="/Reubencf" class="hover:text-blue-600">Reubencf</a> <div class="mx-0.5 text-gray-300">/</div><!--]--> <a class="font-mono font-semibold text-gray-800 hover:text-blue-600" href="/spaces/Reubencf/spiderman-miles-morales">spiderman-miles-morales</a></div> <!--[-1--><div class="inline-flex items-center overflow-hidden whitespace-nowrap rounded-md border bg-white text-sm leading-none text-gray-500 transition-shadow duration-100 ease-in-out   flex-none self-center  svelte-149bse7"><span class="inline-block "><span class="contents"><button class="bg-linear-to-t relative flex items-center overflow-hidden from-red-500/10 to-transparent hover:from-red-500/20 dark:from-red-500/15 dark:hover:from-red-500/25 p-1 focus:outline-hidden svelte-149bse7" title="Like"><svg class="text-red-500 " xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32" fill="currentColor"><path d="M22.45,6a5.47,5.47,0,0,1,3.91,1.64,5.7,5.7,0,0,1,0,8L16,26.13,5.64,15.64a5.7,5.7,0,0,1,0-8,5.48,5.48,0,0,1,7.82,0L16,10.24l2.53-2.58A5.44,5.44,0,0,1,22.45,6m0-2a7.47,7.47,0,0,0-5.34,2.24L16,7.36,14.89,6.24a7.49,7.49,0,0,0-10.68,0,7.72,7.72,0,0,0,0,10.82L16,29,27.79,17.06a7.72,7.72,0,0,0,0-10.82A7.49,7.49,0,0,0,22.45,4Z"></path></svg><!----> <!--[-1--><!--]--> <span class="ml-4 pl-0.5 font-medium  hidden svelte-149bse7">Like</span></button><!----></span> <!--[-1--><!--]--></span><!----> <button class="focus:outline-hidden flex items-center border-l px-1.5 py-1 text-gray-500 hover:bg-gray-50 focus:bg-gray-100 dark:hover:bg-gray-900 dark:focus:bg-gray-800 svelte-149bse7" title="See users who liked this repository">18</button></div> <!--[0--><!--[-1--><!--]--> <dialog class="shadow-alternate z-40 mx-4 my-auto h-fit select-text overflow-hidden rounded-xl bg-white max-sm:max-w-[calc(100dvw-2rem)] sm:mx-auto lg:mt-26 md:portrait:mt-30 xl:mt-30 2xl:mt-32 w-full sm:w-96 max-w-[calc(100%-4rem)] text-base  "><div tabindex="-1" class="outline-none focus:ring-0 focus-visible:ring-0"><!--[-1--><!--]--></div></dialog><!--]--><!--]--> <button class="relative flex h-[38px] w-[38px] items-center justify-center border-l border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800" title="Show space menu"><!--[-1--><svg class="text-gray-800 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 12 12"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.375001 10.3828L0.375 1.61719C0.375 1.104 0.816001 0.687501 1.35938 0.687501L10.6406 0.6875C10.9017 0.6875 11.1521 0.785449 11.3367 0.959797C11.5213 1.13415 11.625 1.37062 11.625 1.61719V10.3828C11.625 10.6294 11.5213 10.8659 11.3367 11.0402C11.1521 11.2145 10.9017 11.3125 10.6406 11.3125H1.35938C0.816001 11.3125 0.375001 10.896 0.375001 10.3828ZM1.35938 10.5156H10.6406C10.7183 10.5156 10.7813 10.4561 10.7813 10.3828V4.40625H1.21875V10.3828C1.21875 10.418 1.23356 10.4518 1.25994 10.4767C1.28631 10.5017 1.32208 10.5156 1.35938 10.5156ZM4.61052 6.38251L5.9999 7.69472L7.38927 6.38251C7.44083 6.33007 7.50645 6.29173 7.57913 6.27153C7.6518 6.25134 7.72898 6.25003 7.8024 6.26776C7.87583 6.28549 7.9428 6.3216 7.99628 6.37227C8.04983 6.42295 8.08785 6.48631 8.10645 6.5557C8.12528 6.62497 8.12393 6.69773 8.10263 6.76635C8.0814 6.83497 8.0409 6.8969 7.98555 6.94564L6.29802 8.53936C6.21892 8.61399 6.11169 8.65592 5.9999 8.65592C5.8881 8.65592 5.78087 8.61399 5.70177 8.53936L4.01427 6.94564C3.95874 6.89694 3.91814 6.835 3.89676 6.76633C3.87538 6.69766 3.874 6.62483 3.89277 6.55549C3.91154 6.48615 3.94977 6.42287 4.00343 6.37233C4.05708 6.32179 4.12418 6.28585 4.19765 6.2683C4.27098 6.25054 4.34803 6.25178 4.42068 6.27188C4.49334 6.29198 4.55891 6.3302 4.61052 6.38251Z" fill="currentColor"></path><path d="M6.24316 1.60315V3.65448H8.29448V1.60315H6.24316Z" fill="#FF3270"></path><path d="M8.75293 1.60315V3.65448H10.8043V1.60315H8.75293Z" fill="#861FFF"></path><path d="M1.21875 1.60315V3.65447H3.27007V1.60315H1.21875Z" fill="#097EFF"></path><path d="M4.75713 1.60315C4.19069 1.60315 3.73145 2.06235 3.73145 2.62883C3.73145 3.19526 4.19069 3.65447 4.75713 3.65447C5.32357 3.65447 5.78278 3.19526 5.78278 2.62883C5.78278 2.06235 5.32357 1.60315 4.75713 1.60315Z" fill="#FFD702"></path></svg><!--]--></button></div> <button class="fixed bottom-4 right-4 z-50 rounded-md border bg-white p-2 shadow-md dark:bg-white sm:hidden"><svg class="text-xl text-gray-500 group-hover:text-gray-800" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path d="M7.80914 18.7462V24.1907H13.2536V18.7462H7.80914Z" fill="#FF3270"></path><path d="M18.7458 18.7462V24.1907H24.1903V18.7462H18.7458Z" fill="#861FFF"></path><path d="M7.80914 7.80982V13.2543H13.2536V7.80982H7.80914Z" fill="#097EFF"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M4 6.41775C4 5.08246 5.08246 4 6.41775 4H14.6457C15.7626 4 16.7026 4.75724 16.9802 5.78629C18.1505 4.67902 19.7302 4 21.4685 4C25.0758 4 28.0003 6.92436 28.0003 10.5317C28.0003 12.27 27.3212 13.8497 26.2139 15.02C27.243 15.2977 28.0003 16.2376 28.0003 17.3545V25.5824C28.0003 26.9177 26.9177 28.0003 25.5824 28.0003H17.0635H14.9367H6.41775C5.08246 28.0003 4 26.9177 4 25.5824V15.1587V14.9367V6.41775ZM7.80952 7.80952V13.254H13.254V7.80952H7.80952ZM7.80952 24.1907V18.7462H13.254V24.1907H7.80952ZM18.7462 24.1907V18.7462H24.1907V24.1907H18.7462ZM18.7462 10.5317C18.7462 9.0283 19.9651 7.80952 21.4685 7.80952C22.9719 7.80952 24.1907 9.0283 24.1907 10.5317C24.1907 12.0352 22.9719 13.254 21.4685 13.254C19.9651 13.254 18.7462 12.0352 18.7462 10.5317Z" fill="black"></path><path d="M21.4681 7.80982C19.9647 7.80982 18.7458 9.02861 18.7458 10.5321C18.7458 12.0355 19.9647 13.2543 21.4681 13.2543C22.9715 13.2543 24.1903 12.0355 24.1903 10.5321C24.1903 9.02861 22.9715 7.80982 21.4681 7.80982Z" fill="#FFD702"></path></svg><!----></button> <!--[-1--><!--]--><!--]--><!--]--> <!--[-1--><!--]--> <dialog class="shadow-alternate z-40 mx-4 my-auto h-fit select-text overflow-hidden rounded-xl bg-white max-sm:max-w-[calc(100dvw-2rem)] sm:mx-auto lg:mt-26 md:portrait:mt-30 xl:mt-30 2xl:mt-32 w-full lg:w-10/12 xl:w-8/12 2xl:w-7/12 max-w-[calc(100%-4rem)] lg:max-w-4xl  "><div tabindex="-1" class="outline-none focus:ring-0 focus-visible:ring-0"><!--[-1--><!--]--></div></dialog><!----> <!--[0--><div class="spinner-overlay fixed inset-0 z-50 flex h-full w-full items-center justify-center overflow-y-auto bg-gray-500 text-white opacity-80 hidden"><svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" fill="none" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><!----> <span>Fetching metadata from the HF Docker repository...</span></div><!----> <!--[-1--><!--]--> <dialog class="shadow-alternate z-40 mx-4 my-auto h-fit select-text overflow-hidden rounded-xl bg-white max-sm:max-w-[calc(100dvw-2rem)] sm:mx-auto lg:mt-26 md:portrait:mt-30 xl:mt-30 2xl:mt-32 w-full lg:w-10/12 xl:w-8/12 2xl:w-7/12 max-w-[calc(100%-4rem)] lg:max-w-4xl  "><div tabindex="-1" class="outline-none focus:ring-0 focus-visible:ring-0"><!--[-1--><!--]--></div></dialog><!----><!--]--> <!--[-1--><!--]--> <!--[0--><!--[-1--><!--]--> <dialog class="shadow-alternate z-40 mx-4 my-auto h-fit select-text overflow-hidden rounded-xl bg-white max-sm:max-w-[calc(100dvw-2rem)] sm:mx-auto lg:mt-26 md:portrait:mt-30 xl:mt-30 2xl:mt-32 w-full lg:w-10/12 xl:w-8/12 2xl:w-7/12 max-w-[calc(100%-4rem)] lg:max-w-4xl  "><div tabindex="-1" class="outline-none focus:ring-0 focus-visible:ring-0"><!--[-1--><!--]--></div></dialog><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <dialog class="shadow-alternate z-40 mx-4 my-auto h-fit select-text overflow-hidden rounded-xl bg-white max-sm:max-w-[calc(100dvw-2rem)] sm:mx-auto lg:mt-26 md:portrait:mt-30 xl:mt-30 2xl:mt-32 w-full sm:w-3/5 max-w-[calc(100%-4rem)] sm:max-w-xl w-full sm:w-4/5 max-w-[calc(100%-4rem)] sm:max-w-md! "><div tabindex="-1" class="outline-none focus:ring-0 focus-visible:ring-0"><!--[-1--><!--]--></div></dialog><!----> <!--[-1--><!--]--> <dialog class="shadow-alternate z-40 mx-4 my-auto h-fit select-text overflow-hidden rounded-xl bg-white max-sm:max-w-[calc(100dvw-2rem)] sm:mx-auto lg:mt-26 md:portrait:mt-30 xl:mt-30 2xl:mt-32 w-full lg:w-7/12 max-w-[calc(100%-4rem)] md:max-w-2xl max-w-md! max-h-none! m-auto! max-md:max-w-[calc(100%-2rem)]! "><div tabindex="-1" class="outline-none focus:ring-0 focus-visible:ring-0"><!--[-1--><!--]--></div></dialog><!----><!----></div><!----><!--]--> <!--[-1--><!--]--><!----> <!--[-1--><!--]--><!----> <!--[0--><div class="SVELTE_HYDRATER contents" data-target="SSOBanner" data-props="{}"><!--[-1--><!--]--><!----></div><!--]--> <!--[-1--><!--]--><!----> <main class="flex flex-1 flex-col"><!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <div class="SVELTE_HYDRATER contents" data-target="SpacePageInner" data-props="{&quot;author&quot;:{&quot;_id&quot;:&quot;6443d2821bc692d87b24f87f&quot;,&quot;avatarUrl&quot;:&quot;https://cdn-avatars.huggingface.co/v1/production/uploads/6443d2821bc692d87b24f87f/PASjvA_f5M1oJBUTjEqY9.png&quot;,&quot;fullname&quot;:&quot;Reuben fernandes&quot;,&quot;name&quot;:&quot;Reubencf&quot;,&quot;type&quot;:&quot;user&quot;,&quot;isPro&quot;:true,&quot;isHf&quot;:false,&quot;isHfAdmin&quot;:false,&quot;isMod&quot;:false,&quot;followerCount&quot;:122,&quot;isUserFollowing&quot;:false},&quot;canRestart&quot;:false,&quot;canWrite&quot;:false,&quot;csrf&quot;:&quot;&quot;,&quot;hideNFAA&quot;:false,&quot;readmeTemplate&quot;:&quot;---\ntitle: {{title}}\nemoji: {{emoji}}\ncolorFrom: {{colorFrom}}\ncolorTo: {{colorTo}}\nsdk: {{sdk}}\nsdk_version: \&quot;{{sdkVersion}}\&quot;\n{{#pythonVersion}}\npython_version: \&quot;{{pythonVersion}}\&quot;\n{{/pythonVersion}}\napp_file: app.py\npinned: false\n---\n\nCheck out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference\n&quot;,&quot;space&quot;:{&quot;author&quot;:&quot;Reubencf&quot;,&quot;colorFrom&quot;:&quot;red&quot;,&quot;colorTo&quot;:&quot;gray&quot;,&quot;cardData&quot;:{&quot;title&quot;:&quot;Spider-Man Miles Morales&quot;,&quot;emoji&quot;:&quot;🕷️&quot;,&quot;colorFrom&quot;:&quot;red&quot;,&quot;colorTo&quot;:&quot;gray&quot;,&quot;sdk&quot;:&quot;docker&quot;,&quot;app_port&quot;:7860,&quot;fullWidth&quot;:true,&quot;header&quot;:&quot;mini&quot;,&quot;pinned&quot;:false,&quot;short_description&quot;:&quot;Web-swing through Manhattan as Miles Morales (three.js)&quot;},&quot;createdAt&quot;:&quot;2026-07-10T12:27:02.000Z&quot;,&quot;emoji&quot;:&quot;🕷️&quot;,&quot;discussionsDisabled&quot;:false,&quot;discussionsSorting&quot;:&quot;recently-created&quot;,&quot;duplicationDisabled&quot;:false,&quot;id&quot;:&quot;Reubencf/spiderman-miles-morales&quot;,&quot;isLikedByUser&quot;:false,&quot;lastModified&quot;:&quot;2026-09-28T05:23:11.000Z&quot;,&quot;likes&quot;:18,&quot;pinned&quot;:false,&quot;private&quot;:false,&quot;visibility&quot;:&quot;public&quot;,&quot;gated&quot;:false,&quot;repoType&quot;:&quot;space&quot;,&quot;subdomain&quot;:&quot;reubencf-spiderman-miles-morales&quot;,&quot;sdk&quot;:&quot;docker&quot;,&quot;title&quot;:&quot;Spider-Man Miles Morales&quot;,&quot;runtime&quot;:{&quot;stage&quot;:&quot;RUNNING&quot;,&quot;hardware&quot;:{&quot;current&quot;:&quot;cpu-basic&quot;,&quot;requested&quot;:&quot;cpu-basic&quot;},&quot;gcTimeout&quot;:172800,&quot;replicas&quot;:{&quot;current&quot;:1,&quot;requested&quot;:1},&quot;devMode&quot;:false,&quot;domains&quot;:[{&quot;domain&quot;:&quot;reubencf-hugging-city.hf.space&quot;,&quot;stage&quot;:&quot;READY&quot;},{&quot;domain&quot;:&quot;reubencf-spiderman-miles-morales.hf.space&quot;,&quot;stage&quot;:&quot;READY&quot;}],&quot;sha&quot;:&quot;3b64df4e6e585aad7a210f878cb8775d0655c8b1&quot;},&quot;volumes&quot;:[],&quot;iframe&quot;:{&quot;embedSrc&quot;:&quot;https://reubencf-spiderman-miles-morales.hf.space&quot;,&quot;src&quot;:&quot;https://reubencf-spiderman-miles-morales.hf.space&quot;},&quot;secrets&quot;:[{&quot;key&quot;:&quot;SESSION_SECRET&quot;,&quot;updatedAt&quot;:&quot;2026-07-10T15:11:38.237Z&quot;}],&quot;variables&quot;:[{&quot;key&quot;:&quot;RULER_HF_USERNAME&quot;,&quot;value&quot;:&quot;Reubencf&quot;,&quot;updatedAt&quot;:&quot;2026-07-10T15:11:38.537Z&quot;},{&quot;key&quot;:&quot;PUBLIC_BASE_URL&quot;,&quot;value&quot;:&quot;https://Reubencf-Hugging-city.hf.space&quot;,&quot;updatedAt&quot;:&quot;2026-07-10T15:11:38.838Z&quot;}],&quot;sse&quot;:{&quot;status&quot;:{&quot;url&quot;:&quot;https://huggingface.co/api/spaces/Reubencf/spiderman-miles-morales/events&quot;},&quot;liveMetrics&quot;:{&quot;url&quot;:&quot;https://huggingface.co/api/spaces/Reubencf/spiderman-miles-morales/metrics&quot;}},&quot;dockerJwt&quot;:&quot;eyJhbGciOiJFZERTQSIsImtpZCI6IjVHZDBvd0g5MTM2eDZjc1FvbE1zcktNWUZoRVFoUm5PVVVybEpjOUhaUEEifQ.eyJyZWFkIjp0cnVlLCJwZXJtaXNzaW9ucyI6eyJyZXBvLmNvbnRlbnQucmVhZCI6dHJ1ZX0sInJlcG9JZHMiOlsiNmE1MGU1MTZkNmI2N2M5NWEzMGE3ZmVhIl0sImlhdCI6MTc5MzMzMjg2MSwianRpIjoiMWZkYjcwNDUtMjAyNC00MTMzLTgxYjAtZDBhZjVmN2QwNjRhIiwic3ViIjoiL3NwYWNlcy9SZXViZW5jZi9zcGlkZXJtYW4tbWlsZXMtbW9yYWxlcyIsImV4cCI6MTc5MzQxOTI2MSwiaXNzIjoiaHR0cHM6Ly9odWdnaW5nZmFjZS5jbyJ9.tzxxUgmxNclP3ygl8-KaClLGLe9Q4Onh98RFmbvTYCxmkOrO3yaH1niu_a_wdOtFsStivJ538iNKHKxgMliTBw&quot;,&quot;linkedModels&quot;:[],&quot;linkedDatasets&quot;:[],&quot;linkedCollections&quot;:[],&quot;sha&quot;:&quot;3b64df4e6e585aad7a210f878cb8775d0655c8b1&quot;,&quot;hasBlockedOids&quot;:false,&quot;region&quot;:&quot;us&quot;,&quot;tags&quot;:[&quot;docker&quot;,&quot;region:us&quot;]},&quot;iframeSrc&quot;:&quot;https://reubencf-spiderman-miles-morales.hf.space/?__theme=system&quot;,&quot;showGettingStarted&quot;:false,&quot;sessionUuid&quot;:&quot;QBq5pHDFcz4N_tgTwbjB5&quot;,&quot;jwt&quot;:null,&quot;plan&quot;:{&quot;user&quot;:&quot;anonymous&quot;}}"><!--[2--><!--[-1--><!----><div class="spinner-overlay fixed inset-0 flex h-full w-full items-center justify-center overflow-y-auto bg-gray-500 text-white opacity-80 hidden "><svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" fill="none" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><!----> <span>Refreshing</span></div> <!--[-1--><!--]--> <!--[0--><iframe src="https://reubencf-spiderman-miles-morales.hf.space/?__theme=system" aria-label="docker space app" class="space-iframe outline-hidden grow bg-white p-0" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-read; clipboard-write; web-share; display-capture; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; serial; sync-xhr; usb; vr ; wake-lock; webnn; xr-spatial-tracking" sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-storage-access-by-user-activation" scrolling="yes"></iframe><!--]--><!----> <!--[-1--><!--]--><!--]--><!--]--> <!--[-1--><!--]--><!----></div><!----></main> <!--[-1--><!--]--><!----></div><!--]-->
+		<script>
+			 import("\/front\/build\/kube-6c835fa\/index.js"); window.moonSha = "kube-6c835fa\/"; window.__hf_deferred =
+			{};
+		</script>
+		<!-- Stripe -->
+		<script>
+			if (["hf.co", "huggingface.co"].includes(window.location.hostname)) {
+				const script = document.createElement("script");
+				script.src = "https://js.stripe.com/dahlia/stripe.js";
+				script.async = true;
+				document.head.appendChild(script);
+			}
+		</script>
+	</body>
+</html>

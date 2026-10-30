@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head>
+  <base href="https://first-person-shooter.astra.demos.sulat.com/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101b1b"><link rel="icon" href="./icon.svg"><link rel="stylesheet" href="./style.css"><title data-sulat-seo>First Person Shooter — GPT 6 Astra one-shot demo | Sulat</title>
+<meta name="description" content="Explore First Person Shooter, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="robots" content="index, follow, max-image-preview:large" data-sulat-seo>
+<link rel="canonical" href="https://first-person-shooter.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:type" content="website" data-sulat-seo>
+<meta property="og:locale" content="en_NZ" data-sulat-seo>
+<meta property="og:site_name" content="Sulat" data-sulat-seo>
+<meta property="og:title" content="First Person Shooter — GPT 6 Astra" data-sulat-seo>
+<meta property="og:description" content="Explore First Person Shooter, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta property="og:url" content="https://first-person-shooter.astra.demos.sulat.com/" data-sulat-seo>
+<meta property="og:image" content="https://demos.sulat.com/openai/astra/first-person-shooter/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:secure_url" content="https://demos.sulat.com/openai/astra/first-person-shooter/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:type" content="image/jpeg" data-sulat-seo>
+<meta property="og:image:width" content="1200" data-sulat-seo>
+<meta property="og:image:height" content="630" data-sulat-seo>
+<meta property="og:image:alt" content="First Person Shooter one-shot demo preview" data-sulat-seo>
+<meta name="twitter:card" content="summary_large_image" data-sulat-seo>
+<meta name="twitter:title" content="First Person Shooter — GPT 6 Astra" data-sulat-seo>
+<meta name="twitter:description" content="Explore First Person Shooter, a one-shot AI demo made with GPT 6 Astra by OpenAI, on Sulat." data-sulat-seo>
+<meta name="twitter:url" content="https://first-person-shooter.astra.demos.sulat.com/" data-sulat-seo>
+<meta name="twitter:image" content="https://demos.sulat.com/openai/astra/first-person-shooter/thumbnail.jpg" data-sulat-seo>
+<meta name="twitter:image:alt" content="First Person Shooter one-shot demo preview" data-sulat-seo>
+<!--
+Sulat content-use policy:
+User-initiated automated scraping, extraction, and bulk copying are not permitted.
+Search indexing and discovery crawlers may access this content.
+When citing, summarising, or reusing Sulat content, credit Sulat and link to this page's canonical URL.
+Preserve the original creator credits and source links shown on this page; do not attribute third-party work to Sulat.
+Canonical URL: https://first-person-shooter.astra.demos.sulat.com/
+--></head>
+<body>
+<canvas id="world" aria-label="Foundry 07 combat arena"></canvas>
+<div id="loading"><span class="brand-mark">VF</span><p>ESTABLISHING UPLINK<span class="dots">...</span></p></div>
+<div id="damage"></div><div id="edge-shade"></div>
+<main id="menu" class="screen menu-screen">
+ <header class="menu-header"><a class="brand" href="#" aria-label="Voxel Frontline home"><span class="brand-mark">VF</span><span>VOXEL<br><b>FRONTLINE</b></span></a><div class="top-meta"><span class="status-dot"></span> LOCAL OPERATIONS <span class="build-id">// BUILD 07</span></div><button class="text-button" id="manual-button">FIELD MANUAL <span>↗</span></button></header>
+ <div class="mission-layout">
+  <section class="mission-copy"><div class="eyebrow"><span class="tiny-cross">+</span> OPERATION 01 / FOUNDRY 07</div><h1>VOXEL<br><span>FRONTLINE</span><i>®</i></h1><p class="hero-tagline">Small blocks. Heavy fire.</p><p class="brief">The foundry has fallen silent.<br>Go in. Break their line. Take it back.</p><div class="mission-facts"><span><b>04</b> WAVES</span><span><b>03</b> REINSERTIONS</span><span><b>08:00</b> TIME LIMIT</span></div><div class="difficulty-row"><span class="label">THREAT LEVEL</span><div class="segmented" id="difficulty"><button data-difficulty="recruit" class="selected">RECRUIT</button><button data-difficulty="veteran">VETERAN</button><button data-difficulty="elite">ELITE</button></div></div><p class="difficulty-detail" id="difficulty-detail">Room to learn. Slower reactions, forgiving fire.</p><button class="deploy-button" id="deploy"><span>DEPLOY TO FOUNDRY</span><b>→</b></button><p class="deploy-note">MOUSE + KEYBOARD <span>•</span> CLICK TO LOCK CURSOR</p></section>
+  <aside class="map-caption"><div class="caption-cross"></div><span class="label">AO / 07</span><h2>THE FOUNDRY</h2><div class="caption-rule"></div><p>DRYLAND INDUSTRIAL ZONE<br>34° 12′ N &nbsp; 44° 07′ E</p><div class="live-pill"><span class="status-dot"></span> LIVE RECON</div></aside>
+ </div>
+ <section class="loadout-section"><div class="section-heading"><span class="label">01 — SELECT YOUR PRIMARY</span><span>ALL FOUR WEAPONS AVAILABLE IN THE FIELD <span class="muted">/ 1—4</span></span></div><div id="loadout" class="loadout-grid"></div></section>
+ <footer class="menu-footer"><span>MOVE <kbd>W A S D</kbd> <span class="muted">OR</span> <kbd>↑ ← ↓ →</kbd> &nbsp; AIM <kbd>RMB</kbd> &nbsp; FIRE <kbd>LMB</kbd></span><span>PERSONAL BEST <b id="best-score">00000</b></span><button id="settings-button" class="text-button">SETTINGS <span>⚙</span></button></footer>
+ <div id="desktop-notice" class="desktop-notice"><span class="notice-icon">⌨</span><div><b>BRING A KEYBOARD TO THE FRONTLINE.</b><p>This operation needs a desktop browser, mouse and keyboard. Explore your loadout and field manual here, then deploy on desktop.</p></div></div>
+</main>
+<section id="hud" class="hidden" aria-label="Combat heads-up display">
+ <div class="radar-wrap"><div class="radar-head"><span id="sector-label">SOUTH APPROACH</span><span id="uav-label">NAV</span></div><canvas id="radar" width="192" height="160" aria-label="Tactical minimap"></canvas><div class="radar-foot"><span class="status-dot"></span> <span id="radar-status">FOUNDRY 07</span></div></div>
+ <div class="compass"><div id="compass-ticks"></div><span class="compass-notch">▼</span><span id="heading-value">000</span></div>
+ <div class="objective"><div class="label">OPERATION / RECLAMATION</div><div><strong id="wave-label">WAVE 01</strong><span id="timer">08:00</span></div><p id="objective-label">Eliminate hostile forces</p><div class="wave-track"><span id="wave-progress"></span></div><div class="objective-count"><span id="hostile-count">05 HOSTILES REMAINING</span><span id="total-score">0 XP</span></div></div>
+ <div id="killfeed"></div>
+ <div id="crosshair"><i></i><i></i><i></i><i></i><em></em></div><div id="hitmarker"><i></i><i></i><i></i><i></i></div>
+ <div id="scope" class="hidden"><div class="scope-reticle"><span></span><span></span><i></i><b>●</b></div><p>LONGSHOT / 4× OPTIC</p></div>
+ <div id="score-popup"></div><div id="medal"></div>
+ <div id="banner"><span id="banner-kicker"></span><h2 id="banner-title"></h2><p id="banner-detail"></p></div>
+ <div id="action-hint"></div><div id="reload-indicator"><span></span><p>RELOADING</p></div>
+ <div class="health-panel"><div class="callsign"><span class="small-emblem">✚</span><b>GHOST 01</b><span id="lives-label">● ● ●</span></div><div class="health-reading"><strong id="health-number">100</strong><span>HEALTH</span><span id="health-state">COMBAT READY</span></div><div class="health-track"><span id="health-fill"></span></div><p><kbd>SHIFT</kbd> SPRINT &nbsp; <kbd>C</kbd> CROUCH &nbsp; <kbd>SPACE</kbd> JUMP</p></div>
+ <div class="streak-panel"><div class="streak-header"><span>KILLSTREAK</span><b id="streak-value">00</b></div><div class="streak-rewards"><div data-streak="3"><kbd>Z</kbd><span>⌁</span><b>UAV</b><small>3</small></div><div data-streak="5"><kbd>X</kbd><span>⌖</span><b>AIRSTRIKE</b><small>5</small></div><div data-streak="7"><kbd>V</kbd><span>✦</span><b>ORBITAL</b><small>7</small></div></div></div>
+ <div class="ammo-panel"><div class="weapon-caption"><span id="weapon-type">ASSAULT RIFLE</span><span id="fire-mode">AUTO</span></div><h3 id="weapon-name">AR-4 VANGUARD</h3><div class="ammo-reading"><strong id="ammo-number">30</strong><span>/ <b id="reserve-number">180</b></span><div class="grenade-display"><span>◆</span><b id="grenade-count">3</b><small><kbd>G</kbd> FRAG</small></div></div><div class="ammo-footer"><span><kbd>R</kbd> RELOAD</span><span><kbd>1—4</kbd> SWITCH</span><span><kbd>ESC</kbd> PAUSE</span></div></div>
+ <div id="stance-indicator"></div><div id="damage-direction">▲</div><div id="lock-hint" class="hidden">Click the arena to capture your mouse. <span>Esc pauses the operation.</span></div>
+</section>
+<section id="pause" class="screen overlay hidden"><div class="dialog"><span class="label">UPLINK ON HOLD</span><h2>OPERATION<br>PAUSED<span>.</span></h2><p class="dialog-intro">Take a breath. The frontline can wait.</p><button class="deploy-button" id="resume"><span>RESUME OPERATION</span><b>→</b></button><button class="outline-button" id="pause-settings">AUDIO & MOUSE SETTINGS</button><button class="text-button" id="abort">RETURN TO COMMAND</button><p class="dialog-foot">ESC / PAUSE &nbsp; • &nbsp; RESUME CAPTURES YOUR CURSOR</p></div></section>
+<section id="death" class="screen overlay hidden"><div class="dialog death-dialog"><span class="label danger-text">SIGNAL LOST</span><h2>OPERATOR<br>DOWN<span>.</span></h2><p class="dialog-intro">Regroup. Find cover. Return fire.</p><div class="death-stats"><div><b id="death-streak">0</b><span>STREAK ENDED</span></div><div><b id="death-respawns">3</b><span>REINSERTIONS LEFT</span></div></div><button id="respawn" class="deploy-button" disabled><span>REINSERTION IN 4</span><b>→</b></button><p class="dialog-foot">LOADOUT RESTORED ON REINSERTION</p></div></section>
+<section id="results" class="screen overlay hidden"><div class="dialog results-dialog"><span class="label" id="result-kicker">OPERATION COMPLETE</span><h2 id="result-title">FOUNDRY<br>SECURED<span>.</span></h2><p class="dialog-intro" id="result-detail">All four waves cleared. The foundry is ours.</p><div class="result-score"><span>TOTAL EXPERIENCE</span><b id="result-score">0</b><em id="new-record">PERSONAL BEST</em></div><div id="result-stats" class="result-stats"></div><button class="deploy-button" id="play-again"><span>RUN IT BACK</span><b>→</b></button><button class="text-button" id="results-menu">RETURN TO COMMAND</button></div></section>
+<section id="manual" class="screen overlay hidden"><div class="dialog wide-dialog"><button class="close-button" id="close-manual" aria-label="Close field manual">×</button><span class="label">KNOW YOUR EQUIPMENT</span><h2>FIELD MANUAL<span>.</span></h2><p class="dialog-intro">Four waves. Eight minutes. Three chances to come back.</p><div class="manual-columns"><div><h3>MOVE & SURVIVE</h3><dl><dt>WASD / Arrow keys</dt><dd>Move relative to your aim</dd><dt>Mouse</dt><dd>Look around</dd><dt>Shift / Space / C or Ctrl</dt><dd>Sprint / Jump / Hold to crouch</dd><dt>Esc</dt><dd>Pause and release mouse</dd></dl></div><div><h3>FIGHT & ADAPT</h3><dl><dt>Left / Right mouse</dt><dd>Fire / Hold to aim down sights</dd><dt>1–4 / Mouse wheel</dt><dd>Switch weapon</dd><dt>R / G</dt><dd>Reload / Throw a frag</dd><dt>Z / X / V</dt><dd>UAV / Airstrike / Orbital barrage</dd></dl></div></div><div class="tactic-cards"><article><b>BREAK THE SIGHTLINE</b><p>Health returns after 4 seconds without damage. Crouch behind low cover and use the workshop or upper gantry to flank.</p></article><article><b>BUILD MOMENTUM</b><p>3 kills unlock a 20-second UAV. 5 call an airstrike at your crosshair. 7 unleash an orbital barrage across the arena. Activate each with its key.</p></article><article><b>MAKE IT COUNT</b><p>Eliminations earn +100 XP. Headshots add +50. Wave clears replenish ammo and frags. Rewards can be earned again after reinsertion.</p></article></div><button id="manual-done" class="outline-button">READY FOR THE FRONTLINE</button></div></section>
+<section id="settings" class="screen overlay hidden"><div class="dialog"><button class="close-button" id="close-settings" aria-label="Close settings">×</button><span class="label">OPERATOR PREFERENCES</span><h2>FINE TUNE<span>.</span></h2><label class="slider-row" for="volume"><span>MASTER VOLUME <b id="volume-value">55%</b></span><input type="range" id="volume" min="0" max="100" value="55"></label><label class="slider-row" for="sensitivity"><span>MOUSE SENSITIVITY <b id="sensitivity-value">1.0</b></span><input type="range" id="sensitivity" min="3" max="25" value="10"></label><label class="toggle-row"><span>SCREEN SHAKE</span><input id="screen-shake" type="checkbox" checked></label><label class="toggle-row"><span>HIGH QUALITY SHADOWS</span><input id="shadows" type="checkbox" checked></label><p class="settings-note">All sound is synthesized on your device.<br>Your settings and personal best stay in this browser.</p><button class="outline-button" id="settings-done">SAVE & CLOSE</button></div></section>
+<div id="toast" role="status"></div><script src="./game.js" defer></script>
+<link rel="stylesheet" href="/.well-known/sulat-demo-overlay-v12.css" data-sulat-demo-overlay-asset="styles-v12">
+<details id="sulat-demo-referral-overlay" data-model="astra" data-experiment="first-person-shooter" data-storage-scope="astra.demos.sulat.com" data-deal-id="oneshot-websites" data-has-deal="true" data-collapsed="true">
+  <summary data-overlay-toggle aria-label="Expand demo links" aria-expanded="false" title="Expand demo links"></summary>
+  <div class="sulat-demo-overlay__actions">
+    <div class="sulat-demo-overlay__primary">
+      <details class="sulat-demo-overlay__share" data-overlay-share>
+        <summary aria-label="Share this demo" title="Share this demo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M12 15.75v-12m0 0L7.5 8.25M12 3.75l4.5 4.5M5.25 13.5v5.25h13.5V13.5"/></svg><span class="sulat-demo-overlay__share-label">Share</span></summary>
+        <nav class="sulat-demo-overlay__share-menu" aria-label="Share this demo">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Ffirst-person-shooter.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Ffirst-person-shooter.astra.demos.sulat.com%2F&t=First%20Person%20Shooter%20%E2%80%94%20GPT%206%20Astra%20demo" target="_blank" rel="noopener noreferrer">Hacker News</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Ffirst-person-shooter.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text=First%20Person%20Shooter%20%E2%80%94%20GPT%206%20Astra%20demo&url=https%3A%2F%2Ffirst-person-shooter.astra.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Twitter</a>
+        </nav>
+      </details>
+      <a class="sulat-demo-overlay__catalogue" data-overlay-catalogue href="https://astra.demos.sulat.com/" aria-label="More demos"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>More demos</a>
+      <a class="sulat-demo-overlay__next" data-overlay-next href="https://demos.sulat.com/surprise" aria-label="Open another random demo" title="Open another random demo"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 4 12 8-12 8z"/></svg>Next demo</a>
+    </div>
+    <a class="sulat-demo-overlay__deal" data-overlay-deal href="https://github.com/jpcaparas/skills#oneshot-websites" target="_blank" rel="sponsored noopener noreferrer" aria-label="Create your own one-shots (opens in a new tab)">Create your own one-shots</a>
+  </div>
+</details>
+<script src="/.well-known/sulat-demo-overlay-v12.js" defer data-sulat-demo-overlay-asset="script-v12"></script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a52784463a8ececa',t:'MTc5MzMzMjg2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a52784463a8ececa',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ecb2b94d4b63450a9e0af42e304662ed","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body></html>

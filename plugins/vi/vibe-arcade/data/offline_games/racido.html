@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://racido-v1.vercel.app/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#eaece3" />
+    <meta name="description" content="A little town. A little car. Nowhere you need to be. Explore Racido, a handcrafted miniature driving world." />
+    <title>Racido — the scenic route</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23bc7558'/%3E%3Cpath d='M18 46V18h15q15 0 15 11 0 8-10 10l12 7H36L25 37v9zm7-16h8q6 0 6-5H25z' fill='%23ede1bc'/%3E%3C/svg%3E" />
+    <script type="module" crossorigin src="/assets/index-CscSD8N9.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BdZPanDz.css">
+  </head>
+  <body>
+    <main id="app">
+      <div id="world" aria-label="Interactive miniature driving town"></div>
+      <div id="boss-bar" class="boss-bar" hidden><div><strong>HIVE TRUCK</strong><span id="boss-status"></span></div><i><em id="boss-fill"></em><b class="notch n66"></b><b class="notch n33"></b></i></div>
+      <div id="carrier-arrow" class="carrier-arrow" hidden aria-label="Carrier direction">▲</div>
+      <header class="header">
+        <a class="wordmark" href="./" aria-label="Racido home">racido<span>®</span></a>
+        <div class="edition">A SMALL WORLD.<br />TAKE THE LONG WAY.</div>
+        <div class="header-right"><span class="live-dot"></span><span>OFFLINE & UNHURRIED</span><button id="quick-reset" class="round-button quick-reset" aria-label="Reset car">↺</button><button id="sound-button" class="sound-button" aria-label="Mute sound" aria-pressed="true">SOUND ON</button><button id="help-button" class="round-button" aria-label="Driving guide">?</button></div>
+      </header>
+      <section class="intro" aria-label="Welcome">
+        <div class="eyebrow"><span class="line"></span> THE SCENIC ROUTE / 001</div>
+        <h1>Nowhere you<br />need to be.</h1>
+        <p>A little town. A little car.<br />See where the road takes you.</p>
+        <div class="location"><span class="location-icon">⌖</span><div>Olive Grove<span>A WORLD IN MINIATURE</span></div></div>
+      </section>
+      <div class="world-label"><span class="live-dot"></span> YOU'RE AT THE WHEEL</div>
+      <aside class="map-card" aria-label="Town map">
+        <div class="map-header"><span>OLIVE GROVE</span><span id="clock">17:20</span></div>
+        <svg id="map" viewBox="-80 -80 160 160" role="img" aria-label="Map showing your car on the island"><rect x="-76" y="-76" width="152" height="152" rx="16" fill="#d9decb" stroke="#b9ae93" stroke-width="2"/><g id="map-roads" stroke="#f2f0e4" stroke-width="6"><rect x="-62" y="-62" width="124" height="124" fill="none"/></g><g id="map-houses" fill="#abb69b"></g><circle cx="0" cy="0" r="7" fill="#a1b7ad"/><g id="map-enemies"></g><g id="map-car"><circle r="6" fill="#bc7558" opacity=".2"/><path d="M0 -4 L3 3 L0 2 L-3 3 Z" fill="#99583e"/></g></svg>
+        <div class="wave-status"><b id="wave-number">LEVEL 1</b><span id="enemies-left">HIVE TRUCK</span><span id="break-countdown" hidden>BREAK 0:08</span></div>
+        <div class="map-footer"><span><i id="you-key"></i> <b id="you-label">YOU</b> <span id="enemy-legend"></span></span><span id="surface">ON THE ROAD</span></div>
+      </aside>
+      <footer class="dashboard">
+        <div class="vehicle"><div class="car-icon" id="car-icon"></div><div><strong id="car-owner">The runabout</strong><span id="car-name">CAR · TERRACOTTA</span><em id="player-title" hidden></em></div></div>
+        <div class="speed"><span id="speed">00</span><div>KM/H<svg viewBox="0 0 50 5"><path d="M0 2h50" stroke="currentColor" stroke-width="2" stroke-dasharray="1 5"/></svg></div></div>
+        <div class="score-panel"><div class="score-total"><span>SCORE</span><strong id="score">0</strong></div><div class="heat-meter" id="heat-meter" data-level="low"><span>HEAT <b id="heat-value">×1.0</b></span><i><em id="heat-fill"></em></i></div></div>
+        <div class="condition" id="condition" data-level="ok"><svg class="wheel-map" viewBox="0 0 22 36" aria-hidden="true"><rect class="chassis" x="4" y="3" width="14" height="30" rx="4"/><rect id="wheel-0" x="1" y="7" width="4" height="7" rx="1.2"/><rect id="wheel-1" x="17" y="7" width="4" height="7" rx="1.2"/><rect id="wheel-2" x="1" y="22" width="4" height="7" rx="1.2"/><rect id="wheel-3" x="17" y="22" width="4" height="7" rx="1.2"/></svg><div class="condition-info"><div class="condition-top"><span>CONDITION</span><strong id="condition-label">Showroom fresh</strong></div><div class="condition-bar"><i id="condition-fill"></i></div></div></div>
+        <div class="controls"><span><kbd>W</kbd><span class="keys-row"><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><div><strong>Take a drive</strong><span>or use the arrow keys</span></div></div>
+        <div class="aux-controls"><span><kbd>K</kbd> <b id="weapon-name">Machine gun</b></span><span><kbd>L</kbd> <b id="secondary-name">NO SECONDARY</b> <em id="secondary-ammo"></em></span><span><kbd>SPACE</kbd> Handbrake</span></div>
+        <div class="camera-controls"><span>YOUR PERSPECTIVE</span><div><button id="rotate-left" aria-label="Rotate camera left">↶ <kbd>Q</kbd></button><span id="compass">NE</span><button id="rotate-right" aria-label="Rotate camera right"><kbd>E</kbd> ↷</button></div></div>
+      </footer>
+      <div class="touch-controls" aria-label="Touch driving controls"><div><button data-drive="KeyW" aria-label="Accelerate">↑</button><span><button data-drive="KeyA" aria-label="Steer left">←</button><button data-drive="KeyS" aria-label="Brake or reverse">↓</button><button data-drive="KeyD" aria-label="Steer right">→</button></span></div><span class="touch-actions"><button data-drive="KeyK" class="touch-weapon">PRIMARY</button><button data-drive="KeyL" class="touch-weapon">SECONDARY</button><button data-drive="Space" class="touch-brake">BRAKE</button></span></div>
+      <section id="upgrade-picker" class="upgrade-picker" aria-label="Choose an upgrade" hidden><div class="upgrade-heading"><span>CHOOSE ONE UPGRADE</span><b id="upgrade-countdown">0:15</b></div><div id="upgrade-cards" class="upgrade-cards"></div></section>
+      <div class="bottom-note"><span>BUILT SMALL. GO ANYWHERE.</span><button id="reset-button">↺ &nbsp; A fresh start</button><span>YOU, A RIVAL & THE ROAD <span class="tiny-sun">✳</span></span></div>
+      <dialog id="help"><button id="close-help" class="close-button" aria-label="Close guide">×</button><div class="eyebrow">WELCOME TO OLIVE GROVE</div><h2>Break the hive.<br />Survive the swarm.</h2><p>Hunt the carrier, watch its warnings, and punish the open hatch or overheated vents.</p><dl><dt>W / Up</dt><dd>Accelerate.</dd><dt>S / Down</dt><dd>Brake, then reverse.</dd><dt>A D / Left Right</dt><dd>Steer.</dd><dt>K</dt><dd>Fire your primary weapon.</dd><dt>L</dt><dd>Fire the limited-ammo secondary.</dd><dt>Space</dt><dd>Handbrake.</dd><dt>Q / E</dt><dd>Turn your view.</dd><dt>R</dt><dd>Return to the nearest road.</dd><dt>Esc</dt><dd>Pause.</dd></dl><p class="help-note">Buzzers pursue relentlessly and explode; gunners prefer range. Ram lite minions above 4 m/s, grab repair kits and missile crates, and hit the Hive Truck's open rear hatch for triple damage.</p><button id="start-driving" class="primary-button">Let's take a drive <span>↗</span></button></dialog>
+      <dialog id="setup" aria-labelledby="setup-title">
+        <form id="setup-form" method="dialog">
+          <header class="setup-head">
+            <div class="eyebrow"><span class="line"></span> BEFORE WE SET OFF</div>
+            <ol class="setup-progress" aria-label="Setup progress"><li id="setup-progress-profile" aria-current="step"><b>1</b><span>Driver</span></li><li id="setup-progress-loadout"><b>2</b><span>Loadout</span></li></ol>
+          </header>
+          <h2 id="setup-title">How do you want<br />to play?</h2>
+          <section id="setup-step-profile" class="setup-step">
+            <label class="field"><span>YOUR NAME</span><input id="player-name" name="player" maxlength="16" autocomplete="nickname" spellcheck="false" placeholder="Driver" /><small id="name-error" class="field-error" hidden></small></label>
+            <fieldset class="mode-picker"><legend>CHOOSE A RUN</legend><div id="mode-options"></div><p id="mode-blurb" class="vehicle-blurb"></p></fieldset>
+            <details id="challenge-panel" class="challenge-picker"><summary><span id="challenge-legend">TODAY'S CHALLENGES</span><span class="challenge-toggle">View rewards <b>＋</b></span></summary><div class="challenge-body"><div id="challenge-cards" class="challenge-cards"></div><p class="challenge-note">Challenges only unlock cosmetics. Everyone competes with the same machinery.</p></div></details>
+          </section>
+          <section id="setup-step-loadout" class="setup-step" hidden>
+            <div class="setup-loadout-grid">
+              <fieldset class="car-picker" id="vehicle-picker"><legend>YOUR VEHICLE</legend><div id="vehicle-options"></div><p id="vehicle-blurb" class="vehicle-blurb"></p></fieldset>
+              <fieldset class="weapon-picker" id="weapon-picker"><legend>YOUR WEAPON</legend><div id="weapon-options"></div><p id="weapon-blurb" class="vehicle-blurb"></p></fieldset>
+            </div>
+            <div id="daily-loadout" class="daily-loadout" hidden><span>TODAY'S RIDE</span><div><i id="daily-vehicle-icon"></i><div><strong id="daily-vehicle">Car</strong><span id="daily-weapon">Machine gun</span></div></div><p>Everyone drives this today. Unlimited attempts; your best counts.</p></div>
+            <div class="setup-customize"><fieldset class="paint-picker"><legend>PAINT</legend><div id="paint-options"></div></fieldset><fieldset class="paint-picker" id="balloon-picker" hidden><legend>ARRIVAL BALLOONS</legend><div id="balloon-options"></div></fieldset><fieldset class="paint-picker" id="title-picker" hidden><legend>YOUR TITLE</legend><div id="title-options"></div></fieldset></div>
+          </section>
+          <div class="setup-actions"><button id="setup-back" class="setup-back" type="button" hidden>← Back</button><button id="setup-next" class="primary-button" type="button">Choose your ride <span>→</span></button><button id="setup-start" class="primary-button" type="submit" hidden>Start the game <span>↗</span></button></div>
+        </form>
+      </dialog>
+      <div id="pause" hidden><span class="eyebrow">NO HURRY</span><h2>A little breather.</h2><button id="resume" class="primary-button">Back to the road ↗</button><button id="pause-restart" class="text-button">Start over instead</button></div>
+      <dialog id="wrecked" aria-labelledby="wrecked-title"><div class="eyebrow"><span class="line"></span> GAME OVER</div><h2 id="wrecked-title">That's the end of<br /><span id="wrecked-car">the runabout</span>.</h2><div class="final-score"><span>FINAL SCORE</span><strong id="stat-final-score">0</strong></div><dl class="run-stats"><dt>Raw score</dt><dd id="stat-raw-score">0</dd><dt>Vehicle handicap</dt><dd id="stat-handicap">×1.00</dd><dt>Wave reached</dt><dd id="stat-wave">1</dd><dt>Time</dt><dd id="stat-time">0:00</dd><dt>Wrecks</dt><dd id="stat-rivals">0</dd><dt>Best heat</dt><dd id="stat-best-heat">×1.0</dd></dl><div class="score-breakdown"><span>BREAKDOWN</span><dl><dt>Damage</dt><dd id="breakdown-damage">0</dd><dt>Wrecks</dt><dd id="breakdown-wrecks">0</dd><dt>Bonuses</dt><dd id="breakdown-bonuses">0</dd><dt>Waves</dt><dd id="breakdown-waves">0</dd><dt>Props</dt><dd id="breakdown-props">0</dd></dl></div><section id="run-challenges" class="run-challenges" hidden><span>CHALLENGES COMPLETED</span><ul id="run-challenge-list"></ul></section><section id="submission" class="submission" aria-live="polite"><div class="submission-head"><span id="submission-state">YOUR BEST</span><b id="personal-best" hidden>PERSONAL BEST</b></div><p id="submission-detail">Kept in this browser.</p></section><button id="restart-button" class="primary-button">Start over <span>↺</span></button></dialog>
+      <div id="score-callout" class="score-callout" role="status" hidden></div>
+      <div id="toast" class="toast" role="status" hidden></div>
+      <div id="error" hidden role="alert"></div>
+    </main>
+  </body>
+</html>

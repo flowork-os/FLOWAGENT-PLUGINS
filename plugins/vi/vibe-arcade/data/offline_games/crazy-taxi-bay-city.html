@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://crazy-taxi.opus5-5.demos.sulat.com/">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffc300" />
+    
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='22' width='52' height='22' rx='6' fill='%23ffc300'/%3E%3Crect x='16' y='12' width='30' height='14' rx='4' fill='%23ffc300'/%3E%3Ccircle cx='18' cy='46' r='6' fill='%23111'/%3E%3Ccircle cx='46' cy='46' r='6' fill='%23111'/%3E%3C/svg%3E" />
+    <script defer src="./assets/index-Cz-29CGY.js"></script>
+    <link rel="stylesheet" href="./assets/style-D61y7xO0.css">
+  <title data-sulat-seo>Crazy Taxi — Claude Opus 5.5 one-shot demo | Sulat</title>
+<meta name="description" content="Explore Crazy Taxi, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta name="robots" content="index, follow, max-image-preview:large" data-sulat-seo>
+<link rel="canonical" href="https://crazy-taxi.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta property="og:type" content="website" data-sulat-seo>
+<meta property="og:locale" content="en_NZ" data-sulat-seo>
+<meta property="og:site_name" content="Sulat" data-sulat-seo>
+<meta property="og:title" content="Crazy Taxi — Claude Opus 5.5" data-sulat-seo>
+<meta property="og:description" content="Explore Crazy Taxi, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta property="og:url" content="https://crazy-taxi.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta property="og:image" content="https://demos.sulat.com/anthropic/opus5-5/crazy-taxi/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:secure_url" content="https://demos.sulat.com/anthropic/opus5-5/crazy-taxi/thumbnail.jpg" data-sulat-seo>
+<meta property="og:image:type" content="image/jpeg" data-sulat-seo>
+<meta property="og:image:width" content="1200" data-sulat-seo>
+<meta property="og:image:height" content="630" data-sulat-seo>
+<meta property="og:image:alt" content="Crazy Taxi one-shot demo preview" data-sulat-seo>
+<meta name="twitter:card" content="summary_large_image" data-sulat-seo>
+<meta name="twitter:title" content="Crazy Taxi — Claude Opus 5.5" data-sulat-seo>
+<meta name="twitter:description" content="Explore Crazy Taxi, a one-shot AI demo made with Claude Opus 5.5 by Anthropic, on Sulat." data-sulat-seo>
+<meta name="twitter:url" content="https://crazy-taxi.opus5-5.demos.sulat.com/" data-sulat-seo>
+<meta name="twitter:image" content="https://demos.sulat.com/anthropic/opus5-5/crazy-taxi/thumbnail.jpg" data-sulat-seo>
+<meta name="twitter:image:alt" content="Crazy Taxi one-shot demo preview" data-sulat-seo>
+<!--
+Sulat content-use policy:
+User-initiated automated scraping, extraction, and bulk copying are not permitted.
+Search indexing and discovery crawlers may access this content.
+When citing, summarising, or reusing Sulat content, credit Sulat and link to this page's canonical URL.
+Preserve the original creator credits and source links shown on this page; do not attribute third-party work to Sulat.
+Canonical URL: https://crazy-taxi.opus5-5.demos.sulat.com/
+--></head>
+  <body>
+    <div id="game">
+      <canvas id="gl"></canvas>
+      <div id="speedlines"></div>
+      <div id="vignette"></div>
+
+      <!-- ================= HUD ================= -->
+      <div id="hud" class="hidden" aria-live="polite">
+        <div id="hud-time" class="readout">
+          <div class="lbl">TIME</div>
+          <div class="big" id="time-val">60</div>
+          <div id="time-bonus"></div>
+        </div>
+        <div id="hud-fare" class="readout">
+          <div class="lbl">FARE</div>
+          <div class="big"><span class="cur">$</span><span id="fare-val">0.00</span></div>
+          <div id="fare-add"></div>
+        </div>
+        <div id="hud-guide" class="hidden">
+          <div id="dest-name">CITY HOSPITAL</div>
+          <div id="dest-dist">0<small>m</small></div>
+        </div>
+        <div id="hud-pax" class="hidden">
+          <div class="ring"><span id="pax-val">20</span></div>
+          <div id="pax-lbl">CUSTOMER</div>
+        </div>
+        <div id="hud-find" class="hidden">FIND A CUSTOMER!</div>
+        <div id="hud-hint"></div>
+        <div id="hud-combo"></div>
+        <div id="hud-speed">
+          <div id="spd-val">0</div>
+          <div class="unit">MPH</div>
+          <div id="spd-bar"><i></i></div>
+          <div id="gear">D</div>
+        </div>
+        <div id="hud-stats"><span id="stat-cust">0</span> <b>FARES</b></div>
+        <div id="hud-buttons">
+          <button id="btn-cam" class="icon" title="Camera (C)" aria-label="Toggle camera"></button>
+          <button id="btn-mute" class="icon" title="Mute (M)" aria-label="Mute"></button>
+          <button id="btn-pause" class="icon" title="Pause (P / Esc)" aria-label="Pause">❚❚</button>
+        </div>
+        <div id="edge-marker" class="hidden"><span>$</span><i></i></div>
+        <div id="controls-hint">
+          <span><kbd>W</kbd>/<kbd>↑</kbd> GAS</span>
+          <span><kbd>S</kbd>/<kbd>↓</kbd> BRAKE · REVERSE</span>
+          <span><kbd>A</kbd>/<kbd>←</kbd> <kbd>D</kbd>/<kbd>→</kbd> STEER</span>
+          <span><kbd>SPACE</kbd> DRIFT</span>
+          <span><kbd>SHIFT</kbd> CRAZY DASH</span>
+        </div>
+      </div>
+      <div id="bubbles"></div>
+      <div id="announce"></div>
+      <div id="popups"></div>
+
+      <!-- touch controls -->
+      <div id="touch" class="hidden">
+        <div class="tgroup left">
+          <button data-k="left" aria-label="Steer left">◀</button>
+          <button data-k="right" aria-label="Steer right">▶</button>
+        </div>
+        <div class="tgroup right">
+          <button data-k="dash" class="small" aria-label="Crazy dash">DASH</button>
+          <button data-k="handbrake" class="small" aria-label="Drift">DRIFT</button>
+          <button data-k="down" class="brake" aria-label="Brake and reverse">BRAKE<br /><small>REV</small></button>
+          <button data-k="up" class="gas" aria-label="Accelerate">GAS</button>
+        </div>
+      </div>
+
+      <!-- ================= SCREENS ================= -->
+      <div id="loading" class="screen show">
+        <div class="logo small"><span class="l1">CRAZY</span><span class="l2">TAXI</span></div>
+        <div class="loadbar"><i id="loadfill"></i></div>
+        <p>Painting the city…</p>
+      </div>
+
+      <div id="title" class="screen">
+        <div class="title-wrap">
+          <div class="logo"><span class="l1">CRAZY</span><span class="l2">TAXI</span></div>
+          <div class="tagline">BAY CITY FARES</div>
+          <div class="menu" role="menu">
+            <button class="mbtn primary" data-act="play">PLAY</button>
+            <button class="mbtn" data-act="howto">HOW TO PLAY</button>
+            <button class="mbtn" data-act="records">RECORDS</button>
+          </div>
+          <div class="press">PRESS <kbd>ENTER</kbd> TO START</div>
+        </div>
+        <div class="title-foot">
+          <button class="icon mute-toggle" aria-label="Mute"></button>
+          <span>Pick up customers. Drive like crazy. Make crazy money.</span>
+        </div>
+      </div>
+
+      <div id="select" class="screen">
+        <div class="panel wide">
+          <h2>CHOOSE YOUR RULES</h2>
+          <div id="modes" class="cards modes"></div>
+          <h2>CHOOSE YOUR DRIVER</h2>
+          <div id="drivers" class="cards drivers"></div>
+          <div class="row">
+            <button class="mbtn" data-act="back">BACK</button>
+            <button class="mbtn" data-act="howto">HOW TO PLAY</button>
+            <button class="mbtn primary" data-act="start">LET'S GO!</button>
+          </div>
+          <p class="keys-note"><kbd>←</kbd><kbd>→</kbd> driver · <kbd>↑</kbd><kbd>↓</kbd> rules · <kbd>ENTER</kbd> go</p>
+        </div>
+      </div>
+
+      <div id="howto" class="screen">
+        <div class="panel wide howto">
+          <h2>HOW TO PLAY</h2>
+          <div class="how-grid">
+            <div class="how-card">
+              <div class="step">1</div>
+              <h3>PICK UP</h3>
+              <div class="ringdemo"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+              <p>Customers wave from the curb. Their circle colour shows the trip: <b class="cr">RED</b> short, <b class="cy">YELLOW</b> medium, <b class="cg">GREEN</b> long &amp; lucrative. <b>Stop inside the circle</b> to let them in.</p>
+            </div>
+            <div class="how-card">
+              <div class="step">2</div>
+              <h3>FOLLOW THE ARROW</h3>
+              <div class="arrowdemo">➤</div>
+              <p>The big <b class="cg">GREEN ARROW</b> points the way along the streets. Beat the customer's countdown or they'll bail out — fare lost!</p>
+            </div>
+            <div class="how-card">
+              <div class="step">3</div>
+              <h3>DROP OFF</h3>
+              <div class="zonedemo"></div>
+              <p><b>Stop in the green zone</b> under the light beam. Get there fast for a <b>SPEEDY</b> rating and bonus seconds on the clock.</p>
+            </div>
+            <div class="how-card">
+              <div class="step">$</div>
+              <h3>CRAZY TIPS</h3>
+              <p><b>DRIFT</b> round corners, <b>JUMP</b> off the hills and skim past traffic for a <b>CRAZY THROUGH</b> while a customer rides. Chain them for bigger tips — crashing breaks the combo.</p>
+            </div>
+          </div>
+          <div class="keys">
+            <div><kbd>W</kbd><kbd>↑</kbd> Accelerate</div>
+            <div><kbd>S</kbd><kbd>↓</kbd> Brake, then reverse</div>
+            <div><kbd>A</kbd><kbd>←</kbd> Steer left</div>
+            <div><kbd>D</kbd><kbd>→</kbd> Steer right</div>
+            <div><kbd>SPACE</kbd> Handbrake drift</div>
+            <div><kbd>SHIFT</kbd> Crazy Dash <small>(or tap S→W)</small></div>
+            <div><kbd>C</kbd> Camera</div>
+            <div><kbd>H</kbd> Horn</div>
+            <div><kbd>P</kbd>/<kbd>ESC</kbd> Pause · <kbd>M</kbd> Mute</div>
+          </div>
+          <div class="row">
+            <button class="mbtn" data-act="back">BACK</button>
+            <button class="mbtn primary" data-act="play">PLAY</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="records" class="screen">
+        <div class="panel">
+          <h2>CRAZY RECORDS</h2>
+          <table id="rec-table"></table>
+          <div class="row"><button class="mbtn primary" data-act="back">BACK</button></div>
+        </div>
+      </div>
+
+      <div id="pause" class="screen dim">
+        <div class="panel">
+          <h2 class="big-h">PAUSED</h2>
+          <div class="menu">
+            <button class="mbtn primary" data-act="resume">RESUME</button>
+            <button class="mbtn" data-act="restart">RESTART</button>
+            <button class="mbtn" data-act="howto">HOW TO PLAY</button>
+            <button class="mbtn" data-act="music">MUSIC: ON</button>
+            <button class="mbtn" data-act="quit">QUIT TO TITLE</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="results" class="screen dim">
+        <div class="panel results">
+          <h2 class="big-h" id="res-title">RESULTS</h2>
+          <div class="res-grid">
+            <div class="res-row"><span>CUSTOMERS</span><b id="res-cust">0</b></div>
+            <div class="res-row"><span>CRAZY TIPS</span><b id="res-tips">0</b></div>
+            <div class="res-row"><span>BEST COMBO</span><b id="res-combo">0</b></div>
+            <div class="res-row"><span>SPEEDY DROPS</span><b id="res-speedy">0</b></div>
+            <div class="res-row total"><span>TOTAL EARNED</span><b id="res-total">$0.00</b></div>
+          </div>
+          <div class="license">
+            <div class="lic-card">
+              <div class="lic-head">TAXI LICENSE</div>
+              <div class="lic-driver" id="res-driver">AXEL</div>
+              <div class="lic-class">CLASS</div>
+            </div>
+            <div class="stamp" id="res-rank">B</div>
+          </div>
+          <div id="res-record" class="hidden">NEW RECORD!</div>
+          <div class="row">
+            <button class="mbtn" data-act="title">TITLE</button>
+            <button class="mbtn primary" data-act="again">PLAY AGAIN</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="rotate-note" class="hidden">Tip: landscape gives you more road!</div>
+    </div>
+  <link rel="stylesheet" href="/.well-known/sulat-demo-overlay-v12.css" data-sulat-demo-overlay-asset="styles-v12">
+<details id="sulat-demo-referral-overlay" data-model="opus5-5" data-experiment="crazy-taxi" data-storage-scope="opus5-5.demos.sulat.com" data-deal-id="oneshot-websites" data-has-deal="true" data-collapsed="true">
+  <summary data-overlay-toggle aria-label="Expand demo links" aria-expanded="false" title="Expand demo links"></summary>
+  <div class="sulat-demo-overlay__actions">
+    <div class="sulat-demo-overlay__primary">
+      <details class="sulat-demo-overlay__share" data-overlay-share>
+        <summary aria-label="Share this demo" title="Share this demo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M12 15.75v-12m0 0L7.5 8.25M12 3.75l4.5 4.5M5.25 13.5v5.25h13.5V13.5"/></svg><span class="sulat-demo-overlay__share-label">Share</span></summary>
+        <nav class="sulat-demo-overlay__share-menu" aria-label="Share this demo">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fcrazy-taxi.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fcrazy-taxi.opus5-5.demos.sulat.com%2F&t=Crazy%20Taxi%20%E2%80%94%20Claude%20Opus%205.5%20demo" target="_blank" rel="noopener noreferrer">Hacker News</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcrazy-taxi.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text=Crazy%20Taxi%20%E2%80%94%20Claude%20Opus%205.5%20demo&url=https%3A%2F%2Fcrazy-taxi.opus5-5.demos.sulat.com%2F" target="_blank" rel="noopener noreferrer">Twitter</a>
+        </nav>
+      </details>
+      <a class="sulat-demo-overlay__catalogue" data-overlay-catalogue href="https://opus5-5.demos.sulat.com/" aria-label="More demos"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>More demos</a>
+      <a class="sulat-demo-overlay__next" data-overlay-next href="https://demos.sulat.com/surprise" aria-label="Open another random demo" title="Open another random demo"><svg class="sulat-demo-overlay__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 4 12 8-12 8z"/></svg>Next demo</a>
+    </div>
+    <a class="sulat-demo-overlay__deal" data-overlay-deal href="https://github.com/jpcaparas/skills#oneshot-websites" target="_blank" rel="sponsored noopener noreferrer" aria-label="Create your own one-shots (opens in a new tab)">Create your own one-shots</a>
+  </div>
+</details>
+<script src="/.well-known/sulat-demo-overlay-v12.js" defer data-sulat-demo-overlay-asset="script-v12"></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ecb2b94d4b63450a9e0af42e304662ed","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a52784405eb7cece',t:'MTc5MzMzMjg2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a52784405eb7cece',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

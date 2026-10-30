@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://low-tide.netlify.app/">
+    <meta charset="UTF-8" />
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=a420d93d-2c13-4358-9e06-e71e39776f8a
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Low Tide" />
+    <meta name="theme-color" content="#8b8378" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/ui/icon-180.png" />
+    <title>Low Tide · an impasto painting you can play</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: linear-gradient(168deg, #f4eee2, #e6ddcc);
+        --ink: #2e2620;
+        --ink-soft: #57493a;
+        --ink-faint: rgba(87, 73, 58, 0.55);
+        --rule: rgba(87, 73, 58, 0.22);
+        --red: #c4564e;
+        --gold: #a4763a;
+        --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+        --sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+        background: #8b8378;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: none;
+      }
+      #app {
+        position: fixed;
+        inset: 0;
+      }
+      #app canvas {
+        display: block;
+      }
+      .vignette {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(ellipse at 50% 44%, transparent 56%, rgba(28, 22, 16, 0.26) 100%);
+        transition: opacity 0.6s;
+      }
+      /* red pulse at the edges when you're on your last heart / get hit */
+      .danger {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(170, 40, 34, 0.42) 100%);
+        transition: opacity 0.25s;
+      }
+      .hint {
+        position: fixed;
+        left: 16px;
+        bottom: 13px;
+        color: rgba(255, 250, 240, 0.55);
+        font: 11px/1.5 var(--sans);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        pointer-events: none;
+        user-select: none;
+        transition: opacity 0.6s;
+      }
+
+      /* ---- in-painting HUD: two painted strokes along the top edge ------ */
+      /* --pl/--pt/--pw/--ph: the painting's on-screen rect, set from JS */
+      #hud {
+        position: fixed;
+        left: var(--pl, 0px);
+        top: var(--pt, 0px);
+        width: var(--pw, 100vw);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 12px;
+        box-sizing: border-box;
+        pointer-events: none;
+        user-select: none;
+        z-index: 3;
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: opacity 0.5s, transform 0.5s cubic-bezier(0.2, 1.3, 0.4, 1);
+      }
+      #hud.show {
+        opacity: 1;
+        transform: none;
+      }
+      /* each pill is one thick stroke of blue paint; the stroke's ends are
+         kept whole and only its middle stretches with the content */
+      .pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        padding: 0 2px;
+        border: solid transparent;
+        border-width: 0 16px;
+        border-image: url('/ui/hud-stroke.webp') 0 54 fill / 0 16px stretch;
+        filter: drop-shadow(0 4px 5px rgba(24, 16, 8, 0.38));
+        color: #f7f0e0;
+        font: 11px/1 var(--sans);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+        transition: filter 0.3s;
+      }
+      .pill .sep {
+        width: 2px;
+        height: 16px;
+        border-radius: 1px;
+        background: rgba(226, 186, 104, 0.55);
+      }
+      #hud-lives {
+        color: #ff7b72;
+        font-size: 15px;
+        letter-spacing: 0.12em;
+      }
+      #hud-score {
+        font: 600 22px/1 var(--serif);
+        letter-spacing: 0.01em;
+        text-transform: none;
+        font-variant-numeric: tabular-nums;
+        min-width: 1.4em;
+      }
+      #hud-best {
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        opacity: 0.62;
+      }
+      #hud-best:empty { display: none; }
+      .pail {
+        width: 16px;
+        height: 16px;
+        flex: none;
+        opacity: 0.9;
+      }
+      #hud-bucket {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #hud-bucket-dots {
+        display: flex;
+        gap: 3px;
+      }
+      #hud-bucket-dots:empty { display: none; }
+      #hud-bucket-dots i {
+        display: block;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.35);
+        animation: dot-in 0.3s cubic-bezier(0.2, 1.8, 0.4, 1);
+      }
+      #hud-bucket-dots i.shell { background: #f5c9b4; }
+      #hud-bucket-dots i.star { background: #f0823e; }
+      #hud-bucket-dots i.bottle { background: #6cba96; }
+      #hud-bucket-dots i.duck { background: #f6d24a; }
+      #hud-bucket-dots i.pearl { background: radial-gradient(circle at 35% 35%, #fff, #ecc6cc); box-shadow: 0 0 6px rgba(255, 225, 235, 0.95); }
+      @keyframes dot-in {
+        from { transform: scale(0); }
+        to { transform: scale(1); }
+      }
+      #hud-bucket-count {
+        font: 600 15px/1 var(--serif);
+        letter-spacing: 0.01em;
+        text-transform: none;
+        font-variant-numeric: tabular-nums;
+      }
+      #hud-bucket-count.empty {
+        font: 10px/1 var(--sans);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        opacity: 0.6;
+      }
+      #hud-mult {
+        font: italic 600 16px/1 var(--serif);
+        letter-spacing: 0.01em;
+        text-transform: none;
+        color: #ffd56a;
+      }
+      #hud-mult:empty { display: none; }
+      .pill.hot {
+        filter: drop-shadow(0 0 2px rgba(255, 222, 130, 0.95)) drop-shadow(0 0 9px rgba(255, 186, 70, 0.85)) drop-shadow(0 4px 5px rgba(24, 16, 8, 0.38));
+      }
+      .tide {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .tide .bar {
+        width: 54px;
+        height: 5px;
+        border-radius: 3px;
+        background: rgba(6, 14, 34, 0.55);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(226, 186, 104, 0.35);
+        overflow: hidden;
+      }
+      .tide .fill {
+        display: block;
+        height: 100%;
+        width: 0%;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #9fe3e6, #3aa0d8);
+        transition: width 0.4s;
+      }
+      .tide.rogue .fill {
+        background: linear-gradient(90deg, #ffffff, #4fb6f0);
+        animation: tide-throb 0.6s ease-in-out infinite alternate;
+      }
+      @keyframes tide-throb {
+        from { filter: brightness(1); }
+        to { filter: brightness(1.45); }
+      }
+      #hud.compact { padding: 8px; }
+      #hud.compact .pill { height: 30px; padding: 0; gap: 7px; border-width: 0 13px; border-image-width: 0 13px; }
+      #hud.compact #hud-score { font-size: 18px; }
+      #hud.compact #hud-best, #hud.compact .tide { display: none; }
+      /* HUD juice */
+      #hud-score.pop-big { animation: hud-pop-big 0.6s cubic-bezier(0.2, 1.6, 0.4, 1); }
+      #hud-mult.pop, #hud-bucket-count.pop { animation: hud-pop 0.3s ease-out; }
+      #hud-lives.shake { animation: hud-shake 0.5s ease-out; }
+      #hud-lives.gain { animation: hud-pop-big 0.6s cubic-bezier(0.2, 1.6, 0.4, 1); }
+      #hud-bucket.spill { animation: hud-shake 0.5s ease-out; }
+      @keyframes hud-pop {
+        0% { transform: scale(1); }
+        35% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+      }
+      @keyframes hud-pop-big {
+        0% { transform: scale(1); }
+        30% { transform: scale(1.5); color: #ffd56a; }
+        100% { transform: scale(1); }
+      }
+      @keyframes hud-shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(5px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(2px); }
+      }
+      #hud-score, #hud-lives, #hud-mult, #hud-bucket-count {
+        display: inline-block;
+        transform-origin: center;
+      }
+
+      /* ---- sound toggle, top-right corner of the painting --------------- */
+      #hud { padding-right: 108px; }
+      #hud.compact { padding-right: 84px; }
+      .corner {
+        position: fixed;
+        top: calc(var(--pt, 0px) + 12px);
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: #1d3a66 url('/ui/medallion.jpg') center/cover;
+        box-shadow: 0 5px 12px rgba(24, 16, 8, 0.42);
+        cursor: pointer;
+        z-index: 6;
+        transition: transform 0.15s, filter 0.2s;
+      }
+      .corner:hover { filter: brightness(1.12); }
+      .corner:active { transform: scale(0.92); }
+      .corner:focus-visible { outline: 2px solid #ffd56a; outline-offset: 2px; }
+      /* painted glyphs, one sprite: i, sound, muted, camera, pause, play */
+      .corner .ico {
+        width: 58%;
+        height: 58%;
+        background: url('/ui/icons.webp') 0 0 / 600% 100% no-repeat;
+        filter: drop-shadow(0 1px 1px rgba(10, 16, 30, 0.55));
+        transition: opacity 0.2s;
+      }
+      #sound .ico { background-position-x: 20%; }
+      #sound.muted .ico { background-position-x: 40%; opacity: 0.75; }
+      #snap-btn .ico { background-position-x: 60%; }
+      #pause-btn .ico { width: 46%; height: 46%; background-position-x: 80%; }
+      body.paused #pause-btn .ico { background-position-x: 100%; }
+      #hud.compact ~ #corner .corner { width: 30px; height: 30px; top: calc(var(--pt, 0px) + 8px); }
+      #hud.compact ~ #corner #sound { left: calc(var(--pl, 0px) + var(--pw, 100vw) - 8px - 30px); }
+      #hud.compact ~ #corner #howto-btn { left: calc(var(--pl, 0px) + var(--pw, 100vw) - 8px - 66px); }
+      /* on a desktop the buttons and messages keep their own places in the painting */
+      #corner, #toasts { display: contents; }
+      #snap-btn, #pause-btn { display: none; }
+      #sound { left: calc(var(--pl, 0px) + var(--pw, 100vw) - 12px - 36px); }
+      #howto-btn { left: calc(var(--pl, 0px) + var(--pw, 100vw) - 12px - 80px); }
+
+      /* ---- how to play --------------------------------------------------- */
+      #howto {
+        position: fixed;
+        inset: 0;
+        z-index: 8;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        box-sizing: border-box;
+        background: rgba(20, 16, 12, 0.45);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+      }
+      #howto.show {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s ease, visibility 0s;
+      }
+      #howto .sheet {
+        width: min(460px, 100%);
+        max-height: min(640px, calc(100vh - 48px));
+        min-height: 0;
+        overflow: auto;
+        padding: 26px 30px 22px;
+        box-sizing: border-box;
+        background: var(--paper);
+        border-radius: 3px;
+        box-shadow: 0 30px 60px rgba(30, 24, 16, 0.45), inset 0 0 0 1px rgba(255, 255, 250, 0.55);
+        color: var(--ink-soft);
+        font: 14px/1.5 var(--sans);
+        touch-action: pan-y;
+        overscroll-behavior: contain;
+      }
+      #howto .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+      #howto h2 { margin: 0; font: italic 600 32px/1 var(--serif); color: var(--ink); }
+      #howto .x {
+        border: 0;
+        background: transparent;
+        color: var(--ink-soft);
+        font: 22px/1 var(--serif);
+        cursor: pointer;
+        padding: 0 2px;
+      }
+      #howto .x:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+      #howto ol { margin: 14px 0 0; padding-left: 1.2em; }
+      #howto li { margin: 4px 0; }
+      #howto li b, #howto p b { color: var(--ink); }
+      #howto h3 {
+        margin: 16px 0 4px;
+        font: 10px/1.4 var(--sans);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+      }
+      #howto p { margin: 0; }
+      #howto .finds { margin: 6px 0 0; padding: 0; list-style: none; }
+      #howto .finds li { display: flex; justify-content: space-between; gap: 16px; padding: 3px 0; border-bottom: 1px solid var(--rule); }
+      #howto .finds b { font-variant-numeric: tabular-nums; }
+      /* the keyboard (.k) or the touch (.t) wording of the same line */
+      #howto .t { display: none; }
+
+      /* ---- the thief gull: a tag while it swoops in, a ring to step into ---- */
+      #thief, #thief-target {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        display: none;
+      }
+      #thief.show, #thief-target.show { display: block; }
+      #thief-target {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 2px dashed rgba(255, 120, 96, 0.9);
+        animation: thief-spin 3s linear infinite;
+      }
+      #thief .ring {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: var(--r, 120px);
+        height: var(--r, 120px);
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.25s;
+        /* the filled arc is how far the gull is through stealing the loot */
+        background:
+          conic-gradient(rgba(255, 96, 72, 0.95) calc(var(--p, 0) * 1turn), rgba(255, 255, 255, 0.35) 0);
+        -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+        mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+      }
+      #thief.near .ring { opacity: 1; animation: thief-pulse 0.7s ease-in-out infinite alternate; }
+      #thief .tag {
+        position: absolute;
+        left: 50%;
+        bottom: 34px;
+        transform: translateX(-50%);
+        padding: 4px 10px 5px;
+        border-radius: 999px;
+        background: #ff5f48;
+        color: #fff;
+        font: 700 11px/1 var(--sans);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        box-shadow: 0 3px 10px rgba(60, 10, 0, 0.35);
+        animation: thief-bob 0.5s ease-in-out infinite alternate;
+      }
+      #thief .tag::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -5px;
+        margin-left: -5px;
+        border: 5px solid transparent;
+        border-bottom: 0;
+        border-top-color: #ff5f48;
+      }
+      @keyframes thief-spin { to { transform: translate(-50%, -50%) rotate(1turn); } }
+      @keyframes thief-pulse { from { filter: brightness(1); } to { filter: brightness(1.35) drop-shadow(0 0 6px rgba(255, 96, 72, 0.8)); } }
+      @keyframes thief-bob { from { transform: translate(-50%, 0); } to { transform: translate(-50%, -4px); } }
+
+      /* ---- big waves warning banner ------------------------------------ */
+      #banner {
+        position: fixed;
+        top: calc(var(--pt, 0px) + 62px);
+        left: calc(var(--pl, 0px) + var(--pw, 100vw) / 2);
+        transform: translate(-50%, calc(-100% - 40px));
+        opacity: 0;
+        padding: 10px 22px 9px;
+        background: rgba(24, 52, 78, 0.82);
+        backdrop-filter: blur(4px);
+        color: #eef6f8;
+        border-radius: 999px;
+        font: italic 600 16px/1.2 var(--serif);
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        box-shadow: 0 8px 22px rgba(10, 20, 30, 0.35);
+        pointer-events: none;
+        user-select: none;
+        transition: transform 0.45s cubic-bezier(0.2, 1.4, 0.4, 1), opacity 0.3s;
+        z-index: 4;
+      }
+      #banner small {
+        font: 10px/1 var(--sans);
+        font-style: normal;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        opacity: 0.75;
+        margin-left: 10px;
+      }
+      #banner.show {
+        transform: translate(-50%, 0);
+        opacity: 1;
+        animation: banner-throb 0.9s ease-in-out infinite alternate;
+      }
+      @keyframes banner-throb {
+        from { box-shadow: 0 8px 22px rgba(10, 20, 30, 0.35); }
+        to { box-shadow: 0 8px 30px rgba(120, 190, 230, 0.55); }
+      }
+
+      /* ---- first-run tips ------------------------------------------------ */
+      #tip {
+        position: fixed;
+        top: calc(var(--pt, 0px) + var(--ph, 100vh) - 20px);
+        left: calc(var(--pl, 0px) + var(--pw, 100vw) / 2);
+        transform: translate(-50%, calc(-100% + 30px));
+        opacity: 0;
+        max-width: min(520px, calc(var(--pw, 100vw) - 32px));
+        padding: 10px 20px;
+        box-sizing: border-box;
+        background: var(--paper);
+        color: var(--ink);
+        border-radius: 3px;
+        box-shadow: 0 10px 24px rgba(30, 24, 16, 0.35);
+        font: italic 400 16px/1.35 var(--serif);
+        text-align: center;
+        pointer-events: none;
+        user-select: none;
+        transition: opacity 0.4s, transform 0.5s cubic-bezier(0.2, 1.3, 0.4, 1);
+        z-index: 4;
+      }
+      #tip.show {
+        opacity: 1;
+        transform: translate(-50%, -100%);
+      }
+
+      /* ---- the coast: a gallery label per painting, the way home -------- */
+      #placard {
+        position: fixed;
+        left: calc(var(--pl, 0px) + 18px);
+        top: calc(var(--pt, 0px) + var(--ph, 100vh) - 18px);
+        transform: translate(-12px, -100%);
+        opacity: 0;
+        max-width: min(300px, calc(var(--pw, 100vw) - 36px));
+        padding: 12px 16px 11px;
+        box-sizing: border-box;
+        background: var(--paper);
+        color: var(--ink-soft);
+        border-radius: 2px;
+        box-shadow: 0 10px 22px rgba(30, 24, 16, 0.35), inset 0 0 0 1px rgba(255, 255, 250, 0.55);
+        font: 11px/1.45 var(--sans);
+        pointer-events: none;
+        user-select: none;
+        transition: opacity 0.5s, transform 0.6s cubic-bezier(0.2, 1.1, 0.4, 1);
+        z-index: 4;
+      }
+      #placard.show { opacity: 1; transform: translate(0, -100%); }
+      #placard .kicker {
+        font: 9px/1.4 var(--sans);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: #b0679a;
+        margin-bottom: 2px;
+      }
+      #placard b { display: block; font: italic 600 22px/1.1 var(--serif); color: var(--ink); }
+      #placard i { display: block; margin: 2px 0 6px; font: italic 400 12px/1.2 var(--serif); color: var(--ink-faint); }
+      #placard span { display: block; padding-top: 6px; border-top: 1px solid var(--rule); }
+      #camp-mark {
+        position: fixed;
+        transform: translate(-50%, -100%);
+        display: none;
+        padding: 4px 11px 5px;
+        border-radius: 999px;
+        background: rgba(42, 34, 26, 0.62);
+        color: #fffaf0;
+        font: italic 600 14px/1 var(--serif);
+        white-space: nowrap;
+        pointer-events: none;
+        user-select: none;
+        z-index: 3;
+      }
+      #camp-mark[data-dir='up'] { transform: translate(-50%, 0); }
+      #camp-mark.show { display: block; }
+      #camp-mark b { color: #ffd76a; font-weight: 600; }
+      #camp-mark i { font-style: normal; display: inline-block; animation: camp-nudge 0.9s ease-in-out infinite alternate; }
+      #camp-mark[data-dir='up'] i { animation-name: camp-nudge-up; }
+      #camp-mark.loaded { background: rgba(120, 78, 20, 0.78); box-shadow: 0 0 14px rgba(255, 200, 90, 0.45); }
+      @keyframes camp-nudge { to { transform: translateY(3px); } }
+      @keyframes camp-nudge-up { to { transform: translateY(-3px); } }
+
+      /* ---- floating text pinned to the paint --------------------------- */
+      #floaters {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        user-select: none;
+        overflow: hidden;
+        z-index: 2;
+      }
+      .float {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        font: 600 20px/1 var(--serif);
+        color: #fffaf0;
+        white-space: nowrap;
+        text-shadow:
+          0 0 2px rgba(40, 26, 14, 0.95),
+          0 0 1px rgba(40, 26, 14, 0.95),
+          0 2px 0 rgba(40, 26, 14, 0.6),
+          0 4px 14px rgba(20, 12, 6, 0.55);
+        animation: float-up 1.1s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+      }
+      .float small {
+        display: block;
+        text-align: center;
+        font: 10px/1.4 var(--sans);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        opacity: 0.9;
+      }
+      .float.pearl { color: #ffe6ee; font-size: 26px; }
+      .float.bank { color: #ffd76a; font-size: 40px; animation-duration: 1.6s; }
+      .float.bad { color: #ffd2c8; font-size: 22px; }
+      .float.heart { color: #ff9a92; font-size: 26px; }
+      .float.info { font: italic 600 19px/1 var(--serif); }
+      @keyframes float-up {
+        0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
+        14% { opacity: 1; transform: translate(-50%, -80%) scale(1.12); }
+        30% { transform: translate(-50%, -95%) scale(1); }
+        75% { opacity: 1; }
+        100% { opacity: 0; transform: translate(-50%, -190%) scale(0.96); }
+      }
+      /* ---- cards: title, results, pause -------------------------------- */
+      #card {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: min(440px, calc(100vw - 40px));
+        transform: translate(-50%, -46%) scale(0.96);
+        opacity: 0;
+        padding: 28px 34px 24px;
+        box-sizing: border-box;
+        background: var(--paper);
+        border-radius: 3px;
+        box-shadow:
+          0 30px 60px rgba(30, 24, 16, 0.45),
+          0 4px 10px rgba(30, 24, 16, 0.3),
+          inset 0 0 0 1px rgba(255, 255, 250, 0.55);
+        color: var(--ink-soft);
+        font: 13px/1.55 var(--sans);
+        text-align: center;
+        pointer-events: none;
+        user-select: none;
+        transition: opacity 0.5s, transform 0.6s cubic-bezier(0.2, 1.2, 0.4, 1);
+        z-index: 5;
+      }
+      #card.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        pointer-events: auto;
+      }
+      #card .kicker {
+        font: 10px/1.4 var(--sans);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+      }
+      #card h1 {
+        margin: 4px 0 10px;
+        font: italic 600 56px/1 var(--serif);
+        letter-spacing: 0.01em;
+        color: var(--ink);
+      }
+      #card h1.num {
+        font-style: normal;
+        font-size: 64px;
+        font-variant-numeric: tabular-nums;
+      }
+      #card .lede {
+        margin: 0 auto 16px;
+        max-width: 340px;
+        color: var(--ink-soft);
+      }
+      #card .lede b { color: var(--ink); font-weight: 600; }
+      #card .keys {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        padding: 12px 0;
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      kbd {
+        display: inline-block;
+        min-width: 16px;
+        padding: 2px 6px;
+        margin-right: 4px;
+        border-radius: 3px;
+        background: #fffdf8;
+        box-shadow: 0 1px 0 rgba(87, 73, 58, 0.35), inset 0 0 0 1px rgba(87, 73, 58, 0.2);
+        font: 600 10px/1.5 var(--sans);
+        color: var(--ink);
+        letter-spacing: 0.06em;
+      }
+      #card .cta {
+        margin-top: 16px;
+        font: italic 600 18px/1.3 var(--serif);
+        color: var(--ink);
+        animation: cta-breathe 1.6s ease-in-out infinite;
+      }
+      @keyframes cta-breathe {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.45; }
+      }
+      #card .sub {
+        margin-top: 6px;
+        font-size: 10px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+      }
+      #card .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px 8px;
+        padding: 14px 0;
+        margin: 6px 0 2px;
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+      }
+      #card .stats div {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      #card .stats b {
+        font: 600 22px/1.1 var(--serif);
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      #card .stats span {
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+      }
+      #card .stats .wide {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        justify-content: center;
+        align-items: baseline;
+        gap: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--rule);
+      }
+      #card .stats .wide b { font: italic 600 16px/1.2 var(--serif); }
+      #card .sub.nudge { margin-top: 10px; font: italic 400 14px/1.3 var(--serif); letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
+      #card .ribbon {
+        display: inline-block;
+        margin-bottom: 4px;
+        padding: 3px 12px;
+        border-radius: 999px;
+        background: #b0679a;
+        color: #fff;
+        font: 600 10px/1.6 var(--sans);
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        animation: ribbon-in 0.7s 0.5s cubic-bezier(0.2, 1.8, 0.4, 1) both;
+      }
+      @keyframes ribbon-in {
+        from { transform: scale(0) rotate(-8deg); }
+        to { transform: scale(1) rotate(-2deg); }
+      }
+
+      /* ---- phones and tablets ---------------------------------------------
+         Everything you read sits along the top; the bottom belongs to the
+         thumbs. The left half of the screen is the joystick (it appears under
+         the thumb), the lower right is the dash. */
+      #joy-zone, #joy, #dash, #snap { display: none; }
+      body.touch.playing #joy-zone, body.touch.playing #joy, body.touch.playing #dash { display: block; }
+      body.touch .hint { display: none; }
+      body.touch #snap-btn { display: grid; }
+      body.touch.run #pause-btn { display: grid; }
+      body.touch #howto .k { display: none; }
+      body.touch #howto .t { display: inline; }
+      body.touch #howto p.t { display: block; }
+
+      /* the top bar: stats on the left, buttons on the right, clear of the notch */
+      body.touch #hud,
+      body.touch #hud.compact {
+        left: 0;
+        top: 0;
+        width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: max(8px, env(safe-area-inset-top)) calc(max(10px, env(safe-area-inset-right)) + 176px) 0 max(10px, env(safe-area-inset-left));
+      }
+      body.touch .pill,
+      body.touch #hud.compact .pill {
+        height: 34px;
+        padding: 0;
+        gap: 8px;
+        border-width: 0 15px;
+        border-image-width: 0 15px;
+      }
+      body.touch #hud-score { font-size: 20px; }
+      body.touch .tide .bar { width: 44px; }
+      body.touch #corner {
+        display: flex;
+        gap: 8px;
+        position: fixed;
+        top: max(8px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        z-index: 6;
+      }
+      body.touch .corner,
+      body.touch #hud.compact ~ #corner .corner {
+        position: static;
+        width: 34px;
+        height: 34px;
+      }
+      /* messages stack at the top centre instead of over the thumbs */
+      body.touch #toasts {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        position: fixed;
+        left: 50%;
+        top: calc(max(8px, env(safe-area-inset-top)) + 44px);
+        width: min(440px, 58vw);
+        transform: translateX(-50%);
+        pointer-events: none;
+        z-index: 4;
+      }
+      body.touch #toasts > * {
+        display: none;
+        position: static;
+        left: auto;
+        top: auto;
+        max-width: 100%;
+        transform: none;
+        opacity: 1;
+        transition: none;
+      }
+      body.touch #toasts > .show {
+        display: block;
+        animation: toast-in 0.35s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+      }
+      body.touch #toasts > #banner.show {
+        animation: toast-in 0.35s cubic-bezier(0.2, 1.3, 0.4, 1) both, banner-throb 0.9s ease-in-out infinite alternate;
+      }
+      @keyframes toast-in {
+        from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+        to { opacity: 1; transform: none; }
+      }
+      body.touch #banner {
+        padding: 8px 18px 7px;
+        font-size: 15px;
+        background: rgba(24, 52, 78, 0.92);
+        backdrop-filter: none;
+      }
+      body.touch #tip { padding: 8px 14px; font-size: 14px; }
+      body.touch #placard { padding: 8px 14px 7px; text-align: center; }
+      body.touch #placard b { font-size: 18px; }
+      body.touch #placard i { margin-bottom: 4px; }
+      body.touch #placard span { padding-top: 4px; }
+
+      /* the joystick: a faint well at rest, it jumps under the thumb */
+      #joy-zone {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 50%;
+        top: calc(max(8px, env(safe-area-inset-top)) + 46px);
+        z-index: 5;
+        touch-action: none;
+      }
+      #joy {
+        position: fixed;
+        left: calc(max(18px, env(safe-area-inset-left)) + 6px);
+        bottom: max(18px, env(safe-area-inset-bottom));
+        width: 112px;
+        height: 112px;
+        border-radius: 50%;
+        background: url('/ui/joy-well.jpg') center/cover;
+        box-shadow: 0 10px 24px rgba(40, 28, 16, 0.3);
+        opacity: 0.4;
+        pointer-events: none;
+        z-index: 5;
+        transition: opacity 0.25s, transform 0.2s cubic-bezier(0.2, 1, 0.4, 1);
+      }
+      #joy.learned { opacity: 0.2; }
+      #joy.on { opacity: 0.88; transition: opacity 0.06s; }
+      #joy i {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 50px;
+        height: 50px;
+        margin: -25px 0 0 -25px;
+        border-radius: 50%;
+        background: url('/ui/joy-knob.jpg') center/cover;
+        box-shadow: 0 6px 14px rgba(40, 28, 16, 0.38);
+        transition: transform 0.15s ease-out;
+      }
+      #joy.on i { transition: none; }
+
+      /* the dash: the whole lower right takes the tap, the button shows the charge */
+      #dash {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        width: 40%;
+        height: 60%;
+        padding: 0;
+        border: 0;
+        background: none;
+        z-index: 5;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      /* held clear of the "Powered by Netlify" badge the host pins 18px up in this corner */
+      #dash i {
+        position: absolute;
+        right: max(22px, env(safe-area-inset-right));
+        bottom: calc(max(20px, env(safe-area-inset-bottom)) + 56px);
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: url('/ui/dash-btn.jpg') center/cover;
+        box-shadow: 0 8px 20px rgba(16, 28, 40, 0.35);
+        opacity: 0.92;
+        transition: transform 0.12s, filter 0.2s;
+      }
+      #dash i::after {
+        content: '';
+        position: absolute;
+        inset: -5px;
+        border-radius: 50%;
+        background: conic-gradient(rgba(255, 250, 236, 0.9) calc(var(--cd, 1) * 1turn), rgba(255, 250, 236, 0.14) 0);
+        -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+        mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+      }
+      #dash.cool i { filter: saturate(0.55) brightness(0.82); }
+      #dash.hit i { animation: dash-hit 0.22s ease-out; }
+      @keyframes dash-hit {
+        0% { transform: scale(1); }
+        40% { transform: scale(0.86); }
+        100% { transform: scale(1); }
+      }
+
+      /* cards: shorter for a landscape phone, with real buttons instead of keys */
+      body.touch #card {
+        width: min(420px, calc(100vw - 32px));
+        max-height: calc(100% - 24px);
+        overflow: auto;
+        padding: 16px 24px 16px;
+      }
+      body.touch #card h1 { margin: 2px 0 6px; font-size: 40px; }
+      body.touch #card h1.num { font-size: 48px; }
+      body.touch #card .lede { margin-bottom: 10px; font-size: 12.5px; line-height: 1.45; }
+      body.touch #card .keys { padding: 8px 0; }
+      body.touch #card .stats { gap: 8px; padding: 8px 0; }
+      body.touch #card .stats b { font-size: 19px; }
+      body.touch #card .stats .wide { padding-top: 6px; }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .actions button {
+        min-height: 40px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(87, 73, 58, 0.1);
+        box-shadow: inset 0 0 0 1px var(--rule);
+        color: var(--ink);
+        font: 600 12px/1 var(--sans);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .actions button.primary {
+        padding: 0 8px;
+        border: solid transparent;
+        border-width: 0 18px;
+        border-radius: 0;
+        border-image: url('/ui/hud-stroke.webp') 0 54 fill / 0 18px stretch;
+        background: none;
+        box-shadow: none;
+        filter: drop-shadow(0 3px 4px rgba(30, 24, 16, 0.3));
+        color: #f7f0e0;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        font: italic 600 17px/1 var(--serif);
+        letter-spacing: 0.02em;
+        text-transform: none;
+      }
+      .actions button.ghost { background: transparent; }
+      .actions button:active { transform: scale(0.96); }
+      .actions button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+      /* the postcard: shown before it's saved, since a phone has no C key */
+      #snap {
+        position: fixed;
+        inset: 0;
+        z-index: 9;
+        place-items: center;
+        padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+        box-sizing: border-box;
+        background: rgba(20, 16, 12, 0.55);
+      }
+      #snap.show { display: grid; animation: toast-in 0.3s ease-out both; }
+      #snap .sheet {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        max-width: 100%;
+        max-height: 100%;
+        padding: 12px;
+        box-sizing: border-box;
+        background: var(--paper);
+        border-radius: 4px;
+        box-shadow: 0 30px 60px rgba(30, 24, 16, 0.45);
+      }
+      #snap .frame {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: grid;
+        place-items: center;
+      }
+      #snap img {
+        display: block;
+        max-width: 100%;
+        max-height: calc(100dvh - 120px);
+        border-radius: 2px;
+        background: #8b8378;
+        box-shadow: 0 6px 16px rgba(30, 24, 16, 0.3);
+        -webkit-touch-callout: default;
+      }
+      #snap img:not([src]) { width: min(640px, 70vw); aspect-ratio: 16 / 9; }
+      #snap .actions { margin-top: 0; }
+      #snap .actions [hidden] { display: none; }
+
+      /* portrait phones: the beach is a wide painting, so ask them to turn */
+      #turn {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 35;
+        place-items: center;
+        align-content: center;
+        gap: 8px;
+        background: #e7dccb url('/ui/chip-btn.jpg') center/cover;
+        color: #2c241c;
+        text-align: center;
+        padding: 32px;
+      }
+      #turn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(244, 238, 226, 0.82);
+      }
+      #turn > * { position: relative; }
+      body.turn #turn { display: grid; }
+      #turn .phone {
+        width: 46px;
+        height: 76px;
+        margin: 0 auto 10px;
+        border: 3px solid #2c241c;
+        border-radius: 10px;
+        position: relative;
+        animation: turn-phone 2.2s ease-in-out infinite;
+      }
+      #turn .phone::after {
+        content: '';
+        position: absolute;
+        left: 16px;
+        bottom: 6px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2c241c;
+      }
+      @keyframes turn-phone {
+        0%, 35% { transform: rotate(0deg); }
+        65%, 100% { transform: rotate(-90deg); }
+      }
+      #turn p {
+        margin: 0;
+        font: italic 28px/1.2 var(--serif);
+      }
+      #turn span {
+        font: 500 13px/1.4 var(--sans);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #5c5146;
+      }
+
+      /* iPhone Safari has no page fullscreen. Home Screen is the chromeless path. */
+      #install {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 36;
+        place-items: center;
+        padding: 24px;
+        background: rgba(28, 22, 16, 0.45);
+      }
+      body.ios-browser #install { display: grid; }
+      #install .sheet {
+        width: min(420px, 100%);
+        background: #f7f1e6;
+        color: #2c241c;
+        border-radius: 18px;
+        padding: 28px 26px 22px;
+        text-align: center;
+        box-shadow: 0 18px 50px rgba(20, 14, 8, 0.35);
+      }
+      #install h2 { margin: 0 0 8px; font: italic 32px/1.1 var(--serif); }
+      #install p { margin: 0 0 14px; font: 16px/1.45 var(--sans); color: #57493a; }
+      #install ol { margin: 0 0 18px; padding: 0; list-style: none; font: 15px/1.5 var(--sans); }
+      #install li { margin: 6px 0; }
+      #install b { font-weight: 650; }
+      #install button {
+        border: 0;
+        border-radius: 999px;
+        background: #2c241c;
+        color: #f7f1e6;
+        font: 600 14px/1 var(--sans);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 14px 18px;
+      }
+
+      /* ---- loading: in the HTML so it shows before the scripts run ------- */
+      #loading {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 0;
+        background: var(--paper);
+        color: var(--ink);
+        text-align: center;
+        transition: opacity 0.5s ease, visibility 0s;
+      }
+      #loading.done {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+      }
+      #loading .kicker {
+        font: 10px/1.4 var(--sans);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+      }
+      #loading h1 {
+        margin: 6px 0 22px;
+        font: italic 600 56px/1 var(--serif);
+      }
+      #loading .track {
+        width: 168px;
+        height: 7px;
+        border-radius: 4px;
+        background: rgba(87, 73, 58, 0.16);
+        overflow: hidden;
+      }
+      #loading .smear {
+        width: 46%;
+        height: 100%;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #9fd4e4, #3a8ec4 55%, #e7c36a);
+        animation: loading-smear 1.1s ease-in-out infinite;
+      }
+      #loading p {
+        margin: 14px 0 0;
+        font: italic 15px/1 var(--serif);
+        color: var(--ink-soft);
+      }
+      @keyframes loading-smear {
+        0% { transform: translateX(-110%); }
+        100% { transform: translateX(230%); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #loading .smear { animation: none; width: 100%; }
+      }
+
+      @media (max-width: 900px) {
+        .hint { display: none; }
+        #card h1 { font-size: 44px; }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-D1DiWjDC.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="loading" role="status" aria-live="polite">
+      <div class="kicker">an impasto painting you can play</div>
+      <h1>Low Tide</h1>
+      <div class="track" aria-hidden="true"><div class="smear"></div></div>
+      <p>painting the beach</p>
+    </div>
+    <div class="vignette"></div>
+    <div class="danger" id="danger"></div>
+    <div id="floaters">
+      <div id="thief-target"></div>
+      <div id="thief"><div class="ring"></div><span class="tag"></span></div>
+    </div>
+    <div id="hud">
+      <div class="pill">
+        <span id="hud-lives">&#10084;&#10084;&#10084;</span>
+        <span class="sep"></span>
+        <span id="hud-score">0</span>
+        <span id="hud-best"></span>
+      </div>
+      <div class="pill" id="hud-right">
+        <span id="hud-bucket">
+          <svg class="pail" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5.5h10l-1.3 8.2a1 1 0 0 1-1 .8H5.3a1 1 0 0 1-1-.8z" fill="currentColor" opacity=".9"/><path d="M4 5.5C4 2.5 12 2.5 12 5.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span id="hud-bucket-dots"></span>
+          <span id="hud-bucket-count" class="empty">empty</span>
+          <span id="hud-mult"></span>
+        </span>
+        <span class="sep"></span>
+        <span class="tide" id="hud-tide">
+          <svg class="pail" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 10c2-2.4 3.5-2.4 5 0s3 2.4 5 0 3-2.4 4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M1 6c2-2.4 3.5-2.4 5 0s3 2.4 5 0 3-2.4 4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".5"/></svg>
+          <span class="bar"><span class="fill" id="hud-tide-fill"></span></span>
+        </span>
+      </div>
+    </div>
+    <div id="corner">
+      <button id="howto-btn" class="corner" type="button" aria-label="How to play" title="How to play (I)"><i class="ico"></i></button>
+      <button id="snap-btn" class="corner" type="button" aria-label="Save a postcard" title="Save a postcard (C)"><i class="ico"></i></button>
+      <button id="sound" class="corner" type="button" aria-label="Mute sound" title="Mute sound (M)"><i class="ico"></i></button>
+      <button id="pause-btn" class="corner" type="button" aria-label="Pause" title="Pause (Esc)"><i class="ico"></i></button>
+    </div>
+    <div id="howto" role="dialog" aria-modal="true" aria-labelledby="howto-title">
+      <div class="sheet">
+        <div class="head">
+          <h2 id="howto-title">How to play</h2>
+          <button class="x" type="button" aria-label="Close">&times;</button>
+        </div>
+        <ol>
+          <li>Each wave leaves <b>treasure</b> in the wet sand as it pulls back.</li>
+          <li>Walk over it to put it in your bucket.</li>
+          <li>If the sand darkens, the next wave is coming. Deep foam <b>catches</b> you.</li>
+          <li>Carry it to <b>your camp</b> (the flag). It banks on its own.</li>
+          <li>The fuller the bucket, the bigger the bonus, up to <b>&times;4</b>. One more, or go home?</li>
+        </ol>
+        <h3>What washes up</h3>
+        <ul class="finds">
+          <li><span>Shell</span><b>1</b></li>
+          <li><span>Starfish</span><b>3</b></li>
+          <li><span>Bottle</span><b>5</b></li>
+          <li><span>Rubber duck, only at the funfair</span><b>4</b></li>
+          <li><span>Pearl, glowing, far out in the surf</span><b>12</b></li>
+          <li><span>Sand dollar, a heart back, only when you're hurt</span><b>&#10084;</b></li>
+        </ul>
+        <h3>Getting caught</h3>
+        <p>You lose a heart (you have 3) and your bucket spills. Grab it back before the next wave. On your last heart, the tide wins.</p>
+        <h3>Dash</h3>
+        <p><span class="k"><b>Space</b> or <b>Shift</b> is</span><span class="t">The <b>wave button</b> is</span> a short burst. It recharges in a second. Use it to reach a pearl and get out.</p>
+        <h3>Ride the break</h3>
+        <p>Each wave breaks first at the <b>middle</b> of the beach and the break runs away from there along the whole coast: <b>up</b> the screen above it, on into the cove, and <b>down</b> it below, on into the harbor and the funfair. Dash that way into the foam as it breaks and you ride it instead of getting caught, bucket and all, picking up whatever lies in its path. Keep leaning that way to race along it. Ease off and the wave carries you up the sand. Dash or push up the beach to jump off.</p>
+        <h3>The sand</h3>
+        <p>Packed wet sand by the water is quick. Loose dry sand up the beach is slow, and so is wading. The quick strip climbs with the tide, so the fastest way along the coast is always right beside the waves.</p>
+        <h3>Up the beach</h3>
+        <p>Some bottles hold a <b>treasure map</b>: an X appears on the dry sand. Stand on it to dig up a chest, then carry what's in it home. The volleyball players spike a ball out now and then. Get under it before it lands (+6). The <b>ice cream truck</b> hands you a cone, and the sugar rush makes any sand quick for 10 seconds.</p>
+        <h3>Out to sea</h3>
+        <p>Past the break you <b>swim</b>. It's slower, but the waves can't catch you out there, and whitewater just pushes you back toward the beach. <b>Keep clear of a shark whose fin is up.</b> A bite costs a heart and sinks your bucket. Climb onto the big rock of an outcrop to rest, and a pearl grows there now and then. When someone far out waves for help, swim to them and tow them back to the sand for +25 and a heart.</p>
+        <h3>It gets harder</h3>
+        <p>The tide rises. A lifeguard's whistle means <b>big waves</b>: run up the beach. A gull tagged <b>THIEF!</b> is after treasure on the sand. Step inside its ring before it fills, for +5.</p>
+        <h3>The coast goes on</h3>
+        <p>Walk off the top or bottom of the painting and the shore carries on into the next one. North is a <b>rocky cove</b>. Its rocks are dry ground until the rising tide climbs over them, and their pools keep finds. A big set's pull-back bares the reef. South is a <b>harbor</b>. Its pier stays dry out over the water, and the waves reach each side of it at different times. Past the harbor is the <b>funfair</b>, where rubber ducks lost from the fair wash up in the surf. The sea is the same everywhere. Pearls turn up more often out there, but your camp stays on the beach, so the walk home is longer.</p>
+        <h3>The chair-o-plane</h3>
+        <p>At the funfair a swing ride stands on the tideline. When it stops to load, walk into one of the <b>empty chairs</b>. As it spins up you fly out over the surf, picking up whatever you pass, and the foam can't reach you. <b>Lean</b> out or in to swing your chair, and grab the <b>brass ring</b> when it hangs out over the sea (+10). <span class="k"><b>Dash</b></span><span class="t">The <b>wave button</b></span> lets go: you're flung across the sand, and the longer the throw, the more it scores. Land in a breaking wave going its way and you ride it for a bonus.</p>
+        <h3>Controls</h3>
+        <p class="k">WASD or arrows to move. Esc pauses. M mutes. C saves a postcard. R paints a new beach, between runs.</p>
+        <p class="t">Put your left thumb down anywhere on the left half of the screen and slide it to walk. The wave button on the right dashes. The camera button saves a postcard of the painting, and the pause button stops the tide.</p>
+      </div>
+    </div>
+    <div id="card"></div>
+    <div id="toasts">
+      <div id="banner">&#127754; Big waves coming!<small>run up the beach</small></div>
+      <div id="placard" aria-live="polite"></div>
+      <div id="tip"></div>
+    </div>
+    <div id="camp-mark" aria-hidden="true"></div>
+    <div id="joy-zone" aria-hidden="true"></div>
+    <div id="joy" aria-hidden="true"><i></i></div>
+    <button id="dash" type="button" aria-label="Dash"><i></i></button>
+    <div id="snap" role="dialog" aria-modal="true" aria-label="Postcard">
+      <div class="sheet">
+        <div class="frame"><img alt="A postcard of the painting" /></div>
+        <div class="actions">
+          <button type="button" class="primary" data-act="share">Save to Photos</button>
+          <button type="button" data-act="download">Download</button>
+          <button type="button" class="ghost" data-act="close">Close</button>
+        </div>
+      </div>
+    </div>
+    <div id="turn">
+      <div>
+        <div class="phone" aria-hidden="true"></div>
+        <p>Turn your phone sideways</p>
+        <span>the beach is a wide painting</span>
+      </div>
+    </div>
+    <div id="install">
+      <div class="sheet">
+        <h2>Full screen</h2>
+        <p>iPhone Safari will not hide its bars for a game. Add Low Tide to your Home Screen and it opens with the whole screen.</p>
+        <ol>
+          <li>Tap the <b>Share</b> button</li>
+          <li>Choose <b>Add to Home Screen</b></li>
+          <li>Open <b>Low Tide</b> from the icon</li>
+        </ol>
+        <button type="button" id="install-play">Play in the browser</button>
+      </div>
+    </div>
+    <div class="hint" id="hint">wasd move &nbsp;·&nbsp; space dash &nbsp;·&nbsp; bank at your camp &nbsp;·&nbsp; esc pause &nbsp;·&nbsp; m mute &nbsp;·&nbsp; c postcard</div>
+  </body>
+</html>
+<script async src="/.netlify/scripts/hud?variant=public" data-nf-variant="public" data-netlify-site-id="a420d93d-2c13-4358-9e06-e71e39776f8a" data-app-host="app.netlify.com" data-account-tier="free"></script>

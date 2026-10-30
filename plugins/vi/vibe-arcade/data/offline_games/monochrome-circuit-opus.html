@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <base href="https://refuge.tokyo/ai/games/monochrome/monochrome_opus.html/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta property="og:image" content="ogp.jpg">
+<title>Monochrome Circuit</title>
+<style>
+  :root { --ink:#000; --paper:#fff; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#fff; color:#000;
+    font-family: "Consolas","Menlo","Courier New",monospace; user-select:none; }
+  #c { position:fixed; inset:0; width:100%; height:100%; display:block; }
+  .panel { background:#fff; border:3px solid #000; box-shadow:4px 4px 0 #000; padding:6px 12px; }
+  #hud { position:fixed; inset:0; pointer-events:none; display:none; }
+  #tl { position:absolute; left:18px; top:18px; display:flex; gap:12px; }
+  #tl .panel { min-width:92px; }
+  .lbl { font-size:11px; letter-spacing:3px; font-weight:700; }
+  .big { font-size:30px; font-weight:900; line-height:1.05; }
+  #tc { position:absolute; left:50%; top:18px; transform:translateX(-50%); text-align:center; }
+  #time { font-size:26px; font-weight:900; }
+  #best,#last { font-size:12px; letter-spacing:1px; }
+  #lights { display:flex; gap:10px; justify-content:center; margin-top:12px; }
+  #lights span { width:34px; height:34px; border-radius:50%; border:4px solid #000; background:#fff; }
+  #lights span.on { background:#000; }
+  #msg { margin-top:10px; font-size:34px; font-weight:900; letter-spacing:6px; }
+  #map { position:absolute; right:18px; top:18px; width:200px; height:200px; }
+  #brWrap { position:absolute; right:18px; bottom:18px; display:flex; flex-direction:column; align-items:flex-end; gap:12px; }
+  #br { text-align:right; }
+  #swap { pointer-events:auto; display:flex; flex-direction:column; align-items:flex-end; gap:6px; background:#fff; color:#000;
+    border:4px solid #000; box-shadow:5px 5px 0 #000; padding:10px 18px; font:inherit; cursor:pointer; text-align:right; text-decoration:none; }
+  #swap .sw-now { font-size:13px; letter-spacing:2px; font-weight:700; }
+  #swap .sw-now b { background:#000; color:#fff; padding:1px 7px; }
+  #swap .sw-go { font-size:26px; font-weight:900; letter-spacing:1px; }
+  #swap:hover { background:#000; color:#fff; }
+  #swap:hover .sw-now b { background:#fff; color:#000; }
+  #swap:active { transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
+  #spd { font-size:52px; font-weight:900; line-height:1; }
+  #gearH { font-size:14px; font-weight:700; letter-spacing:2px; }
+  #help { position:absolute; left:18px; bottom:18px; font-size:11px; line-height:1.6; }
+  #overlay { position:fixed; inset:0; background:rgba(255,255,255,.84); display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:5; }
+  #overlay h1 { font-size:min(12vw,110px); font-weight:900; letter-spacing:.12em; border-top:12px solid #000; border-bottom:12px solid #000; padding:8px 24px; line-height:1; }
+  #overlay .sub { margin-top:14px; font-size:15px; letter-spacing:6px; font-weight:700; }
+  #overlay .keys { margin-top:28px; display:grid; grid-template-columns:auto auto; gap:6px 22px; font-size:14px; }
+  #overlay .keys b { border:2px solid #000; padding:0 6px; box-shadow:2px 2px 0 #000; }
+  #overlay .go { margin-top:32px; font-size:18px; font-weight:900; letter-spacing:4px; animation:blink 1s steps(2) infinite; }
+  #overlay.result h1 { font-size:min(9vw,72px); }
+  #res { margin-top:18px; font-size:15px; min-width:320px; }
+  #res div { display:flex; justify-content:space-between; border-bottom:2px solid #000; padding:4px 0; }
+  @keyframes blink { 50% { opacity:0; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div id="tl">
+    <div class="panel"><div class="lbl">POS</div><div class="big" id="pos">-/-</div></div>
+    <div class="panel"><div class="lbl">LAP</div><div class="big" id="lap">-/-</div></div>
+  </div>
+  <div id="tc">
+    <div class="panel"><div id="time">0:00.000</div><div id="last">LAST --:--.---</div><div id="best">BEST --:--.---</div></div>
+    <div id="lights"><span></span><span></span><span></span></div>
+    <div id="msg"></div>
+  </div>
+  <canvas id="map" class="panel" width="400" height="400"></canvas>
+  <div id="brWrap">
+    <a id="swap" href="monochrome.html"><span class="sw-now"><b>Opus-5.5 medium Ver.</b></span><span class="sw-go">Back to Select</span></a>
+    <div id="br" class="panel"><div id="spd">0</div><div id="gearH">KM/H · GEAR N</div></div>
+  </div>
+  <div id="help" class="panel">↑/W 加速　↓/S ブレーキ　←→/AD ステア<br>H ヘイロー　M サウンド　R リスタート　P ポーズ</div>
+</div>
+<div id="overlay">
+  <h1>MONOCHROME</h1>
+  <div class="sub">CIRCUIT DE LA VILLE — 3 LAPS</div>
+  <div class="keys">
+    <span><b>↑</b> / <b>W</b></span><span>アクセル</span>
+    <span><b>↓</b> / <b>S</b> / <b>SPACE</b></span><span>ブレーキ（停止中は後退）</span>
+    <span><b>←</b><b>→</b> / <b>A</b><b>D</b></span><span>ステアリング</span>
+    <span><b>H</b></span><span>ヘイロー表示切替</span>
+    <span><b>M</b></span><span>サウンド ON/OFF</span>
+    <span><b>R</b> / <b>P</b></span><span>リスタート / ポーズ</span>
+  </div>
+  <div class="go" id="go">LOADING…</div>
+</div>
+
+
+<script type="module" src="monochrome_opus.js"></script>
+</body>
+</html>

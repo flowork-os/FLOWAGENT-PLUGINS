@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="https://vibe-harbor-master.pages.dev/">
+<meta charset="utf-8">
+<title>Harbor Master — Superyacht Docking</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }
+</script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:'Titillium Web',system-ui,sans-serif;user-select:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;z-index:2}
+.dark{background:rgba(8,18,28,.82);backdrop-filter:blur(2px)}
+#mission{left:14px;top:14px;padding:10px 16px;min-width:250px;border-left:5px solid #2fd0c0}
+#mission small{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;color:#9fc4d0}
+#mission b{font:italic 900 28px/1.05 'Titillium Web'}
+#mission .sub{font-size:13px;font-weight:700;margin-top:4px;color:#dff2f5}
+#timer{right:14px;top:14px;padding:10px 16px;text-align:right;min-width:190px}
+#timer small{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;color:#9fc4d0}
+#timer b{font:700 30px/1.1 'Titillium Web';font-variant-numeric:tabular-nums}
+#timer .bumps{font-size:14px;font-weight:800;color:#ff7a6a}
+#wind{right:14px;top:112px;padding:8px 14px;display:flex;align-items:center;gap:12px}
+#wind svg{width:44px;height:44px}
+#wind .t{font-size:12px;font-weight:700;color:#9fc4d0;line-height:1.3}
+#wind .t b{color:#fff;font-size:18px}
+#helm{left:50%;bottom:18px;transform:translateX(-50%);padding:10px 18px 12px;display:grid;grid-template-columns:auto auto auto auto;gap:22px;align-items:end}
+.gauge{text-align:center}
+.gauge small{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;color:#9fc4d0}
+.gauge b{font:700 30px/1 'Titillium Web';font-variant-numeric:tabular-nums}
+.thr{width:22px;height:84px;background:#1c2a36;border-radius:4px;position:relative;margin:4px auto 0}
+.thr i{position:absolute;left:0;right:0;background:#2fd0c0;border-radius:3px}
+.thr::after{content:'';position:absolute;left:-3px;right:-3px;top:50%;height:2px;background:#9fc4d0}
+#bow{width:120px;height:14px;background:#1c2a36;border-radius:7px;position:relative;margin-top:10px}
+#bow i{position:absolute;top:0;bottom:0;background:#ffd23a;border-radius:7px}
+#bow::after{content:'';position:absolute;top:-3px;bottom:-3px;left:50%;width:2px;background:#9fc4d0}
+#assist{left:14px;bottom:18px;padding:10px 14px;width:250px}
+#assist small{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;color:#9fc4d0}
+#assist .v{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-top:3px}
+#assist .v b{font-variant-numeric:tabular-nums}
+#msg{left:50%;top:28%;transform:translate(-50%,-50%);font:italic 900 70px/1 'Titillium Web';text-shadow:0 4px 24px rgba(0,0,0,.7);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;text-align:center}
+#msg.show{opacity:1}
+#msg small{display:block;font-size:30px;margin-top:10px;color:#ffd23a;letter-spacing:6px}
+#help{left:50%;bottom:150px;transform:translateX(-50%);font-size:11px;color:#eee;opacity:.8;text-shadow:0 1px 3px #000}
+body.capture #help,body.shorts #help{display:none}
+body.capture #msg{transition:none}
+body.shorts #assist{display:none}
+body.shorts #helm{transform:translateX(-50%) scale(1.35);transform-origin:bottom center;bottom:380px}
+body.shorts #mission{transform:scale(1.25);transform-origin:top left;top:140px}
+body.shorts #timer{transform:scale(1.25);transform-origin:top right;top:140px}
+body.shorts #wind{display:none}
+.overlay{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(4,12,18,.45);backdrop-filter:blur(3px)}
+.overlay[hidden]{display:none}
+.card{background:rgba(8,18,28,.95);padding:26px 32px;min-width:460px;border-top:4px solid #2fd0c0;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.card h1{font:italic 900 44px/1 'Titillium Web';margin:0 0 4px}
+.card h2{font:700 14px 'Titillium Web';margin:0 0 18px;color:#9fc4d0;letter-spacing:.1em}
+.card .keys{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px;color:#d6ecf0}
+.card .keys b{color:#fff}
+.card .go{font:900 18px 'Titillium Web';background:#1aa89a;color:#fff;border:0;width:100%;padding:12px;margin-top:16px;cursor:pointer}
+.card table{border-collapse:collapse;width:100%;font-size:14px;font-weight:700}
+.card td{padding:4px 8px}
+.stars{font-size:40px;color:#ffd23a;letter-spacing:6px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="mission" class="hud dark"><small>HARBOR MASTER · PORTO VELA</small><b id="mname">BERTH 1</b><div class="sub" id="msub">Reverse into the green berth, stern to the quay</div></div>
+<div id="timer" class="hud dark"><small>TIME</small><b id="time">0:00.0</b><div class="bumps" id="bumps">0 BUMPS</div></div>
+<div id="wind" class="hud dark"><svg viewBox="-22 -22 44 44"><circle r="20" fill="none" stroke="#3b5566" stroke-width="2"/><path id="warrow" d="M0,-16 L6,6 L0,2 L-6,6 Z" fill="#2fd0c0"/></svg><div class="t">WIND<br><b id="wkn">0 kn</b></div></div>
+<div id="helm" class="hud dark">
+  <div class="gauge"><small>PORT</small><div class="thr"><i id="tp"></i></div></div>
+  <div class="gauge"><small>SPEED</small><b id="spd">0.0</b><small>KNOTS</small><div id="bow"><i id="bt"></i></div><small style="margin-top:3px">THRUSTERS</small></div>
+  <div class="gauge"><small>STBD</small><div class="thr"><i id="ts"></i></div></div>
+  <div class="gauge"><small>HEADING</small><b id="hdg">000°</b></div>
+</div>
+<div id="assist" class="hud dark"><small>DOCKING ASSIST</small>
+  <div class="v"><span>DISTANCE</span><b id="adist">—</b></div><div class="v"><span>OFFSET</span><b id="aoff">—</b></div><div class="v"><span>ANGLE</span><b id="aang">—</b></div><div class="v"><span>SPEED</span><b id="aspd">—</b></div></div>
+<div id="msg" class="hud"></div>
+<div id="help" class="hud">↑ ↓ both engines · ← → twist (engines split) · Z / X thrusters · SPACE neutral · C camera · R restart</div>
+<div id="menu" class="overlay"><div class="card">
+  <h1>HARBOR MASTER</h1><h2>SUPERYACHT DOCKING · 3 BERTHS · PORTO VELA</h2>
+  <div class="keys"><b>↑ / ↓</b><span>Both engines ahead / astern</span><b>← / →</b><span>Twist: one engine ahead, one astern</span><b>Z / X</b><span>Thrusters: slide the whole yacht left / right</span><b>SPACE</b><span>All neutral</span><b>C</b><span>Camera (chase · top-down · look aft)</span><b>R</b><span>Restart berth</span></div>
+  <p style="color:#9fc4d0;font-size:13px;margin:12px 0 0">Back the 46 m yacht into the green berth, stern to the quay. Stop within 1 m and 5°. Every bump costs you a star. Mind the wind.</p>
+  <button class="go" id="go">CAST OFF ▸</button>
+</div></div>
+<div id="results" class="overlay" hidden><div class="card">
+  <h1 id="restitle">ALL BERTHS DONE</h1><h2 id="ressub"></h2><div class="stars" id="resstars"></div><table id="restable"></table>
+  <button class="go" id="again">PLAY AGAIN</button>
+</div></div>
+<script type="module" src="main.js"></script>
+</body>
+</html>

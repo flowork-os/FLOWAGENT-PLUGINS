@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en"><head>
+  <base href="https://israelfemiojo.github.io/talk-me-into-it/"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Someone just told you no. You get 3 tries to change their mind. A new person every day.">
+<meta name="theme-color" content="#2F47E8">
+<link rel="icon" type="image/png" href="favicon.png?v=5">
+<link rel="shortcut icon" href="favicon.png?v=5">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=5">
+<link rel="canonical" href="https://israelfemiojo.github.io/talk-me-into-it/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Talk Me Into It">
+<meta property="og:url" content="https://israelfemiojo.github.io/talk-me-into-it/">
+<meta property="og:title" content="Talk Me Into It">
+<meta property="og:description" content="Someone just told you no. You get 3 tries to change their mind. A new person every day.">
+<meta property="og:image" content="https://israelfemiojo.github.io/talk-me-into-it/og.jpeg?v=6">
+<meta property="og:image:secure_url" content="https://israelfemiojo.github.io/talk-me-into-it/og.jpeg?v=6">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Talk Me Into It. 3 tries to get a yes. Two phones showing the game.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@israelfemiojo">
+<meta name="twitter:creator" content="@israelfemiojo">
+<meta name="twitter:title" content="Talk Me Into It">
+<meta name="twitter:description" content="Someone just told you no. You get 3 tries to change their mind. A new person every day.">
+<meta name="twitter:image" content="https://israelfemiojo.github.io/talk-me-into-it/og.jpeg?v=6">
+<meta name="twitter:image:alt" content="Talk Me Into It. 3 tries to get a yes. Two phones showing the game.">
+<title>Talk Me Into It</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#2F47E8; --wall:#3953F2; --wall2:#2A40D6;
+  --ink:#141414; --paper:#FFFFFF; --soft:#F1F3FF;
+  --sun:#FFD233; --mint:#34D399; --hot:#FF5A5F;
+  --wood:#A0673B; --wood2:#7E4E2A;
+  --muted:#5A5F73;
+  --disp:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);transition:background .4s;color:var(--ink);font-family:var(--body);font-size:16px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:480px;margin:0 auto;padding-inline:16px;padding-block:14px 28px;display:flex;flex-direction:column;gap:14px;min-height:100%}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{font-family:var(--disp);font-weight:800;font-size:22px;letter-spacing:-.02em;color:#fff;line-height:1}
+.brand small{display:block;font-family:var(--body);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.72);margin-top:5px}
+.pips{display:flex;gap:6px;align-items:center}
+.pip{width:34px;height:26px;border:2.5px solid var(--ink);border-radius:6px;background:#fff;position:relative;box-shadow:2px 2px 0 var(--ink);transition:transform .3s,background .3s}
+.pip::before,.pip::after{content:"";position:absolute;top:2px;width:15px;height:2.5px;background:var(--ink);border-radius:2px}
+.pip::before{left:2px;transform:rotate(28deg);transform-origin:left}
+.pip::after{right:2px;transform:rotate(-28deg);transform-origin:right}
+.pip.used{background:#7C8AF5;transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+.pip.used::before,.pip.used::after{opacity:.35}
+
+/* goal strip */
+.goal{background:var(--sun);border:2.5px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:10px 14px;font-weight:600;font-size:15px;line-height:1.35;display:flex;gap:10px;align-items:center}
+.goal b{font-family:var(--disp);font-weight:800}
+.goal .hint{font-size:13px;font-weight:600;opacity:.75;display:block}
+
+/* stage */
+.stage{position:relative;height:340px;border:2.5px solid var(--ink);border-radius:22px;box-shadow:5px 5px 0 var(--ink);overflow:hidden;
+  background:repeating-linear-gradient(90deg,var(--wall) 0 26px,var(--wall2) 26px 52px)}
+.floor{position:absolute;left:0;right:0;bottom:0;height:46px;background:var(--floor,#1E2FA8);border-top:2.5px solid var(--ink)}
+.stage{background:repeating-linear-gradient(90deg,var(--wall) 0 26px,var(--wall2) 26px 52px)}
+/* office */
+.owin{position:absolute;left:18px;top:86px;width:96px;height:118px;background:repeating-linear-gradient(180deg,#E9F4FF 0 9px,#BFD9F2 9px 12px);border:4px solid #fff;outline:2.5px solid var(--ink);z-index:1}
+.plant{position:absolute;left:24px;bottom:44px;width:34px;height:40px;background:#C9774A;border:2.5px solid var(--ink);border-radius:0 0 8px 8px;z-index:1}
+.plant::before{content:"";position:absolute;left:-10px;bottom:36px;width:54px;height:46px;background:radial-gradient(circle at 30% 60%,#2FBF71 0 38%,transparent 40%),radial-gradient(circle at 70% 40%,#27A862 0 36%,transparent 38%),radial-gradient(circle at 50% 20%,#34D399 0 30%,transparent 32%)}
+/* club */
+.neon{position:absolute;left:12px;top:150px;width:70px;text-align:center;transform:rotate(-6deg);font-family:var(--disp);font-weight:800;font-size:17px;line-height:1.05;white-space:normal!important;letter-spacing:.06em;color:#FF6BD6;text-shadow:0 0 6px #FF6BD6,0 0 18px #FF2FC0;z-index:1}
+.rope{position:absolute;bottom:44px;width:14px;height:34px;background:#E9C46A;border:2.5px solid var(--ink);border-radius:6px 6px 0 0;z-index:4}
+.rope.l{left:22px}.rope.r{right:22px}
+.rope.l::after{content:"";position:absolute;left:10px;top:4px;width:120px;height:20px;border-bottom:6px solid #C0263B;border-radius:0 0 60px 60px}
+.rope.r::after{content:"";position:absolute;right:10px;top:4px;width:120px;height:20px;border-bottom:6px solid #C0263B;border-radius:0 0 60px 60px}
+/* counter */
+.counter{position:absolute;left:0;right:0;bottom:0;height:52px;background:#F4F1EC;border-top:3px solid var(--ink);z-index:4;display:flex;align-items:center;justify-content:center}
+.counter span{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.12em;background:var(--ink);color:#fff;padding:4px 12px;border-radius:6px}
+.door{position:absolute;left:50%;bottom:44px;width:210px;height:280px;margin-left:-105px;background:#1A1A2E;border:10px solid var(--wood);border-bottom:0;border-radius:6px 6px 0 0;box-shadow:inset 0 0 0 2.5px var(--ink),0 0 0 2.5px var(--ink)}
+.door::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#FFE9A8 0%,#F7C969 100%);opacity:.9}
+.loading #frank,.loading .notice{visibility:hidden}
+.plaque{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:#E9C46A;border:2.5px solid var(--ink);border-radius:6px;font-family:var(--disp);font-weight:800;font-size:14px;padding:1px 8px;z-index:3}
+.notice{position:absolute;right:10px;top:150px;width:92px;background:#fff;border:2px solid var(--ink);padding:8px 7px 9px;transform:rotate(5deg);z-index:4;box-shadow:3px 3px 0 rgba(0,0,0,.35)}
+.notice::before{content:"";position:absolute;top:-9px;left:50%;width:34px;height:14px;margin-left:-17px;background:rgba(255,236,160,.9);border:1px solid rgba(0,0,0,.2);transform:rotate(-6deg)}
+.notice .h{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.06em;color:var(--hot)}
+.notice .old{font-size:12px;text-decoration:line-through;color:var(--muted);font-weight:600;margin-top:3px}
+.notice .new{font-family:var(--disp);font-weight:800;font-size:19px;line-height:1}
+.notice .d{font-size:9px;color:var(--muted);margin-top:3px;font-weight:600}
+#frank{position:absolute;left:50%;bottom:0;width:250px;margin-left:-125px;z-index:2;transform-origin:50% 100%}
+#frank.breathe{animation:breathe 3.2s ease-in-out infinite}
+@keyframes breathe{50%{transform:scaleY(1.012)}}
+#frank.bounce{animation:bounce .55s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bounce{30%{transform:translateY(-12px) scaleY(1.03)}}
+#frank.shake{animation:shake .5s}
+@keyframes shake{20%{transform:translateX(-8px) rotate(-2deg)}40%{transform:translateX(8px) rotate(2deg)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+.part{transition:transform .28s cubic-bezier(.3,1.5,.5,1),d .25s ease;transform-box:fill-box;transform-origin:center}
+#blush{transition:opacity .3s}
+#steam circle{opacity:0}
+.annoyed #steam circle{animation:steam 1.2s ease-out infinite}
+.annoyed #steam circle:nth-child(2){animation-delay:.3s}
+.annoyed #steam circle:nth-child(3){animation-delay:.6s}
+@keyframes steam{0%{opacity:.9;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-28px) scale(1.4)}}
+#sweat{opacity:0;transition:opacity .3s}
+.defeated #sweat{opacity:1;animation:drip 1.4s ease-in infinite}
+@keyframes drip{0%{transform:translateY(0)}100%{transform:translateY(14px);opacity:0}}
+
+/* speech */
+.bubble{position:absolute;left:12px;right:12px;top:12px;z-index:6;background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:11px 14px;box-shadow:3px 3px 0 var(--ink);
+  font-family:var(--disp);font-weight:600;font-size:19px;line-height:1.25;letter-spacing:-.01em;min-height:52px;transform-origin:50% 100%}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-13px;width:20px;height:20px;background:#fff;border-right:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:rotate(45deg);margin-left:6px}
+.bubble .who{display:block;font-family:var(--body);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.bubble.pop{animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.85);opacity:.4}100%{transform:scale(1)}}
+.dots span{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ink);margin-right:5px;animation:dot 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+
+/* meter */
+.meter{background:#fff;border:2.5px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:12px 14px 14px;position:relative}
+.mrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.mlabel{font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.mstate{font-family:var(--disp);font-weight:800;font-size:20px;letter-spacing:-.02em}
+.bar{height:30px;border:2.5px solid var(--ink);border-radius:999px;background:var(--soft);position:relative;overflow:hidden}
+.fill{position:absolute;left:0;top:0;bottom:0;width:0%;background:repeating-linear-gradient(-45deg,var(--sun) 0 12px,#FFC400 12px 24px);border-right:2.5px solid var(--ink);transition:width .9s cubic-bezier(.3,1.35,.5,1)}
+.fill.full{border-right:0;background:repeating-linear-gradient(-45deg,var(--mint) 0 12px,#22C386 12px 24px)}
+.ticks{position:absolute;inset:0;display:flex;pointer-events:none}
+.ticks i{flex:1;border-right:2px dashed rgba(20,20,20,.18)}.ticks i:last-child{border:0}
+.pct{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--disp);font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.ends{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted);margin-top:6px}
+.float{position:absolute;right:14px;top:-8px;z-index:8;font-weight:700;font-size:14px;padding:6px 11px;border:2.5px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);white-space:nowrap;animation:rise 2.2s cubic-bezier(.2,.9,.3,1) forwards}
+.float.pos{background:var(--mint)}.float.neg{background:var(--hot);color:#fff}.float.zero{background:#fff}
+.float b{font-family:var(--disp);font-weight:800;margin-right:4px}
+@keyframes rise{0%{transform:translateY(20px) scale(.6);opacity:0}15%{transform:translateY(-6px) scale(1.08);opacity:1}25%{transform:translateY(0) scale(1)}80%{opacity:1}100%{transform:translateY(-34px);opacity:0}}
+
+/* your message */
+.mine{align-self:flex-end;max-width:88%;background:var(--ink);color:#fff;border-radius:18px 18px 6px 18px;padding:11px 14px;font-size:16px;line-height:1.4;font-weight:500;animation:pop .3s cubic-bezier(.3,1.6,.5,1)}
+.mine[hidden]{display:none}
+
+/* composer */
+.compose{background:#fff;border:2.5px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:10px;display:flex;flex-direction:column;gap:8px}
+textarea{width:100%;border:0;resize:none;font:500 17px/1.4 var(--body);color:var(--ink);background:transparent;padding:4px 4px;min-height:52px;outline:none}
+textarea::placeholder{color:#8A8FA3}
+.crow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.count{font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.btn{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:-.01em;padding:11px 22px;border:2.5px solid var(--ink);border-radius:14px;background:var(--sun);box-shadow:0 5px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn[disabled]{opacity:.55;cursor:default;transform:none}
+.btn.alt{background:#fff}
+.note{font-size:13px;font-weight:600;color:rgba(255,255,255,.8);text-align:center;min-height:18px}
+
+/* end sheet */
+.veil{position:fixed;inset:0;background:rgba(10,14,40,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.sheet{width:100%;max-width:480px;background:#fff;border:2.5px solid var(--ink);border-radius:24px;box-shadow:6px 6px 0 var(--ink);padding:22px 18px 18px;position:relative;animation:up .5s cubic-bezier(.2,1.2,.4,1);max-height:calc(100% - 20px);overflow:auto}
+@keyframes up{from{transform:translateY(60px);opacity:0}}
+.stamp{display:inline-block;font-family:var(--disp);font-weight:800;font-size:30px;letter-spacing:.02em;border:4px solid currentColor;border-radius:10px;padding:4px 14px;transform:rotate(-7deg);animation:slam .45s cubic-bezier(.2,1.4,.4,1) .15s both}
+.stamp.win{color:#10A36B}.stamp.lose{color:var(--hot)}
+@keyframes slam{0%{transform:rotate(-7deg) scale(3);opacity:0}100%{transform:rotate(-7deg) scale(1);opacity:1}}
+.sheet h2{font-family:var(--disp);font-weight:800;font-size:28px;line-height:1.05;letter-spacing:-.03em;margin-top:14px;text-wrap:balance}
+.quote{margin-top:14px;background:var(--soft);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;font-size:17px;line-height:1.4;font-weight:600}
+.quote small{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.found{margin-top:14px}
+.found p{font-weight:700;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:13px;font-weight:700;padding:5px 10px;border:2px solid var(--ink);border-radius:999px;background:var(--mint)}
+.chip.hid{background:#fff;color:var(--muted);border-style:dashed}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.actions .wide{grid-column:1/-1;text-align:center;text-decoration:none;color:var(--ink);display:block}
+.rh{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:-.01em;margin-top:20px}
+.turns{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:0}
+.turns li{border:2px solid var(--ink);border-radius:12px;padding:9px 11px;font-size:14px;line-height:1.35;font-weight:500}
+.turns .tc{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tc span{font-size:12px;font-weight:700;padding:2px 8px;border:1.5px solid var(--ink);border-radius:999px}
+.tc .g{background:var(--mint)}.tc .l{background:var(--hot);color:#fff}.tc .z{background:#fff}
+.wstat{font-size:14px;font-weight:600;color:var(--muted);margin-top:2px}
+.wall{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:10px;padding:0}
+.wall li{background:var(--soft);border:2px solid var(--ink);border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.4;font-weight:600}
+.wall li.me{background:var(--sun)}
+.wall li small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.left{margin-top:10px;display:inline-block;background:var(--sun);border:2.5px solid var(--ink);border-radius:999px;padding:5px 14px;font-weight:700;font-size:15px}
+.left.none{background:#fff}
+.card-prev{margin-top:18px;border:2.5px solid var(--ink);border-radius:16px;overflow:hidden;background:var(--soft);min-height:120px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted)}
+.card-prev img{display:block;width:100%;height:auto}
+.dbb{display:flex;gap:8px;flex-shrink:0}
+.dbb .btn{padding:9px 14px;font-size:16px}
+.next{margin-top:16px;text-align:center;font-weight:700;font-size:15px}
+.next b{font-family:var(--disp);font-weight:800;font-variant-numeric:tabular-nums}
+.x{position:absolute;right:12px;top:12px;width:38px;height:38px;border:2.5px solid var(--ink);border-radius:50%;background:#fff;font-weight:800;font-size:18px;line-height:1}
+.donebar{background:#fff;border:2.5px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700}
+.donebar b{font-family:var(--disp);font-weight:800;font-variant-numeric:tabular-nums}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:30}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (min-width:700px){.stage{height:380px}.wrap{padding-block:24px 36px}}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Talk Me Into It<small id="dayline">Loading today's round...</small></div>
+    <div class="pips" aria-label="Messages left"><span class="pip" id="p0"></span><span class="pip" id="p1"></span><span class="pip" id="p2"></span></div>
+  </header>
+
+  <div class="goal"><div><span id="goal"></span> You have 3 messages to get a yes.<span class="hint" id="hint"></span></div></div>
+
+  <section class="stage" id="stage" aria-label="Today's character">
+    <div class="bubble" id="bubble" aria-live="polite"><span class="who" id="who"></span><span id="say"></span></div>
+    <div id="scene"></div>
+    <div class="notice" aria-hidden="true"><div class="h" id="sgT"></div><div class="old" id="sgO"></div><div class="new" id="sgN"></div><div class="d" id="sgS"></div></div>
+    <svg id="frank" class="breathe" viewBox="0 0 260 250" aria-hidden="true"></svg>
+    <div id="front"></div>
+    <div class="floor"></div>
+  </section>
+
+  <div class="meter" id="meter">
+    <div class="mrow"><span class="mlabel">Deal meter</span><span class="mstate" id="mstate">No chance</span></div>
+    <div class="bar"><div class="fill" id="fill"></div><div class="ticks"><i></i><i></i><i></i><i></i></div><span class="pct" id="pct">0%</span></div>
+    <div class="ends"><span id="endL"></span><span id="endR"></span></div>
+  </div>
+
+  <div class="mine" id="mine" hidden></div>
+
+  <form class="compose" id="form">
+    <label for="msg" style="position:absolute;left:-9999px" id="msgLabel">Your message</label>
+    <textarea id="msg" maxlength="200" rows="2" placeholder="Make your case..."></textarea>
+    <div class="crow"><span class="count" id="count">0 / 200</span><button class="btn" id="send" type="submit">Send</button></div>
+  </form>
+  <p class="note" id="note"></p>
+</div>
+<canvas id="confetti" hidden></canvas>
+<div class="veil" id="veil" hidden><div class="sheet" id="sheet"></div></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let CH = null;
+
+/* ---------------- drawing today's character ---------------- */
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16), f = x => Math.max(0, Math.min(255, Math.round(x * (1 + amt))));
+  return "#" + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => f(v).toString(16).padStart(2, "0")).join("");
+}
+function rig(a) {
+  const K = "#141414", skin = a.skin, sk2 = shade(skin, -0.1), hc = a.hairColor || "#2B1D16", oc = a.outfitColor || "#D9A53A";
+  const st = w => `stroke="${K}" stroke-width="${w}"`;
+  let back = "", body = "", hairFront = "", facial = "", prop = "", extra = "";
+  // hair behind the head
+  if (a.hair === "long") back = `<path d="M62 112 C56 48 96 26 130 28 C164 26 204 48 198 112 L206 200 C178 212 82 212 54 200 Z" fill="${hc}" ${st(3.5)}/>`;
+  if (a.hair === "curly") back = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => { const t = Math.PI * (1.05 + i * 0.1125); return `<circle cx="${130 + Math.cos(t) * 64}" cy="${100 + Math.sin(t) * 66}" r="22" fill="${hc}" ${st(3)}/>`; }).join("");
+  // body
+  const torso = `<path d="M32 252 C36 196 74 172 130 172 C186 172 224 196 228 252 Z" fill="${oc}" ${st(3.5)}/>`;
+  if (a.outfit === "suit") body = torso + `<path d="M108 174 L130 212 L152 174 Z" fill="#fff" ${st(3)}/><path d="M102 177 L126 214 M158 177 L134 214" fill="none" ${st(3)}/>`;
+  else if (a.outfit === "hoodie") body = `<path d="M84 186 C84 150 176 150 176 186 Z" fill="${shade(oc, -0.12)}" ${st(3)}/>` + torso + `<path d="M104 176 C112 198 148 198 156 176" fill="none" ${st(3)}/><path d="M118 194 L116 222 M142 194 L144 222" ${st(2.5)}/><circle cx="116" cy="224" r="3" fill="${K}"/><circle cx="144" cy="224" r="3" fill="${K}"/>`;
+  else if (a.outfit === "tshirt") body = torso + `<path d="M106 176 C112 194 148 194 154 176" fill="${sk2}" ${st(3)}/>` + (a.chest ? `<text x="130" y="232" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" letter-spacing="1.5" fill="#fff">${a.chest}</text>` : "");
+  else if (a.outfit === "uniform") body = torso + `<path d="M108 174 L130 208 L152 174 Z" fill="#fff" ${st(3)}/><path d="M112 184 L130 204 L148 184 L140 214 L120 214 Z" fill="${a.accent || "#E4572E"}" ${st(2.5)}/>`;
+  else body = torso + `<path d="M104 174 L130 222 L156 174 Z" fill="#fff" ${st(3)}/><path d="M130 222 L130 252" ${st(3)}/><circle cx="120" cy="232" r="3.5" fill="${K}"/><circle cx="120" cy="246" r="3.5" fill="${K}"/>`;
+  // hair on top
+  if (a.hair === "bald") hairFront = `<path d="M72 96 C70 72 80 60 92 56 C86 70 86 84 88 98 Z" fill="${hc}" ${st(3)}/><path d="M188 96 C190 72 180 60 168 56 C174 70 174 84 172 98 Z" fill="${hc}" ${st(3)}/><ellipse cx="112" cy="54" rx="14" ry="7" fill="#fff" opacity=".45" transform="rotate(-18 112 54)"/>`;
+  const cap = `<path d="M70 104 C62 50 100 32 130 34 C160 32 198 50 190 104 C184 82 170 64 150 62 C136 70 112 70 98 63 C84 70 74 86 70 104 Z" fill="${hc}" ${st(3)}/>`;
+  if (a.hair === "short" || a.hair === "long") hairFront = cap;
+  if (a.hair === "bun") hairFront = `<circle cx="130" cy="30" r="19" fill="${hc}" ${st(3)}/>` + cap;
+  if (a.hair === "buzz") hairFront = `<path d="M72 92 C72 54 100 38 130 38 C160 38 188 54 188 92 C176 66 156 58 130 58 C104 58 84 66 72 92 Z" fill="${hc}" ${st(2.5)}/>`;
+  if (a.hair === "curly") hairFront = [0, 1, 2, 3, 4].map(i => `<circle cx="${86 + i * 22}" cy="${50 - (i === 2 ? 8 : i % 2 ? 4 : 0)}" r="17" fill="${hc}" ${st(3)}/>`).join("");
+  // beard / moustache
+  if (a.facial === "beard") facial = `<path d="M74 118 C76 168 102 186 130 186 C158 186 184 168 186 118 C178 146 162 162 130 162 C98 162 82 146 74 118 Z" fill="${a.facialColor || hc}" ${st(3)}/><path d="M104 146 C112 138 122 140 130 144 C138 140 148 138 156 146 C146 150 138 149 130 148 C122 149 114 150 104 146 Z" fill="${a.facialColor || hc}" ${st(2.5)}/>`;
+  if (a.facial === "mustache") facial = `<path d="M100 146 C108 134 122 136 130 142 C138 136 152 134 160 146 C150 150 140 148 130 146 C120 148 110 150 100 146 Z" fill="${a.facialColor || hc}" ${st(3)} stroke-linejoin="round"/>`;
+  if (a.earrings) extra += `<circle cx="68" cy="130" r="5" fill="#F2C94C" ${st(2)}/><circle cx="192" cy="130" r="5" fill="#F2C94C" ${st(2)}/>`;
+  // prop
+  const hand = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="10" ry="8" fill="${skin}" ${st(3)}/>`;
+  const pr = a.prop || {};
+  if (pr.type === "mug") prop = `<path d="M198 194 C210 194 210 212 198 212" fill="none" ${st(3.5)}/><rect x="160" y="182" width="38" height="44" rx="5" fill="#fff" ${st(3)}/><text x="179" y="199" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" fill="${K}">${pr.top || ""}</text><text x="179" y="209" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="5.2" textLength="32" lengthAdjust="spacingAndGlyphs" fill="${K}">${pr.text || ""}</text>` + hand(161, 220);
+  if (pr.type === "clipboard") prop = `<rect x="156" y="176" width="50" height="62" rx="4" fill="#B07A4A" ${st(3)}/><rect x="162" y="186" width="38" height="46" fill="#fff" ${st(2)}/><rect x="172" y="172" width="18" height="9" rx="2" fill="#9AA0A6" ${st(2)}/><text x="181" y="197" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="6.5" fill="${K}">${pr.text || ""}</text><path d="M167 206 H195 M167 214 H195 M167 222 H186" ${st(2)}/>` + hand(160, 226);
+  if (pr.type === "badge") prop = `<path d="M112 176 L126 214 M148 176 L134 214" ${st(2.5)}/><rect x="112" y="212" width="36" height="26" rx="4" fill="#fff" ${st(2.5)}/><text x="130" y="229" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="7" fill="${K}">${pr.text || ""}</text>`;
+  if (pr.type === "phone") prop = `<rect x="162" y="184" width="26" height="44" rx="5" fill="#1B1B1F" ${st(3)}/><rect x="166" y="190" width="18" height="30" rx="2" fill="#7FB8FF"/>` + hand(166, 224);
+  const glasses = a.glasses ? `<g fill="none" ${st(3.5)}><rect x="91" y="90" width="34" height="28" rx="9"/><rect x="135" y="90" width="34" height="28" rx="9"/><path d="M125 101 Q130 97 135 101"/><path d="M91 100 L74 97"/><path d="M169 100 L186 97"/></g>` : "";
+  return `<g id="steam" fill="#fff" stroke="${K}" stroke-width="2"><circle cx="78" cy="48" r="9"/><circle cx="182" cy="44" r="8"/><circle cx="130" cy="30" r="7"/></g>
+    ${back}${body}
+    <rect x="112" y="150" width="36" height="30" fill="${sk2}" ${st(3)}/>
+    <ellipse cx="69" cy="112" rx="11" ry="15" fill="${sk2}" ${st(3)}/><ellipse cx="191" cy="112" rx="11" ry="15" fill="${sk2}" ${st(3)}/>
+    <ellipse cx="130" cy="104" rx="60" ry="66" fill="${skin}" ${st(3.5)}/>
+    ${hairFront}${extra}
+    <g id="blush" opacity="0"><ellipse cx="94" cy="128" rx="11" ry="7" fill="#FF6B6B" opacity=".7"/><ellipse cx="166" cy="128" rx="11" ry="7" fill="#FF6B6B" opacity=".7"/></g>
+    <g id="eyes">
+      <circle id="eyeL" class="part" cx="108" cy="104" r="6" fill="${K}"/><circle id="eyeR" class="part" cx="152" cy="104" r="6" fill="${K}"/>
+      <path id="lidL" class="part" d="M96 92 H120 V92 H96 Z" fill="${skin}"/><path id="lidR" class="part" d="M140 92 H164 V92 H140 Z" fill="${skin}"/>
+      <path id="laughL" d="M99 106 Q108 96 117 106" fill="none" stroke="${K}" stroke-width="4" stroke-linecap="round" opacity="0"/>
+      <path id="laughR" d="M143 106 Q152 96 161 106" fill="none" stroke="${K}" stroke-width="4" stroke-linecap="round" opacity="0"/>
+    </g>
+    ${glasses}
+    <rect id="browL" class="part" x="92" y="76" width="32" height="8" rx="4" fill="${a.brow || hc}" ${st(2.5)}/>
+    <rect id="browR" class="part" x="136" y="76" width="32" height="8" rx="4" fill="${a.brow || hc}" ${st(2.5)}/>
+    <path d="M130 108 C124 122 120 130 128 133 C134 135 140 131 136 127" fill="${sk2}" ${st(3)} stroke-linecap="round"/>
+    ${facial}
+    <path id="mouth" class="part" d="M114 154 Q130 156 146 154" fill="none" stroke="${K}" stroke-width="4" stroke-linecap="round"/>
+    <path id="sweat" d="M186 70 C182 78 180 82 184 85 C188 87 191 83 189 78 Z" fill="#8FD3FF" stroke="${K}" stroke-width="2"/>
+    ${prop}`;
+}
+function sceneHTML(sc) {
+  const lab = esc(sc.label || "");
+  if (sc.type === "office") return { back: '<div class="owin"></div><div class="plant"></div>', front: "" };
+  if (sc.type === "club") return { back: `<div class="neon">${lab}</div>`, front: '<div class="rope l"></div><div class="rope r"></div>' };
+  if (sc.type === "counter") return { back: "", front: `<div class="counter">${lab ? `<span>${lab}</span>` : ""}</div>` };
+  return { back: `<div class="door">${lab ? `<span class="plaque">${lab}</span>` : ""}</div>`, front: "" };
+}
+function setupCharacter(c) {
+  CH = c;
+  const r = document.documentElement.style, sc = c.scene || {};
+  r.setProperty("--bg", sc.bg || "#2F47E8"); r.setProperty("--wall", (sc.wall || [])[0] || "#3953F2");
+  r.setProperty("--wall2", (sc.wall || [])[1] || "#2A40D6"); r.setProperty("--floor", sc.floor || "#1E2FA8");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", sc.bg || "#2F47E8");
+  $("dayline").textContent = `${weekday()} · ${c.title}`;
+  $("goal").innerHTML = c.goal; $("hint").textContent = c.hint;
+  $("who").textContent = `${c.name} · ${c.role}`;
+  const parts = sceneHTML(sc); $("scene").innerHTML = parts.back; $("front").innerHTML = parts.front;
+  $("sgT").textContent = c.sign.title; $("sgO").textContent = c.sign.old; $("sgN").textContent = c.sign.now; $("sgS").textContent = c.sign.sub;
+  $("frank").innerHTML = rig(c.art);
+  $("endL").textContent = c.ends[0]; $("endR").textContent = c.ends[1];
+  $("msg").placeholder = `Make your case to ${c.name}...`; $("msgLabel").textContent = `Your message to ${c.name}`;
+  $("stage").setAttribute("aria-label", `${c.name}, ${c.role}`);
+  S.total = c.total;
+  document.title = `Talk Me Into It · ${c.title}`;
+}
+function fill(t, n, pct) { return t.replace("{n}", `${n} message${n > 1 ? "s" : ""}`).replace("{pct}", pct + "%"); }
+
+
+/* ---------------- settings ---------------- */
+const CONFIG = {
+  api: "https://three-messages.israelfemiojo9.workers.dev/",               // the Cloudflare Worker address, e.g. https://talk-me-into-it.yourname.workers.dev
+  site: "israelfemiojo.github.io/talk-me-into-it",  // shown in the share post
+  goatcounter: "talkmeintoit",                     // your GoatCounter code, counts plays, wins, retries and shares
+};
+const S = { meter: 0, used: 0, found: [], labels: {}, total: 8, history: [], turns: [], token: null, best: null, done: false, busy: false, win: false };
+
+/* one game per person per day, saved in the browser so a refresh doesn't restart it */
+function weekday() { return new Date().toLocaleDateString("en-US", { weekday: "long" }); }
+function today() { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+const KEY = "tm-day-" + today();
+function save() { try { localStorage.setItem(KEY, JSON.stringify({ meter: S.meter, used: S.used, found: S.found, labels: S.labels, total: S.total, history: S.history, best: S.best, done: S.done, win: S.win, turns: S.turns, token: S.token })); } catch (e) {} }
+function load() { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } }
+function untilTomorrow() {
+  const now = new Date(), t = new Date(now); t.setHours(24, 0, 0, 0);
+  const m = Math.max(0, Math.round((t - now) / 60000));
+  return Math.floor(m / 60) + "h " + (m % 60) + "m";
+}
+
+/* the rules live on the server so nobody can read the weak spots in the page source */
+async function judge(text) {
+  let r;
+  try {
+    const ctl = new AbortController(); setTimeout(() => ctl.abort(), 20000);
+    r = await fetch(CONFIG.api, { method: "POST", signal: ctl.signal, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, history: S.history, day: today(), token: S.token }) });
+  } catch (e) { throw { soft: `That didn't reach ${CH.name}. Check your connection and send it again.` }; }
+  if (r.status === 429) throw { soft: `${CH.name} has had a lot of visitors today. Try again later.` };
+  if (r.status === 409) throw { soft: "You've already played today. Come back tomorrow." };
+  if (!r.ok) throw { soft: `That didn't reach ${CH.name}. Send it again.` };
+  const res = await r.json();
+  if (res.total) S.total = res.total;
+  return res;
+}
+
+/* play counting */
+(function () {
+  if (!CONFIG.goatcounter || /^(localhost|127\.)/.test(location.hostname) || location.protocol === "file:") return;
+  const sc = document.createElement("script"); sc.async = true; sc.src = "https://gc.zgo.at/count.js";
+  sc.setAttribute("data-goatcounter", "https://" + CONFIG.goatcounter + ".goatcounter.com/count");
+  sc.setAttribute("data-goatcounter-settings", '{"path":"talk-me-into-it"}');
+  document.head.appendChild(sc);
+})();
+function track(name) {
+  const send = () => window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: "tm-" + name, title: name, event: true });
+  if (window.goatcounter && window.goatcounter.count) send(); else setTimeout(send, 1500);
+}
+
+/* ---------------- the character's face ---------------- */
+const MOUTH = {
+  flat: "M114 154 Q130 156 146 154", frown: "M114 158 Q130 147 146 158", small: "M120 153 Q130 158 140 153",
+  smirk: "M114 154 Q134 160 148 148", laugh: "M110 150 Q130 176 150 150 Q130 156 110 150 Z", sigh: "M122 151 Q130 164 138 151 Q130 154 122 151 Z",
+};
+function face(kind) {
+  const f = $("frank");
+  f.classList.toggle("annoyed", kind === "annoyed");
+  f.classList.toggle("defeated", kind === "defeated");
+  const set = (bl, br, byl, byr, lid, mouth, fillMouth, blush, laugh) => {
+    $("browL").style.transform = `translateY(${byl}px) rotate(${bl}deg)`;
+    $("browR").style.transform = `translateY(${byr}px) rotate(${br}deg)`;
+    $("lidL").setAttribute("d", `M96 92 H120 V${92 + lid} H96 Z`);
+    $("lidR").setAttribute("d", `M140 92 H164 V${92 + lid} H140 Z`);
+    $("mouth").setAttribute("d", MOUTH[mouth]);
+    $("mouth").setAttribute("fill", fillMouth ? "#7A1F2B" : "none");
+    $("blush").style.opacity = blush;
+    ["eyeL", "eyeR"].forEach(e => $(e).style.opacity = laugh ? 0 : 1);
+    ["laughL", "laughR"].forEach(e => $(e).setAttribute("opacity", laugh ? 1 : 0));
+  };
+  switch (kind) {
+    case "stern":    set(12, -12, 2, 2, 7, "flat", 0, 0, 0); break;
+    case "annoyed":  set(22, -22, 5, 5, 8, "frown", 0, 1, 0); break;
+    case "listening":set(4, -4, 0, 0, 4, "small", 0, 0, 0); break;
+    case "tempted":  set(6, -14, 0, -7, 3, "smirk", 0, 0, 0); break;
+    case "thinking": set(0, -10, -2, -6, 0, "small", 0, 0, 0); break;
+    case "laugh":    set(-4, 4, -6, -6, 0, "laugh", 1, .6, 1); break;
+    case "defeated": set(-16, 16, -2, -2, 5, "sigh", 1, .35, 0); break;
+  }
+}
+function moodFor(m) { return m >= 100 ? "defeated" : m >= 60 ? "tempted" : m >= 25 ? "listening" : "stern"; }
+function stateLabel(m) { return m >= 100 ? "Deal." : m >= 80 ? "Almost" : m >= 55 ? "Tempted" : m >= 25 ? "Listening" : m > 0 ? "Not buying it" : "No chance"; }
+function react(cls) { const f = $("frank"); f.classList.remove("breathe", "bounce", "shake"); void f.offsetWidth; f.classList.add(cls); setTimeout(() => { f.classList.remove(cls); f.classList.add("breathe"); }, 650); }
+
+// blink now and then
+setInterval(() => {
+  if (document.hidden) return;
+  ["lidL", "lidR"].forEach(id => { const el = $(id); if (!el) return; const d = el.getAttribute("d"); el.dataset.d = d; el.setAttribute("d", d.replace(/V\d+(\.\d+)?/, "V116")); setTimeout(() => el.setAttribute("d", el.dataset.d), 130); });
+}, 3800);
+
+/* ---------------- speech ---------------- */
+let typer = null;
+function say(text) {
+  clearInterval(typer);
+  const b = $("bubble"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
+  const el = $("say"); el.textContent = ""; let i = 0;
+  return new Promise(res => {
+    typer = setInterval(() => { i += 2; el.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typer); res(); } }, 24);
+  });
+}
+function thinking() { clearInterval(typer); $("say").innerHTML = '<span class="dots"><span></span><span></span><span></span></span>'; }
+
+/* ---------------- meter ---------------- */
+function setMeter(m) {
+  S.meter = Math.max(0, Math.min(100, m));
+  $("fill").style.width = S.meter + "%";
+  $("fill").classList.toggle("full", S.meter >= 100);
+  $("pct").textContent = S.meter + "%";
+  $("mstate").textContent = stateLabel(S.meter);
+}
+function floatChip(text, kind, delay) {
+  setTimeout(() => {
+    const c = document.createElement("div"); c.className = "float " + kind; c.innerHTML = text;
+    c.style.top = (-8 - $("meter").querySelectorAll(".float").length * 42) + "px";
+    $("meter").appendChild(c); setTimeout(() => c.remove(), 2300);
+  }, delay);
+}
+function pips() { for (let i = 0; i < 3; i++) $("p" + i).classList.toggle("used", i < S.used); }
+
+/* ---------------- a turn ---------------- */
+$("msg").addEventListener("input", () => { $("count").textContent = $("msg").value.length + " / 200"; });
+$("msg").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("form").requestSubmit(); } });
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = $("msg").value.trim();
+  if (!text || S.busy || S.done) return;
+  S.busy = true; $("send").disabled = true; $("note").textContent = "";
+  $("mine").hidden = false; $("mine").textContent = text;
+  thinking(); face("thinking");
+  let res;
+  try { res = await judge(text); }
+  catch (err) { $("note").textContent = err.soft || "Send it again."; face(moodFor(S.meter)); await say(S.history.length ? S.history[S.history.length - 1].text : CH.opening); S.busy = false; $("send").disabled = false; return; }
+  $("msg").value = ""; $("count").textContent = "0 / 200";
+  const r = res;
+  S.token = r.token; S.used = r.used; pips();
+  S.turns.push({ text, gains: r.gains.map(g => ({ label: g.label, v: g.v })), losses: r.losses.map(l => ({ label: l.label, v: l.v })), wasted: !!r.wasted });
+  if (S.used === 1) track("first-message");
+  S.history.push({ role: "you", text });
+  r.gains.forEach(g => { S.found.push(g.id); S.labels[g.id] = g.label; });
+  setMeter(r.meter);
+  if (r.gains.length && (!S.best || r.delta > S.best.delta)) S.best = { text, delta: r.delta };
+
+  // feedback chips
+  let d = 150;
+  if (r.wasted) floatChip("<b>0</b> Nice try. Wasted turn", "zero", d);
+  r.gains.forEach(g => { floatChip(`<b>+${g.v}</b> ${g.label}${g.specific ? "" : " (be specific)"}`, "pos", d); d += 650; });
+  r.losses.forEach(l => { floatChip(`<b>${l.v}</b> ${l.label}`, "neg", d); d += 650; });
+  if (!r.wasted && !r.gains.length && !r.losses.length) floatChip(`<b>+0</b> ${CH.name} didn't budge`, "zero", d);
+
+  // the character reacts
+  const won = !!r.won;
+  const laughHit = r.gains.some(g => g.id === "humour");
+  if (r.losses.length || r.wasted) { face("annoyed"); react("shake"); }
+  else if (laughHit) { face("laugh"); react("bounce"); }
+  else if (r.gains.length) { face(moodFor(S.meter)); react("bounce"); }
+  else face(moodFor(S.meter));
+  let reply = String(res.reply || "Hm.").slice(0, 220);
+  S.history.push({ role: "frank", text: reply });
+  await say(reply);
+  if (!won && (r.losses.length || laughHit)) setTimeout(() => face(moodFor(S.meter)), 1400);
+
+  if (won) { S.done = true; S.win = true; S.best = { text, delta: r.delta }; save(); face("defeated"); setTimeout(() => end(true), 1100); }
+  else if (r.finished || S.used >= 3) { S.done = true; S.win = false; save(); setTimeout(async () => { face("stern"); await say(CH.loseLine); setTimeout(() => end(false), 900); }, 1300); }
+  if (!S.done) save();
+  S.busy = false; $("send").disabled = S.done;
+  if (!S.done) $("msg").focus();
+});
+
+
+
+/* ---------------- result card image ---------------- */
+let CARD = null;
+function wrapLines(ctx, text, maxW) {
+  const words = String(text).split(/\s+/), lines = []; let cur = "";
+  words.forEach(w => { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
+  if (cur) lines.push(cur); return lines;
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function faceImage() {
+  return new Promise(res => {
+    const live = $("frank"), src = live.cloneNode(true);
+    const L = live.querySelectorAll("*"), C = src.querySelectorAll("*");
+    L.forEach((el, i) => { const st = getComputedStyle(el); if (C[i]) { C[i].style.opacity = st.opacity; if (st.display === "none" || st.visibility === "hidden") C[i].style.display = "none"; } });
+    src.setAttribute("xmlns", "http://www.w3.org/2000/svg"); src.setAttribute("width", "520"); src.setAttribute("height", "500"); src.removeAttribute("class");
+    const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(src));
+    const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = url;
+  });
+}
+async function makeCard(win) {
+  try { await Promise.all(['800 60px "Bricolage Grotesque"', '600 30px "Instrument Sans"', '700 30px "Instrument Sans"'].map(f => document.fonts.load(f))); } catch (e) {}
+  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"), cs = getComputedStyle(document.documentElement);
+  const bg = cs.getPropertyValue("--bg").trim() || "#2F47E8", w1 = cs.getPropertyValue("--wall").trim() || "#3953F2", ink = "#141414";
+  const D = '"Bricolage Grotesque","Arial Black",sans-serif', B = '"Instrument Sans",Arial,sans-serif';
+  // background stripes
+  x.fillStyle = bg; x.fillRect(0, 0, W, H);
+  x.fillStyle = w1; for (let i = 0; i < W; i += 120) x.fillRect(i, 0, 60, H);
+  // header
+  x.textBaseline = "alphabetic"; x.fillStyle = "#fff"; x.font = `800 64px ${D}`;
+  x.lineWidth = 8; x.strokeStyle = ink; x.lineJoin = "round"; x.strokeText("Talk Me Into It", 70, 118); x.fillText("Talk Me Into It", 70, 118);
+  x.font = `700 30px ${B}`; x.fillStyle = "rgba(255,255,255,.9)"; x.fillText(`${weekday().toUpperCase()} · ${String(CH.title).toUpperCase()}`, 72, 166);
+  // the card
+  const cx = 60, cy = 210, cw = W - 120, ch = 1000;
+  x.fillStyle = ink; rr(x, cx + 12, cy + 12, cw, ch, 44); x.fill();
+  x.fillStyle = "#fff"; rr(x, cx, cy, cw, ch, 44); x.fill(); x.lineWidth = 6; x.strokeStyle = ink; x.stroke();
+  // character in a round window
+  const face = await faceImage();
+  x.save(); rr(x, cx + cw - 330, cy + 40, 280, 280, 140); x.fillStyle = bg; x.fill(); x.clip();
+  if (face) x.drawImage(face, cx + cw - 330 - 20, cy + 60, 320, 308);
+  x.restore(); rr(x, cx + cw - 330, cy + 40, 280, 280, 140); x.lineWidth = 6; x.strokeStyle = ink; x.stroke();
+  // stamp
+  const stamp = win ? CH.stamps.win : CH.stamps.lose, sc = win ? "#10A36B" : "#FF5A5F";
+  x.save(); x.translate(cx + 60, cy + 150); x.rotate(-0.1); x.font = `800 52px ${D}`;
+  const sw = Math.min(x.measureText(stamp).width, 520); x.lineWidth = 7; x.strokeStyle = sc; rr(x, -10, -62, sw + 44, 86, 14); x.stroke();
+  x.fillStyle = sc; x.fillText(stamp, 12, 0, 520); x.restore();
+  // headline
+  x.fillStyle = ink; x.font = `800 58px ${D}`;
+  let y = cy + 290; wrapLines(x, fill(win ? CH.headline.win : CH.headline.lose, S.used, S.meter), cw - 440).slice(0, 3).forEach(l => { x.fillText(l, cx + 50, y); y += 64; });
+  // meter
+  y = Math.max(y + 30, cy + 400);
+  x.font = `700 28px ${B}`; x.fillStyle = "#5A5F73"; x.fillText("DEAL METER", cx + 50, y);
+  x.textAlign = "right"; x.fillStyle = ink; x.font = `800 34px ${D}`; x.fillText(S.meter + "%", cx + cw - 50, y + 2); x.textAlign = "left";
+  y += 22; const mw = cw - 100;
+  rr(x, cx + 50, y, mw, 56, 28); x.fillStyle = "#F1F3FF"; x.fill();
+  if (S.meter > 0) { x.save(); rr(x, cx + 50, y, mw, 56, 28); x.clip(); x.fillStyle = S.meter >= 100 ? "#34D399" : "#FFD233"; x.fillRect(cx + 50, y, mw * S.meter / 100, 56); x.restore(); }
+  rr(x, cx + 50, y, mw, 56, 28); x.lineWidth = 5; x.strokeStyle = ink; x.stroke();
+  y += 110;
+  // the line
+  const line = S.best ? S.best.text : "";
+  if (line) {
+    x.font = `700 26px ${B}`; x.fillStyle = "#5A5F73"; x.fillText(win ? "THE LINE THAT WORKED" : "MY BEST LINE", cx + 50, y);
+    x.font = `600 38px ${B}`; const ls = wrapLines(x, "“" + line + "”", mw - 60); const shown = ls.slice(0, 6);
+    if (ls.length > 6) shown[5] = shown[5].replace(/\s*\S*$/, "") + "...";
+    const bh = shown.length * 50 + 50; y += 20;
+    rr(x, cx + 50, y, mw, bh, 22); x.fillStyle = "#F1F3FF"; x.fill(); x.lineWidth = 4; x.strokeStyle = ink; x.stroke();
+    x.fillStyle = ink; let ty = y + 60; shown.forEach(l => { x.fillText(l, cx + 80, ty); ty += 50; }); y += bh + 50;
+  }
+  x.font = `700 30px ${B}`; x.fillStyle = ink;
+  x.fillText(`${S.used} message${S.used > 1 ? "s" : ""}  ·  ${S.found.length} of ${S.total} weak spots found`, cx + 50, cy + ch - 55);
+  // footer
+  x.fillStyle = "#fff"; x.font = `800 40px ${D}`; x.lineWidth = 6; x.strokeStyle = ink;
+  x.strokeText("#TalkMeIntoIt", 70, H - 60); x.fillText("#TalkMeIntoIt", 70, H - 60);
+  x.textAlign = "right"; x.font = `700 28px ${B}`; x.fillText(CONFIG.site, W - 70, H - 64); x.textAlign = "left";
+  return await new Promise(r => c.toBlob(b => r(b), "image/png"));
+}
+async function wireShare(win, shareText) {
+  const fname = `talk-me-into-it-${String(CH.name).toLowerCase()}.png`;
+  const post = () => window.open("https://x.com/intent/post?text=" + encodeURIComponent(shareText), "_blank", "noopener");
+  const save = () => { if (!CARD) return; const a = document.createElement("a"); a.href = URL.createObjectURL(CARD); a.download = fname; document.body.appendChild(a); a.click(); a.remove(); };
+  $("saveImg").onclick = () => { save(); track("save-image"); };
+  $("postx").onclick = () => track("post-x");
+  $("shareImg").onclick = async () => {
+    track("share-image");
+    const file = CARD ? new File([CARD], fname, { type: "image/png" }) : null;
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], text: shareText }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    // no share sheet here (most computers): save the picture, then open X with the text ready
+    save(); $("note").textContent = ""; post();
+    $("shareImg").textContent = "Image saved. Add it to your post";
+  };
+  CARD = null;
+  try { CARD = await makeCard(win); } catch (e) { CARD = null; }
+  const prev = $("cardPrev");
+  if (prev) prev.innerHTML = CARD ? `<img alt="Your result card" src="${URL.createObjectURL(CARD)}">` : "<span>Couldn't make the image. Post on X still works.</span>";
+}
+const ROUNDS = 3;                                   // rounds per person per day (first go plus 2 retries)
+function roundNow() { try { return Math.max(1, +localStorage.getItem("tm-tries-" + today()) || 1); } catch (e) { return 1; } }
+function triesLeft() { return Math.max(0, ROUNDS - roundNow()); }
+function retry() {
+  if (triesLeft() <= 0) return;
+  try { localStorage.removeItem(KEY); localStorage.setItem("tm-tries-" + today(), String(roundNow() + 1)); } catch (e) {}
+  track("retry");
+  location.reload();
+}
+
+/* ---------------- end ---------------- */
+function end(win, restored) {
+  const n = S.used;
+  const line = S.best ? S.best.text : null;
+  const hidden = Math.max(0, S.total - S.found.length);
+  if (!restored) track(win ? "won" : "lost");
+  const tag = "#TalkMeIntoIt";
+  const shareText = `${fill(win ? CH.share.win : CH.share.lose, n, S.meter)}\n\nToday on Talk Me Into It it's ${CH.name}. Your turn: ${CONFIG.site}\n${tag}`;
+  $("sheet").innerHTML = `
+    <button class="x" id="closeSheet" type="button" aria-label="Close">×</button>
+    <span class="stamp ${win ? "win" : "lose"}">${esc(win ? CH.stamps.win : CH.stamps.lose)}</span>
+    <h2>${esc(fill(win ? CH.headline.win : CH.headline.lose, n, S.meter))}</h2>
+    <p class="left ${triesLeft() ? "" : "none"}">${triesLeft() ? `You have ${triesLeft()} ${triesLeft() === 1 ? "retry" : "retries"} left today.` : `No retries left today. A new character comes in ${untilTomorrow()}.`}</p>
+    ${line ? `<div class="quote"><small>${win ? "The line that worked" : "Your best line"}</small>${esc(line)}</div>` : ""}
+    <div class="found"><p>You found ${S.found.length} of ${S.total} weak spots.</p>
+      <div class="chips">${S.found.map(id => `<span class="chip">${esc(S.labels[id] || "")}</span>`).join("")}${Array.from({ length: hidden }, () => '<span class="chip hid">Hidden</span>').join("")}</div></div>
+    ${reviewHTML()}
+    <p class="rh">How people beat ${esc(CH.name)} today</p>
+    <p class="wstat" id="wstat">Loading...</p>
+    <ol class="wall" id="wall"></ol>
+    <div class="card-prev" id="cardPrev"><span>Making your result card...</span></div>
+    <div class="actions">
+      <button class="btn wide" id="shareImg" type="button">Share my result</button>
+      <button class="btn alt" id="saveImg" type="button">Save image</button>
+      <a class="btn alt" href="https://x.com/intent/post?text=${encodeURIComponent(shareText)}" target="_blank" rel="noopener" id="postx">Post on X</a>
+      ${triesLeft() > 0 ? `<button class="btn alt wide" id="retry" type="button">Retry (${triesLeft()} ${triesLeft() === 1 ? "retry" : "retries"} left)</button>` : ""}
+    </div>
+    <p class="next">New character in <b id="cd">${untilTomorrow()}</b></p>`;
+  $("veil").hidden = false;
+  wireShare(win, shareText);
+  if ($("retry")) $("retry").onclick = retry;
+  $("closeSheet").onclick = () => { $("veil").hidden = true; };
+  doneBar(win);
+  loadWall(win ? line : null);
+  $("postx").onclick = () => track("post-x");
+  if (win && !restored) confetti();
+}
+function reviewHTML() {
+  if (!S.turns || !S.turns.length) return "";
+  const chips = t => t.wasted ? '<span class="z">0 Wasted turn</span>'
+    : (t.gains.map(g => `<span class="g">+${g.v} ${esc(g.label)}</span>`).join("") + t.losses.map(l => `<span class="l">${l.v} ${esc(l.label)}</span>`).join("")) || '<span class="z">+0 No change</span>';
+  return `<p class="rh">Your messages</p><ol class="turns">${S.turns.map(t => `<li>${esc(t.text)}<div class="tc">${chips(t)}</div></li>`).join("")}</ol>`;
+}
+async function loadWall(mine) {
+  try {
+    const r = await fetch(new URL("lines?day=" + encodeURIComponent(today()), CONFIG.api.replace(/\/?$/, "/")));
+    const d = await r.json();
+    if (!$("wall")) return;
+    $("wstat").textContent = d.played ? `${d.won} of ${d.played} players beat ${CH.them} today.` : "You're one of the first to play today.";
+    $("wall").innerHTML = d.wins.length ? d.wins.map(w => `<li class="${mine && w.line === mine ? "me" : ""}">${esc(w.line)}<small>${mine && w.line === mine ? "You · " : ""}won in ${w.n} message${w.n > 1 ? "s" : ""}</small></li>`).join("")
+      : `<li>Nobody has beaten ${CH.them} yet today.</li>`;
+  } catch (e) { if ($("wstat")) $("wstat").textContent = "Couldn't load today's lines right now."; }
+}
+function doneBar(win) {
+  const f = $("form"); if (!f) return;
+  const bar = document.createElement("div"); bar.className = "donebar";
+  bar.innerHTML = `<span>${win ? `You beat ${CH.name}.` : `${CH.name} won this one.`} New character in <b class="cd2">${untilTomorrow()}</b></span><span class="dbb">${triesLeft() > 0 ? `<button class="btn alt" type="button" id="retry2">Retry (${triesLeft()})</button>` : ""}<button class="btn" type="button" id="showRes">Result</button></span>`;
+  f.replaceWith(bar);
+  $("showRes").onclick = () => { $("veil").hidden = false; loadWall(S.win && S.best ? S.best.text : null); };
+  if ($("retry2")) $("retry2").onclick = retry;
+}
+setInterval(() => document.querySelectorAll("#cd,.cd2").forEach(el => el.textContent = untilTomorrow()), 30000);
+function esc(s) { return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+/* confetti */
+function confetti() {
+  const c = $("confetti"); c.hidden = false; const x = c.getContext("2d");
+  c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio; x.scale(devicePixelRatio, devicePixelRatio);
+  const cols = ["#FFD233", "#34D399", "#FF5A5F", "#2F47E8", "#FFFFFF"];
+  const P = Array.from({ length: 140 }, () => ({ x: innerWidth / 2 + (Math.random() - .5) * 80, y: innerHeight * .45, vx: (Math.random() - .5) * 14, vy: -Math.random() * 16 - 6, r: Math.random() * 6 + 4, a: Math.random() * 6, va: (Math.random() - .5) * .4, c: cols[Math.floor(Math.random() * cols.length)] }));
+  let t = 0;
+  (function f() {
+    x.clearRect(0, 0, innerWidth, innerHeight);
+    P.forEach(p => { p.vy += .45; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; x.save(); x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.strokeStyle = "#141414"; x.lineWidth = 1.5; x.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); x.strokeRect(-p.r, -p.r / 2, p.r * 2, p.r); x.restore(); });
+    if (++t < 200) requestAnimationFrame(f); else c.hidden = true;
+  })();
+}
+
+/* start */
+function restore(saved) {
+  Object.assign(S, saved);
+  setMeter(S.meter); pips();
+  const lastYou = [...S.history].reverse().find(h => h.role === "you");
+  const lastThem = [...S.history].reverse().find(h => h.role !== "you");
+  if (lastYou) { $("mine").hidden = false; $("mine").textContent = lastYou.text; }
+  face(S.done ? (S.win ? "defeated" : "stern") : moodFor(S.meter));
+  $("say").textContent = S.done && !S.win ? CH.loseLine : (lastThem ? lastThem.text : CH.opening);
+  if (S.done) setTimeout(() => end(S.win, true), 500);
+}
+async function boot() {
+  $("stage").classList.add("loading"); $("send").disabled = true;
+  $("say").innerHTML = '<span class="dots"><span></span><span></span><span></span></span>';
+  let c = null;
+  try {
+    const ctl = new AbortController(); setTimeout(() => ctl.abort(), 15000);
+    const r = await fetch(new URL("today?day=" + encodeURIComponent(today()), CONFIG.api.replace(/\/?$/, "/")), { signal: ctl.signal });
+    if (r.ok) c = await r.json();
+  } catch (e) {}
+  if (!c || !c.art) {
+    $("say").textContent = "Couldn't load today's round. Check your connection and refresh.";
+    $("dayline").textContent = "Offline";
+    return;
+  }
+  setupCharacter(c);
+  $("stage").classList.remove("loading"); $("send").disabled = false;
+  const saved = load();
+  if (saved) restore(saved);
+  else { face("stern"); setMeter(0); pips(); setTimeout(() => say(CH.opening), 250); }
+}
+boot();
+</script>
+
+</body></html>

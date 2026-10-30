@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="https://tmquy.com/pokemon-battleline/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2088a0" />
+    <meta name="description" content="Build your Pokémon team, explore the regions, and defend the field in an action defense RPG." />
+    <title>Pokémon Battleline · Main menu</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root{--ui-game-background:#203e35}
+      #boot-loading{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;margin:0;padding:24px;background:var(--ui-game-background);color:#505058;font:18px/1.4 monospace;box-sizing:border-box}#boot-loading>div{width:min(100%,300px);padding:28px 22px;border:3px solid #282838;border-radius:9px;background:#f8f8f8;box-shadow:inset 0 0 0 2px #e0e0e0,0 3px 0 #9898a8;text-align:center}#boot-loading p{margin:0 0 20px}#boot-loading progress{width:100%;height:8px;accent-color:#2088a0}#boot-loading a{display:inline-block;margin:8px;padding:8px;color:#505058}#boot-loading [hidden]{display:none!important}
+    </style>
+    <script>
+      (() => {
+        let failed = false;
+        let slow = false;
+        let stopped = false;
+        const dispose = () => {
+          stopped = true;
+          clearTimeout(timer);
+          window.removeEventListener('error', onError, true);
+          window.removeEventListener('pokefront:boot-complete', dispose);
+          document.removeEventListener('DOMContentLoaded', render);
+        };
+        const render = () => {
+          if (stopped) return;
+          const boot = document.getElementById('boot-loading');
+          if (!boot) {
+            if (document.readyState !== 'loading') dispose();
+            return;
+          }
+          if (failed) {
+            boot.dataset.bootFailed = 'true';
+            boot.setAttribute('aria-busy', 'false');
+            const label = boot.querySelector('[data-boot-label]');
+            label.textContent = 'Could not open the game. Check your connection and try again.';
+            label.setAttribute('role', 'alert');
+            boot.querySelector('progress').hidden = true;
+          }
+          if (failed || slow) boot.querySelector('[data-boot-actions]').hidden = false;
+        };
+        const onError = event => {
+          const target = event.target;
+          if (!(event instanceof ErrorEvent
+            || target instanceof HTMLScriptElement && target.type === 'module'
+            || target instanceof HTMLLinkElement && target.relList.contains('stylesheet'))) return;
+          failed = true;
+          document.documentElement.dataset.bootFailed = 'true';
+          render();
+        };
+        const timer = setTimeout(() => { slow = true; render(); }, 15000);
+        window.addEventListener('error', onError, true);
+        window.addEventListener('pokefront:boot-complete', dispose, { once: true });
+        document.addEventListener('DOMContentLoaded', render, { once: true });
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/app-BuQlqRtJ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/app-CTWCVadT.css">
+  </head>
+  <body>
+    <section id="boot-loading" aria-label="Loading resources" aria-busy="true"><div><p data-boot-label role="status">Loading game…</p><progress aria-label="Resource progress"></progress><div data-boot-actions hidden><a href="" onclick="location.reload();return false">Try again</a><a href="/">Main menu</a></div><noscript><p>Enable JavaScript to play.</p></noscript></div></section>
+    <div id="app"></div>
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"fb33fe2ad2b44f24a16f6baadb725bbf","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

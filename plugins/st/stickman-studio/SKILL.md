@@ -42,15 +42,24 @@ Stickman Studio converts audio tracks and viral video moments into viral 2D anim
    - Assigns character poses (`talk`, `point`, `think`, `celebrate`, `run`, `surprised`), props (`bulb`, `chart_up`, `alert`, `fire`), and camera shakes.
    - Formulates punchy, exaggerated stickman parody choreographies preserving the original moment's soul.
 
-4. **Dual-Mode Video Rendering (`video_render_worker.py`)**:
+4. **AI Cartoon Background Generator (`ai_background_generator.py`)**:
+   - Generates high-retention 2D cartoon scene backgrounds (Stick Hub Animation standard) via high-speed zero-key neural diffusion and procedural vector scenes.
+   - Built-in scene themes: Modern Podcast Studio, School Classroom, Courtroom, Breaking News Broadcast, Cozy Living Room, Cyber Synthwave Grid, Coffee Shop Cafe, and City Street.
+   - Multi-layer compositing in `pro_stickman_engine.py` rendering backgrounds seamlessly beneath stickman puppets.
+
+5. **Dual-Mode Video Rendering & Audio Multiplexing (`video_render_worker.py`)**:
    - **Split-Screen PIP (`split_pip`)**: Top half (720x640) displays the real video clip; Bottom half (720x640) displays the synchronized Stickman parody recreation with clean neon separator.
    - **Full Stickman (`full_stickman`)**: 100% 720x1280 procedural 2D stickman animation short.
+   - **Synchronized Audio Multiplexing**: Multi-tier audio discovery (from media file, audio chunks, batch audio.mp3) with high-bitrate AAC (192k) muxing. Guaranteed non-silent, crystal-clear audio output.
    - Custom destination folder export (`📁 Save to...`).
 
-5. **REST & Headless Endpoints (`18040`)**:
+6. **REST & Headless Endpoints (`18040`)**:
    - `GET /api/health`: System health and status.
    - `GET /api/bridge/autoshorts`: Discovers latest clips from AutoShorts Studio.
    - `GET /api/pick-folder`: Native OS directory chooser.
    - `POST /api/beats/slice`: Micro-beat partitioning & cognitive director analysis.
+   - `POST /api/backgrounds/generate`: AI cartoon scene generation.
+   - `GET /api/backgrounds/presets`: List of built-in scene presets.
+   - `GET /api/backgrounds/:filename`: Static image serving for generated backgrounds.
    - `POST /api/render/video`: Asynchronous dual-mode video render job dispatch.
    - `GET /api/jobs/:id` & `GET /api/jobs/stream`: SSE / Polling progress HUD.

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <base href="https://convergence-rts.vercel.app/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>交汇战线 · Convergence RTS</title>
+  <link rel="stylesheet" href="online/online.css">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #070b11; color: #eef2f6; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif; -webkit-font-smoothing: antialiased; }
+    #canvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+    #boot { position: fixed; inset: 0; display: grid; align-items: center; padding: 7vw; background: linear-gradient(90deg,rgba(5,9,14,.96),rgba(6,10,16,.72) 42%,rgba(6,10,16,.08)),linear-gradient(0deg,rgba(5,9,14,.8),rgba(5,9,14,0) 40%),url('cover.png') center/cover; animation: boot-in .6s ease-out both; }
+    #boot[hidden] { display: none; }
+    .content { max-width: 540px; animation: rise .7s cubic-bezier(.2,.8,.2,1) .05s both; }
+    .brand { display: flex; align-items: center; gap: 12px; color: #f2b45c; font-size: 13px; font-weight: 600; letter-spacing: .3em; }
+    .brand::before { content: ''; width: 20px; height: 2px; background: #f2b45c; }
+    h1 { font-size: clamp(44px,5.2vw,80px); font-weight: 800; margin: 18px 0 10px; letter-spacing: .02em; line-height: 1.05; text-shadow: 0 6px 30px rgba(0,0,0,.45); }
+    .subtitle { color: #aeb9c4; font-size: 17px; font-weight: 500; margin-bottom: 40px; }
+    button { font: inherit; font-size: 15px; font-weight: 600; color: #eef2f6; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; padding: 14px 26px; cursor: pointer; margin: 0 10px 14px 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.1); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: background .16s ease, border-color .16s ease, transform .12s ease, box-shadow .16s ease; }
+    button:hover { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.24); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.16); }
+    button:active { transform: translateY(0) scale(.98); }
+    #enter { color: #1b1307; background: linear-gradient(#f6c270,#e8a84c); border-color: rgba(255,255,255,.28); box-shadow: 0 8px 24px rgba(242,180,92,.3), inset 0 1px 0 rgba(255,255,255,.55); }
+    #enter:hover { background: linear-gradient(#ffd08a,#f2b45c); box-shadow: 0 10px 30px rgba(242,180,92,.42), inset 0 1px 0 rgba(255,255,255,.6); }
+    button.secondary { background: transparent; border-color: rgba(255,255,255,.1); color: #c4ced7; box-shadow: none; }
+    button:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 2px; }
+    button:disabled { opacity: .5; cursor: wait; transform: none; }
+    #progress { display: block; width: 100%; height: 6px; margin: 22px 0; border: 0; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.08); accent-color: #f2b45c; -webkit-appearance: none; appearance: none; }
+    #progress::-webkit-progress-bar { background: rgba(255,255,255,.08); border-radius: 999px; }
+    #progress::-webkit-progress-value { background: linear-gradient(90deg,#e8a84c,#ffd08a); border-radius: 999px; transition: width .25s ease; }
+    #progress::-moz-progress-bar { background: linear-gradient(90deg,#e8a84c,#ffd08a); border-radius: 999px; }
+    #progress[hidden] { display: none; }
+    #status { line-height: 1.7; color: #f3d7aa; font-weight: 500; }
+    .hint { font-size: 13px; color: #8e9cab; line-height: 1.9; }
+    #detail { max-height: 150px; overflow: auto; white-space: pre-wrap; font-size: 12px; color: #ffb3a8; background: rgba(255,107,94,.08); border: 1px solid rgba(255,107,94,.3); border-radius: 10px; padding: 12px; }
+    .version { position: absolute; bottom: 28px; left: 7vw; color: #5f6b79; font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+    .creator { position: absolute; right: 7vw; bottom: 22px; display: flex; align-items: center; gap: 12px; padding: 7px 18px 7px 7px; border-radius: 999px; color: #eef2f6; text-decoration: none; background: rgba(8,13,20,.72); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 10px 30px rgba(0,0,0,.35); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: border-color .16s ease, background .16s ease, transform .12s ease; animation: rise .7s cubic-bezier(.2,.8,.2,1) .25s both; }
+    .creator img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px #0a0f16, 0 0 0 3.5px #e8a84c; }
+    .creator-text { display: flex; flex-direction: column; gap: 3px; line-height: 1.1; }
+    .creator-label { color: #f2b45c; font-size: 10px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
+    .creator-id { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; }
+    .creator-handle { color: #c4ced7; font-weight: 600; }
+    .creator-links { display: flex; gap: 8px; margin-left: 6px; }
+    .creator-link { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: #eef2f6; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16); transition: border-color .18s, background .18s, transform .18s; }
+    .creator-link:hover { border-color: rgba(242,180,92,.8); background: rgba(242,180,92,.18); transform: translateY(-1px); }
+    .creator-link:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 3px; }
+    .creator-link svg { width: 16px; height: 16px; }
+    @media (max-width: 760px), (max-height: 520px) { .creator { position: static; margin-top: 8px; width: max-content; max-width: 100%; } }
+    @keyframes boot-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { #boot, .content { animation: none; } button { transition: none; } }
+  </style>
+  <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
+</head>
+<body>
+  <canvas id="canvas" tabindex="0" aria-label="交汇战线 3D RTS 游戏"></canvas>
+  <div id="boot">
+    <main class="content">
+      <div class="brand">CONVERGENCE</div>
+      <h1 id="shell-title">交汇战线</h1>
+      <p class="subtitle" id="shell-subtitle">复仇者联盟 / 正义联盟</p>
+      <button id="enter">单机指挥中心</button><button id="online-launch" hidden>联机对战</button><button id="fullscreen" class="secondary">全屏进入</button>
+      <progress id="progress" hidden></progress>
+      <p id="status" role="status">浏览器指挥终端</p>
+      <p class="hint" id="shell-hint">L 两点框选 · M 轻点下令 · 空格移动视野<br>双指滑动平移 · 捏合缩放 · U / I 英雄 · Esc 暂停<br>点击游戏区域启用声音。存档保存在当前浏览器中。</p>
+      <p class="hint" id="shell-voice"></p>
+      <pre id="detail" hidden></pre>
+    </main>
+    <div class="creator" id="creator">
+      <img src="data:image/webp;base64,UklGRsgJAABXRUJQVlA4ILwJAADwKgCdASpgAGAAPj0YikMiIaEY6m2AIAPEtABkDvS/OfxJ7e7FPTvxm/bn/AfM1WH7D96f2o/y3VAH461Pvv5T/5btYeYB+mP99/LrtH+YD9Zv2594r0f/4n1AP5r/dOsg9ADyyv24+Db9pf3I+Aj9dswg7X/8v4U+RoFe0v6K/peEngBeu/8tvNoAPzP9u/CU1PvBHLSeBh5z7AH8v/sX+99RX/T+7r27/S//b/yXwH/zX+rf8T+5+1J7Bv2z9kf9Y//+pAAX7Tk5WN/iu/2l9oPbcZo/q0WvU4ZguamtJj/BtwVotsKcXsaZrqiZbz/wK7zqf816HVcEtiEeBblNpU3pXsMrg/QJK64nVdngRbOoq7EUPeGA3mDCZ/TmQFf6JXZewrIeQSovYrRxFzgozsU3HoxUwXWg+ILV8WhqtTCrITxvaO2rZ+f0t1xQGYMc6yNMRJsj3zKjH16y/kAYAP776Pbf3Nf259j0VJs2FSPdTVlLl+FXsOe8G7xXgxrlX8e3XtUz9m494wXbGMuqpj6QMpS+RL+DqyC3d5U4RsHEn47PD1sWgpfs7XN4Pq/1D2nvpJi+WPy8rmmd5e4usKIw4KWT3u/9jSZMuTnw5hZGJ9sA3r6C4Y+G4LqKgrRBLfAjwk9KCBKvRBRYAGmuWe8KC5w8EIxSH1gL9xIEEtRM6CkM71eFCEoWWdr4CSGHCu0Mc00rrAheIZy17VCPXXJGF3NA/2lVGoXC5YYtkb0Ge6/Ewn0uuP3/+CJdVVErmcz3kepSB30ucM6dcIEnpQxyL73o/h/AqA467z44vHtgH9h4hxBMQdWhaEvIE9M/9XHHA0HQU4sVu57uFD7+JzlHELjnbY1alteTZ3zfN4wstMBWrLapC66wpog/Z5agxnjyz7jtP/iYfvJfKMYIfFZnW1+OD7rM9scJ2xVUDAgFqjs/mh7TUzFWux6i7FG+tdfpjNjqkz/5gp6b/YROOH+yZ84KFB2MZjhA+rXtazqFovkiO3C0CFLatzOH4xFDz82Eznur0wKN3dTQz3ML//+olwmF1PqTq4BNS5qCcGdRUGuQvE/v/895GOVxGmP9WzbVztHwv7zyC9TT26FLnb2by7OMMsRVCUwBjB4QxdxYe4dxqzSvic/QrpxBihfYQe7lD1KGoinHdlImfqWicjGpTDOh6F4QDtAwLcPerfvKTTU18DTfCT3/Y0K+OFuOuT13CP50TYmjenWJZ7Se+8cBitSKuGbrK6g68AAAED4ObPhYRBTcX7tw1IXFZDoIlZZi2PX6jL9SbtOP6vMekuxZCTyB+VrddVJljw4bc1S1dzwRJvtLcd3VWpIP5/F5N0NlIp2yv5sxkLMg5mn+IBs9k9a8+p7qzrZY4lVGolDw5vrXHyVfzleduQgh/B7xT9CZCSVuTfSclTYH+LRv+en8/HsDeTFdKUdiZdq5NvRLyk+HUToDXCNO7EdcRrN31vAfcXwZATNBrvpcI1syMCheQYhIs+a8WlO/PrVQ2zcaF9EEebovdJp3j8woaytclPZ+Xev6rY9yfcAhsD5iK3px74NEGNGk/kFIjDYEX+VfHcWZRrCs4OuEXLde0ONLO7XNxrQsz85+pshnmlkSI/1mxDvZD2Klg6eWpoR29vqBqePWH5pKpo7PqkJN1I+Xrf/LSur/DDQElujl6U4uih4/NVpV9HDnEuL6In+nNyMWHnJTHeMYscEgdce4j7ETOHcRg9UByAUex/K+9ncQkaMSWG4B0xT8HxfWWXlA43L/k2N3+Lt8SEFDwBVHn532jMjK2HdcBCBN/ucFj8aif93mvOWhNRi+LXZ7py199nLIFrTnM7ARHtvcDKMjwgkYCHZPTmRslH/CHkUrUVf7rSa4erre68WJ1Xu3zPnSY2my8yTUy8ucIikoRtbG/yXW+31R/JqnbYV2ejYdIA7faR3eZxkN4AjcTrlGx9hh7bPuoTZUquSvr39E5bKfYxK2fCtF8tLNaQ0uK/fZFwZqzkxQGqSiawmO8X1DMFmWK7sw9FZWUZ0PWYfvL/ySmY+0uLultEL4otY37WLWtQawu2WyJtg1l7/Ny6Bx7kJtSj2guRjHaDuf5yPADP+OqNZj/lX81/+Mue4m/halgpwyY6MZ+i17w6Wd5KGptcUqq8H3/SLtBBMFDWCH9cJYvNOA4Hqd/PASFsWMzmMml1fHpvOuzyNHgy//1yh+Q4h/tE0zC+TXLX76pFBe2/XHaQevl9fBxd303OJNrTkUYfAjTqNV2EHezLRK5O+AuR/3rVH9h5Unmr3kwLnbNwQxvGihYX/8dPut9SLtJXkjtqn3tymee9/FTFZdD/0tCZbGXGyGIFGC8AepHBd6VDVDcbZvpPlDGxqbO+8aL8Qji/xmVTJrqHi2NxRlKE8ld8ZQn+ZMZOzoJPlMBcfjZQNP8IZxZqVNx8PE5LxYaVgGfQvfflEEP2b4R9AQmViOXPXpb9xrLPOIvC4jOFcdsQAfWKrsAqJAtT5jnzeWsncK6Z6W7prRqk+iV/H3L9NMICsQ++TFAXjTxHHOZVelu5p26uux8Pc7XL5ELEHIyMzNAQpor/PxltAmMNIwLdAkoNKo9gztEVEDprwjDIJvWtyl8CEtfdU3RxBK26Gqsul2QCajfggKAClCxb1nzVhCyZlOWhM3/zYYoUmYv/4tywT7ZbkIwxG7z1rHJ/0WGM1v+Zccja+eDJfAmJbVInsFbQdz85FcCaXwKKQor9UcYuePlmJydSAKxWRwY7jPZ04RtK1AyXyQNq1evfmLOXvgJLlni0tNzwDAXQhNS+BAUgmATdwwz1Txg/6sqlNDNQzQzps1wcvbvhXi0jhgu5TEnRRriGjd38WqhuZFSU2zcdyT1xrhTjgbu085LZNbwR6IgzY/OedOYMUzBOsgeWfhOHCtuiGRgnLA+wFNaMsBJIjC+sDo4s/GdcbcnVEuLoovUEowsvmXZVRoew38vDSmAR+uZfmVbYpQHDUswARlKiSzLJzBYk+OF2XBeFBc6LbHcV/pSdKNSAxb6RTd6SBdZnKQ77zfinE6uPb4BQfGVyk+5u/8uFx6uta7B6WeMHGXO9/KKKRFJbfLydampErU03gz4q/WouPi8ZVGhwcnXQipuF3vhId+CeT3GSC7wlgdY93abKx6WbSylp+/xDA++9daiktnWlLV67KHnko5tt4BP1QiHTi1P36+CrYWbsFoFKo2yW/2O+tT3u1fiQ7Eiw4c/fkz+cIbM8MbT5nox9Rt2LHcqXwdalXfZfGhkcd4KeSxJQ/0FkVVI6px5ZwhRKOvwyH3hfJlH3fipKCAAA==" alt="" width="44" height="44">
+      <span class="creator-text"><span class="creator-label" id="creator-label">Created by</span><span class="creator-id">Ricco <span class="creator-handle">@riccoasi</span></span></span>
+      <span class="creator-links">
+        <a class="creator-link" href="https://x.com/riccoasi" target="_blank" rel="noopener me" aria-label="Ricco (@riccoasi) on X" title="X · @riccoasi"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a class="creator-link" href="https://www.tiktok.com/@riccoasi" target="_blank" rel="noopener me" aria-label="Ricco (@riccoasi) on TikTok" title="TikTok · @riccoasi"><svg viewBox="-1 -1 26 26" aria-hidden="true"><path fill="#25f4ee" transform="translate(-.8 -.8)" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/><path fill="#fe2c55" transform="translate(.8 .8)" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/><path fill="#fff" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></a>
+      </span>
+    </div>
+    <div class="version" id="shell-version">v0.4.6 · 交汇指挥网络</div>
+  </div>
+  <noscript>Please enable JavaScript to play. / 请启用 JavaScript 后运行游戏。</noscript>
+  <script src="online/language.js"></script>
+  <script src="index.js"></script>
+  <script>
+    const config = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":68193664,"index.wasm":38820072},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const engine = new Engine(config);
+    const boot = document.getElementById('boot');
+    const status = document.getElementById('status');
+    const progress = document.getElementById('progress');
+    const enter = document.getElementById('enter');
+    const fullscreen = document.getElementById('fullscreen');
+    const shellText = (en, zh) => window.ConvergenceLanguage.getLocale() === 'zh' ? zh : en;
+    let startPromise = null;
+    let running = false;
+    let engineExited = false;
+    let phase = 'idle';
+    let progressPercent = 0;
+    let loadedBytes = 0;
+    let totalBytes = 0;
+    let exitCode = 0;
+    function getStatusText() {
+      if (phase === 'error') return shellText('Loading failed. Reload this page or use a browser that supports WebGL 2.', '载入未完成，请重新载入或使用支持 WebGL 2 的浏览器。');
+      if (phase === 'loading') return shellText(`Loading battlefield resources… ${progressPercent}%`, `正在载入战区资源… ${progressPercent}%`);
+      if (phase === 'initializing') return shellText('Initializing the 3D battlefield…', '正在初始化三维战区…');
+      if (phase === 'exited') return shellText('You have left the battlefield.', '已退出战区。');
+      if (phase === 'stopped') return shellText(`The game has stopped (${exitCode}).`, `游戏已停止（${exitCode}）。`);
+      return shellText('Browser command terminal', '浏览器指挥终端');
+    }
+    function renderShellLanguage() {
+      document.title = shellText('Convergence RTS · Command Network', '交汇战线 · Convergence RTS');
+      document.getElementById('shell-title').textContent = shellText('Convergence', '交汇战线');
+      document.getElementById('shell-subtitle').textContent = shellText('Avengers / Justice League', '复仇者联盟 / 正义联盟');
+      document.getElementById('canvas').setAttribute('aria-label', shellText('Convergence 3D real-time strategy game', '交汇战线 3D 即时战略游戏'));
+      enter.textContent = phase === 'error' ? shellText('Reload', '重新载入') : engineExited ? shellText('Enter again', '重新进入') : shellText('Single player', '单机指挥中心');
+      document.getElementById('online-launch').textContent = shellText('Play online', '联机对战');
+      fullscreen.textContent = shellText('Enter fullscreen', '全屏进入');
+      const lines = shellText([
+        'L Two-point box select · M Tap to command · Space Pan camera',
+        'Two-finger scroll to pan · Pinch to zoom · U / I Heroes · Esc Menu',
+        'Click the battlefield to enable sound. Saves stay in this browser.'
+      ], [
+        'L 两点框选 · M 轻点下令 · 空格移动视野',
+        '双指滑动平移 · 捏合缩放 · U / I 英雄 · Esc 菜单',
+        '点击游戏区域启用声音。存档保存在当前浏览器中。'
+      ]);
+      const hint = document.getElementById('shell-hint');
+      hint.replaceChildren();
+      lines.forEach((line, index) => { if (index) hint.append(document.createElement('br')); hint.append(document.createTextNode(line)); });
+      document.getElementById('shell-voice').textContent = shellText('Voice: English · Subtitles: English', '人声：英语 · 字幕：中文');
+      document.getElementById('creator-label').textContent = shellText('Created by', '制作者');
+      document.getElementById('shell-version').textContent = shellText('v0.4.6 · Convergence Command Network', 'v0.4.6 · 交汇指挥网络');
+      status.textContent = getStatusText();
+    }
+    function showError(error) {
+      console.error(error);
+      phase = 'error';
+      boot.hidden = false;
+      const detail = document.getElementById('detail');
+      detail.hidden = false;
+      detail.textContent = String(error?.message || error);
+      enter.disabled = false;
+      enter.onclick = () => location.reload();
+      fullscreen.hidden = true;
+      renderShellLanguage();
+    }
+    function start(useFullscreen) {
+      if (running) return Promise.resolve();
+      if (engineExited) return Promise.reject(new Error(shellText('Reload this page to start a new game.', '请刷新页面后重新进入游戏。')));
+      if (startPromise) return startPromise;
+      startPromise = window.ConvergenceLanguage.whenChosen().then(() => loadGame(useFullscreen));
+      return startPromise;
+    }
+    async function loadGame(useFullscreen) {
+      enter.disabled = true; fullscreen.disabled = true;
+      if (useFullscreen && document.documentElement.requestFullscreen) {
+        try { await document.documentElement.requestFullscreen(); } catch (_) { /* Continue in window. */ }
+      }
+      const missing = Engine.getMissingFeatures({threads: true});
+      if (missing.length) { const error = new Error(missing.join('\n')); showError(error); throw error; }
+      progress.hidden = false;
+      phase = 'loading';
+      renderShellLanguage();
+      try {
+        await engine.startGame({
+          onProgress(current, total) {
+            if (total > 0) {
+              progress.max = total; progress.value = current;
+              loadedBytes = current; totalBytes = total;
+              progressPercent = Math.round(current / total * 100);
+              phase = current < total ? 'loading' : 'initializing';
+              status.textContent = getStatusText();
+              window.ConvergenceOnline?.status(status.textContent);
+              window.dispatchEvent(new CustomEvent('convergence-load-progress', { detail:{ phase, percent:progressPercent, current, total } }));
+            }
+          },
+          onExit(code) {
+            running = false; engineExited = true; exitCode = code;
+            phase = code === 0 ? 'exited' : 'stopped';
+            boot.hidden = false; progress.hidden = true;
+            enter.disabled = false;
+            enter.onclick = () => location.reload(); fullscreen.hidden = true;
+            renderShellLanguage();
+          }
+        });
+        running = true;
+        window.dispatchEvent(new CustomEvent('convergence-load-progress', { detail:{ phase:'ready', percent:100, current:loadedBytes, total:totalBytes } }));
+        boot.hidden = true;
+        renderShellLanguage();
+        document.getElementById('canvas').focus();
+      } catch (error) { showError(error); throw error; }
+    }
+    window.ConvergenceShell = { start, getStatusText, getLoadState:()=>({phase:running?'ready':phase,percent:progressPercent,current:loadedBytes,total:totalBytes}) };
+    window.addEventListener('convergence-language-change', renderShellLanguage);
+    renderShellLanguage();
+    enter.onclick = () => start(false).catch(() => {});
+    fullscreen.onclick = () => start(true).catch(() => {});
+    document.getElementById('canvas').addEventListener('contextmenu', event => event.preventDefault());
+  </script>
+  <script type="module" src="online/app.js"></script>
+</body>
+</html>
+

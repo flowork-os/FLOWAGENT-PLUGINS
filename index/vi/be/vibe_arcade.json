@@ -1,0 +1,21 @@
+{
+  "id": "vibe-arcade",
+  "name": "Flowork Vibe Arcade",
+  "version": "1.1.0",
+  "author": "Awenk Audico & Flowork OS",
+  "description": "Curated 270+ AI Vibe-Coded Game Launcher & Sandboxed Player featuring Claude Opus 5.5, Sonnet 5.5, GPT-6 Astra, and Offline Standalone Games.",
+  "category": "Sports Science & Athletics Performance",
+  "icon": "🕹️",
+  "hash": "35f4c85501181759",
+  "entry": {
+    "gui": "gui/index.html",
+    "backend": "engine/server.mjs"
+  },
+  "ipc": {
+    "port_env": "FLOWORK_APP_PORT",
+    "default_port": 18050
+  },
+  "shard": "index/vi/be/vibe_arcade.json",
+  "source_path": "plugins/vi/vibe-arcade",
+  "category_id": "CAT-020"
+}
